@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../providers/home_provider.dart';
+import '../../../core/l10n/app_strings.dart';
 
 /// AI banner card at the bottom of Home — dark gradient, neon pulsing
 /// border, floating bot emoji, and the day's Gemini-generated study tip as
@@ -37,30 +38,47 @@ class _AiStudyTipCardState extends ConsumerState<AiStudyTipCard> with SingleTick
       child: Container(
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          gradient: AppColors.gradientDark,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: AppColors.primaryMid.withValues(alpha: 0.4)),
-          boxShadow: [BoxShadow(color: AppColors.primaryMid.withValues(alpha: 0.2), blurRadius: 32, offset: const Offset(0, 8))],
+          gradient: AppColors.aiBannerGradient,
+          borderRadius: BorderRadius.circular(AppColors.isDark ? 24 : 22),
+          border: Border.all(
+            color: AppColors.isDark
+                ? AppColors.primaryMid.withValues(alpha: 0.4)
+                : AppColors.primaryIndigo.withValues(alpha: 0.3),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.isDark
+                  ? AppColors.primaryMid.withValues(alpha: 0.2)
+                  : AppColors.primaryIndigo.withValues(alpha: 0.2),
+              blurRadius: 32,
+              offset: const Offset(0, 8),
+            ),
+          ],
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            AnimatedBuilder(
-              animation: _controller,
-              builder: (context, child) => Transform.translate(
-                offset: Offset(0, -6 * Curves.easeInOut.transform(_controller.value)),
-                child: child,
-              ),
-              child: Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  gradient: AppColors.gradientPrimary,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [BoxShadow(color: AppColors.primaryMid.withValues(alpha: 0.7), blurRadius: 20)],
+            // RepaintBoundary isolates the 60fps floating-emoji animation so the
+            // rest of the card (text, arrow, gradient decoration) is not repainted
+            // every frame.
+            RepaintBoundary(
+              child: AnimatedBuilder(
+                animation: _controller,
+                builder: (context, child) => Transform.translate(
+                  offset: Offset(0, -6 * Curves.easeInOut.transform(_controller.value)),
+                  child: child,
                 ),
-                alignment: Alignment.center,
-                child: const Text('🤖', style: TextStyle(fontSize: 22)),
+                child: Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    gradient: AppColors.gradientPrimary,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [BoxShadow(color: AppColors.primaryMid.withValues(alpha: 0.7), blurRadius: 20)],
+                  ),
+                  alignment: Alignment.center,
+                  child: const Text('🤖', style: TextStyle(fontSize: 22)),
+                ),
               ),
             ),
             const SizedBox(width: 14),
@@ -68,9 +86,9 @@ class _AiStudyTipCardState extends ConsumerState<AiStudyTipCard> with SingleTick
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'AI アシスタント',
-                    style: TextStyle(
+                  Text(
+                    AppStrings.t('home_ai_title'),
+                    style: const TextStyle(
                       fontSize: 15, fontWeight: FontWeight.w800, letterSpacing: -0.2, color: Colors.white,
                       fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: ['NotoSansJP'],
                     ),
@@ -93,7 +111,7 @@ class _AiStudyTipCardState extends ConsumerState<AiStudyTipCard> with SingleTick
                       child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primaryLight.withValues(alpha: 0.6)),
                     ),
                     error: (_, __) => Text(
-                      '何でも聞いて',
+                      AppStrings.t('home_ai_fallback'),
                       style: TextStyle(fontSize: 12, color: AppColors.primaryLight.withValues(alpha: 0.6)),
                     ),
                   ),

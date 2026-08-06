@@ -14,6 +14,7 @@ _$MessageModelImpl _$$MessageModelImplFromJson(Map<String, dynamic> json) =>
       timestamp: DateTime.parse(json['timestamp'] as String),
       isLoading: json['isLoading'] as bool? ?? false,
       isError: json['isError'] as bool? ?? false,
+      botId: json['botId'] as String? ?? 'planner',
     );
 
 Map<String, dynamic> _$$MessageModelImplToJson(_$MessageModelImpl instance) =>
@@ -24,6 +25,7 @@ Map<String, dynamic> _$$MessageModelImplToJson(_$MessageModelImpl instance) =>
       'timestamp': instance.timestamp.toIso8601String(),
       'isLoading': instance.isLoading,
       'isError': instance.isError,
+      'botId': instance.botId,
     };
 
 const _$MessageRoleEnumMap = {

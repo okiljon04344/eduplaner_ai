@@ -10,6 +10,7 @@ import '../../../shared/widgets/app_input_field.dart';
 import '../../../shared/widgets/confirm_dialog.dart';
 import '../../../shared/widgets/star_rating.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../timetable/providers/timetable_provider.dart';
 import '../models/assignment_model.dart';
 import '../providers/assignments_provider.dart';
 
@@ -18,6 +19,7 @@ Future<void> showAddEditAssignmentSheet(BuildContext context, WidgetRef ref, {As
   return showModalBottomSheet(
     context: context,
     isScrollControlled: true,
+    useRootNavigator: true,
     builder: (_) => _AddEditAssignmentSheet(existing: existing),
   );
 }
@@ -34,8 +36,8 @@ class _AddEditAssignmentSheetState extends ConsumerState<_AddEditAssignmentSheet
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
+  final _subjectController = TextEditingController();
 
-  String? _selectedSubject;
   DateTime? _selectedDate;
   double _progress = 0.0;
   AssignmentStatus _status = AssignmentStatus.notStarted;
@@ -48,7 +50,7 @@ class _AddEditAssignmentSheetState extends ConsumerState<_AddEditAssignmentSheet
     if (existing != null) {
       _titleController.text = existing.title;
       _descriptionController.text = existing.description ?? '';
-      _selectedSubject = existing.subject;
+      _subjectController.text = existing.subject;
       _selectedDate = existing.dueDate;
       _progress = existing.progress;
       _status = existing.status;
@@ -60,7 +62,16 @@ class _AddEditAssignmentSheetState extends ConsumerState<_AddEditAssignmentSheet
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
+    _subjectController.dispose();
     super.dispose();
+  }
+
+  /// Suggestions only — the field always accepts freely typed subject names
+  /// too, not just these. Combines the fixed color-coded subjects with any
+  /// subject the student already uses in their timetable classes.
+  List<String> _subjectSuggestions() {
+    final fromClasses = (ref.read(timetableStreamProvider).valueOrNull ?? []).map((c) => c.subject);
+    return {...SubjectColors.all, ...fromClasses}.where((s) => s.trim().isNotEmpty).toList();
   }
 
   Future<void> _pickDate() async {
@@ -86,7 +97,7 @@ class _AddEditAssignmentSheetState extends ConsumerState<_AddEditAssignmentSheet
       id: existing?.id ?? const Uuid().v4(),
       userId: uid,
       title: _titleController.text.trim(),
-      subject: _selectedSubject ?? SubjectColors.all.first,
+      subject: _subjectController.text.trim(),
       description: _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
       dueDate: _selectedDate ?? DateTime.now(),
       status: _status,
@@ -142,7 +153,7 @@ class _AddEditAssignmentSheetState extends ConsumerState<_AddEditAssignmentSheet
                 width: 40,
                 height: 4,
                 margin: const EdgeInsets.only(top: 12),
-                decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.18), borderRadius: BorderRadius.circular(2)),
+                decoration: BoxDecoration(color: AppColors.textMuted, borderRadius: BorderRadius.circular(2)),
               ),
             ),
             Padding(
@@ -159,8 +170,8 @@ class _AddEditAssignmentSheetState extends ConsumerState<_AddEditAssignmentSheet
                     child: Container(
                       width: 36,
                       height: 36,
-                      decoration: const BoxDecoration(color: AppColors.surfaceVar, shape: BoxShape.circle),
-                      child: const Icon(Icons.close, size: 18, color: AppColors.textPrimary),
+                      decoration: BoxDecoration(color: AppColors.surfaceVar, shape: BoxShape.circle),
+                      child: Icon(Icons.close, size: 18, color: AppColors.textPrimary),
                     ),
                   ),
                 ],
@@ -172,35 +183,29 @@ class _AddEditAssignmentSheetState extends ConsumerState<_AddEditAssignmentSheet
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 20),
-                  const Text('科目名', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
+                  Text('科目名', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
                   const SizedBox(height: 6),
-                  DropdownButtonFormField<String>(
-                    initialValue: _selectedSubject,
-                    validator: (v) => v == null ? '科目名を選択してください' : null,
-                    items: SubjectColors.all.map((s) {
-                      final style = SubjectColors.of(s);
-                      return DropdownMenuItem(
-                        value: s,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(width: 8, height: 8, decoration: BoxDecoration(color: style.dot, shape: BoxShape.circle)),
-                            const SizedBox(width: 8),
-                            Text(s),
-                          ],
-                        ),
+                  Autocomplete<String>(
+                    optionsBuilder: (value) {
+                      final suggestions = _subjectSuggestions();
+                      if (value.text.isEmpty) return suggestions;
+                      return suggestions.where((s) => s.contains(value.text));
+                    },
+                    onSelected: (value) => setState(() => _subjectController.text = value),
+                    fieldViewBuilder: (context, controller, focusNode, onSubmit) {
+                      controller.text = _subjectController.text;
+                      controller.selection = TextSelection.collapsed(offset: controller.text.length);
+                      return AppInputField(
+                        controller: controller,
+                        focusNode: focusNode,
+                        hintText: '例：数学、または自由に入力',
+                        onChanged: (v) => _subjectController.text = v,
+                        validator: (_) => _subjectController.text.trim().isEmpty ? '科目名を入力してください' : null,
                       );
-                    }).toList(),
-                    onChanged: (v) => setState(() => _selectedSubject = v),
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: AppColors.background,
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.border)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-                    ),
+                    },
                   ),
                   const SizedBox(height: 16),
-                  const Text('課題タイトル', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
+                  Text('課題タイトル', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
                   const SizedBox(height: 6),
                   AppInputField(
                     controller: _titleController,
@@ -208,11 +213,11 @@ class _AddEditAssignmentSheetState extends ConsumerState<_AddEditAssignmentSheet
                     validator: (v) => (v == null || v.trim().isEmpty) ? '課題タイトルを入力してください' : null,
                   ),
                   const SizedBox(height: 16),
-                  const Text('詳細メモ', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
+                  Text('詳細メモ', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
                   const SizedBox(height: 6),
                   AppInputField(controller: _descriptionController, hintText: '補足メモを入力...', maxLines: 3),
                   const SizedBox(height: 16),
-                  const Text('提出期限', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
+                  Text('提出期限', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
                   const SizedBox(height: 6),
                   GestureDetector(
                     onTap: _pickDate,
@@ -244,7 +249,7 @@ class _AddEditAssignmentSheetState extends ConsumerState<_AddEditAssignmentSheet
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('進捗', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
+                        Text('進捗', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
                         Text('${(_progress * 100).round()}%', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.primary)),
                       ],
                     ),
@@ -257,7 +262,7 @@ class _AddEditAssignmentSheetState extends ConsumerState<_AddEditAssignmentSheet
                       onChanged: (v) => setState(() => _progress = v),
                     ),
                     const SizedBox(height: 8),
-                    const Text('ステータス', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
+                    Text('ステータス', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
                     const SizedBox(height: 8),
                     SegmentedButton<AssignmentStatus>(
                       segments: const [
@@ -273,7 +278,7 @@ class _AddEditAssignmentSheetState extends ConsumerState<_AddEditAssignmentSheet
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('難易度', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
+                      Text('難易度', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
                       StarRating(initialRating: _difficulty, onChanged: (v) => setState(() => _difficulty = v)),
                     ],
                   ),

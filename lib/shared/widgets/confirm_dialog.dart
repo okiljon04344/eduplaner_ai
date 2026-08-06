@@ -12,9 +12,9 @@ Future<bool> showConfirmDialog(
     context: context,
     builder: (ctx) => AlertDialog(
       backgroundColor: AppColors.bgLayer,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: const BorderSide(color: AppColors.border)),
-      title: Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: ['NotoSansJP'], color: AppColors.textPrimary)),
-      content: Text(message, style: const TextStyle(fontSize: 14, color: AppColors.textSecondary, fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: ['NotoSansJP'])),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide(color: AppColors.border)),
+      title: Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP'], color: AppColors.textPrimary)),
+      content: Text(message, style: TextStyle(fontSize: 14, color: AppColors.textSecondary, fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP'])),
       actions: [
         TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('キャンセル')),
         TextButton(

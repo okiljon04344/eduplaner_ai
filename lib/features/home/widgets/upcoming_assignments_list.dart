@@ -3,9 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../assignments/providers/assignments_provider.dart';
 import 'assignment_row_item.dart';
+import '../../../core/l10n/app_strings.dart';
 
-/// Glass card containing up to 3 upcoming-assignment rows separated by
-/// hairline dividers, matching the design's "UPCOMING TASKS" card.
 class UpcomingAssignmentsList extends ConsumerWidget {
   const UpcomingAssignmentsList({super.key});
 
@@ -15,17 +14,23 @@ class UpcomingAssignmentsList extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.03),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.07)),
-        borderRadius: BorderRadius.circular(22),
+        color: AppColors.isDark ? AppColors.cardBg : AppColors.surface,
+        border: Border.all(color: AppColors.cardBorder),
+        borderRadius: BorderRadius.circular(AppColors.isDark ? 22 : 20),
+        boxShadow: AppColors.isDark ? null : AppColors.cardShadow,
       ),
       child: assignments.isEmpty
-          ? const Center(
+          ? Center(
               child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 20),
+                padding: const EdgeInsets.symmetric(vertical: 20),
                 child: Text(
-                  '提出期限が近い課題はありません',
-                  style: TextStyle(fontSize: 13, color: AppColors.textMuted, fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: ['NotoSansJP']),
+                  AppStrings.t('home_no_upcoming'),
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: AppColors.textMuted,
+                    fontFamily: 'Plus Jakarta Sans',
+                    fontFamilyFallback: const ['NotoSansJP'],
+                  ),
                 ),
               ),
             )

@@ -92,6 +92,10 @@ class AssignmentModel with _$AssignmentModel {
     @Default(1) int difficulty,
     @Default(0.0) double progress,
     required DateTime createdAt,
+    double? aiCompletionPercent,
+    @Default([]) List<String> aiMissingParts,
+    String? aiAdvice,
+    DateTime? aiAnalyzedAt,
   }) = _AssignmentModel;
 
   factory AssignmentModel.fromJson(Map<String, dynamic> json) => _$AssignmentModelFromJson(json);
@@ -109,6 +113,10 @@ class AssignmentModel with _$AssignmentModel {
       difficulty: (d['difficulty'] as num?)?.toInt() ?? 1,
       progress: (d['progress'] as num?)?.toDouble() ?? 0.0,
       createdAt: (d['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      aiCompletionPercent: (d['aiCompletionPercent'] as num?)?.toDouble(),
+      aiMissingParts: (d['aiMissingParts'] as List<dynamic>? ?? []).map((e) => e.toString()).toList(),
+      aiAdvice: d['aiAdvice'] as String?,
+      aiAnalyzedAt: (d['aiAnalyzedAt'] as Timestamp?)?.toDate(),
     );
   }
 
@@ -124,7 +132,13 @@ class AssignmentModel with _$AssignmentModel {
         'difficulty': difficulty,
         'progress': progress,
         'createdAt': Timestamp.fromDate(createdAt),
+        'aiCompletionPercent': aiCompletionPercent,
+        'aiMissingParts': aiMissingParts,
+        'aiAdvice': aiAdvice,
+        'aiAnalyzedAt': aiAnalyzedAt == null ? null : Timestamp.fromDate(aiAnalyzedAt!),
       };
+
+  bool get hasAiAnalysis => aiAnalyzedAt != null;
 
   String get dueDateLabel => DateHelper.dueDateLabel(dueDate);
 

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
   <!--
     If you are serving your web app in a path other than the root, change the
@@ -18,21 +18,63 @@
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="EduPlanner AI student planning app.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="EduPlanner AI - AIを活用したスマート学習管理アプリ。時間割、課題、AIチャット、テスト対策を一つに。">
+
+  <!-- Theme color follows the actual in-app palette. Two variants let the
+       browser chrome match the user's OS theme before Flutter boots. -->
+  <meta name="theme-color" content="#08060F" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#F2F0FF" media="(prefers-color-scheme: light)">
 
   <!-- iOS meta tags & icons -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="EduPlanner AI">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="icons/Icon-512.png">
+
+  <!-- Preconnect to CanvasKit CDN so WASM loads without DNS delay -->
+  <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+  <link rel="dns-prefetch" href="https://www.gstatic.com">
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
 
   <title>EduPlanner AI</title>
   <link rel="manifest" href="manifest.json">
+
+  <!-- Splash / loading screen shown until Flutter's first frame paints.
+       Uses the dark palette's true background (#08060F) so a first-load user
+       doesn't see a flash of white before the app renders. The bootstrap
+       script removes #splash once the Flutter engine is initialized. -->
+  <style>
+    html, body { margin: 0; padding: 0; height: 100%; background: #08060F; }
+    @media (prefers-color-scheme: light) {
+      html, body { background: #F2F0FF; }
+    }
+    #splash {
+      position: fixed; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: #08060F;
+      transition: opacity 300ms ease-out;
+      z-index: 9999;
+    }
+    @media (prefers-color-scheme: light) {
+      #splash { background: #F2F0FF; }
+    }
+    #splash.hidden { opacity: 0; pointer-events: none; }
+    .spinner {
+      width: 42px; height: 42px; border-radius: 50%;
+      border: 3px solid rgba(124, 58, 237, 0.25);
+      border-top-color: #7C3AED;
+      animation: spin 900ms linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
 </head>
 <body>
+  <div id="splash"><div class="spinner" role="progressbar" aria-label="Loading"></div></div>
   <!--
     You can customize the "flutter_bootstrap.js" script.
     This is useful to provide a custom configuration to the Flutter loader
@@ -42,5 +84,14 @@
     * https://docs.flutter.dev/platform-integration/web/initialization
   -->
   <script src="flutter_bootstrap.js" async></script>
+  <script>
+    // Hide the splash as soon as Flutter announces its first frame.
+    window.addEventListener('flutter-first-frame', function () {
+      var s = document.getElementById('splash');
+      if (!s) return;
+      s.classList.add('hidden');
+      setTimeout(function () { s.remove(); }, 350);
+    });
+  </script>
 </body>
 </html>

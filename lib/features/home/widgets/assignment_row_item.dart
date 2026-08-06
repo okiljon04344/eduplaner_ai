@@ -37,7 +37,10 @@ class AssignmentRowItem extends ConsumerWidget {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       gradient: isDone ? AppColors.gradientPrimary : null,
-                      border: Border.all(color: isDone ? AppColors.primaryMid : Colors.white.withValues(alpha: 0.15), width: 2),
+                      border: Border.all(
+                        color: isDone ? AppColors.primaryMid : AppColors.checkboxUnchecked,
+                        width: 2,
+                      ),
                       boxShadow: isDone ? [BoxShadow(color: AppColors.primaryMid.withValues(alpha: 0.6), blurRadius: 12)] : null,
                     ),
                     child: isDone ? const Icon(Icons.check, size: 12, color: Colors.white) : null,
@@ -90,7 +93,7 @@ class AssignmentRowItem extends ConsumerWidget {
             ),
           ),
         ),
-        if (showDivider) Divider(height: 1, color: Colors.white.withValues(alpha: 0.05)),
+        if (showDivider) Divider(height: 1, color: AppColors.dividerSubtle),
       ],
     );
   }

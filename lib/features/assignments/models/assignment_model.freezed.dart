@@ -30,6 +30,10 @@ mixin _$AssignmentModel {
   int get difficulty => throw _privateConstructorUsedError;
   double get progress => throw _privateConstructorUsedError;
   DateTime get createdAt => throw _privateConstructorUsedError;
+  double? get aiCompletionPercent => throw _privateConstructorUsedError;
+  List<String> get aiMissingParts => throw _privateConstructorUsedError;
+  String? get aiAdvice => throw _privateConstructorUsedError;
+  DateTime? get aiAnalyzedAt => throw _privateConstructorUsedError;
 
   /// Serializes this AssignmentModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -57,7 +61,11 @@ abstract class $AssignmentModelCopyWith<$Res> {
       AssignmentStatus status,
       int difficulty,
       double progress,
-      DateTime createdAt});
+      DateTime createdAt,
+      double? aiCompletionPercent,
+      List<String> aiMissingParts,
+      String? aiAdvice,
+      DateTime? aiAnalyzedAt});
 }
 
 /// @nodoc
@@ -85,6 +93,10 @@ class _$AssignmentModelCopyWithImpl<$Res, $Val extends AssignmentModel>
     Object? difficulty = null,
     Object? progress = null,
     Object? createdAt = null,
+    Object? aiCompletionPercent = freezed,
+    Object? aiMissingParts = null,
+    Object? aiAdvice = freezed,
+    Object? aiAnalyzedAt = freezed,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -127,6 +139,22 @@ class _$AssignmentModelCopyWithImpl<$Res, $Val extends AssignmentModel>
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
+      aiCompletionPercent: freezed == aiCompletionPercent
+          ? _value.aiCompletionPercent
+          : aiCompletionPercent // ignore: cast_nullable_to_non_nullable
+              as double?,
+      aiMissingParts: null == aiMissingParts
+          ? _value.aiMissingParts
+          : aiMissingParts // ignore: cast_nullable_to_non_nullable
+              as List<String>,
+      aiAdvice: freezed == aiAdvice
+          ? _value.aiAdvice
+          : aiAdvice // ignore: cast_nullable_to_non_nullable
+              as String?,
+      aiAnalyzedAt: freezed == aiAnalyzedAt
+          ? _value.aiAnalyzedAt
+          : aiAnalyzedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
     ) as $Val);
   }
 }
@@ -149,7 +177,11 @@ abstract class _$$AssignmentModelImplCopyWith<$Res>
       AssignmentStatus status,
       int difficulty,
       double progress,
-      DateTime createdAt});
+      DateTime createdAt,
+      double? aiCompletionPercent,
+      List<String> aiMissingParts,
+      String? aiAdvice,
+      DateTime? aiAnalyzedAt});
 }
 
 /// @nodoc
@@ -175,6 +207,10 @@ class __$$AssignmentModelImplCopyWithImpl<$Res>
     Object? difficulty = null,
     Object? progress = null,
     Object? createdAt = null,
+    Object? aiCompletionPercent = freezed,
+    Object? aiMissingParts = null,
+    Object? aiAdvice = freezed,
+    Object? aiAnalyzedAt = freezed,
   }) {
     return _then(_$AssignmentModelImpl(
       id: null == id
@@ -217,6 +253,22 @@ class __$$AssignmentModelImplCopyWithImpl<$Res>
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
+      aiCompletionPercent: freezed == aiCompletionPercent
+          ? _value.aiCompletionPercent
+          : aiCompletionPercent // ignore: cast_nullable_to_non_nullable
+              as double?,
+      aiMissingParts: null == aiMissingParts
+          ? _value._aiMissingParts
+          : aiMissingParts // ignore: cast_nullable_to_non_nullable
+              as List<String>,
+      aiAdvice: freezed == aiAdvice
+          ? _value.aiAdvice
+          : aiAdvice // ignore: cast_nullable_to_non_nullable
+              as String?,
+      aiAnalyzedAt: freezed == aiAnalyzedAt
+          ? _value.aiAnalyzedAt
+          : aiAnalyzedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
     ));
   }
 }
@@ -234,8 +286,13 @@ class _$AssignmentModelImpl extends _AssignmentModel {
       required this.status,
       this.difficulty = 1,
       this.progress = 0.0,
-      required this.createdAt})
-      : super._();
+      required this.createdAt,
+      this.aiCompletionPercent,
+      final List<String> aiMissingParts = const [],
+      this.aiAdvice,
+      this.aiAnalyzedAt})
+      : _aiMissingParts = aiMissingParts,
+        super._();
 
   factory _$AssignmentModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$AssignmentModelImplFromJson(json);
@@ -262,10 +319,25 @@ class _$AssignmentModelImpl extends _AssignmentModel {
   final double progress;
   @override
   final DateTime createdAt;
+  @override
+  final double? aiCompletionPercent;
+  final List<String> _aiMissingParts;
+  @override
+  @JsonKey()
+  List<String> get aiMissingParts {
+    if (_aiMissingParts is EqualUnmodifiableListView) return _aiMissingParts;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_aiMissingParts);
+  }
+
+  @override
+  final String? aiAdvice;
+  @override
+  final DateTime? aiAnalyzedAt;
 
   @override
   String toString() {
-    return 'AssignmentModel(id: $id, userId: $userId, title: $title, subject: $subject, description: $description, dueDate: $dueDate, status: $status, difficulty: $difficulty, progress: $progress, createdAt: $createdAt)';
+    return 'AssignmentModel(id: $id, userId: $userId, title: $title, subject: $subject, description: $description, dueDate: $dueDate, status: $status, difficulty: $difficulty, progress: $progress, createdAt: $createdAt, aiCompletionPercent: $aiCompletionPercent, aiMissingParts: $aiMissingParts, aiAdvice: $aiAdvice, aiAnalyzedAt: $aiAnalyzedAt)';
   }
 
   @override
@@ -286,13 +358,35 @@ class _$AssignmentModelImpl extends _AssignmentModel {
             (identical(other.progress, progress) ||
                 other.progress == progress) &&
             (identical(other.createdAt, createdAt) ||
-                other.createdAt == createdAt));
+                other.createdAt == createdAt) &&
+            (identical(other.aiCompletionPercent, aiCompletionPercent) ||
+                other.aiCompletionPercent == aiCompletionPercent) &&
+            const DeepCollectionEquality()
+                .equals(other._aiMissingParts, _aiMissingParts) &&
+            (identical(other.aiAdvice, aiAdvice) ||
+                other.aiAdvice == aiAdvice) &&
+            (identical(other.aiAnalyzedAt, aiAnalyzedAt) ||
+                other.aiAnalyzedAt == aiAnalyzedAt));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, id, userId, title, subject,
-      description, dueDate, status, difficulty, progress, createdAt);
+  int get hashCode => Object.hash(
+      runtimeType,
+      id,
+      userId,
+      title,
+      subject,
+      description,
+      dueDate,
+      status,
+      difficulty,
+      progress,
+      createdAt,
+      aiCompletionPercent,
+      const DeepCollectionEquality().hash(_aiMissingParts),
+      aiAdvice,
+      aiAnalyzedAt);
 
   /// Create a copy of AssignmentModel
   /// with the given fields replaced by the non-null parameter values.
@@ -322,7 +416,11 @@ abstract class _AssignmentModel extends AssignmentModel {
       required final AssignmentStatus status,
       final int difficulty,
       final double progress,
-      required final DateTime createdAt}) = _$AssignmentModelImpl;
+      required final DateTime createdAt,
+      final double? aiCompletionPercent,
+      final List<String> aiMissingParts,
+      final String? aiAdvice,
+      final DateTime? aiAnalyzedAt}) = _$AssignmentModelImpl;
   const _AssignmentModel._() : super._();
 
   factory _AssignmentModel.fromJson(Map<String, dynamic> json) =
@@ -348,6 +446,14 @@ abstract class _AssignmentModel extends AssignmentModel {
   double get progress;
   @override
   DateTime get createdAt;
+  @override
+  double? get aiCompletionPercent;
+  @override
+  List<String> get aiMissingParts;
+  @override
+  String? get aiAdvice;
+  @override
+  DateTime? get aiAnalyzedAt;
 
   /// Create a copy of AssignmentModel
   /// with the given fields replaced by the non-null parameter values.

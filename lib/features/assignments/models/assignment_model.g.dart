@@ -19,6 +19,15 @@ _$AssignmentModelImpl _$$AssignmentModelImplFromJson(
       difficulty: (json['difficulty'] as num?)?.toInt() ?? 1,
       progress: (json['progress'] as num?)?.toDouble() ?? 0.0,
       createdAt: DateTime.parse(json['createdAt'] as String),
+      aiCompletionPercent: (json['aiCompletionPercent'] as num?)?.toDouble(),
+      aiMissingParts: (json['aiMissingParts'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          const [],
+      aiAdvice: json['aiAdvice'] as String?,
+      aiAnalyzedAt: json['aiAnalyzedAt'] == null
+          ? null
+          : DateTime.parse(json['aiAnalyzedAt'] as String),
     );
 
 Map<String, dynamic> _$$AssignmentModelImplToJson(
@@ -34,6 +43,10 @@ Map<String, dynamic> _$$AssignmentModelImplToJson(
       'difficulty': instance.difficulty,
       'progress': instance.progress,
       'createdAt': instance.createdAt.toIso8601String(),
+      'aiCompletionPercent': instance.aiCompletionPercent,
+      'aiMissingParts': instance.aiMissingParts,
+      'aiAdvice': instance.aiAdvice,
+      'aiAnalyzedAt': instance.aiAnalyzedAt?.toIso8601String(),
     };
 
 const _$AssignmentStatusEnumMap = {

@@ -1,73 +1,71 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:google_generative_ai/google_generative_ai.dart';
-import '../../../core/constants/api_constants.dart';
 import '../../assignments/models/assignment_model.dart';
 import '../../timetable/models/class_model.dart';
 import '../models/message_model.dart';
 
+/// Data layer for AI tutor chat.
+///
+/// All AI inference happens server-side via the `chatWithTutor` Cloud Function —
+/// the Gemini API key never leaves the Firebase backend.  This class only:
+///   - Builds the minimal, privacy-safe payload sent to the function.
+///   - Persists messages to Firestore so history survives app restarts.
+///   - Loads the last 50 messages on demand (capped to keep read costs low).
 class ChatRepository {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
-  final FlutterSecureStorage _storage = const FlutterSecureStorage();
+  final FirebaseFunctions _functions = FirebaseFunctions.instance;
 
-  CollectionReference _msgs(String userId) => _db.collection('ai_chats').doc(userId).collection('messages');
+  /// Reference to the messages sub-collection for a given user.
+  CollectionReference _msgs(String userId) =>
+      _db.collection('ai_chats').doc(userId).collection('messages');
 
-  Future<String> sendToGemini({
-    required List<MessageModel> history,
+  /// Calls the `chatWithTutor` Cloud Function and returns the AI reply.
+  ///
+  /// Only anonymous, non-identifying fields leave the device:
+  ///   - Assignments: `{subject, dueDate, status, progress}` — no title or
+  ///     description (may contain personal notes).
+  ///   - Classes: `{subject, dayOfWeek, period}` — no teacher names
+  ///     (third-party personal data).
+  ///
+  /// Throws a localised Japanese [Exception] on error so callers can surface
+  /// it directly in the UI without further translation.
+  Future<String> sendMessage({
+    required String botId,
     required String userMessage,
     required List<ClassModel> classes,
     required List<AssignmentModel> assignments,
   }) async {
-    final storedKey = await _storage.read(key: ApiConstants.geminiApiKeyName);
-    final apiKey = (storedKey != null && storedKey.trim().isNotEmpty) ? storedKey.trim() : ApiConstants.geminiDefaultApiKey;
-    final model = GenerativeModel(
-      model: ApiConstants.geminiModel,
-      apiKey: apiKey,
-      systemInstruction: Content.system(_buildSystemPrompt(classes, assignments)),
-    );
-    final geminiHistory = history
-        .where((m) => !m.isLoading && !m.isError)
-        .map((m) => m.role == MessageRole.user ? Content.text(m.content) : Content.model([TextPart(m.content)]))
-        .toList();
-    final chat = model.startChat(history: geminiHistory);
-    final response = await chat.sendMessage(Content.text(userMessage));
-    final text = response.text;
-    if (text == null || text.isEmpty) {
-      throw Exception('AIからの応答がありませんでした');
+    try {
+      final callable = _functions.httpsCallable('chatWithTutor');
+      final result = await callable.call<Map<String, dynamic>>({
+        'botId': botId,
+        'message': userMessage,
+        // Privacy: only anonymous, non-identifying fields leave the device —
+        // no assignment titles/descriptions (may contain personal notes) and
+        // no teacher names (third-party personal data). The AI still gets
+        // enough context (subject, due date, progress) to give useful advice.
+        'assignments': assignments.map((a) => {'subject': a.subject, 'dueDate': a.dueDateLabel, 'status': a.status.label, 'progress': a.progress}).toList(),
+        'classes': classes.map((c) => {'subject': c.subject, 'dayOfWeek': c.dayOfWeek, 'period': c.period}).toList(),
+      });
+      final reply = result.data['reply'] as String?;
+      if (reply == null || reply.isEmpty) {
+        throw Exception('AIからの応答がありませんでした。もう一度お試しください。');
+      }
+      return reply;
+    } on FirebaseFunctionsException catch (e) {
+      debugPrint('chatWithTutor error: ${e.code} ${e.message}');
+      if (e.code == 'unauthenticated') {
+        throw Exception('ログインが必要です。');
+      }
+      throw Exception('AIサーバーに接続できませんでした。しばらくしてからもう一度お試しください。');
     }
-    return text;
   }
 
-  String _buildSystemPrompt(List<ClassModel> classes, List<AssignmentModel> assignments) {
-    final buffer = StringBuffer()
-      ..writeln('あなたはEduPlanner AIアシスタントです。日本語で丁寧に答えてください。')
-      ..writeln('')
-      ..writeln('【学生の時間割】');
-    if (classes.isEmpty) {
-      buffer.writeln('（授業が登録されていません）');
-    } else {
-      for (final c in classes) {
-        buffer.writeln('${c.dayOfWeek}曜日 ${c.period}限: ${c.subject}（${c.teacher}先生, ${c.room}）');
-      }
-    }
-    buffer
-      ..writeln('')
-      ..writeln('【未完了の課題】');
-    final pending = assignments.where((a) => a.status != AssignmentStatus.completed).toList();
-    if (pending.isEmpty) {
-      buffer.writeln('（未完了の課題はありません）');
-    } else {
-      for (final a in pending) {
-        buffer.writeln('${a.subject}「${a.title}」締め切り: ${a.dueDateLabel}（${a.status.label}）');
-      }
-    }
-    buffer
-      ..writeln('')
-      ..writeln('この情報を使って学生に具体的なアドバイスをしてください。');
-    return buffer.toString();
-  }
-
+  /// Writes a single [MessageModel] to Firestore.
+  ///
+  /// Failures are logged with [debugPrint] and swallowed — a failed save
+  /// should never crash the chat UI; the message is already shown locally.
   Future<void> saveMessage(String userId, MessageModel msg) async {
     try {
       await _msgs(userId).doc(msg.id).set(msg.toFirestore());
@@ -76,6 +74,10 @@ class ChatRepository {
     }
   }
 
+  /// Returns the last 50 messages for [userId] ordered by timestamp.
+  ///
+  /// Returns an empty list on any error so the chat screen opens cleanly
+  /// even without a network connection.
   Future<List<MessageModel>> loadHistory(String userId) async {
     try {
       final snap = await _msgs(userId).orderBy('timestamp').limitToLast(50).get();
@@ -85,6 +87,7 @@ class ChatRepository {
     }
   }
 
+  /// Deletes all messages for [userId] in a single batched write.
   Future<void> clearHistory(String userId) async {
     final snap = await _msgs(userId).get();
     final batch = _db.batch();

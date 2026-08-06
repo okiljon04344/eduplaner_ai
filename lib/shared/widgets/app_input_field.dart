@@ -8,6 +8,7 @@ class AppInputField extends StatelessWidget {
   final int? minLines;
   final String? Function(String?)? validator;
   final ValueChanged<String>? onChanged;
+  final ValueChanged<String>? onSubmitted;
   final Widget? suffix;
   final Widget? prefix;
   final bool obscureText;
@@ -23,6 +24,7 @@ class AppInputField extends StatelessWidget {
     this.minLines,
     this.validator,
     this.onChanged,
+    this.onSubmitted,
     this.suffix,
     this.prefix,
     this.obscureText = false,
@@ -41,11 +43,12 @@ class AppInputField extends StatelessWidget {
       expands: expands,
       validator: validator,
       onChanged: onChanged,
+      onFieldSubmitted: onSubmitted,
       obscureText: obscureText,
       textInputAction: textInputAction,
       decoration: InputDecoration(
         hintText: hintText,
-        hintStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: AppColors.textMuted),
+        hintStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: AppColors.textMuted),
         prefixIcon: prefix,
         suffixIcon: suffix,
         filled: true,

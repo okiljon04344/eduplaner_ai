@@ -17,6 +17,13 @@ _$ClassModelImpl _$$ClassModelImplFromJson(Map<String, dynamic> json) =>
       period: (json['period'] as num).toInt(),
       colorHex: json['colorHex'] as String? ?? '#4F46E5',
       createdAt: DateTime.parse(json['createdAt'] as String),
+      groupId: json['groupId'] as String?,
+      status: $enumDecodeNullable(_$ClassStatusEnumMap, json['status']) ??
+          ClassStatus.normal,
+      statusNote: json['statusNote'] as String?,
+      statusDate: json['statusDate'] == null
+          ? null
+          : DateTime.parse(json['statusDate'] as String),
     );
 
 Map<String, dynamic> _$$ClassModelImplToJson(_$ClassModelImpl instance) =>
@@ -30,4 +37,14 @@ Map<String, dynamic> _$$ClassModelImplToJson(_$ClassModelImpl instance) =>
       'period': instance.period,
       'colorHex': instance.colorHex,
       'createdAt': instance.createdAt.toIso8601String(),
+      'groupId': instance.groupId,
+      'status': _$ClassStatusEnumMap[instance.status]!,
+      'statusNote': instance.statusNote,
+      'statusDate': instance.statusDate?.toIso8601String(),
     };
+
+const _$ClassStatusEnumMap = {
+  ClassStatus.normal: 'normal',
+  ClassStatus.cancelled: 'cancelled',
+  ClassStatus.changed: 'changed',
+};

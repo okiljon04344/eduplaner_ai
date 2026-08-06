@@ -1,0 +1,349 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/theme/app_colors.dart';
+import '../providers/onboarding_provider.dart';
+
+class OnboardingScreen extends ConsumerStatefulWidget {
+  const OnboardingScreen({super.key});
+
+  @override
+  ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
+}
+
+class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
+  final _controller = PageController();
+  int _page = 0;
+
+  static const _pages = [
+    _PageData(
+      icon: Icons.auto_awesome,
+      color: Color(0xFF8B5CF6),
+      accentColor: Color(0xFF6D28D9),
+      title: 'EduPlanner AI へようこそ',
+      subtitle: 'AIを活用したスマート学習管理アプリで\n学習の効率を最大化しよう。',
+    ),
+    _PageData(
+      icon: Icons.calendar_month_outlined,
+      color: Color(0xFF06B6D4),
+      accentColor: Color(0xFF0891B2),
+      title: '時間割を管理',
+      subtitle: '毎日の授業をひと目で把握。\n大切な授業を絶対に逃さない。',
+    ),
+    _PageData(
+      icon: Icons.assignment_outlined,
+      color: Color(0xFF10B981),
+      accentColor: Color(0xFF059669),
+      title: '課題を追跡',
+      subtitle: '締め切りを管理して、\nプレッシャーなく学習を進めよう。',
+    ),
+    _PageData(
+      icon: Icons.smart_toy_outlined,
+      color: Color(0xFFA855F7),
+      accentColor: Color(0xFF7C3AED),
+      title: 'AIがいつでもサポート',
+      subtitle: 'わからないことはAIに相談。\nクイズ生成や弱点分析も対応。',
+    ),
+  ];
+
+  void _next() {
+    if (_page < _pages.length - 1) {
+      _controller.nextPage(
+        duration: const Duration(milliseconds: 380),
+        curve: Curves.easeInOut,
+      );
+    } else {
+      _finish();
+    }
+  }
+
+  Future<void> _finish() async {
+    await ref.read(onboardingProvider.notifier).markDone();
+    // Router will rebuild and redirect to /home automatically
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Skip button row
+            SizedBox(
+              height: 52,
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 16),
+                  child: AnimatedOpacity(
+                    opacity: _page < _pages.length - 1 ? 1.0 : 0.0,
+                    duration: const Duration(milliseconds: 200),
+                    child: TextButton(
+                      onPressed: _page < _pages.length - 1 ? _finish : null,
+                      child: Text(
+                        'スキップ',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: AppColors.textMuted,
+                          fontFamily: 'Plus Jakarta Sans',
+                          fontFamilyFallback: const ['NotoSansJP'],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            // Page content
+            Expanded(
+              child: PageView.builder(
+                controller: _controller,
+                itemCount: _pages.length,
+                onPageChanged: (i) => setState(() => _page = i),
+                itemBuilder: (context, i) => _PageContent(
+                  data: _pages[i],
+                  key: ValueKey(i),
+                ),
+              ),
+            ),
+
+            // Bottom controls
+            Padding(
+              padding: const EdgeInsets.fromLTRB(32, 20, 32, 44),
+              child: Column(
+                children: [
+                  // Page dots
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(_pages.length, (i) {
+                      final active = i == _page;
+                      return AnimatedContainer(
+                        duration: const Duration(milliseconds: 280),
+                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                        width: active ? 28 : 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: active
+                              ? _pages[_page].color
+                              : AppColors.border,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      );
+                    }),
+                  ),
+                  const SizedBox(height: 28),
+
+                  // Action button
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 280),
+                    width: double.infinity,
+                    height: 54,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [_pages[_page].color, _pages[_page].accentColor],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: _pages[_page].color.withValues(alpha: 0.4),
+                          blurRadius: 20,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(16),
+                        onTap: _next,
+                        child: Center(
+                          child: Text(
+                            _page < _pages.length - 1 ? '次へ →' : '始める ✨',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                              letterSpacing: 0.3,
+                              fontFamily: 'Plus Jakarta Sans',
+                              fontFamilyFallback: ['NotoSansJP'],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Page data ──────────────────────────────────────────────────────────────
+
+class _PageData {
+  final IconData icon;
+  final Color color;
+  final Color accentColor;
+  final String title;
+  final String subtitle;
+  const _PageData({
+    required this.icon,
+    required this.color,
+    required this.accentColor,
+    required this.title,
+    required this.subtitle,
+  });
+}
+
+// ─── Page content widget ────────────────────────────────────────────────────
+
+class _PageContent extends StatelessWidget {
+  final _PageData data;
+  const _PageContent({super.key, required this.data});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 36),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Glow circle + icon
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              // Outer glow
+              Container(
+                width: 180,
+                height: 180,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      data.color.withValues(alpha: 0.18),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+              ),
+              // Mid ring
+              Container(
+                width: 120,
+                height: 120,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      data.color.withValues(alpha: 0.12),
+                      Colors.transparent,
+                    ],
+                  ),
+                  border: Border.all(
+                    color: data.color.withValues(alpha: 0.15),
+                    width: 1,
+                  ),
+                ),
+              ),
+              // Icon box
+              Container(
+                width: 84,
+                height: 84,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      data.color,
+                      data.accentColor,
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(26),
+                  boxShadow: [
+                    BoxShadow(
+                      color: data.color.withValues(alpha: 0.55),
+                      blurRadius: 28,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: Icon(data.icon, size: 42, color: Colors.white),
+              ),
+            ],
+          )
+              .animate()
+              .scale(
+                begin: const Offset(0.6, 0.6),
+                end: const Offset(1.0, 1.0),
+                duration: 600.ms,
+                curve: Curves.elasticOut,
+              )
+              .fadeIn(duration: 400.ms),
+
+          const SizedBox(height: 44),
+
+          // Title
+          Text(
+            data.title,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+              color: Colors.white,
+              height: 1.3,
+              letterSpacing: -0.4,
+              fontFamily: 'Plus Jakarta Sans',
+              fontFamilyFallback: ['NotoSansJP'],
+            ),
+          )
+              .animate()
+              .slideY(
+                begin: 0.25,
+                end: 0,
+                duration: 500.ms,
+                delay: 180.ms,
+                curve: Curves.easeOut,
+              )
+              .fadeIn(duration: 400.ms, delay: 180.ms),
+
+          const SizedBox(height: 16),
+
+          // Subtitle
+          Text(
+            data.subtitle,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 15,
+              height: 1.7,
+              color: AppColors.textSecondary,
+              fontFamily: 'Plus Jakarta Sans',
+              fontFamilyFallback: const ['NotoSansJP'],
+            ),
+          )
+              .animate()
+              .slideY(
+                begin: 0.25,
+                end: 0,
+                duration: 500.ms,
+                delay: 300.ms,
+                curve: Curves.easeOut,
+              )
+              .fadeIn(duration: 400.ms, delay: 300.ms),
+        ],
+      ),
+    );
+  }
+}

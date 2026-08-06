@@ -1,21 +1,108 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    function isAuth() { return request.auth != null; }
-    function isOwner(uid) { return request.auth.uid == uid; }
+
+    // ── Helper functions ───────────────────────────────────────────────────
+
+    /// Returns true when the request carries a valid Firebase Auth token.
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    /// Returns true when the authenticated user owns the given uid.
+    function isOwner(uid) {
+      return request.auth.uid == uid;
+    }
+
+    /// Returns true when the authenticated user is a member of the given
+    /// study group.  Uses a server-side get() so the check is authoritative
+    /// even if the client caches a stale membership list.
+    function isGroupMember(groupId) {
+      return exists(/databases/$(database)/documents/study_groups/$(groupId)) &&
+        request.auth.uid in get(/databases/$(database)/documents/study_groups/$(groupId)).data.memberIds;
+    }
+
+    /// Returns true when a string field does not exceed the given byte length.
+    /// Prevents oversized payloads from being written to Firestore.
+    function withinLength(field, maxLen) {
+      return field.size() <= maxLen;
+    }
+
+    // ── User profiles ──────────────────────────────────────────────────────
+    // Each user may only read/write their own profile document.
+    // Field-length caps prevent abuse of free-text fields.
     match /users/{userId} {
-      allow read, write: if isAuth() && isOwner(userId);
+      allow read: if isAuth() && isOwner(userId);
+      allow write: if isAuth() && isOwner(userId)
+        && (!('name'  in request.resource.data) || withinLength(request.resource.data.name,  200))
+        && (!('email' in request.resource.data) || withinLength(request.resource.data.email, 320));
     }
+
+    // ── Study groups ───────────────────────────────────────────────────────
+    match /study_groups/{groupId} {
+      // Any authenticated member may read the group document.
+      allow read: if isAuth() && request.auth.uid in resource.data.memberIds;
+
+      // Creating: caller must set themselves as owner and sole initial member.
+      // Group name capped at 100 chars; join code exactly 6 chars.
+      allow create: if isAuth()
+        && request.resource.data.ownerId == request.auth.uid
+        && request.resource.data.memberIds == [request.auth.uid]
+        && withinLength(request.resource.data.code, 6)
+        && (!('name' in request.resource.data) || withinLength(request.resource.data.name, 100));
+
+      // Joining by code is server-side only (joinGroupByCode Cloud Function).
+      // Client-side updates are limited to the caller leaving the group:
+      //   • ownerId and code are immutable from the client.
+      //   • memberIds may only shrink by exactly the caller's uid.
+      //   • Group cannot be left completely empty via this path.
+      //   • Hard cap: groups stay below 60 members to prevent spam.
+      allow update: if isAuth()
+        && request.auth.uid in resource.data.memberIds
+        && request.resource.data.ownerId == resource.data.ownerId
+        && request.resource.data.code == resource.data.code
+        && request.resource.data.memberIds.hasOnly(resource.data.memberIds)
+        && request.resource.data.memberIds == resource.data.memberIds.removeAll([request.auth.uid])
+        && request.resource.data.memberIds.size() > 0
+        && resource.data.memberIds.size() < 60;
+
+      // Only the group owner may hard-delete the group.
+      allow delete: if isAuth() && resource.data.ownerId == request.auth.uid;
+    }
+
+    // ── Timetable entries ──────────────────────────────────────────────────
     match /timetables/{docId} {
-      allow read, update, delete: if isAuth() && resource.data.userId == request.auth.uid;
-      allow create: if isAuth() && request.resource.data.userId == request.auth.uid;
-      allow list: if isAuth();
+      // A user may read their own entries; group members may read shared ones.
+      allow read: if isAuth() && (
+        resource.data.userId == request.auth.uid ||
+        (resource.data.groupId != null && isGroupMember(resource.data.groupId))
+      );
+      // On create: caller must be the document owner. If groupId is set the
+      // caller must already be a group member — prevents planting entries into
+      // groups they don't belong to. Subject capped to prevent oversized docs.
+      allow create: if isAuth()
+        && request.resource.data.userId == request.auth.uid
+        && (!('subject' in request.resource.data) || withinLength(request.resource.data.subject, 100))
+        && (!('groupId' in request.resource.data)
+            || request.resource.data.groupId == null
+            || isGroupMember(request.resource.data.groupId));
+      // Only the original creator may edit or delete their own class row.
+      allow update, delete: if isAuth() && resource.data.userId == request.auth.uid;
     }
+
+    // ── Assignments ────────────────────────────────────────────────────────
+    // Strictly personal: each assignment belongs to exactly one user.
     match /assignments/{docId} {
       allow read, update, delete: if isAuth() && resource.data.userId == request.auth.uid;
-      allow create: if isAuth() && request.resource.data.userId == request.auth.uid;
-      allow list: if isAuth();
+      allow create: if isAuth()
+        && request.resource.data.userId == request.auth.uid
+        && (!('subject' in request.resource.data) || withinLength(request.resource.data.subject, 100))
+        && (!('title'   in request.resource.data) || withinLength(request.resource.data.title,   500));
     }
+
+    // ── AI chat messages ───────────────────────────────────────────────────
+    // Messages live in a subcollection keyed by the owner's uid.
+    // The parent ai_chats/{userId} document itself has no rule = implicit deny.
     match /ai_chats/{userId}/messages/{msgId} {
       allow read, write: if isAuth() && isOwner(userId);
     }

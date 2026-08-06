@@ -5,10 +5,13 @@ import '../../../core/theme/app_colors.dart';
 import '../models/message_model.dart';
 import 'typing_indicator.dart';
 
-/// Light-purple message text used inside the AI glass bubble
-/// (matches the prototype's `#E5E0FF` bubble copy color).
-const _kAiTextColor = Color(0xFFE5E0FF);
-const _kAiBorderColor = Color(0x33A855F7); // rgba(168,85,247,.2)
+/// Light-purple message text used inside the AI glass bubble in dark mode
+/// (matches the prototype's `#E5E0FF` bubble copy color). Light mode
+/// swaps to plain dark text on a subtle gray bubble per README.md.
+const _kAiTextColorDark = Color(0xFFE5E0FF);
+const _kAiTextColorLight = Color(0xFF1A1035);
+const _kAiBorderColorDark = Color(0x33A855F7); // rgba(168,85,247,.2)
+const _kAiBubbleBgLight = Color(0xFFF3F4F6);
 
 class ChatBubble extends StatelessWidget {
   final MessageModel message;
@@ -27,9 +30,9 @@ class ChatBubble extends StatelessWidget {
             padding: EdgeInsets.only(top: 4, left: isUser ? 4 : 40, right: 4),
             child: Text(
               DateFormat('HH:mm').format(message.timestamp),
-              style: const TextStyle(
+              style: TextStyle(
                 fontFamily: 'Plus Jakarta Sans',
-                fontFamilyFallback: ['NotoSansJP'],
+                fontFamilyFallback: const ['NotoSansJP'],
                 fontSize: 10,
                 color: AppColors.textMuted,
               ),
@@ -49,9 +52,9 @@ class ChatBubble extends StatelessWidget {
       child: Container(
         constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width * 0.75),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: const BoxDecoration(
-          gradient: AppColors.gradientUserBubble,
-          borderRadius: BorderRadius.only(
+        decoration: BoxDecoration(
+          gradient: AppColors.userBubbleGradient,
+          borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(20),
             topRight: Radius.circular(20),
             bottomLeft: Radius.circular(20),
@@ -97,8 +100,10 @@ class ChatBubble extends StatelessWidget {
             constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width * 0.7),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: AppColors.bgLayer,
-              border: Border.all(color: _kAiBorderColor, width: 1),
+              color: AppColors.isDark ? AppColors.bgLayer : _kAiBubbleBgLight,
+              border: AppColors.isDark
+                  ? Border.all(color: _kAiBorderColorDark, width: 1)
+                  : null,
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(20),
                 topRight: Radius.circular(20),
@@ -122,13 +127,13 @@ class ChatBubble extends StatelessWidget {
                       )
                     : SelectableText(
                         message.content,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontFamily: 'Plus Jakarta Sans',
-                          fontFamilyFallback: ['NotoSansJP'],
+                          fontFamilyFallback: const ['NotoSansJP'],
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
                           height: 1.6,
-                          color: _kAiTextColor,
+                          color: AppColors.isDark ? _kAiTextColorDark : _kAiTextColorLight,
                         ),
                       ),
           ),

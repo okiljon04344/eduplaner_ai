@@ -16,8 +16,11 @@ class TimetableScreen extends ConsumerStatefulWidget {
   ConsumerState<TimetableScreen> createState() => _TimetableScreenState();
 }
 
+DateTime _mondayOf(DateTime d) => DateTime(d.year, d.month, d.day).subtract(Duration(days: d.weekday - 1));
+
 class _TimetableScreenState extends ConsumerState<TimetableScreen> {
   late int _selectedDay;
+  int _weekOffset = 0;
 
   @override
   void initState() {
@@ -29,6 +32,7 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
   @override
   Widget build(BuildContext context) {
     final classCount = ref.watch(timetableStreamProvider).valueOrNull?.length ?? 0;
+    final weekStart = _mondayOf(DateTime.now()).add(Duration(days: 7 * _weekOffset));
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -36,12 +40,84 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
         child: Column(
           children: [
             _Header(classCount: classCount),
+            _WeekNavigator(
+              weekStart: weekStart,
+              isCurrentWeek: _weekOffset == 0,
+              onPrevious: () => setState(() => _weekOffset -= 1),
+              onNext: () => setState(() => _weekOffset += 1),
+              onResetToday: () => setState(() => _weekOffset = 0),
+            ),
             DayTabRow(
               selectedDay: _selectedDay,
+              weekStart: weekStart,
               onSelect: (index) => setState(() => _selectedDay = index),
             ),
             Expanded(child: ScheduleTimeline(selectedDay: _selectedDay)),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _WeekNavigator extends StatelessWidget {
+  final DateTime weekStart;
+  final bool isCurrentWeek;
+  final VoidCallback onPrevious;
+  final VoidCallback onNext;
+  final VoidCallback onResetToday;
+  const _WeekNavigator({
+    required this.weekStart,
+    required this.isCurrentWeek,
+    required this.onPrevious,
+    required this.onNext,
+    required this.onResetToday,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final weekEnd = weekStart.add(const Duration(days: 4));
+    final label = '${weekStart.month}/${weekStart.day} - ${weekEnd.month}/${weekEnd.day}';
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          _NavIconButton(icon: Icons.chevron_left, onTap: onPrevious),
+          GestureDetector(
+            onTap: isCurrentWeek ? null : onResetToday,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                isCurrentWeek ? '今週 · $label' : label,
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textSecondary.withValues(alpha: 0.8)),
+              ),
+            ),
+          ),
+          _NavIconButton(icon: Icons.chevron_right, onTap: onNext),
+        ],
+      ),
+    );
+  }
+}
+
+class _NavIconButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+  const _NavIconButton({required this.icon, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          width: 28,
+          height: 28,
+          decoration: BoxDecoration(color: AppColors.surfaceVar, shape: BoxShape.circle, border: Border.all(color: AppColors.border)),
+          child: Icon(icon, size: 16, color: AppColors.textSecondary),
         ),
       ),
     );
@@ -54,9 +130,19 @@ class _Header extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isDark = AppColors.isDark;
     return Container(
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Color(0x26A855F7))), // rgba(168,85,247,.15)
+      decoration: BoxDecoration(
+        gradient: isDark ? null : AppColors.heroScheduleGradient,
+        border: isDark
+            ? const Border(bottom: BorderSide(color: Color(0x26A855F7))) // rgba(168,85,247,.15)
+            : null,
+        borderRadius: isDark
+            ? null
+            : const BorderRadius.only(
+                bottomLeft: Radius.circular(28),
+                bottomRight: Radius.circular(28),
+              ),
       ),
       child: Stack(
         children: [
@@ -69,9 +155,12 @@ class _Header extends ConsumerWidget {
                 height: 180,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [AppColors.primaryMid.withValues(alpha: 0.25), AppColors.primaryMid.withValues(alpha: 0)],
-                  ),
+                  gradient: isDark
+                      ? RadialGradient(
+                          colors: [AppColors.primaryMid.withValues(alpha: 0.25), AppColors.primaryMid.withValues(alpha: 0)],
+                        )
+                      : null,
+                  color: isDark ? null : Colors.white.withValues(alpha: 0.06),
                 ),
               ),
             ),
@@ -86,20 +175,28 @@ class _Header extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'TIME TABLE',
+                        'スケジュール',
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 0.8,
-                          color: AppColors.primaryMid.withValues(alpha: 0.6),
+                          color: isDark
+                              ? AppColors.primaryMid.withValues(alpha: 0.6)
+                              : Colors.white.withValues(alpha: 0.75),
                         ),
                       ),
                       const SizedBox(height: 6),
-                      const Text('📅 時間割', style: AppTextStyles.headLG),
+                      Text('📅 時間割', style: AppTextStyles.headLG),
                       const SizedBox(height: 4),
                       Text(
                         '今週 $classCount コマ登録済み',
-                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textSecondary.withValues(alpha: 0.7)),
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: isDark
+                              ? AppColors.textSecondary.withValues(alpha: 0.7)
+                              : Colors.white.withValues(alpha: 0.75),
+                        ),
                       ),
                     ],
                   ),
@@ -113,8 +210,12 @@ class _Header extends ConsumerWidget {
                     margin: const EdgeInsets.only(top: 2),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      gradient: AppColors.gradientPrimary,
-                      boxShadow: [BoxShadow(color: AppColors.primaryMid.withValues(alpha: 0.5), blurRadius: 20)],
+                      gradient: isDark ? AppColors.gradientPrimary : null,
+                      color: isDark ? null : Colors.white.withValues(alpha: 0.2),
+                      border: isDark ? null : Border.all(color: Colors.white.withValues(alpha: 0.35)),
+                      boxShadow: isDark
+                          ? [BoxShadow(color: AppColors.primaryMid.withValues(alpha: 0.5), blurRadius: 20)]
+                          : null,
                     ),
                     child: const Icon(Icons.add, color: Colors.white, size: 22),
                   ),

@@ -26,6 +26,7 @@ mixin _$MessageModel {
   DateTime get timestamp => throw _privateConstructorUsedError;
   bool get isLoading => throw _privateConstructorUsedError;
   bool get isError => throw _privateConstructorUsedError;
+  String get botId => throw _privateConstructorUsedError;
 
   /// Serializes this MessageModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -49,7 +50,8 @@ abstract class $MessageModelCopyWith<$Res> {
       MessageRole role,
       DateTime timestamp,
       bool isLoading,
-      bool isError});
+      bool isError,
+      String botId});
 }
 
 /// @nodoc
@@ -73,6 +75,7 @@ class _$MessageModelCopyWithImpl<$Res, $Val extends MessageModel>
     Object? timestamp = null,
     Object? isLoading = null,
     Object? isError = null,
+    Object? botId = null,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -99,6 +102,10 @@ class _$MessageModelCopyWithImpl<$Res, $Val extends MessageModel>
           ? _value.isError
           : isError // ignore: cast_nullable_to_non_nullable
               as bool,
+      botId: null == botId
+          ? _value.botId
+          : botId // ignore: cast_nullable_to_non_nullable
+              as String,
     ) as $Val);
   }
 }
@@ -117,7 +124,8 @@ abstract class _$$MessageModelImplCopyWith<$Res>
       MessageRole role,
       DateTime timestamp,
       bool isLoading,
-      bool isError});
+      bool isError,
+      String botId});
 }
 
 /// @nodoc
@@ -139,6 +147,7 @@ class __$$MessageModelImplCopyWithImpl<$Res>
     Object? timestamp = null,
     Object? isLoading = null,
     Object? isError = null,
+    Object? botId = null,
   }) {
     return _then(_$MessageModelImpl(
       id: null == id
@@ -165,6 +174,10 @@ class __$$MessageModelImplCopyWithImpl<$Res>
           ? _value.isError
           : isError // ignore: cast_nullable_to_non_nullable
               as bool,
+      botId: null == botId
+          ? _value.botId
+          : botId // ignore: cast_nullable_to_non_nullable
+              as String,
     ));
   }
 }
@@ -178,7 +191,8 @@ class _$MessageModelImpl extends _MessageModel {
       required this.role,
       required this.timestamp,
       this.isLoading = false,
-      this.isError = false})
+      this.isError = false,
+      this.botId = 'planner'})
       : super._();
 
   factory _$MessageModelImpl.fromJson(Map<String, dynamic> json) =>
@@ -198,10 +212,13 @@ class _$MessageModelImpl extends _MessageModel {
   @override
   @JsonKey()
   final bool isError;
+  @override
+  @JsonKey()
+  final String botId;
 
   @override
   String toString() {
-    return 'MessageModel(id: $id, content: $content, role: $role, timestamp: $timestamp, isLoading: $isLoading, isError: $isError)';
+    return 'MessageModel(id: $id, content: $content, role: $role, timestamp: $timestamp, isLoading: $isLoading, isError: $isError, botId: $botId)';
   }
 
   @override
@@ -216,13 +233,14 @@ class _$MessageModelImpl extends _MessageModel {
                 other.timestamp == timestamp) &&
             (identical(other.isLoading, isLoading) ||
                 other.isLoading == isLoading) &&
-            (identical(other.isError, isError) || other.isError == isError));
+            (identical(other.isError, isError) || other.isError == isError) &&
+            (identical(other.botId, botId) || other.botId == botId));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
-      runtimeType, id, content, role, timestamp, isLoading, isError);
+      runtimeType, id, content, role, timestamp, isLoading, isError, botId);
 
   /// Create a copy of MessageModel
   /// with the given fields replaced by the non-null parameter values.
@@ -247,7 +265,8 @@ abstract class _MessageModel extends MessageModel {
       required final MessageRole role,
       required final DateTime timestamp,
       final bool isLoading,
-      final bool isError}) = _$MessageModelImpl;
+      final bool isError,
+      final String botId}) = _$MessageModelImpl;
   const _MessageModel._() : super._();
 
   factory _MessageModel.fromJson(Map<String, dynamic> json) =
@@ -265,6 +284,8 @@ abstract class _MessageModel extends MessageModel {
   bool get isLoading;
   @override
   bool get isError;
+  @override
+  String get botId;
 
   /// Create a copy of MessageModel
   /// with the given fields replaced by the non-null parameter values.

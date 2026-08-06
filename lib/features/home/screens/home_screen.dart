@@ -8,6 +8,8 @@ import '../widgets/greeting_header.dart';
 import '../widgets/stats_row.dart';
 import '../widgets/today_classes_row.dart';
 import '../widgets/upcoming_assignments_list.dart';
+import '../widgets/weak_area_card.dart';
+import '../../../core/l10n/app_strings.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -17,22 +19,61 @@ class HomeScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
+        bottom: false,
         child: RefreshIndicator(
           color: AppColors.primaryLight,
           backgroundColor: AppColors.bgLayer,
           onRefresh: () async {
             ref.invalidate(aiStudyTipProvider);
+            ref.invalidate(weakAreaProvider);
           },
           child: CustomScrollView(
             slivers: [
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                  child: Material(
+                    color: Colors.transparent,
+                    borderRadius: BorderRadius.circular(12),
+                    clipBehavior: Clip.antiAlias,
+                    child: Ink(
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Color(0xFF6D28D9), Color(0xFF1D4ED8)],
+                        ),
+                      ),
+                      child: InkWell(
+                        onTap: () => context.push('/landing-preview'),
+                        child: const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.play_circle_outline, size: 16, color: Colors.white),
+                              SizedBox(width: 8),
+                              Text(
+                                'ランディングページを確認 →',
+                                style: TextStyle(
+                                  fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white,
+                                  fontFamily: 'Plus Jakarta Sans',
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
               const SliverToBoxAdapter(child: _HeroHeader()),
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16, 4, 16, 14),
                   child: _SectionLabel(
-                    text: "TODAY'S CLASSES",
-                    tint: AppColors.primaryMid,
-                    trailingLabel: '全部見る →',
+                    text: AppStrings.t('home_today_classes'),
+                    tint: AppColors.isDark ? AppColors.primaryMid : AppColors.primaryIndigo,
+                    trailingLabel: AppStrings.t('home_view_all'),
                     onTap: () => context.go('/timetable'),
                   ),
                 ),
@@ -42,9 +83,9 @@ class HomeScreen extends ConsumerWidget {
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
                   child: _SectionLabel(
-                    text: 'UPCOMING TASKS',
-                    tint: AppColors.cyan,
-                    trailingLabel: '全部見る →',
+                    text: AppStrings.t('home_upcoming'),
+                    tint: AppColors.isDark ? AppColors.cyan : AppColors.primaryIndigo,
+                    trailingLabel: AppStrings.t('home_view_all'),
                     onTap: () => context.go('/assignments'),
                   ),
                 ),
@@ -53,7 +94,10 @@ class HomeScreen extends ConsumerWidget {
                 child: Padding(padding: EdgeInsets.symmetric(horizontal: 16), child: UpcomingAssignmentsList()),
               ),
               const SliverToBoxAdapter(
-                child: Padding(padding: EdgeInsets.fromLTRB(16, 16, 16, 110), child: AiStudyTipCard()),
+                child: Padding(padding: EdgeInsets.fromLTRB(16, 16, 16, 14), child: AiStudyTipCard()),
+              ),
+              const SliverToBoxAdapter(
+                child: Padding(padding: EdgeInsets.fromLTRB(16, 0, 16, 110), child: WeakAreaCard()),
               ),
             ],
           ),
@@ -68,48 +112,94 @@ class _HeroHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Positioned(
-            top: -80,
-            right: -60,
-            child: IgnorePointer(
-              child: Container(
-                width: 260,
-                height: 260,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(colors: [AppColors.primaryMid.withValues(alpha: 0.28), Colors.transparent]),
+    return Container(
+      decoration: BoxDecoration(
+        gradient: AppColors.heroHomeGradient,
+        borderRadius: AppColors.isDark
+            ? null
+            : const BorderRadius.only(
+                bottomLeft: Radius.circular(32),
+                bottomRight: Radius.circular(32),
+              ),
+      ),
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(20, 20, 20, AppColors.isDark ? 8 : 28),
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            if (AppColors.isDark) ...[
+              Positioned(
+                top: -80,
+                right: -60,
+                child: IgnorePointer(
+                  child: Container(
+                    width: 260,
+                    height: 260,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        colors: [AppColors.primaryMid.withValues(alpha: 0.28), Colors.transparent],
+                      ),
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ),
-          Positioned(
-            bottom: -40,
-            left: -30,
-            child: IgnorePointer(
-              child: Container(
-                width: 180,
-                height: 180,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(colors: [AppColors.cyan.withValues(alpha: 0.15), Colors.transparent]),
+              Positioned(
+                bottom: -40,
+                left: -30,
+                child: IgnorePointer(
+                  child: Container(
+                    width: 180,
+                    height: 180,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        colors: [AppColors.cyan.withValues(alpha: 0.15), Colors.transparent],
+                      ),
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ),
-          const Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              GreetingHeader(),
-              SizedBox(height: 20),
-              StatsRow(),
+            ] else ...[
+              Positioned(
+                top: -40,
+                right: -30,
+                child: IgnorePointer(
+                  child: Container(
+                    width: 160,
+                    height: 160,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withValues(alpha: 0.06),
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                bottom: -20,
+                left: -20,
+                child: IgnorePointer(
+                  child: Container(
+                    width: 120,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withValues(alpha: 0.06),
+                    ),
+                  ),
+                ),
+              ),
             ],
-          ),
-        ],
+            const Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                GreetingHeader(),
+                SizedBox(height: 20),
+                StatsRow(),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -124,15 +214,19 @@ class _SectionLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final labelColor = AppColors.isDark ? tint.withValues(alpha: 0.6) : AppColors.textPrimary;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
           text,
           style: TextStyle(
-            fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.5,
-            color: tint.withValues(alpha: 0.6),
-            fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP'],
+            fontSize: AppColors.isDark ? 11 : 15,
+            fontWeight: FontWeight.w700,
+            letterSpacing: AppColors.isDark ? 0.5 : 0,
+            color: labelColor,
+            fontFamily: 'Plus Jakarta Sans',
+            fontFamilyFallback: const ['NotoSansJP'],
           ),
         ),
         GestureDetector(
@@ -140,15 +234,18 @@ class _SectionLabel extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
             decoration: BoxDecoration(
-              color: tint.withValues(alpha: 0.12),
-              border: Border.all(color: tint.withValues(alpha: 0.22)),
+              color: tint.withValues(alpha: AppColors.isDark ? 0.12 : 0.08),
+              border: Border.all(color: tint.withValues(alpha: AppColors.isDark ? 0.22 : 0.15)),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
               trailingLabel,
               style: TextStyle(
-                fontSize: 11, fontWeight: FontWeight.w700, color: tint,
-                fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP'],
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: tint,
+                fontFamily: 'Plus Jakarta Sans',
+                fontFamilyFallback: const ['NotoSansJP'],
               ),
             ),
           ),
