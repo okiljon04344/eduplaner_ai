@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('design tokens and status helpers are available', () {
-    expect(AppColors.primary.toARGB32(), 0xFF4F46E5);
+    expect(AppColors.primary.toARGB32(), 0xFF7C3AED);
     expect(SubjectColors.of('数学').text, AppColors.mathText);
     expect(AssignmentStatus.inProgress.firestoreValue, 'inProgress');
     expect(AssignmentStatus.fromString('completed'), AssignmentStatus.completed);

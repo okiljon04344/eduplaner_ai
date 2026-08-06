@@ -4,26 +4,71 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../assignments/providers/assignments_provider.dart';
 import '../providers/home_provider.dart';
+import '../../../core/l10n/app_strings.dart';
 
-/// Hero stats grid: 3 equal glass pills (streak / weekly done-total / urgent
-/// count), each a big Space Grotesk number + tiny uppercase emoji caption.
-class StatsRow extends ConsumerWidget {
+/// Three side-by-side stat pills (streak / weekly done / urgent count).
+///
+/// Each pill is wrapped in its own [Consumer] so a change in one provider
+/// (e.g. the streak count ticking over) rebuilds *only* that pill — not the
+/// two neighbouring pills whose data hasn't changed.
+class StatsRow extends StatelessWidget {
   const StatsRow({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Row(
+      children: [
+        Expanded(child: _StreakPill()),
+        SizedBox(width: 10),
+        Expanded(child: _WeeklyPill()),
+        SizedBox(width: 10),
+        Expanded(child: _UrgentPill()),
+      ],
+    );
+  }
+}
+
+class _StreakPill extends ConsumerWidget {
+  const _StreakPill();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final streak = ref.watch(dailyStreakProvider).valueOrNull ?? 0;
-    final weekly = ref.watch(weeklyProgressProvider);
-    final urgent = ref.watch(urgentAssignmentsCountProvider);
+    return _StatPill(
+      value: '$streak',
+      label: AppStrings.t('home_streak'),
+      color: AppColors.isDark ? AppColors.primaryLight : Colors.white,
+      tint: AppColors.isDark ? AppColors.primaryMid : Colors.white,
+    );
+  }
+}
 
-    return Row(
-      children: [
-        Expanded(child: _StatPill(value: '$streak', label: '🔥 STREAK', color: AppColors.primaryLight, tint: AppColors.primaryMid)),
-        const SizedBox(width: 10),
-        Expanded(child: _StatPill(value: '${weekly.completed}/${weekly.total}', label: '✅ DONE', color: AppColors.cyan, tint: AppColors.cyan)),
-        const SizedBox(width: 10),
-        Expanded(child: _StatPill(value: '$urgent', label: '⏰ URGENT', color: AppColors.amber, tint: AppColors.amber)),
-      ],
+class _WeeklyPill extends ConsumerWidget {
+  const _WeeklyPill();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final weekly = ref.watch(weeklyProgressProvider);
+    return _StatPill(
+      value: '${weekly.completed}/${weekly.total}',
+      label: AppStrings.t('home_completed'),
+      color: AppColors.isDark ? AppColors.cyan : Colors.white,
+      tint: AppColors.isDark ? AppColors.cyan : Colors.white,
+    );
+  }
+}
+
+class _UrgentPill extends ConsumerWidget {
+  const _UrgentPill();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final urgent = ref.watch(urgentAssignmentsCountProvider);
+    return _StatPill(
+      value: '$urgent',
+      label: AppStrings.t('home_urgent'),
+      color: AppColors.isDark ? AppColors.amber : Colors.white,
+      tint: AppColors.isDark ? AppColors.amber : Colors.white,
     );
   }
 }
@@ -40,25 +85,37 @@ class _StatPill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [tint.withValues(alpha: 0.18), tint.withValues(alpha: 0.05)],
+        gradient: AppColors.isDark
+            ? LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [tint.withValues(alpha: 0.18), tint.withValues(alpha: 0.05)],
+              )
+            : null,
+        color: AppColors.isDark ? null : AppColors.glassBg,
+        border: Border.all(
+          color: AppColors.isDark ? tint.withValues(alpha: 0.3) : AppColors.glassBorder,
         ),
-        border: Border.all(color: tint.withValues(alpha: 0.3)),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(AppColors.isDark ? 18 : 14),
       ),
       child: Column(
         children: [
-          Text(value, textAlign: TextAlign.center, style: AppTextStyles.statNumber.copyWith(color: color)),
+          Text(
+            value,
+            textAlign: TextAlign.center,
+            style: AppTextStyles.statNumber.copyWith(color: color),
+          ),
           const SizedBox(height: 3),
           Text(
             label,
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 0.5,
+              fontSize: 9,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.5,
               color: color.withValues(alpha: 0.6),
-              fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP'],
+              fontFamily: 'Plus Jakarta Sans',
+              fontFamilyFallback: const ['NotoSansJP'],
             ),
           ),
         ],

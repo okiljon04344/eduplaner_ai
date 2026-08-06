@@ -47,14 +47,14 @@ class _EmptyDay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
+    return Center(
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 40),
+        padding: const EdgeInsets.symmetric(horizontal: 40),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('🌤️', style: TextStyle(fontSize: 40)),
-            SizedBox(height: 12),
+            const Text('🌤️', style: TextStyle(fontSize: 40)),
+            const SizedBox(height: 12),
             Text(
               'この日は授業がありません',
               textAlign: TextAlign.center,

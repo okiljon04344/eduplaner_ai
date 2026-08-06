@@ -15,6 +15,7 @@ class MessageModel with _$MessageModel {
     required DateTime timestamp,
     @Default(false) bool isLoading,
     @Default(false) bool isError,
+    @Default('planner') String botId,
   }) = _MessageModel;
 
   factory MessageModel.fromJson(Map<String, dynamic> json) => _$MessageModelFromJson(json);
@@ -26,6 +27,7 @@ class MessageModel with _$MessageModel {
       content: d['content'] as String? ?? '',
       role: (d['role'] as String? ?? 'assistant') == 'user' ? MessageRole.user : MessageRole.assistant,
       timestamp: (d['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      botId: d['botId'] as String? ?? 'planner',
     );
   }
 
@@ -35,5 +37,6 @@ class MessageModel with _$MessageModel {
         'content': content,
         'role': role.name,
         'timestamp': Timestamp.fromDate(timestamp),
+        'botId': botId,
       };
 }

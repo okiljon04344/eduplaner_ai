@@ -27,12 +27,12 @@ migrate_working_dir/
 **/doc/api/
 **/ios/Flutter/.last_build_id
 .dart_tool/
+.flutter-plugins
 .flutter-plugins-dependencies
-.env
-.env.local
-.env.local.json
+.packages
 .pub-cache/
 .pub/
+.metadata
 /build/
 /coverage/
 
@@ -46,3 +46,37 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+/android/build/
+
+# Firebase
+.firebase/
+functions/node_modules/
+firebase-debug.log*
+firestore-debug.log*
+pubsub-debug.log*
+ui-debug.log*
+
+# AI Agent files
+.claude/
+.claudeignore
+
+# iOS related
+ios/Flutter/Generated.xcconfig
+ios/Flutter/flutter_export_environment.sh
+ios/Flutter/App.framework
+ios/Flutter/App.podspec
+ios/Flutter/App.framework.dSYM
+
+# Windows related
+/windows/flutter/ephemeral/
+
+# Linux related
+/linux/flutter/ephemeral/
+
+# macOS related
+/macos/Flutter/ephemeral/
+
+# Environment variables
+.env
+.env.local
+.env.local.json

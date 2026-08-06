@@ -1,1 +1,59 @@
-{"firestore":{"rules":"firestore.rules","indexes":"firestore.indexes.json"},"functions":[{"source":"functions","codebase":"default","ignore":["node_modules",".git","firebase-debug.log","firebase-debug.*.log"]}],"flutter":{"platforms":{"android":{"default":{"projectId":"eduplannerai-97365","appId":"1:351731284172:android:b46b32e8964e29f8582a69","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"eduplannerai-97365","configurations":{"android":"1:351731284172:android:b46b32e8964e29f8582a69","ios":"1:351731284172:ios:30f0d6434d41f25a582a69","web":"1:351731284172:web:7f379f1f8770a64e582a69"}}}}}}
+{
+  "hosting": {
+    "public": "build/web",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "rewrites": [
+      { "source": "**", "destination": "/index.html" }
+    ],
+    "headers": [
+      {
+        "source": "**/*.@(js|wasm)",
+        "headers": [{ "key": "Cache-Control", "value": "public,max-age=31536000,immutable" }]
+      },
+      {
+        "source": "**/*.@(ttf|otf|woff|woff2|png|jpg|jpeg|gif|svg|ico)",
+        "headers": [{ "key": "Cache-Control", "value": "public,max-age=31536000,immutable" }]
+      },
+      {
+        "source": "flutter_service_worker.js",
+        "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
+      },
+      {
+        "source": "index.html",
+        "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
+      }
+    ]
+  },
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "ignore": ["node_modules", ".git", "firebase-debug.log", "firebase-debug.*.log"]
+    }
+  ],
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "eduplannerai-97365",
+          "appId": "1:351731284172:android:b46b32e8964e29f8582a69",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "eduplannerai-97365",
+          "configurations": {
+            "android": "1:351731284172:android:b46b32e8964e29f8582a69",
+            "ios": "1:351731284172:ios:30f0d6434d41f25a582a69",
+            "web": "1:351731284172:web:7f379f1f8770a64e582a69"
+          }
+        }
+      }
+    }
+  }
+}

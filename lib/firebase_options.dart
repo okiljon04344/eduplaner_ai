@@ -32,7 +32,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '351731284172',
     projectId: 'eduplannerai-97365',
     storageBucket: 'eduplannerai-97365.firebasestorage.app',
-    iosBundleId: 'com.example.eduPlannerAi',
+    iosBundleId: 'com.eduplanner.app',
   );
 
   static const FirebaseOptions web = FirebaseOptions(

@@ -2,15 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
 
-/// EduPlanner AI has a single dark-neon visual identity — [light] and [dark]
-/// both resolve to it so the app always matches the design regardless of the
-/// user's system theme mode preference.
+/// EduPlanner AI's Dark Neon visual identity now has a real light-mode
+/// counterpart. [light]/[dark] each build a [ThemeData] for their own
+/// brightness, reading whatever [AppColors]'s mutable surface/text tokens
+/// currently hold — `app.dart` calls `AppColors.applyBrightness()` before
+/// building the widget tree each time, so by the time either getter runs the
+/// tokens already match the resolved brightness.
 class AppTheme {
-  static ThemeData get light => _build();
-  static ThemeData get dark => _build();
+  static ThemeData get light => _build(Brightness.light);
+  static ThemeData get dark => _build(Brightness.dark);
 
-  static ThemeData _build() {
-    final base = ThemeData(brightness: Brightness.dark);
+  static ThemeData _build(Brightness brightness) {
+    final isDark = brightness == Brightness.dark;
+    final base = ThemeData(brightness: brightness);
     final textTheme = GoogleFonts.plusJakartaSansTextTheme(base.textTheme).apply(
       bodyColor: AppColors.textPrimary,
       displayColor: AppColors.textPrimary,
@@ -18,13 +22,16 @@ class AppTheme {
 
     return ThemeData(
       useMaterial3: true,
-      brightness: Brightness.dark,
+      brightness: brightness,
       fontFamily: 'Plus Jakarta Sans',
       fontFamilyFallback: const ['NotoSansJP'],
       textTheme: textTheme,
       scaffoldBackgroundColor: AppColors.background,
       canvasColor: AppColors.background,
-      colorScheme: const ColorScheme.dark(
+      colorScheme: (isDark
+              ? const ColorScheme.dark()
+              : const ColorScheme.light())
+          .copyWith(
         primary: AppColors.primary,
         secondary: AppColors.cyan,
         surface: AppColors.surface,
@@ -34,22 +41,23 @@ class AppTheme {
         onSurface: AppColors.textPrimary,
         onError: Colors.white,
       ),
-      appBarTheme: const AppBarTheme(
+      appBarTheme: AppBarTheme(
         backgroundColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
         titleTextStyle: TextStyle(
-          fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: ['NotoSansJP'],
-          fontSize: 18, fontWeight: FontWeight.w800, color: Colors.white,
+          fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP'],
+          fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.textPrimary,
         ),
-        iconTheme: IconThemeData(color: Colors.white),
+        iconTheme: IconThemeData(color: AppColors.textPrimary),
       ),
       cardTheme: CardThemeData(
-        color: AppColors.surfaceVar,
-        elevation: 0,
+        color: AppColors.cardBg,
+        elevation: isDark ? 0 : 0,
+        shadowColor: isDark ? Colors.transparent : const Color(0x14000000),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: AppColors.border),
+          borderRadius: BorderRadius.circular(isDark ? 20 : 14),
+          side: BorderSide(color: AppColors.cardBorder),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
@@ -60,7 +68,7 @@ class AppTheme {
         focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: AppColors.primaryMid, width: 2)),
         errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: AppColors.danger)),
         focusedErrorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: AppColors.danger, width: 2)),
-        hintStyle: const TextStyle(fontSize: 14, color: AppColors.textMuted),
+        hintStyle: TextStyle(fontSize: 14, color: AppColors.textMuted),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
@@ -88,38 +96,38 @@ class AppTheme {
           textStyle: const TextStyle(fontFamily: 'Plus Jakarta Sans', fontSize: 13, fontWeight: FontWeight.w600),
         ),
       ),
-      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
         backgroundColor: AppColors.background,
         selectedItemColor: AppColors.primaryLight,
         unselectedItemColor: AppColors.textMuted,
         type: BottomNavigationBarType.fixed,
         elevation: 0,
       ),
-      dividerTheme: const DividerThemeData(color: AppColors.border, thickness: 0.6, space: 0.6),
+      dividerTheme: DividerThemeData(color: AppColors.border, thickness: 0.6, space: 0.6),
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.surfaceVar,
-        side: const BorderSide(color: AppColors.border),
+        side: BorderSide(color: AppColors.border),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        labelStyle: const TextStyle(fontFamily: 'Plus Jakarta Sans', fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+        labelStyle: TextStyle(fontFamily: 'Plus Jakarta Sans', fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       ),
       dialogTheme: DialogThemeData(
         backgroundColor: AppColors.bgLayer,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        titleTextStyle: const TextStyle(fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: ['NotoSansJP'], fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
-        contentTextStyle: const TextStyle(fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: ['NotoSansJP'], fontSize: 14, color: AppColors.textSecondary),
+        titleTextStyle: TextStyle(fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP'], fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+        contentTextStyle: TextStyle(fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP'], fontSize: 14, color: AppColors.textSecondary),
       ),
-      bottomSheetTheme: const BottomSheetThemeData(
+      bottomSheetTheme: BottomSheetThemeData(
         backgroundColor: AppColors.bgLayer,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       ),
       snackBarTheme: SnackBarThemeData(
         backgroundColor: AppColors.bgLayer,
-        contentTextStyle: const TextStyle(color: AppColors.textPrimary, fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: ['NotoSansJP']),
+        contentTextStyle: TextStyle(color: AppColors.textPrimary, fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP']),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         behavior: SnackBarBehavior.floating,
       ),
-      iconTheme: const IconThemeData(color: AppColors.textPrimary),
+      iconTheme: IconThemeData(color: AppColors.textPrimary),
       splashColor: AppColors.primary.withValues(alpha: 0.12),
       highlightColor: Colors.transparent,
     );

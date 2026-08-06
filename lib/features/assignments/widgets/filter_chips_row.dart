@@ -13,15 +13,16 @@ class FilterChipsRow extends ConsumerWidget {
     final selected = ref.watch(selectedFilterProvider);
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
-      decoration: const BoxDecoration(
-        color: Color(0x05FFFFFF),
-        border: Border(bottom: BorderSide(color: Color(0x0AFFFFFF))),
+      decoration: BoxDecoration(
+        color: AppColors.isDark ? const Color(0x05FFFFFF) : AppColors.background,
+        border: Border(bottom: BorderSide(color: AppColors.dividerSubtle)),
       ),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
           children: _filters.map((f) {
             final isSelected = f == selected;
+            final activeColor = AppColors.isDark ? AppColors.cyan : AppColors.primaryIndigo;
             return Padding(
               padding: const EdgeInsets.only(right: 8),
               child: GestureDetector(
@@ -31,16 +32,26 @@ class FilterChipsRow extends ConsumerWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: isSelected ? const Color(0x2622D3EE) : const Color(0x0AFFFFFF),
+                    color: isSelected
+                        ? (AppColors.isDark ? activeColor.withValues(alpha: 0.15) : activeColor)
+                        : (AppColors.isDark ? AppColors.surfaceVar : AppColors.surfaceVar),
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: isSelected ? const Color(0x4D22D3EE) : const Color(0x0FFFFFFF)),
+                    border: Border.all(
+                      color: isSelected
+                          ? (AppColors.isDark ? activeColor.withValues(alpha: 0.3) : Colors.transparent)
+                          : AppColors.border,
+                    ),
                   ),
                   child: Text(
                     f,
                     style: TextStyle(
-                      fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP'],
-                      fontSize: 12, fontWeight: FontWeight.w800,
-                      color: isSelected ? AppColors.cyan : const Color(0x66C8AAFF),
+                      fontFamily: 'Plus Jakarta Sans',
+                      fontFamilyFallback: const ['NotoSansJP'],
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      color: isSelected
+                          ? (AppColors.isDark ? activeColor : Colors.white)
+                          : (AppColors.isDark ? AppColors.textSecondary : const Color(0xFF374151)),
                     ),
                   ),
                 ),

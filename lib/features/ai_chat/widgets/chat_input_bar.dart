@@ -32,7 +32,7 @@ class _ChatInputBarState extends ConsumerState<ChatInputBar> {
   void _send() {
     final text = _controller.text.trim();
     if (text.isEmpty) return;
-    ref.read(chatProvider.notifier).sendMessage(text);
+    ref.read(chatProvider.notifier).sendMessage(text, botId: ref.read(selectedBotIdProvider));
     _controller.clear();
     setState(() => _hasText = false);
   }
@@ -42,8 +42,8 @@ class _ChatInputBarState extends ConsumerState<ChatInputBar> {
     final borderColor = _isFocused ? AppColors.primaryMid.withValues(alpha: 0.6) : AppColors.primaryMid.withValues(alpha: 0.2);
     return Container(
       padding: EdgeInsets.fromLTRB(16, 10, 16, 16 + MediaQuery.viewInsetsOf(context).bottom),
-      decoration: const BoxDecoration(
-        color: Color(0xFF0E0C18),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0E0C18),
         border: Border(top: BorderSide(color: AppColors.borderLight, width: 1)),
       ),
       child: Row(
@@ -65,25 +65,25 @@ class _ChatInputBarState extends ConsumerState<ChatInputBar> {
                 onChanged: (v) => setState(() => _hasText = v.trim().isNotEmpty),
                 onSubmitted: (_) => _send(),
                 textInputAction: TextInputAction.send,
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: 'Plus Jakarta Sans',
-                  fontFamilyFallback: ['NotoSansJP'],
+                  fontFamilyFallback: const ['NotoSansJP'],
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                   color: AppColors.textPrimary,
                 ),
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   hintText: '何でも聞いてください...',
                   hintStyle: TextStyle(
                     fontFamily: 'Plus Jakarta Sans',
-                    fontFamilyFallback: ['NotoSansJP'],
+                    fontFamilyFallback: const ['NotoSansJP'],
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                     color: AppColors.textMuted,
                   ),
                   filled: false,
                   isDense: true,
-                  contentPadding: EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
                   border: InputBorder.none,
                   enabledBorder: InputBorder.none,
                   focusedBorder: InputBorder.none,

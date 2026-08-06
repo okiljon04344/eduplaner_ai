@@ -36,9 +36,10 @@ class AssignmentCard extends ConsumerWidget {
         child: Container(
           clipBehavior: Clip.hardEdge,
           decoration: BoxDecoration(
-            color: AppColors.surfaceVar,
-            borderRadius: BorderRadius.circular(22),
-            border: Border.all(color: AppColors.border),
+            color: AppColors.isDark ? AppColors.surfaceVar : AppColors.surface,
+            borderRadius: BorderRadius.circular(AppColors.isDark ? 22 : 20),
+            border: Border.all(color: AppColors.isDark ? AppColors.border : AppColors.cardBorder),
+            boxShadow: AppColors.isDark ? null : AppColors.cardShadow,
           ),
           child: Stack(
             children: [
@@ -73,11 +74,15 @@ class AssignmentCard extends ConsumerWidget {
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: isCompleted ? AppColors.primaryMid : Colors.white.withValues(alpha: 0.15),
+                            color: isCompleted
+                                ? AppColors.primaryMid
+                                : (AppColors.isDark
+                                    ? Colors.white.withValues(alpha: 0.15)
+                                    : AppColors.checkboxUnchecked),
                             width: 2,
                           ),
                           gradient: isCompleted ? AppColors.gradientPrimary : null,
-                          boxShadow: isCompleted
+                          boxShadow: isCompleted && AppColors.isDark
                               ? const [BoxShadow(color: Color(0x99A855F7), blurRadius: 12)]
                               : null,
                         ),
@@ -94,16 +99,17 @@ class AssignmentCard extends ConsumerWidget {
                             style: TextStyle(
                               fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP'],
                               fontSize: 14, fontWeight: FontWeight.w800, letterSpacing: -0.2,
-                              color: isCompleted ? const Color(0x59C8AAFF) : AppColors.textPrimary,
+                              color: isCompleted ? AppColors.textMuted : AppColors.textPrimary,
                               decoration: isCompleted ? TextDecoration.lineThrough : TextDecoration.none,
                             ),
                           ),
                           const SizedBox(height: 3),
                           Text(
                             assignment.subject,
-                            style: const TextStyle(
-                              fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: ['NotoSansJP'],
-                              fontSize: 12, fontWeight: FontWeight.w500, color: Color(0x66C8AAFF),
+                            style: TextStyle(
+                              fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP'],
+                              fontSize: 12, fontWeight: FontWeight.w500,
+                              color: AppColors.textSecondary,
                             ),
                           ),
                           const SizedBox(height: 10),
@@ -114,9 +120,10 @@ class AssignmentCard extends ConsumerWidget {
                             children: [
                               Text(
                                 '${(assignment.progress * 100).round()}% 完了',
-                                style: const TextStyle(
-                                  fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: ['NotoSansJP'],
-                                  fontSize: 10, fontWeight: FontWeight.w600, color: Color(0x66A855F7),
+                                style: TextStyle(
+                                  fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP'],
+                                  fontSize: 10, fontWeight: FontWeight.w600,
+                                  color: AppColors.textMuted,
                                 ),
                               ),
                               Text(

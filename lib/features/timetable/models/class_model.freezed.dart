@@ -29,6 +29,10 @@ mixin _$ClassModel {
   int get period => throw _privateConstructorUsedError;
   String get colorHex => throw _privateConstructorUsedError;
   DateTime get createdAt => throw _privateConstructorUsedError;
+  String? get groupId => throw _privateConstructorUsedError;
+  ClassStatus get status => throw _privateConstructorUsedError;
+  String? get statusNote => throw _privateConstructorUsedError;
+  DateTime? get statusDate => throw _privateConstructorUsedError;
 
   /// Serializes this ClassModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -55,7 +59,11 @@ abstract class $ClassModelCopyWith<$Res> {
       String dayOfWeek,
       int period,
       String colorHex,
-      DateTime createdAt});
+      DateTime createdAt,
+      String? groupId,
+      ClassStatus status,
+      String? statusNote,
+      DateTime? statusDate});
 }
 
 /// @nodoc
@@ -82,6 +90,10 @@ class _$ClassModelCopyWithImpl<$Res, $Val extends ClassModel>
     Object? period = null,
     Object? colorHex = null,
     Object? createdAt = null,
+    Object? groupId = freezed,
+    Object? status = null,
+    Object? statusNote = freezed,
+    Object? statusDate = freezed,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -120,6 +132,22 @@ class _$ClassModelCopyWithImpl<$Res, $Val extends ClassModel>
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
+      groupId: freezed == groupId
+          ? _value.groupId
+          : groupId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      status: null == status
+          ? _value.status
+          : status // ignore: cast_nullable_to_non_nullable
+              as ClassStatus,
+      statusNote: freezed == statusNote
+          ? _value.statusNote
+          : statusNote // ignore: cast_nullable_to_non_nullable
+              as String?,
+      statusDate: freezed == statusDate
+          ? _value.statusDate
+          : statusDate // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
     ) as $Val);
   }
 }
@@ -141,7 +169,11 @@ abstract class _$$ClassModelImplCopyWith<$Res>
       String dayOfWeek,
       int period,
       String colorHex,
-      DateTime createdAt});
+      DateTime createdAt,
+      String? groupId,
+      ClassStatus status,
+      String? statusNote,
+      DateTime? statusDate});
 }
 
 /// @nodoc
@@ -166,6 +198,10 @@ class __$$ClassModelImplCopyWithImpl<$Res>
     Object? period = null,
     Object? colorHex = null,
     Object? createdAt = null,
+    Object? groupId = freezed,
+    Object? status = null,
+    Object? statusNote = freezed,
+    Object? statusDate = freezed,
   }) {
     return _then(_$ClassModelImpl(
       id: null == id
@@ -204,6 +240,22 @@ class __$$ClassModelImplCopyWithImpl<$Res>
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
+      groupId: freezed == groupId
+          ? _value.groupId
+          : groupId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      status: null == status
+          ? _value.status
+          : status // ignore: cast_nullable_to_non_nullable
+              as ClassStatus,
+      statusNote: freezed == statusNote
+          ? _value.statusNote
+          : statusNote // ignore: cast_nullable_to_non_nullable
+              as String?,
+      statusDate: freezed == statusDate
+          ? _value.statusDate
+          : statusDate // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
     ));
   }
 }
@@ -220,7 +272,11 @@ class _$ClassModelImpl extends _ClassModel {
       required this.dayOfWeek,
       required this.period,
       this.colorHex = '#4F46E5',
-      required this.createdAt})
+      required this.createdAt,
+      this.groupId,
+      this.status = ClassStatus.normal,
+      this.statusNote,
+      this.statusDate})
       : super._();
 
   factory _$ClassModelImpl.fromJson(Map<String, dynamic> json) =>
@@ -245,10 +301,19 @@ class _$ClassModelImpl extends _ClassModel {
   final String colorHex;
   @override
   final DateTime createdAt;
+  @override
+  final String? groupId;
+  @override
+  @JsonKey()
+  final ClassStatus status;
+  @override
+  final String? statusNote;
+  @override
+  final DateTime? statusDate;
 
   @override
   String toString() {
-    return 'ClassModel(id: $id, userId: $userId, subject: $subject, teacher: $teacher, room: $room, dayOfWeek: $dayOfWeek, period: $period, colorHex: $colorHex, createdAt: $createdAt)';
+    return 'ClassModel(id: $id, userId: $userId, subject: $subject, teacher: $teacher, room: $room, dayOfWeek: $dayOfWeek, period: $period, colorHex: $colorHex, createdAt: $createdAt, groupId: $groupId, status: $status, statusNote: $statusNote, statusDate: $statusDate)';
   }
 
   @override
@@ -267,13 +332,32 @@ class _$ClassModelImpl extends _ClassModel {
             (identical(other.colorHex, colorHex) ||
                 other.colorHex == colorHex) &&
             (identical(other.createdAt, createdAt) ||
-                other.createdAt == createdAt));
+                other.createdAt == createdAt) &&
+            (identical(other.groupId, groupId) || other.groupId == groupId) &&
+            (identical(other.status, status) || other.status == status) &&
+            (identical(other.statusNote, statusNote) ||
+                other.statusNote == statusNote) &&
+            (identical(other.statusDate, statusDate) ||
+                other.statusDate == statusDate));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, id, userId, subject, teacher,
-      room, dayOfWeek, period, colorHex, createdAt);
+  int get hashCode => Object.hash(
+      runtimeType,
+      id,
+      userId,
+      subject,
+      teacher,
+      room,
+      dayOfWeek,
+      period,
+      colorHex,
+      createdAt,
+      groupId,
+      status,
+      statusNote,
+      statusDate);
 
   /// Create a copy of ClassModel
   /// with the given fields replaced by the non-null parameter values.
@@ -301,7 +385,11 @@ abstract class _ClassModel extends ClassModel {
       required final String dayOfWeek,
       required final int period,
       final String colorHex,
-      required final DateTime createdAt}) = _$ClassModelImpl;
+      required final DateTime createdAt,
+      final String? groupId,
+      final ClassStatus status,
+      final String? statusNote,
+      final DateTime? statusDate}) = _$ClassModelImpl;
   const _ClassModel._() : super._();
 
   factory _ClassModel.fromJson(Map<String, dynamic> json) =
@@ -325,6 +413,14 @@ abstract class _ClassModel extends ClassModel {
   String get colorHex;
   @override
   DateTime get createdAt;
+  @override
+  String? get groupId;
+  @override
+  ClassStatus get status;
+  @override
+  String? get statusNote;
+  @override
+  DateTime? get statusDate;
 
   /// Create a copy of ClassModel
   /// with the given fields replaced by the non-null parameter values.

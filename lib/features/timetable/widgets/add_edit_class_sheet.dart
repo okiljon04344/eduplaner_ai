@@ -15,6 +15,7 @@ Future<void> showAddEditClassSheet(BuildContext context, WidgetRef ref, {ClassMo
   return showModalBottomSheet(
     context: context,
     isScrollControlled: true,
+    useRootNavigator: true,
     // Inherits AppColors.bgLayer + rounded-top shape from bottomSheetTheme.
     builder: (_) => _AddEditClassSheet(existing: existing),
   );
@@ -66,17 +67,29 @@ class _AddEditClassSheetState extends ConsumerState<_AddEditClassSheet> {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     final existing = widget.existing;
     final uid = existing?.userId ?? ref.read(currentUserProvider)?.uid ?? '';
-    final model = ClassModel(
-      id: existing?.id ?? const Uuid().v4(),
-      userId: uid,
-      subject: _subjectController.text.trim(),
-      teacher: _teacherController.text.trim(),
-      room: _roomController.text.trim(),
-      dayOfWeek: _selectedDay ?? '月',
-      period: _selectedPeriod,
-      colorHex: '#${_selectedColor.toARGB32().toRadixString(16).substring(2).toUpperCase()}',
-      createdAt: existing?.createdAt ?? DateTime.now(),
-    );
+    final colorHex = '#${_selectedColor.toARGB32().toRadixString(16).substring(2).toUpperCase()}';
+    // Editing an existing class must preserve groupId/status/statusNote/statusDate
+    // (shared-group membership + cancellation alerts) — only the form fields change.
+    final model = existing != null
+        ? existing.copyWith(
+            subject: _subjectController.text.trim(),
+            teacher: _teacherController.text.trim(),
+            room: _roomController.text.trim(),
+            dayOfWeek: _selectedDay ?? '月',
+            period: _selectedPeriod,
+            colorHex: colorHex,
+          )
+        : ClassModel(
+            id: const Uuid().v4(),
+            userId: uid,
+            subject: _subjectController.text.trim(),
+            teacher: _teacherController.text.trim(),
+            room: _roomController.text.trim(),
+            dayOfWeek: _selectedDay ?? '月',
+            period: _selectedPeriod,
+            colorHex: colorHex,
+            createdAt: DateTime.now(),
+          );
     final error = existing != null
         ? await ref.read(timetableNotifierProvider.notifier).updateClass(model)
         : await ref.read(timetableNotifierProvider.notifier).addClass(model);
@@ -141,8 +154,8 @@ class _AddEditClassSheetState extends ConsumerState<_AddEditClassSheet> {
                     child: Container(
                       width: 36,
                       height: 36,
-                      decoration: const BoxDecoration(color: AppColors.surfaceVar, shape: BoxShape.circle),
-                      child: const Icon(Icons.close, size: 18, color: AppColors.textPrimary),
+                      decoration: BoxDecoration(color: AppColors.surfaceVar, shape: BoxShape.circle),
+                      child: Icon(Icons.close, size: 18, color: AppColors.textPrimary),
                     ),
                   ),
                 ],
@@ -154,7 +167,7 @@ class _AddEditClassSheetState extends ConsumerState<_AddEditClassSheet> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 20),
-                  const Text('科目名', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
+                  Text('科目名', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
                   const SizedBox(height: 6),
                   Autocomplete<String>(
                     optionsBuilder: (value) {
@@ -175,15 +188,15 @@ class _AddEditClassSheetState extends ConsumerState<_AddEditClassSheet> {
                     },
                   ),
                   const SizedBox(height: 16),
-                  const Text('担当教員', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
+                  Text('担当教員', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
                   const SizedBox(height: 6),
                   AppInputField(controller: _teacherController, hintText: '例：田中先生'),
                   const SizedBox(height: 16),
-                  const Text('教室番号', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
+                  Text('教室番号', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
                   const SizedBox(height: 6),
                   AppInputField(controller: _roomController, hintText: '例：A-201'),
                   const SizedBox(height: 16),
-                  const Text('曜日', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
+                  Text('曜日', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
                   const SizedBox(height: 8),
                   Row(
                     children: ['月', '火', '水', '木', '金'].map((day) {
@@ -214,7 +227,7 @@ class _AddEditClassSheetState extends ConsumerState<_AddEditClassSheet> {
                     }).toList(),
                   ),
                   const SizedBox(height: 16),
-                  const Text('時限', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
+                  Text('時限', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
                   const SizedBox(height: 6),
                   DropdownButtonFormField<int>(
                     initialValue: _selectedPeriod,
@@ -223,7 +236,7 @@ class _AddEditClassSheetState extends ConsumerState<_AddEditClassSheet> {
                         .toList(),
                     onChanged: (v) => setState(() => _selectedPeriod = v ?? 1),
                     dropdownColor: AppColors.bgLayer,
-                    style: const TextStyle(fontSize: 14, color: AppColors.textPrimary),
+                    style: TextStyle(fontSize: 14, color: AppColors.textPrimary),
                     decoration: InputDecoration(
                       filled: true,
                       fillColor: AppColors.bgInput,
@@ -234,7 +247,7 @@ class _AddEditClassSheetState extends ConsumerState<_AddEditClassSheet> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  const Text('カラー', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
+                  Text('カラー', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
                   const SizedBox(height: 8),
                   Row(
                     children: SubjectColors.colorOptions.map((c) {

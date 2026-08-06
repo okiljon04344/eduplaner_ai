@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../shared/widgets/confirm_dialog.dart';
+import '../models/ai_bot.dart';
 import '../providers/chat_provider.dart';
 import '../widgets/chat_bubble.dart';
 import '../widgets/chat_input_bar.dart';
 import '../widgets/quick_reply_chips.dart';
+import '../../../core/l10n/app_strings.dart';
 
 class AiChatScreen extends ConsumerStatefulWidget {
   const AiChatScreen({super.key});
@@ -36,12 +39,14 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
     final messages = ref.watch(chatProvider);
     final reversed = messages.reversed.toList();
 
+    final selectedBot = botById(ref.watch(selectedBotIdProvider));
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: Column(
           children: [
-            _AiChatHeader(onClear: _clearHistory),
+            _AiChatHeader(bot: selectedBot, onClear: _clearHistory),
             const QuickReplyChips(),
             Expanded(
               child: ColoredBox(
@@ -63,20 +68,17 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
 }
 
 class _AiChatHeader extends StatelessWidget {
+  final AiBot bot;
   final VoidCallback onClear;
-  const _AiChatHeader({required this.onClear});
+  const _AiChatHeader({required this.bot, required this.onClear});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       clipBehavior: Clip.hardEdge,
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF050311), Color(0xFF0D0521)],
-        ),
-        border: Border(bottom: BorderSide(color: Color(0x33A855F7), width: 1)),
+      decoration: BoxDecoration(
+        gradient: AppColors.aiBannerGradient,
+        border: Border(bottom: BorderSide(color: AppColors.primaryMid.withValues(alpha: 0.2), width: 1)),
       ),
       child: Stack(
         children: [
@@ -103,9 +105,9 @@ class _AiChatHeader extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'AI POWERED',
-                        style: TextStyle(
+                      Text(
+                        AppStrings.t('ai_badge'),
+                        style: const TextStyle(
                           fontFamily: 'Plus Jakarta Sans',
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
@@ -114,10 +116,10 @@ class _AiChatHeader extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 6),
-                      const Text('🤖 AIアシスタント', style: AppTextStyles.headLG),
+                      Text('${bot.emoji} ${bot.label}', style: AppTextStyles.headLG),
                       const SizedBox(height: 4),
                       Text(
-                        'Gemini 1.5 Flash',
+                        AppStrings.t('ai_subtitle'),
                         style: TextStyle(
                           fontFamily: 'Plus Jakarta Sans',
                           fontFamilyFallback: const ['NotoSansJP'],
@@ -129,11 +131,53 @@ class _AiChatHeader extends StatelessWidget {
                     ],
                   ),
                 ),
+                _QuizButton(onTap: () => context.push('/quiz')),
+                const SizedBox(width: 8),
                 _ClearButton(onTap: onClear),
               ],
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _QuizButton extends StatelessWidget {
+  final VoidCallback onTap;
+  const _QuizButton({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: AppColors.primaryMid.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppColors.primaryMid.withValues(alpha: 0.22), width: 1),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.quiz_outlined, size: 14, color: AppColors.primaryLight),
+              const SizedBox(width: 4),
+              Text(
+                AppStrings.t('ai_quiz_btn'),
+                style: const TextStyle(
+                  fontFamily: 'Plus Jakarta Sans',
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.primaryLight,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -157,14 +201,14 @@ class _ClearButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(20),
             border: Border.all(color: AppColors.primaryMid.withValues(alpha: 0.22), width: 1),
           ),
-          child: const Row(
+          child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.refresh_rounded, size: 14, color: AppColors.primaryLight),
-              SizedBox(width: 4),
+              const Icon(Icons.refresh_rounded, size: 14, color: AppColors.primaryLight),
+              const SizedBox(width: 4),
               Text(
-                'クリア',
-                style: TextStyle(
+                AppStrings.t('ai_clear_btn'),
+                style: const TextStyle(
                   fontFamily: 'Plus Jakarta Sans',
                   fontSize: 11,
                   fontWeight: FontWeight.w700,

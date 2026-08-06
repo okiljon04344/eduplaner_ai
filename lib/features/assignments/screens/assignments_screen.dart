@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:table_calendar/table_calendar.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../models/assignment_model.dart';
@@ -8,16 +9,32 @@ import '../widgets/add_edit_assignment_sheet.dart';
 import '../widgets/assignment_card.dart';
 import '../widgets/filter_chips_row.dart';
 
-class AssignmentsScreen extends ConsumerWidget {
+class AssignmentsScreen extends ConsumerStatefulWidget {
   const AssignmentsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final assignments = ref.watch(filteredAssignmentsProvider);
+  ConsumerState<AssignmentsScreen> createState() => _AssignmentsScreenState();
+}
+
+class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
+  bool _calendarMode = false;
+  DateTime _focusedDay = DateTime.now();
+  DateTime? _selectedDay;
+
+  bool _sameDay(DateTime a, DateTime b) =>
+      a.year == b.year && a.month == b.month && a.day == b.day;
+
+  @override
+  Widget build(BuildContext context) {
     final all = ref.watch(assignmentsStreamProvider).valueOrNull ?? [];
     final doneCount = all.where((a) => a.status == AssignmentStatus.completed).length;
-    final totalCount = all.length;
-    final progressPct = totalCount == 0 ? 0.0 : doneCount / totalCount;
+    final progressPct = all.isEmpty ? 0.0 : doneCount / all.length;
+    final weekly = ref.watch(weeklyProgressProvider);
+
+    // In calendar mode with a selected day: show only that day's assignments
+    final displayAssignments = (_calendarMode && _selectedDay != null)
+        ? all.where((a) => _sameDay(a.dueDate, _selectedDay!)).toList()
+        : ref.watch(filteredAssignmentsProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -25,24 +42,88 @@ class AssignmentsScreen extends ConsumerWidget {
         child: CustomScrollView(
           slivers: [
             SliverToBoxAdapter(
-              child: _TasksHeader(doneCount: doneCount, totalCount: totalCount, progressPct: progressPct),
-            ),
-            const SliverToBoxAdapter(child: FilterChipsRow()),
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-              sliver: SliverList.separated(
-                itemCount: assignments.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 10),
-                itemBuilder: (_, i) {
-                  final assignment = assignments[i];
-                  return AssignmentCard(key: ValueKey(assignment.id), assignment: assignment);
-                },
+              child: _TasksHeader(
+                doneCount: doneCount,
+                totalCount: all.length,
+                progressPct: progressPct,
+                weekly: weekly,
+                calendarMode: _calendarMode,
+                onToggleCalendar: () => setState(() {
+                  _calendarMode = !_calendarMode;
+                  if (!_calendarMode) _selectedDay = null;
+                }),
               ),
             ),
+            if (_calendarMode)
+              SliverToBoxAdapter(
+                child: _AssignmentCalendar(
+                  assignments: all,
+                  focusedDay: _focusedDay,
+                  selectedDay: _selectedDay,
+                  onDaySelected: (selected, focused) => setState(() {
+                    _selectedDay = _sameDay(selected, _selectedDay ?? DateTime(0))
+                        ? null // tap same day to deselect
+                        : selected;
+                    _focusedDay = focused;
+                  }),
+                  onFocusedDayChanged: (focused) =>
+                      setState(() => _focusedDay = focused),
+                ),
+              ),
+            if (!_calendarMode) const SliverToBoxAdapter(child: FilterChipsRow()),
+            if (_calendarMode && _selectedDay != null)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+                  child: Text(
+                    '${_selectedDay!.month}月${_selectedDay!.day}日の課題 (${displayAssignments.length}件)',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.cyan.withValues(alpha: 0.7),
+                      fontFamily: 'Plus Jakarta Sans',
+                      fontFamilyFallback: const ['NotoSansJP'],
+                    ),
+                  ),
+                ),
+              ),
+            if (displayAssignments.isEmpty)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 40),
+                  child: Center(
+                    child: Text(
+                      _calendarMode && _selectedDay != null
+                          ? 'この日に締め切りの課題はありません'
+                          : '課題がありません',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: AppColors.textMuted,
+                        fontFamily: 'Plus Jakarta Sans',
+                        fontFamilyFallback: const ['NotoSansJP'],
+                      ),
+                    ),
+                  ),
+                ),
+              )
+            else
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                sliver: SliverList.separated(
+                  itemCount: displayAssignments.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 10),
+                  itemBuilder: (_, i) => AssignmentCard(
+                    key: ValueKey(displayAssignments[i].id),
+                    assignment: displayAssignments[i],
+                  ),
+                ),
+              ),
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
-                child: _AddTaskButton(onTap: () => showAddEditAssignmentSheet(context, ref)),
+                child: _AddTaskButton(
+                  onTap: () => showAddEditAssignmentSheet(context, ref),
+                ),
               ),
             ),
           ],
@@ -52,18 +133,42 @@ class AssignmentsScreen extends ConsumerWidget {
   }
 }
 
+// ─── Header ─────────────────────────────────────────────────────────────────
+
 class _TasksHeader extends StatelessWidget {
   final int doneCount;
   final int totalCount;
   final double progressPct;
-  const _TasksHeader({required this.doneCount, required this.totalCount, required this.progressPct});
+  final ({int completed, int total}) weekly;
+  final bool calendarMode;
+  final VoidCallback onToggleCalendar;
+
+  const _TasksHeader({
+    required this.doneCount,
+    required this.totalCount,
+    required this.progressPct,
+    required this.weekly,
+    required this.calendarMode,
+    required this.onToggleCalendar,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final isDark = AppColors.isDark;
+    final accent = isDark ? AppColors.cyan : Colors.white;
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 28),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Color(0x2622D3EE))),
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
+      decoration: BoxDecoration(
+        gradient: isDark ? null : AppColors.heroTasksGradient,
+        border: isDark
+            ? const Border(bottom: BorderSide(color: Color(0x2622D3EE)))
+            : null,
+        borderRadius: isDark
+            ? null
+            : const BorderRadius.only(
+                bottomLeft: Radius.circular(28),
+                bottomRight: Radius.circular(28),
+              ),
       ),
       child: Stack(
         children: [
@@ -73,55 +178,125 @@ class _TasksHeader extends StatelessWidget {
             child: Container(
               width: 180,
               height: 180,
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [Color(0x2E22D3EE), Color(0x0022D3EE)],
-                  stops: [0.0, 0.7],
-                ),
+                gradient: isDark
+                    ? const RadialGradient(
+                        colors: [Color(0x2E22D3EE), Color(0x0022D3EE)],
+                        stops: [0.0, 0.7],
+                      )
+                    : null,
+                color: isDark ? null : Colors.white.withValues(alpha: 0.06),
               ),
             ),
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('TASK MANAGER', style: AppTextStyles.overline.copyWith(color: const Color(0x8C22D3EE))),
+              // Overline + calendar toggle
+              Row(
+                children: [
+                  Text(
+                    '課題管理',
+                    style: AppTextStyles.overline.copyWith(
+                      color: isDark ? const Color(0x8C22D3EE) : Colors.white.withValues(alpha: 0.75),
+                    ),
+                  ),
+                  const Spacer(),
+                  GestureDetector(
+                    onTap: onToggleCalendar,
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 220),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: accent.withValues(alpha: calendarMode ? 0.25 : (isDark ? 0.05 : 0.12)),
+                        border: Border.all(
+                          color: accent.withValues(alpha: calendarMode ? 0.6 : 0.3),
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            calendarMode ? Icons.list_rounded : Icons.calendar_month_outlined,
+                            size: 13,
+                            color: accent,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            calendarMode ? 'リスト' : 'カレンダー',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: accent,
+                              fontFamily: 'Plus Jakarta Sans',
+                              fontFamilyFallback: const ['NotoSansJP'],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
               const SizedBox(height: 6),
-              Text('📝 課題一覧', style: AppTextStyles.headLG.copyWith(fontSize: 24)),
+              Text(
+                '📝 課題一覧',
+                style: AppTextStyles.headLG.copyWith(fontSize: 24),
+              ),
               const SizedBox(height: 5),
               Text(
                 '$doneCount件完了 · 全$totalCount件',
-                style: const TextStyle(
-                  fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: ['NotoSansJP'],
-                  fontSize: 13, fontWeight: FontWeight.w500, color: Color(0x8022D3EE),
+                style: TextStyle(
+                  fontFamily: 'Plus Jakarta Sans',
+                  fontFamilyFallback: const ['NotoSansJP'],
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: isDark ? const Color(0x8022D3EE) : Colors.white.withValues(alpha: 0.8),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
+
+              // Total progress bar
               Container(
                 height: 8,
                 decoration: BoxDecoration(
-                  color: const Color(0x12FFFFFF),
+                  color: isDark ? const Color(0x12FFFFFF) : Colors.white.withValues(alpha: 0.25),
                   borderRadius: BorderRadius.circular(4),
-                  border: Border.all(color: const Color(0x1A22D3EE)),
+                  border: isDark ? Border.all(color: const Color(0x1A22D3EE)) : null,
                 ),
                 clipBehavior: Clip.hardEdge,
-                child: TweenAnimationBuilder<double>(
-                  tween: Tween(begin: 0, end: progressPct.clamp(0.0, 1.0)),
-                  duration: const Duration(milliseconds: 600),
-                  curve: Curves.easeOutExpo,
-                  builder: (context, value, child) => FractionallySizedBox(
-                    widthFactor: value,
-                    alignment: Alignment.centerLeft,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        gradient: AppColors.gradientCyan,
-                        borderRadius: BorderRadius.circular(4),
-                        boxShadow: const [BoxShadow(color: Color(0x9922D3EE), blurRadius: 14)],
+                // Isolate the 600ms tween's per-frame paint from the header's
+                // radial-gradient background so the whole header doesn't
+                // repaint 60x/s while the bar animates.
+                child: RepaintBoundary(
+                  child: TweenAnimationBuilder<double>(
+                    tween: Tween(begin: 0, end: progressPct.clamp(0.0, 1.0)),
+                    duration: const Duration(milliseconds: 600),
+                    curve: Curves.easeOutExpo,
+                    builder: (context, value, _) => FractionallySizedBox(
+                      widthFactor: value,
+                      alignment: Alignment.centerLeft,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: isDark ? AppColors.gradientCyan : null,
+                          color: isDark ? null : Colors.white,
+                          borderRadius: BorderRadius.circular(4),
+                          boxShadow: isDark
+                              ? const [BoxShadow(color: Color(0x9922D3EE), blurRadius: 14)]
+                              : null,
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
+
+              const SizedBox(height: 14),
+
+              // Weekly progress graph
+              _WeeklyProgressBar(completed: weekly.completed, total: weekly.total),
             ],
           ),
         ],
@@ -130,12 +305,251 @@ class _TasksHeader extends StatelessWidget {
   }
 }
 
+// ─── Weekly progress graph ───────────────────────────────────────────────────
+
+class _WeeklyProgressBar extends StatelessWidget {
+  final int completed;
+  final int total;
+  const _WeeklyProgressBar({required this.completed, required this.total});
+
+  @override
+  Widget build(BuildContext context) {
+    final pct = total == 0 ? 0.0 : completed / total;
+    final pctText = '${(pct * 100).round()}%';
+    final isDark = AppColors.isDark;
+    final labelColor = isDark ? AppColors.primaryLight : Colors.white;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: isDark
+            ? AppColors.primaryMid.withValues(alpha: 0.07)
+            : Colors.white.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: isDark
+              ? AppColors.primaryMid.withValues(alpha: 0.18)
+              : Colors.white.withValues(alpha: 0.25),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    Icons.bar_chart_rounded,
+                    size: 13,
+                    color: labelColor.withValues(alpha: 0.75),
+                  ),
+                  const SizedBox(width: 5),
+                  Text(
+                    '今週の進捗',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: labelColor.withValues(alpha: 0.75),
+                      fontFamily: 'Plus Jakarta Sans',
+                      fontFamilyFallback: const ['NotoSansJP'],
+                    ),
+                  ),
+                ],
+              ),
+              Text(
+                '$completed / $total件  $pctText',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: labelColor,
+                  fontFamily: 'Plus Jakarta Sans',
+                  fontFamilyFallback: const ['NotoSansJP'],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: Container(
+              height: 6,
+              color: isDark
+                  ? AppColors.primaryMid.withValues(alpha: 0.15)
+                  : Colors.white.withValues(alpha: 0.25),
+              // Isolate the tween from the header's radial-gradient decoration
+              // so it repaints in its own layer during the 700ms animation.
+              child: RepaintBoundary(
+                child: TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 0, end: pct.clamp(0.0, 1.0)),
+                  duration: const Duration(milliseconds: 700),
+                  curve: Curves.easeOutExpo,
+                  builder: (context, value, _) => FractionallySizedBox(
+                    widthFactor: value,
+                    alignment: Alignment.centerLeft,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: isDark ? AppColors.gradientPrimary : null,
+                        color: isDark ? null : Colors.white,
+                        borderRadius: BorderRadius.circular(4),
+                        boxShadow: isDark
+                            ? [
+                                BoxShadow(
+                                  color: AppColors.primaryMid.withValues(alpha: 0.6),
+                                  blurRadius: 8,
+                                ),
+                              ]
+                            : null,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Calendar ────────────────────────────────────────────────────────────────
+
+class _AssignmentCalendar extends StatelessWidget {
+  final List<AssignmentModel> assignments;
+  final DateTime focusedDay;
+  final DateTime? selectedDay;
+  final void Function(DateTime, DateTime) onDaySelected;
+  final void Function(DateTime) onFocusedDayChanged;
+
+  const _AssignmentCalendar({
+    required this.assignments,
+    required this.focusedDay,
+    required this.selectedDay,
+    required this.onDaySelected,
+    required this.onFocusedDayChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceVar,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: TableCalendar<AssignmentModel>(
+        locale: 'ja_JP',
+        firstDay: DateTime.now().subtract(const Duration(days: 365)),
+        lastDay: DateTime.now().add(const Duration(days: 365)),
+        focusedDay: focusedDay,
+        selectedDayPredicate: (day) =>
+            selectedDay != null && isSameDay(day, selectedDay!),
+        onDaySelected: onDaySelected,
+        onPageChanged: onFocusedDayChanged,
+        eventLoader: (day) =>
+            assignments.where((a) => isSameDay(a.dueDate, day)).toList(),
+        calendarFormat: CalendarFormat.month,
+        availableCalendarFormats: const {CalendarFormat.month: '月表示'},
+        calendarStyle: CalendarStyle(
+          outsideDaysVisible: false,
+          defaultTextStyle: TextStyle(
+            color: AppColors.textPrimary,
+            fontFamily: 'Plus Jakarta Sans',
+            fontSize: 13,
+          ),
+          weekendTextStyle: TextStyle(
+            color: AppColors.textSecondary,
+            fontFamily: 'Plus Jakarta Sans',
+            fontSize: 13,
+          ),
+          outsideTextStyle: TextStyle(
+            color: AppColors.textMuted,
+            fontFamily: 'Plus Jakarta Sans',
+            fontSize: 13,
+          ),
+          todayDecoration: BoxDecoration(
+            color: AppColors.primaryMid.withValues(alpha: 0.3),
+            shape: BoxShape.circle,
+          ),
+          todayTextStyle: const TextStyle(
+            color: AppColors.primaryLight,
+            fontFamily: 'Plus Jakarta Sans',
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+          ),
+          selectedDecoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF8B5CF6), Color(0xFF6D28D9)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            shape: BoxShape.circle,
+          ),
+          selectedTextStyle: const TextStyle(
+            color: Colors.white,
+            fontFamily: 'Plus Jakarta Sans',
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+          ),
+          markerDecoration: const BoxDecoration(
+            color: AppColors.cyan,
+            shape: BoxShape.circle,
+          ),
+          markerSize: 5,
+          markersMaxCount: 3,
+          cellMargin: const EdgeInsets.all(4),
+        ),
+        headerStyle: HeaderStyle(
+          formatButtonVisible: false,
+          titleCentered: true,
+          titleTextStyle: TextStyle(
+            color: AppColors.textPrimary,
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            fontFamily: 'Plus Jakarta Sans',
+            fontFamilyFallback: const ['NotoSansJP'],
+          ),
+          leftChevronIcon: Icon(
+            Icons.chevron_left_rounded,
+            color: AppColors.textSecondary,
+          ),
+          rightChevronIcon: Icon(
+            Icons.chevron_right_rounded,
+            color: AppColors.textSecondary,
+          ),
+          headerPadding: const EdgeInsets.symmetric(vertical: 10),
+        ),
+        daysOfWeekStyle: DaysOfWeekStyle(
+          weekdayStyle: TextStyle(
+            color: AppColors.textMuted,
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            fontFamily: 'Plus Jakarta Sans',
+          ),
+          weekendStyle: TextStyle(
+            color: AppColors.textMuted,
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            fontFamily: 'Plus Jakarta Sans',
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Add button ──────────────────────────────────────────────────────────────
+
 class _AddTaskButton extends StatelessWidget {
   final VoidCallback onTap;
   const _AddTaskButton({required this.onTap});
 
   @override
   Widget build(BuildContext context) {
+    final isDark = AppColors.isDark;
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -143,20 +557,33 @@ class _AddTaskButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 16),
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0x3322D3EE), Color(0x1A06B6D4)],
-          ),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: const Color(0x4D22D3EE)),
-          boxShadow: const [BoxShadow(color: Color(0x2622D3EE), blurRadius: 20)],
+          gradient: isDark
+              ? const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0x3322D3EE), Color(0x1A06B6D4)],
+                )
+              : AppColors.gradientAddTaskLight,
+          borderRadius: BorderRadius.circular(isDark ? 20 : 18),
+          border: isDark ? Border.all(color: const Color(0x4D22D3EE)) : null,
+          boxShadow: [
+            BoxShadow(
+              color: isDark
+                  ? const Color(0x2622D3EE)
+                  : const Color(0x5900B894),
+              blurRadius: isDark ? 20 : 24,
+              offset: isDark ? Offset.zero : const Offset(0, 6),
+            ),
+          ],
         ),
-        child: const Text(
+        child: Text(
           '＋ 新しい課題を追加',
           style: TextStyle(
-            fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: ['NotoSansJP'],
-            fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.cyan,
+            fontFamily: 'Plus Jakarta Sans',
+            fontFamilyFallback: const ['NotoSansJP'],
+            fontSize: 15,
+            fontWeight: FontWeight.w800,
+            color: isDark ? AppColors.cyan : Colors.white,
           ),
         ),
       ),
