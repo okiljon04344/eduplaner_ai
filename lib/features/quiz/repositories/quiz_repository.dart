@@ -20,6 +20,7 @@ class QuizRepository {
         'subject': subject,
         'topic': topic,
         'useSearch': useSearch,
+        'language': AppStrings.currentLocale,
       });
       final raw = result.data['questions'] as List<dynamic>? ?? [];
       return raw.map((e) => QuizQuestion.fromJson(Map<String, dynamic>.from(e as Map))).toList();

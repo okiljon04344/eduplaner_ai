@@ -45,6 +45,20 @@ const gemini = () => (_ai ??= new GoogleGenAI({apiKey: geminiApiKey.value()}));
 
 const GEMINI_MODEL = 'gemini-flash-latest';
 
+// BCP-47 code from the client's active locale (see `AppStrings.currentLocale`
+// in the Flutter app) → English language name for the Gemini prompt. An
+// allow-list so an arbitrary client-supplied string can never be injected
+// into the prompt. Shared by every AI callable that replies in the user's
+// language; falls back to Japanese for an unrecognised/missing code.
+const LANGUAGE_NAMES = {
+  ja: 'Japanese', en: 'English', uz: 'Uzbek', zh: 'Simplified Chinese',
+  zh_TW: 'Traditional Chinese', ko: 'Korean', vi: 'Vietnamese', th: 'Thai',
+  id: 'Indonesian', ms: 'Malay', hi: 'Hindi', ar: 'Arabic', es: 'Spanish',
+  fr: 'French', de: 'German', pt: 'Portuguese', ru: 'Russian', it: 'Italian',
+  tr: 'Turkish', nl: 'Dutch', fil: 'Filipino',
+};
+const replyLanguageOf = (language) => LANGUAGE_NAMES[language] ?? 'Japanese';
+
 // Bot system prompts. Keep ids in sync with lib/features/ai_chat/models/ai_bot.dart.
 // These prompts are tiny (~100 chars each) — well below the ~1024-token minimum
 // for Gemini's cached-content API, so caching would add cost without benefit.
@@ -121,7 +135,7 @@ export const chatWithTutor = onCall({
     throw new HttpsError('unauthenticated', 'Login is required.');
   }
 
-  const {botId = 'planner', message, assignments = [], classes = []} = request.data ?? {};
+  const {botId = 'planner', message, assignments = [], classes = [], language} = request.data ?? {};
 
   // Validate and sanitise all inputs before they reach the AI.
   if (typeof message !== 'string' || message.trim().length === 0) {
@@ -132,6 +146,7 @@ export const chatWithTutor = onCall({
   }
   // Reject botId values that don't exist in our allow-list; fall back safely.
   const resolvedBotId = (typeof botId === 'string' && botId in botPrompts) ? botId : 'planner';
+  const replyLanguage = replyLanguageOf(language);
 
   // Strip each context array to a safe size so a crafted client cannot send
   // an unbounded context that exhausts tokens or manipulates the system prompt.
@@ -140,7 +155,7 @@ export const chatWithTutor = onCall({
 
   const prompt = [
     botPrompts[resolvedBotId],
-    'Reply in Japanese by default. If the user writes Uzbek, reply in Uzbek.',
+    `Reply in ${replyLanguage}.`,
     'Keep answers practical and student-friendly.',
     `Current assignments: ${JSON.stringify(safeAssignments).slice(0, 3000)}`,
     `Current classes: ${JSON.stringify(safeClasses).slice(0, 3000)}`,
@@ -290,11 +305,12 @@ export const generateQuiz = onCall({
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'Login is required.');
   }
-  const {subject, topic = '', useSearch = false} = request.data ?? {};
+  const {subject, topic = '', useSearch = false, language} = request.data ?? {};
   if (typeof subject !== 'string' || subject.trim().length === 0) {
     throw new HttpsError('invalid-argument', 'subject is required.');
   }
   const trimmedTopic = String(topic ?? '').trim().slice(0, 200);
+  const replyLanguage = replyLanguageOf(language);
 
   // Two-stage when web search is enabled:
   //   Stage 1: googleSearch grounding gathers current facts (JSON output is
@@ -307,7 +323,7 @@ export const generateQuiz = onCall({
     const groundingPrompt = [
       `Research the topic "${trimmedTopic}" within the subject "${subject}" using web search.`,
       'Summarize the 6-10 most important facts a Japanese vocational school student should know.',
-      'Reply in Japanese, plain text, no markdown, under 800 characters.'
+      `Reply in ${replyLanguage}, plain text, no markdown, under 800 characters.`
     ].join('\n');
     try {
       const groundResp = await gemini().models.generateContent({
@@ -330,11 +346,11 @@ export const generateQuiz = onCall({
     promptLines.push('Base the questions on the following up-to-date facts:', context);
   }
   promptLines.push(
-    'Reply in Japanese.',
+    `Reply in ${replyLanguage}.`,
     'Vary difficulty across the 5 questions (2 easy, 2 medium, 1 hard).',
     'Return ONLY valid JSON matching this exact shape:',
     '{"questions":[{"question":"...","choices":["...","...","...","..."],"answerIndex":0,"explanation":"..."}]}',
-    'Each question must have exactly 4 choices, answerIndex is the 0-based index of the correct choice, and explanation is 1-2 sentences of Japanese.',
+    `Each question must have exactly 4 choices, answerIndex is the 0-based index of the correct choice, and explanation is 1-2 sentences in ${replyLanguage}.`,
   );
   const prompt = promptLines.join('\n');
 
@@ -388,16 +404,7 @@ export const analyzeWeakArea = onCall({
     throw new HttpsError('invalid-argument', 'stats array too large.');
   }
 
-  // BCP-47 code from the client's active locale; allow-list so an arbitrary
-  // string can never be injected into the prompt. Falls back to Japanese.
-  const LANGUAGE_NAMES = {
-    ja: 'Japanese', en: 'English', uz: 'Uzbek', zh: 'Simplified Chinese',
-    zh_TW: 'Traditional Chinese', ko: 'Korean', vi: 'Vietnamese', th: 'Thai',
-    id: 'Indonesian', ms: 'Malay', hi: 'Hindi', ar: 'Arabic', es: 'Spanish',
-    fr: 'French', de: 'German', pt: 'Portuguese', ru: 'Russian', it: 'Italian',
-    tr: 'Turkish', nl: 'Dutch', fil: 'Filipino',
-  };
-  const replyLanguage = LANGUAGE_NAMES[language] ?? 'Japanese';
+  const replyLanguage = replyLanguageOf(language);
 
   const prompt = [
     'You are Focus Bot, a study analytics assistant for a vocational school student.',

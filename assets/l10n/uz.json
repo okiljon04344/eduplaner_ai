@@ -249,5 +249,6 @@
   "err_class_save_failed": "Darsni saqlab bo'lmadi",
   "err_class_update_failed": "Darsni yangilab bo'lmadi",
   "err_class_status_update_failed": "Yangilab bo'lmadi",
-  "err_prefix": "Xatolik: {message}"
+  "err_prefix": "Xatolik: {message}",
+  "home_weekend_msg": "Bugun dam olish kuni! Yaxshi dam oling 🎉"
 }

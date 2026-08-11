@@ -241,5 +241,6 @@
   "err_class_save_failed": "Lưu lớp học thất bại",
   "err_class_update_failed": "Cập nhật lớp học thất bại",
   "err_class_status_update_failed": "Cập nhật thất bại",
-  "err_prefix": "Lỗi: {message}"
+  "err_prefix": "Lỗi: {message}",
+  "home_weekend_msg": "Hôm nay là ngày nghỉ! Hãy thư giãn nhé 🎉"
 }

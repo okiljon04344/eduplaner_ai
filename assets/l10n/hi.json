@@ -241,5 +241,6 @@
   "err_class_save_failed": "कक्षा सहेजने में विफल",
   "err_class_update_failed": "कक्षा अपडेट करने में विफल",
   "err_class_status_update_failed": "अपडेट करने में विफल",
-  "err_prefix": "त्रुटि: {message}"
+  "err_prefix": "त्रुटि: {message}",
+  "home_weekend_msg": "आज छुट्टी का दिन है! आराम करें 🎉"
 }

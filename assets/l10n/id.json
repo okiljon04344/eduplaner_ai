@@ -241,5 +241,6 @@
   "err_class_save_failed": "Gagal menyimpan kelas",
   "err_class_update_failed": "Gagal memperbarui kelas",
   "err_class_status_update_failed": "Gagal memperbarui",
-  "err_prefix": "Error: {message}"
+  "err_prefix": "Error: {message}",
+  "home_weekend_msg": "Hari ini hari libur! Selamat bersantai 🎉"
 }

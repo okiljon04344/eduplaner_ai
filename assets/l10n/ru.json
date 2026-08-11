@@ -241,5 +241,6 @@
   "err_class_save_failed": "Не удалось сохранить урок",
   "err_class_update_failed": "Не удалось обновить урок",
   "err_class_status_update_failed": "Не удалось обновить",
-  "err_prefix": "Ошибка: {message}"
+  "err_prefix": "Ошибка: {message}",
+  "home_weekend_msg": "Сегодня выходной! Отдыхайте 🎉"
 }

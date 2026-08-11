@@ -249,5 +249,6 @@
   "err_class_save_failed": "授業の保存に失敗しました",
   "err_class_update_failed": "授業の更新に失敗しました",
   "err_class_status_update_failed": "更新に失敗しました",
-  "err_prefix": "エラー: {message}"
+  "err_prefix": "エラー: {message}",
+  "home_weekend_msg": "今日は休みの日です。ゆっくり過ごしましょう 🎉"
 }

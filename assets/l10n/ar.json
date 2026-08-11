@@ -241,5 +241,6 @@
   "err_class_save_failed": "فشل حفظ الحصة",
   "err_class_update_failed": "فشل تحديث الحصة",
   "err_class_status_update_failed": "فشل التحديث",
-  "err_prefix": "خطأ: {message}"
+  "err_prefix": "خطأ: {message}",
+  "home_weekend_msg": "اليوم يوم إجازة! استمتع بوقتك 🎉"
 }

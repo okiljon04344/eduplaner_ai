@@ -241,5 +241,6 @@
   "err_class_save_failed": "Failed to save the class",
   "err_class_update_failed": "Failed to update the class",
   "err_class_status_update_failed": "Failed to update",
-  "err_prefix": "Error: {message}"
+  "err_prefix": "Error: {message}",
+  "home_weekend_msg": "It's the weekend! Time to relax 🎉"
 }

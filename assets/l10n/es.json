@@ -241,5 +241,6 @@
   "err_class_save_failed": "No se pudo guardar la clase",
   "err_class_update_failed": "No se pudo actualizar la clase",
   "err_class_status_update_failed": "Error al actualizar",
-  "err_prefix": "Error: {message}"
+  "err_prefix": "Error: {message}",
+  "home_weekend_msg": "¡Hoy es día de descanso! Disfruta 🎉"
 }

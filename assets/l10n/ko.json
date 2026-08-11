@@ -241,5 +241,6 @@
   "err_class_save_failed": "수업 저장에 실패했습니다",
   "err_class_update_failed": "수업 수정에 실패했습니다",
   "err_class_status_update_failed": "업데이트에 실패했습니다",
-  "err_prefix": "오류: {message}"
+  "err_prefix": "오류: {message}",
+  "home_weekend_msg": "오늘은 쉬는 날이에요! 편히 쉬세요 🎉"
 }

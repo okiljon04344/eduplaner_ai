@@ -241,5 +241,6 @@
   "err_class_save_failed": "Les opslaan mislukt",
   "err_class_update_failed": "Les bijwerken mislukt",
   "err_class_status_update_failed": "Bijwerken mislukt",
-  "err_prefix": "Fout: {message}"
+  "err_prefix": "Fout: {message}",
+  "home_weekend_msg": "Vandaag is het een vrije dag! Geniet ervan 🎉"
 }
