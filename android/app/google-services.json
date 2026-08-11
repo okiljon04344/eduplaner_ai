@@ -1,18 +1,32 @@
 {
   "project_info": {
     "project_number": "351731284172",
+    "firebase_url": "https://eduplannerai-97365-default-rtdb.asia-southeast1.firebasedatabase.app",
     "project_id": "eduplannerai-97365",
     "storage_bucket": "eduplannerai-97365.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:351731284172:android:b46b32e8964e29f8582a69",
+        "mobilesdk_app_id": "1:351731284172:android:a2de2152df881b89582a69",
         "android_client_info": {
           "package_name": "com.eduplanner.app"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "351731284172-otjui1bgad0sp5op1q9k153s1482gsg9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.eduplanner.app",
+            "certificate_hash": "a5ef50b5a44ffb604ad7b1d75881534255a97a98"
+          }
+        },
+        {
+          "client_id": "351731284172-4go4n8m5dbi72b260rektd34aci09ln8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCS2-ca8L6o-vm11EDGR4o1LI9k5A3Fsx0"
@@ -20,7 +34,63 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "351731284172-4go4n8m5dbi72b260rektd34aci09ln8.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "351731284172-2gu8a8lmf6gadhmhoon4b4p01i06e4do.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.eduplannerAi"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:351731284172:android:b46b32e8964e29f8582a69",
+        "android_client_info": {
+          "package_name": "com.example.eduplanner_ai"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "351731284172-k18v25bmjb26hj2l7pok84m1vlq1blo5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.eduplanner_ai",
+            "certificate_hash": "a5ef50b5a44ffb604ad7b1d75881534255a97a98"
+          }
+        },
+        {
+          "client_id": "351731284172-4go4n8m5dbi72b260rektd34aci09ln8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCS2-ca8L6o-vm11EDGR4o1LI9k5A3Fsx0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "351731284172-4go4n8m5dbi72b260rektd34aci09ln8.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "351731284172-2gu8a8lmf6gadhmhoon4b4p01i06e4do.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.eduplannerAi"
+              }
+            }
+          ]
         }
       }
     }
