@@ -10,23 +10,49 @@ class AuthRepository {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   bool _googleSignInInitialized = false;
 
-  Stream<UserModel?> get authStateStream {
-    return _auth.userChanges().asyncMap((user) async {
-      if (user == null) return null;
+  /// Memoized so a re-emission of `userChanges()` for the *same already
+  /// resolved* uid (e.g. an ID token refresh, which fires this stream
+  /// periodically for the whole session) doesn't re-read the Firestore doc.
+  /// Only re-fetches when the uid changes, or when the previous fetch didn't
+  /// find a doc yet (the brief window right after sign-up before the caller
+  /// writes it) — in that case we keep retrying so the router picks up the
+  /// real name as soon as it's written.
+  UserModel? _cachedUser;
+  String? _cachedUid;
+  bool _cachedFromDoc = false;
+
+  Stream<UserModel?> get authStateStream async* {
+    await for (final user in _auth.userChanges()) {
+      if (user == null) {
+        _cachedUser = null;
+        _cachedUid = null;
+        _cachedFromDoc = false;
+        yield null;
+        continue;
+      }
+      if (user.uid == _cachedUid && _cachedFromDoc && _cachedUser != null) {
+        yield _cachedUser;
+        continue;
+      }
       final doc = await _db.collection('users').doc(user.uid).get();
-      if (doc.exists) return UserModel.fromFirestore(doc);
-      // User is authenticated but Firestore doc not yet written.
-      // This happens during the brief window between Firebase Auth completing
-      // (which fires userChanges()) and the caller writing the user doc.
-      // Return a minimal UserModel so the router doesn't redirect back to /login.
-      return UserModel(
-        uid: user.uid,
-        name: user.displayName ?? 'ユーザー',
-        email: user.email ?? '',
-        photoUrl: user.photoURL,
-        createdAt: DateTime.now(),
-      );
-    });
+      final model = doc.exists
+          ? UserModel.fromFirestore(doc)
+          // User is authenticated but Firestore doc not yet written.
+          // This happens during the brief window between Firebase Auth completing
+          // (which fires userChanges()) and the caller writing the user doc.
+          // Return a minimal UserModel so the router doesn't redirect back to /login.
+          : UserModel(
+              uid: user.uid,
+              name: user.displayName ?? 'ユーザー',
+              email: user.email ?? '',
+              photoUrl: user.photoURL,
+              createdAt: DateTime.now(),
+            );
+      _cachedUser = model;
+      _cachedUid = user.uid;
+      _cachedFromDoc = doc.exists;
+      yield model;
+    }
   }
 
   /// google_sign_in 7.x requires `initialize()` to be called exactly once

@@ -26,7 +26,7 @@ import 'firebase_options.dart';
 ///      rendered with untranslated strings
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   await initializeDateFormatting(null);
   tzdata.initializeTimeZones();
   tz.setLocalLocation(tz.getLocation('Asia/Tokyo'));
