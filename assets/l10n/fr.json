@@ -242,5 +242,6 @@
   "err_class_update_failed": "Échec de la mise à jour du cours",
   "err_class_status_update_failed": "Échec de la mise à jour",
   "err_prefix": "Erreur : {message}",
-  "home_weekend_msg": "Aujourd'hui, c'est un jour de repos ! Profitez-en 🎉"
+  "home_weekend_msg": "Aujourd'hui, c'est un jour de repos ! Profitez-en 🎉",
+  "err_account_exists": "Cet e-mail est déjà enregistré. Entrez le bon mot de passe ou utilisez l'écran de connexion."
 }

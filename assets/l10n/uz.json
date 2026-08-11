@@ -250,5 +250,6 @@
   "err_class_update_failed": "Darsni yangilab bo'lmadi",
   "err_class_status_update_failed": "Yangilab bo'lmadi",
   "err_prefix": "Xatolik: {message}",
-  "home_weekend_msg": "Bugun dam olish kuni! Yaxshi dam oling 🎉"
+  "home_weekend_msg": "Bugun dam olish kuni! Yaxshi dam oling 🎉",
+  "err_account_exists": "Bu email allaqachon ro'yxatdan o'tgan. To'g'ri parolni kiriting yoki kirish sahifasidan foydalaning."
 }

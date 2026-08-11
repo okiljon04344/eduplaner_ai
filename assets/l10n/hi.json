@@ -242,5 +242,6 @@
   "err_class_update_failed": "कक्षा अपडेट करने में विफल",
   "err_class_status_update_failed": "अपडेट करने में विफल",
   "err_prefix": "त्रुटि: {message}",
-  "home_weekend_msg": "आज छुट्टी का दिन है! आराम करें 🎉"
+  "home_weekend_msg": "आज छुट्टी का दिन है! आराम करें 🎉",
+  "err_account_exists": "यह ईमेल पहले से पंजीकृत है। सही पासवर्ड दर्ज करें, या लॉगिन स्क्रीन का उपयोग करें।"
 }

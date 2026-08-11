@@ -242,5 +242,6 @@
   "err_class_update_failed": "Ders güncellenemedi",
   "err_class_status_update_failed": "Güncelleme başarısız oldu",
   "err_prefix": "Hata: {message}",
-  "home_weekend_msg": "Bugün tatil günü! Keyfine bak 🎉"
+  "home_weekend_msg": "Bugün tatil günü! Keyfine bak 🎉",
+  "err_account_exists": "Bu e-posta zaten kayıtlı. Doğru şifreyi girin veya giriş ekranını kullanın."
 }

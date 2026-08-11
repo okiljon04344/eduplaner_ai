@@ -242,5 +242,6 @@
   "err_class_update_failed": "Gagal memperbarui kelas",
   "err_class_status_update_failed": "Gagal memperbarui",
   "err_prefix": "Error: {message}",
-  "home_weekend_msg": "Hari ini hari libur! Selamat bersantai 🎉"
+  "home_weekend_msg": "Hari ini hari libur! Selamat bersantai 🎉",
+  "err_account_exists": "Email ini sudah terdaftar. Masukkan kata sandi yang benar, atau gunakan layar login."
 }

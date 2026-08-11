@@ -242,5 +242,6 @@
   "err_class_update_failed": "更新課程失敗",
   "err_class_status_update_failed": "更新失敗",
   "err_prefix": "錯誤：{message}",
-  "home_weekend_msg": "今天是休息日，好好放鬆一下吧 🎉"
+  "home_weekend_msg": "今天是休息日，好好放鬆一下吧 🎉",
+  "err_account_exists": "此電子郵件地址已註冊。請輸入正確的密碼，或使用登入頁面。"
 }

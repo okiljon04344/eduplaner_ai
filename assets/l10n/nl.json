@@ -242,5 +242,6 @@
   "err_class_update_failed": "Les bijwerken mislukt",
   "err_class_status_update_failed": "Bijwerken mislukt",
   "err_prefix": "Fout: {message}",
-  "home_weekend_msg": "Vandaag is het een vrije dag! Geniet ervan 🎉"
+  "home_weekend_msg": "Vandaag is het een vrije dag! Geniet ervan 🎉",
+  "err_account_exists": "Dit e-mailadres is al geregistreerd. Voer het juiste wachtwoord in of gebruik het inlogscherm."
 }

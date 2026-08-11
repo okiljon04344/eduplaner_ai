@@ -242,5 +242,6 @@
   "err_class_update_failed": "Falha ao atualizar a aula",
   "err_class_status_update_failed": "Falha ao atualizar",
   "err_prefix": "Erro: {message}",
-  "home_weekend_msg": "Hoje é dia de descanso! Aproveite para relaxar 🎉"
+  "home_weekend_msg": "Hoje é dia de descanso! Aproveite para relaxar 🎉",
+  "err_account_exists": "Este e-mail já está registrado. Digite a senha correta ou use a tela de login."
 }

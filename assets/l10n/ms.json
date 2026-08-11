@@ -242,5 +242,6 @@
   "err_class_update_failed": "Gagal mengemas kini kelas",
   "err_class_status_update_failed": "Gagal mengemas kini",
   "err_prefix": "Ralat: {message}",
-  "home_weekend_msg": "Hari ini hari cuti! Berehatlah dengan baik 🎉"
+  "home_weekend_msg": "Hari ini hari cuti! Berehatlah dengan baik 🎉",
+  "err_account_exists": "E-mel ini telah didaftarkan. Masukkan kata laluan yang betul, atau gunakan skrin log masuk."
 }
