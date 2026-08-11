@@ -49,6 +49,16 @@ abstract class AppColors {
   static List<BoxShadow> get cardShadow => isDark ? _darkCardShadow : _lightCardShadow;
   static List<BoxShadow> get heroCardShadow => isDark ? _darkHeroCardShadow : _lightHeroCardShadow;
 
+  /// Standard card background — the single source of truth for the
+  /// `isDark ? surfaceVar/cardBg : surface` pattern repeated across cards.
+  /// (`surfaceVar` and `cardBg` are always equal, in both themes.)
+  static Color get cardSurface => isDark ? surfaceVar : surface;
+
+  /// Standard card border color — `border` and `cardBorder` are always
+  /// equal, in both themes; this is the single named token to use in card
+  /// decorations instead of picking between the two ad hoc.
+  static Color get cardStroke => border;
+
   static Brightness _brightness = Brightness.dark;
   static Brightness get brightness => _brightness;
   static bool get isDark => _brightness == Brightness.dark;

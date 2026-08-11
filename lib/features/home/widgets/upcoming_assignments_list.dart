@@ -14,10 +14,10 @@ class UpcomingAssignmentsList extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       decoration: BoxDecoration(
-        color: AppColors.isDark ? AppColors.cardBg : AppColors.surface,
-        border: Border.all(color: AppColors.cardBorder),
+        color: AppColors.cardSurface,
+        border: Border.all(color: AppColors.cardStroke),
         borderRadius: BorderRadius.circular(AppColors.isDark ? 22 : 20),
-        boxShadow: AppColors.isDark ? null : AppColors.cardShadow,
+        boxShadow: AppColors.cardShadow,
       ),
       child: assignments.isEmpty
           ? Center(

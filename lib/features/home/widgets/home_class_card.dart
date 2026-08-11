@@ -58,14 +58,12 @@ class HomeClassCard extends StatelessWidget {
                 ],
               )
             : null,
-        color: isLive && AppColors.isDark
-            ? null
-            : (AppColors.isDark ? AppColors.cardBg : AppColors.surface),
+        color: isLive && AppColors.isDark ? null : AppColors.cardSurface,
         borderRadius: BorderRadius.circular(AppColors.isDark ? 22 : 20),
         border: Border.all(
           color: isLive
               ? AppColors.primaryMid.withValues(alpha: AppColors.isDark ? 0.4 : 0.35)
-              : AppColors.cardBorder,
+              : AppColors.cardStroke,
         ),
         boxShadow: AppColors.isDark
             ? (isLive ? [BoxShadow(color: AppColors.primaryMid.withValues(alpha: 0.25), blurRadius: 20)] : null)
@@ -79,7 +77,7 @@ class HomeClassCard extends StatelessWidget {
             decoration: BoxDecoration(
               color: isLive
                   ? AppColors.primaryMid.withValues(alpha: 0.15)
-                  : (AppColors.isDark ? AppColors.surfaceVar : AppColors.surfaceVar),
+                  : AppColors.surfaceVar,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: isLive
@@ -165,7 +163,7 @@ class _StatusBadge extends StatelessWidget {
         glow = null;
         break;
       case _ClassStatus.later:
-        bg = AppColors.isDark ? AppColors.surfaceVar : AppColors.surfaceVar;
+        bg = AppColors.surfaceVar;
         fg = AppColors.textMuted;
         glow = null;
     }

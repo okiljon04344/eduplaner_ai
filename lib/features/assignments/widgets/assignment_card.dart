@@ -37,10 +37,10 @@ class AssignmentCard extends ConsumerWidget {
         child: Container(
           clipBehavior: Clip.hardEdge,
           decoration: BoxDecoration(
-            color: AppColors.isDark ? AppColors.surfaceVar : AppColors.surface,
+            color: AppColors.cardSurface,
             borderRadius: BorderRadius.circular(AppColors.isDark ? 22 : 20),
-            border: Border.all(color: AppColors.isDark ? AppColors.border : AppColors.cardBorder),
-            boxShadow: AppColors.isDark ? null : AppColors.cardShadow,
+            border: Border.all(color: AppColors.cardStroke),
+            boxShadow: AppColors.cardShadow,
           ),
           child: Stack(
             children: [
