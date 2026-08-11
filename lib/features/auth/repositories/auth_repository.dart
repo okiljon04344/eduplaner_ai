@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import '../../../core/l10n/app_strings.dart';
 import '../models/user_model.dart';
 
 class AuthRepository {
@@ -43,14 +44,14 @@ class AuthRepository {
       googleUser = await _googleSignIn.authenticate();
     } on GoogleSignInException catch (e) {
       if (e.code == GoogleSignInExceptionCode.canceled) {
-        throw Exception('Googleサインインがキャンセルされました');
+        throw Exception(AppStrings.t('err_google_signin_cancelled'));
       }
-      throw Exception('Googleサインインに失敗しました');
+      throw Exception(AppStrings.t('err_google_signin_failed'));
     }
     final credential = GoogleAuthProvider.credential(idToken: googleUser.authentication.idToken);
     final result = await _auth.signInWithCredential(credential);
     final user = result.user;
-    if (user == null) throw Exception('ユーザー情報を取得できませんでした');
+    if (user == null) throw Exception(AppStrings.t('err_user_info_unavailable'));
     final docRef = _db.collection('users').doc(user.uid);
     final doc = await docRef.get();
     if (!doc.exists) {
@@ -71,7 +72,7 @@ class AuthRepository {
     try {
       final result = await _auth.createUserWithEmailAndPassword(email: email, password: password);
       final user = result.user;
-      if (user == null) throw Exception('ユーザー情報を取得できませんでした');
+      if (user == null) throw Exception(AppStrings.t('err_user_info_unavailable'));
       await user.updateDisplayName(name);
       final newUser = UserModel(uid: user.uid, name: name, email: email, createdAt: DateTime.now());
       await _db.collection('users').doc(user.uid).set(newUser.toFirestore());
@@ -85,7 +86,7 @@ class AuthRepository {
     try {
       final result = await _auth.signInWithEmailAndPassword(email: email, password: password);
       final user = result.user;
-      if (user == null) throw Exception('ユーザー情報を取得できませんでした');
+      if (user == null) throw Exception(AppStrings.t('err_user_info_unavailable'));
       final docRef = _db.collection('users').doc(user.uid);
       final doc = await docRef.get();
       if (!doc.exists) {
@@ -115,23 +116,23 @@ class AuthRepository {
   String _authErrorMessage(String code) {
     switch (code) {
       case 'email-already-in-use':
-        return 'このメールアドレスは既に使用されています';
+        return AppStrings.t('err_email_in_use');
       case 'invalid-email':
-        return 'メールアドレスの形式が正しくありません';
+        return AppStrings.t('err_invalid_email');
       case 'weak-password':
-        return 'パスワードは6文字以上で設定してください';
+        return AppStrings.t('err_weak_password');
       case 'user-not-found':
       case 'invalid-credential':
       case 'wrong-password':
-        return 'メールアドレスまたはパスワードが正しくありません';
+        return AppStrings.t('err_invalid_credential');
       case 'user-disabled':
-        return 'このアカウントは無効化されています';
+        return AppStrings.t('err_user_disabled');
       case 'too-many-requests':
-        return 'しばらく時間をおいてから再度お試しください';
+        return AppStrings.t('err_too_many_requests');
       case 'network-request-failed':
-        return 'ネットワークに接続できませんでした';
+        return AppStrings.t('err_network');
       default:
-        return 'エラーが発生しました。もう一度お試しください';
+        return AppStrings.t('err_generic_retry');
     }
   }
 

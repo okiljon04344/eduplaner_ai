@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
+import '../../../core/l10n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../assignments/providers/assignments_provider.dart';
 import '../../auth/providers/auth_provider.dart';
@@ -71,7 +72,7 @@ class ChatNotifier extends Notifier<List<MessageModel>> {
       if (_uid.isNotEmpty) await _repo.saveMessage(_uid, assistantMsg);
     } catch (e) {
       final errMsg = loadingMsg.copyWith(
-        content: 'エラー: ${e.toString().replaceAll('Exception: ', '')}',
+        content: AppStrings.t('err_prefix', {'message': e.toString().replaceAll('Exception: ', '')}),
         isLoading: false,
         isError: true,
       );

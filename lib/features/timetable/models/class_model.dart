@@ -13,6 +13,15 @@ part 'class_model.g.dart';
 /// and store against this fixed list, never a localized label.
 const List<String> kWeekdayKanji = ['月', '火', '水', '木', '金'];
 
+/// Localized (locale-aware) display label for a canonical [kWeekdayKanji] value.
+///
+/// Falls back to the kanji itself if [kanji] isn't one of the five weekdays.
+String weekdayLabel(String kanji) {
+  const keys = ['day_mon', 'day_tue', 'day_wed', 'day_thu', 'day_fri'];
+  final index = kWeekdayKanji.indexOf(kanji);
+  return index == -1 ? kanji : AppStrings.t(keys[index]);
+}
+
 enum ClassStatus {
   normal,
   cancelled,

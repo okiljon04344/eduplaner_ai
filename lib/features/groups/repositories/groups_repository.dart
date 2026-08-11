@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:uuid/uuid.dart';
+import '../../../core/l10n/app_strings.dart';
 import '../models/study_group_model.dart';
 
 class GroupsRepository {
@@ -45,8 +46,8 @@ class GroupsRepository {
       await callable.call<Map<String, dynamic>>({'code': code.trim().toUpperCase()});
       return null;
     } on FirebaseFunctionsException catch (e) {
-      if (e.code == 'not-found') return '入力したコードのグループが見つかりません';
-      return 'グループへの参加に失敗しました';
+      if (e.code == 'not-found') return AppStrings.t('err_group_not_found');
+      return AppStrings.t('err_group_join_failed');
     }
   }
 

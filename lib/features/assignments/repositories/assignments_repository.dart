@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
+import '../../../core/l10n/app_strings.dart';
 import '../models/assignment_model.dart';
 
 class AssignmentsRepository {
@@ -47,9 +48,9 @@ class AssignmentsRepository {
       });
       return Map<String, dynamic>.from(result.data);
     } on FirebaseFunctionsException catch (e) {
-      if (e.code == 'unauthenticated') throw Exception('ログインが必要です。');
-      if (e.code == 'invalid-argument') throw Exception(e.message ?? 'ファイルを確認してください。');
-      throw Exception('課題のチェックに失敗しました。もう一度お試しください。');
+      if (e.code == 'unauthenticated') throw Exception(AppStrings.t('err_login_required'));
+      if (e.code == 'invalid-argument') throw Exception(e.message ?? AppStrings.t('err_invalid_file'));
+      throw Exception(AppStrings.t('err_assignment_check_failed'));
     }
   }
 
