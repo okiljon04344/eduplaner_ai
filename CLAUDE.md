@@ -48,3 +48,14 @@ Append a short dated entry per session — what changed and why, not a line-by-l
 
 ### 2026-08-06 — quiz freeze fix + ADB smoke test
 Quiz button was freezing (45s client / 60s server timeout too short for two-stage Gemini+Search). Fixed: client→90s, server→120s, two-stage generation (Stage1: googleSearch grounding, Stage2: JSON), new quiz UI with topic input + internet search toggle. All Cloud Functions deployed. Full ADB smoke test passed — all screens render correctly, quiz generates real questions end-to-end.
+
+### 2026-08-11 — Senior audit: 3-bosqichli tuzatish reji (`.artifacts/6a203536.../implementation_plan.artifact.md`)
+Oldingi sessiyadan qolgan uncommitted theme-flicker fix + i18n ishi commit qilindi, so'ng reja bo'yicha 3 bosqich bajarildi:
+
+**Phase 1 (i18n):** `kWeekdayKanji` haqida audit noto'g'ri xulosa chiqargan edi — u allaqachon to'g'ri: canonical Firestore kaliti sifatida kanji saqlanadi, displey `DayTabRow.days`/`weekdayLabel()` orqali lokalizatsiya qilinadi. Haqiqiy qolgan ish: 7 ta repository/provider faylida (`auth`, `assignments`, `quiz`, `ai_chat`, `groups`, `timetable`) ~30 ta hardcoded yapon `Exception`/xatolik matni topildi va `AppStrings.t()` ga o'tkazildi — 21 tilga jami 29 ta yangi `err_*` kalit qo'shildi (bitta Python skript bilan barcha JSON fayllarga).
+
+**Phase 2 (UI):** To'liq "barcha 169 ta `isDark` ternaryni markazlashtirish" xavfli bo'lardi — aksariyati (hero gradientlar, per-screen dizayn) haqiqiy dublikat emas, ataylab boshqacha. Faqat xavfsiz, qiymati isbotlangan holda bir xil qismlarni markazlashtirdim: `AppColors.cardSurface`/`cardStroke` getterlari qo'shildi (`surfaceVar`==`cardBg`, `border`==`cardBorder` ikkala rejimda ham — tekshirilgan), 5 ta faylda takrorlangan card-dekoratsiya shulardan foydalanadi, 4 ta "o'lik" ternary (`isDark ? X : X`) tozalandi. `Divider` allaqachon `ThemeData.dividerTheme` orqali markazlashtirilgan ekan. **Ochiq qoldi:** hech qanday joyda Flutter `Card` vidjeti ishlatilmaydi — `app_theme.dart`dagi `cardTheme` aslida o'lik konfiguratsiya; umumiy `AppCard` vidjetiga ko'chirish (~15+ fayl) katta va risklik ish sifatida keyingi safarga qoldirildi.
+
+**Phase 3 (arxitektura):** `AuthRepository.authStateStream` endi uid bo'yicha keshlanadi — `userChanges()` bir xil (allaqachon Firestore hujjati topilgan) uid uchun qayta otilganda endi qayta o'qilmaydi; faqat uid o'zgarganda yoki hujjat hali yozilmagan holatda qayta so'raydi (sign-up oynasi xavfsiz). `analysis_options.yaml` ga const/final/dispose/unawaited-futures qoidalari qo'shildi, 4 ta haqiqiy topilma tuzatildi. "Global Error Handler" bandini tekshirdim — mavjud toast-asosidagi xatolik ko'rsatish patterni (`AsyncValue.guard` + `error` qaytarish + `toastification`) allaqachon izchil qo'llanilgan ekan, qo'shimcha ish talab qilinmadi.
+
+Har bir bosqichdan keyin `flutter analyze` (toza) va `flutter test` (barcha 40 test o'tdi) bilan tekshirildi, alohida commit qilindi.
