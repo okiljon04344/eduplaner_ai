@@ -251,5 +251,17 @@
   "err_class_status_update_failed": "更新に失敗しました",
   "err_prefix": "エラー: {message}",
   "home_weekend_msg": "今日は休みの日です。ゆっくり過ごしましょう 🎉",
-  "err_account_exists": "このメールアドレスは既に登録されています。正しいパスワードを入力するか、ログイン画面をご利用ください。"
+  "err_account_exists": "このメールアドレスは既に登録されています。正しいパスワードを入力するか、ログイン画面をご利用ください。",
+  "reset_code_title": "新しいパスワードを設定",
+  "reset_code_intro": "メールで届いたリンクまたはコードを貼り付けてください",
+  "reset_code_hint": "リンクまたはコード",
+  "reset_code_verify_btn": "確認",
+  "reset_code_for_email": "{email} のパスワードを再設定します",
+  "reset_code_new_pass_hint": "新しいパスワード（6文字以上）",
+  "reset_code_confirm_hint": "新しいパスワード（確認）",
+  "reset_code_submit_btn": "パスワードを変更",
+  "reset_code_success": "パスワードを変更しました",
+  "reset_code_success_msg": "新しいパスワードでログインしてください",
+  "reset_code_invalid": "コードが無効か期限切れです",
+  "login_have_reset_code": "リセットコードをお持ちですか？"
 }

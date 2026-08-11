@@ -243,5 +243,17 @@
   "err_class_status_update_failed": "Gagal mengemas kini",
   "err_prefix": "Ralat: {message}",
   "home_weekend_msg": "Hari ini hari cuti! Berehatlah dengan baik 🎉",
-  "err_account_exists": "E-mel ini telah didaftarkan. Masukkan kata laluan yang betul, atau gunakan skrin log masuk."
+  "err_account_exists": "E-mel ini telah didaftarkan. Masukkan kata laluan yang betul, atau gunakan skrin log masuk.",
+  "reset_code_title": "Tetapkan Kata Laluan Baharu",
+  "reset_code_intro": "Tampal pautan atau kod yang anda terima melalui e-mel",
+  "reset_code_hint": "Pautan atau kod",
+  "reset_code_verify_btn": "Sahkan",
+  "reset_code_for_email": "Menetapkan semula kata laluan untuk {email}",
+  "reset_code_new_pass_hint": "Kata laluan baharu (sekurang-kurangnya 6 aksara)",
+  "reset_code_confirm_hint": "Sahkan kata laluan baharu",
+  "reset_code_submit_btn": "Tukar Kata Laluan",
+  "reset_code_success": "Kata laluan telah ditukar",
+  "reset_code_success_msg": "Sila log masuk dengan kata laluan baharu anda",
+  "reset_code_invalid": "Kod tidak sah atau telah tamat tempoh",
+  "login_have_reset_code": "Ada kod tetapan semula?"
 }

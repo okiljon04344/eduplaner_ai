@@ -243,5 +243,17 @@
   "err_class_status_update_failed": "Не удалось обновить",
   "err_prefix": "Ошибка: {message}",
   "home_weekend_msg": "Сегодня выходной! Отдыхайте 🎉",
-  "err_account_exists": "Этот email уже зарегистрирован. Введите правильный пароль или воспользуйтесь экраном входа."
+  "err_account_exists": "Этот email уже зарегистрирован. Введите правильный пароль или воспользуйтесь экраном входа.",
+  "reset_code_title": "Установить новый пароль",
+  "reset_code_intro": "Вставьте ссылку или код, полученные по электронной почте",
+  "reset_code_hint": "Ссылка или код",
+  "reset_code_verify_btn": "Проверить",
+  "reset_code_for_email": "Сброс пароля для {email}",
+  "reset_code_new_pass_hint": "Новый пароль (не менее 6 символов)",
+  "reset_code_confirm_hint": "Подтвердите новый пароль",
+  "reset_code_submit_btn": "Изменить пароль",
+  "reset_code_success": "Пароль изменён",
+  "reset_code_success_msg": "Пожалуйста, войдите с новым паролем",
+  "reset_code_invalid": "Код недействителен или истёк",
+  "login_have_reset_code": "Есть код сброса?"
 }

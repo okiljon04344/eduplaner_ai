@@ -243,5 +243,17 @@
   "err_class_status_update_failed": "Aggiornamento non riuscito",
   "err_prefix": "Errore: {message}",
   "home_weekend_msg": "Oggi è un giorno di riposo! Rilassati 🎉",
-  "err_account_exists": "Questa email è già registrata. Inserisci la password corretta oppure usa la schermata di accesso."
+  "err_account_exists": "Questa email è già registrata. Inserisci la password corretta oppure usa la schermata di accesso.",
+  "reset_code_title": "Imposta una nuova password",
+  "reset_code_intro": "Incolla il link o il codice ricevuto via email",
+  "reset_code_hint": "Link o codice",
+  "reset_code_verify_btn": "Verifica",
+  "reset_code_for_email": "Reimpostazione della password per {email}",
+  "reset_code_new_pass_hint": "Nuova password (almeno 6 caratteri)",
+  "reset_code_confirm_hint": "Conferma nuova password",
+  "reset_code_submit_btn": "Cambia password",
+  "reset_code_success": "Password modificata",
+  "reset_code_success_msg": "Accedi con la tua nuova password",
+  "reset_code_invalid": "Il codice non è valido o è scaduto",
+  "login_have_reset_code": "Hai un codice di reimpostazione?"
 }

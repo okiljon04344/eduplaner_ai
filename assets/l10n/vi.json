@@ -243,5 +243,17 @@
   "err_class_status_update_failed": "Cập nhật thất bại",
   "err_prefix": "Lỗi: {message}",
   "home_weekend_msg": "Hôm nay là ngày nghỉ! Hãy thư giãn nhé 🎉",
-  "err_account_exists": "Email này đã được đăng ký. Vui lòng nhập đúng mật khẩu hoặc sử dụng màn hình đăng nhập."
+  "err_account_exists": "Email này đã được đăng ký. Vui lòng nhập đúng mật khẩu hoặc sử dụng màn hình đăng nhập.",
+  "reset_code_title": "Đặt mật khẩu mới",
+  "reset_code_intro": "Dán liên kết hoặc mã bạn nhận được qua email",
+  "reset_code_hint": "Liên kết hoặc mã",
+  "reset_code_verify_btn": "Xác minh",
+  "reset_code_for_email": "Đang đặt lại mật khẩu cho {email}",
+  "reset_code_new_pass_hint": "Mật khẩu mới (từ 6 ký tự)",
+  "reset_code_confirm_hint": "Xác nhận mật khẩu mới",
+  "reset_code_submit_btn": "Đổi mật khẩu",
+  "reset_code_success": "Đã đổi mật khẩu",
+  "reset_code_success_msg": "Vui lòng đăng nhập bằng mật khẩu mới",
+  "reset_code_invalid": "Mã không hợp lệ hoặc đã hết hạn",
+  "login_have_reset_code": "Bạn có mã đặt lại không?"
 }

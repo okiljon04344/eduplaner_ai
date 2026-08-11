@@ -243,5 +243,17 @@
   "err_class_status_update_failed": "更新失敗",
   "err_prefix": "錯誤：{message}",
   "home_weekend_msg": "今天是休息日，好好放鬆一下吧 🎉",
-  "err_account_exists": "此電子郵件地址已註冊。請輸入正確的密碼，或使用登入頁面。"
+  "err_account_exists": "此電子郵件地址已註冊。請輸入正確的密碼，或使用登入頁面。",
+  "reset_code_title": "設定新密碼",
+  "reset_code_intro": "請貼上您在郵件中收到的連結或代碼",
+  "reset_code_hint": "連結或代碼",
+  "reset_code_verify_btn": "驗證",
+  "reset_code_for_email": "正在為 {email} 重設密碼",
+  "reset_code_new_pass_hint": "新密碼（至少6位）",
+  "reset_code_confirm_hint": "確認新密碼",
+  "reset_code_submit_btn": "變更密碼",
+  "reset_code_success": "密碼已變更",
+  "reset_code_success_msg": "請使用新密碼登入",
+  "reset_code_invalid": "代碼無效或已過期",
+  "login_have_reset_code": "已有重設代碼？"
 }
