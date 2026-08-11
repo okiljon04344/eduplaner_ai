@@ -1,14 +1,18 @@
+import 'dart:async';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:toastification/toastification.dart';
 import '../../../core/l10n/app_strings.dart';
+import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../shared/widgets/language_picker_button.dart';
 import '../../../shared/widgets/lottie_helpers.dart';
 import '../../timetable/providers/timetable_provider.dart';
 import '../providers/auth_provider.dart';
+import '../widgets/google_signin_button.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -18,6 +22,17 @@ class LoginScreen extends ConsumerStatefulWidget {
 }
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Kick off Google Sign-In init as soon as this screen appears so the
+    // web SDK button (see _GoogleSignInArea) is ready to render, rather
+    // than only starting once the user taps something.
+    if (kIsWeb) {
+      unawaited(ref.read(authRepositoryProvider).ensureGoogleSignInReady());
+    }
+  }
+
   Future<void> _signInWithGoogle() async {
     try {
       await ref.read(authNotifierProvider.notifier).signInWithGoogle();
@@ -199,45 +214,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ),
                         ),
                         const SizedBox(height: 20),
-                        GestureDetector(
-                          onTap: loading ? null : _signInWithGoogle,
-                          child: Container(
-                            height: 52,
-                            decoration: BoxDecoration(
-                              color: AppColors.surfaceVar,
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: AppColors.border),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Image.asset(
-                                  'assets/images/google_logo.png',
-                                  width: 20,
-                                  height: 20,
-                                  errorBuilder: (context, error, stackTrace) => Container(
-                                    width: 20,
-                                    height: 20,
-                                    decoration: const BoxDecoration(color: Color(0xFF4285F4), shape: BoxShape.circle),
-                                    alignment: Alignment.center,
-                                    child: const Text(
-                                      'G',
-                                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.white),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                Text(
-                                  AppStrings.t('login_google'),
-                                  style: TextStyle(
-                                    fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary,
-                                    fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP'],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
+                        _GoogleSignInArea(loading: loading, onTap: _signInWithGoogle),
                         const SizedBox(height: 14),
                         Row(
                           children: [
@@ -404,40 +381,7 @@ class _DesktopLoginLayout extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 32),
-                          GestureDetector(
-                            onTap: loading ? null : onSignInWithGoogle,
-                            child: Container(
-                              height: 52,
-                              decoration: BoxDecoration(
-                                color: AppColors.surfaceVar,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: AppColors.border),
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Image.asset(
-                                    'assets/images/google_logo.png',
-                                    width: 20, height: 20,
-                                    errorBuilder: (context, error, stackTrace) => Container(
-                                      width: 20, height: 20,
-                                      decoration: const BoxDecoration(color: Color(0xFF4285F4), shape: BoxShape.circle),
-                                      alignment: Alignment.center,
-                                      child: const Text('G', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.white)),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 10),
-                                  Text(
-                                    AppStrings.t('login_google'),
-                                    style: TextStyle(
-                                      fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary,
-                                      fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP'],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
+                          _GoogleSignInArea(loading: loading, onTap: onSignInWithGoogle),
                           const SizedBox(height: 16),
                           Row(
                             children: [
@@ -519,6 +463,65 @@ class _TodayClassesPill extends ConsumerWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Google sign-in entry point, shared by the mobile and desktop layouts.
+///
+/// Web has no `authenticate()` support — `GoogleSignIn` on web requires a
+/// button rendered by Google's own SDK (see `google_signin_button.dart`),
+/// which handles the click internally and completes sign-in via
+/// `AuthRepository`'s `authenticationEvents` listener, not [onTap]. Other
+/// platforms keep the app's own styled button wired to [onTap].
+class _GoogleSignInArea extends StatelessWidget {
+  final bool loading;
+  final VoidCallback onTap;
+  const _GoogleSignInArea({required this.loading, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    if (kIsWeb) {
+      return SizedBox(height: 52, child: Center(child: renderGoogleSignInButton()));
+    }
+    return GestureDetector(
+      onTap: loading ? null : onTap,
+      child: Container(
+        height: 52,
+        decoration: BoxDecoration(
+          color: AppColors.surfaceVar,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset(
+              'assets/images/google_logo.png',
+              width: 20,
+              height: 20,
+              errorBuilder: (context, error, stackTrace) => Container(
+                width: 20,
+                height: 20,
+                decoration: const BoxDecoration(color: Color(0xFF4285F4), shape: BoxShape.circle),
+                alignment: Alignment.center,
+                child: const Text(
+                  'G',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.white),
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Text(
+              AppStrings.t('login_google'),
+              style: TextStyle(
+                fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary,
+                fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP'],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

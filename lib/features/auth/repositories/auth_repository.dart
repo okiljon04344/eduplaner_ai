@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../models/user_model.dart';
@@ -63,6 +65,15 @@ class AuthRepository {
   /// setup step — see that file). Wrapped so a missing/misconfigured client
   /// id surfaces as a normal translated error instead of an uncaught
   /// assertion.
+  ///
+  /// On web this also starts listening for sign-in events fired by the
+  /// SDK-rendered button (see `renderGoogleSignInButton()`) — web has no
+  /// `authenticate()` support (`supportsAuthenticate()` is hard-coded false
+  /// in `google_sign_in_web`), so a user-initiated sign-in there completes
+  /// via this event stream instead of a direct method call/return. Once
+  /// Firebase sign-in succeeds, `authStateStream` picks it up exactly like
+  /// any other sign-in and the router redirects — there's nothing further
+  /// for a caller to await.
   Future<void> _ensureGoogleSignInInitialized() async {
     if (_googleSignInInitialized) return;
     try {
@@ -71,7 +82,28 @@ class AuthRepository {
     } catch (_) {
       throw Exception(AppStrings.t('err_google_signin_failed'));
     }
+    if (kIsWeb) {
+      _googleSignIn.authenticationEvents.listen((event) {
+        if (event is GoogleSignInAuthenticationEventSignIn) {
+          unawaited(_handleWebSignInEvent(event.user));
+        }
+      });
+    }
   }
+
+  Future<void> _handleWebSignInEvent(GoogleSignInAccount account) async {
+    try {
+      await _completeGoogleSignIn(account);
+    } catch (e) {
+      debugPrint('Web Google sign-in completion error: $e');
+    }
+  }
+
+  /// Kicks off Google Sign-In initialization early on web, so the SDK's own
+  /// rendered button (which shows "Getting ready" until initialization
+  /// resolves) becomes interactive as soon as possible after the login
+  /// screen appears, rather than only starting once tapped.
+  Future<void> ensureGoogleSignInReady() => _ensureGoogleSignInInitialized();
 
   Future<UserModel> signInWithGoogle() async {
     await _ensureGoogleSignInInitialized();
@@ -84,6 +116,13 @@ class AuthRepository {
       }
       throw Exception(AppStrings.t('err_google_signin_failed'));
     }
+    return _completeGoogleSignIn(googleUser);
+  }
+
+  /// Exchanges a [GoogleSignInAccount]'s id token for a Firebase credential
+  /// and ensures the `users/{uid}` Firestore doc exists — shared by the
+  /// mobile `authenticate()` flow and the web sign-in event listener.
+  Future<UserModel> _completeGoogleSignIn(GoogleSignInAccount googleUser) async {
     final credential = GoogleAuthProvider.credential(idToken: googleUser.authentication.idToken);
     final result = await _auth.signInWithCredential(credential);
     final user = result.user;
