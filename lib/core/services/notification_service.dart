@@ -33,6 +33,15 @@ abstract class NotificationService {
       onDidReceiveNotificationResponse: _onNotificationTap,
     );
 
+    // Web push requires a `firebase-messaging-sw.js` service worker file at
+    // the site root (VAPID key setup, HTTPS-only registration, etc.) that
+    // this project doesn't ship — without it, `getToken()` hangs forever
+    // registering a service worker for a script that 404s. Skip entirely on
+    // web rather than leave the browser with a permanently-stuck SW
+    // registration; class/assignment reminders still work via the local
+    // notifications plugin above on every platform.
+    if (kIsWeb) return;
+
     try {
       await FirebaseMessaging.instance.requestPermission();
       FirebaseMessaging.onMessage.listen(_onForegroundMessage);
