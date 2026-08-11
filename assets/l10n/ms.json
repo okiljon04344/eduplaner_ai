@@ -241,5 +241,6 @@
   "err_class_save_failed": "Gagal menyimpan kelas",
   "err_class_update_failed": "Gagal mengemas kini kelas",
   "err_class_status_update_failed": "Gagal mengemas kini",
-  "err_prefix": "Ralat: {message}"
+  "err_prefix": "Ralat: {message}",
+  "home_weekend_msg": "Hari ini hari cuti! Berehatlah dengan baik 🎉"
 }

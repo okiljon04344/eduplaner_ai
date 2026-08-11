@@ -14,10 +14,11 @@ class TodayClassesRow extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final classes = ref.watch(todayClassesProvider);
     if (classes.isEmpty) {
+      final isWeekend = DateTime.now().weekday > 5;
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
         child: Text(
-          AppStrings.t('home_no_classes'),
+          AppStrings.t(isWeekend ? 'home_weekend_msg' : 'home_no_classes'),
           style: TextStyle(fontSize: 13, color: AppColors.textMuted, fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP']),
         ),
       );

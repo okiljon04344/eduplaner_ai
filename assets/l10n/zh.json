@@ -241,5 +241,6 @@
   "err_class_save_failed": "保存课程失败",
   "err_class_update_failed": "更新课程失败",
   "err_class_status_update_failed": "更新失败",
-  "err_prefix": "错误：{message}"
+  "err_prefix": "错误：{message}",
+  "home_weekend_msg": "今天是休息日，好好放松一下吧 🎉"
 }

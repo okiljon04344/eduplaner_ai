@@ -241,5 +241,6 @@
   "err_class_save_failed": "บันทึกวิชาล้มเหลว",
   "err_class_update_failed": "อัปเดตวิชาล้มเหลว",
   "err_class_status_update_failed": "อัปเดตล้มเหลว",
-  "err_prefix": "ข้อผิดพลาด: {message}"
+  "err_prefix": "ข้อผิดพลาด: {message}",
+  "home_weekend_msg": "วันนี้เป็นวันหยุด พักผ่อนให้เต็มที่นะ 🎉"
 }

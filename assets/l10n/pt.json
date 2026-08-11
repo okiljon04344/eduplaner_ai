@@ -241,5 +241,6 @@
   "err_class_save_failed": "Falha ao salvar a aula",
   "err_class_update_failed": "Falha ao atualizar a aula",
   "err_class_status_update_failed": "Falha ao atualizar",
-  "err_prefix": "Erro: {message}"
+  "err_prefix": "Erro: {message}",
+  "home_weekend_msg": "Hoje é dia de descanso! Aproveite para relaxar 🎉"
 }

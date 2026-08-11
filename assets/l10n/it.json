@@ -241,5 +241,6 @@
   "err_class_save_failed": "Impossibile salvare la lezione",
   "err_class_update_failed": "Impossibile aggiornare la lezione",
   "err_class_status_update_failed": "Aggiornamento non riuscito",
-  "err_prefix": "Errore: {message}"
+  "err_prefix": "Errore: {message}",
+  "home_weekend_msg": "Oggi è un giorno di riposo! Rilassati 🎉"
 }

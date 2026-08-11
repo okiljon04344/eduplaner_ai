@@ -42,6 +42,7 @@ class ChatRepository {
       final result = await callable.call<Map<String, dynamic>>({
         'botId': botId,
         'message': userMessage,
+        'language': AppStrings.currentLocale,
         // Privacy: only anonymous, non-identifying fields leave the device —
         // no assignment titles/descriptions (may contain personal notes) and
         // no teacher names (third-party personal data). The AI still gets
