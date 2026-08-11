@@ -14,7 +14,7 @@ class GreetingHeader extends ConsumerWidget {
     final user = ref.watch(currentUserProvider);
     final urgentCount = ref.watch(urgentAssignmentsCountProvider);
     final initial = (user?.name.isNotEmpty ?? false) ? user!.name.substring(0, 1) : 'U';
-    final onHero = Colors.white;
+    const onHero = Colors.white;
     final heroSub = AppColors.isDark
         ? AppColors.textSecondary
         : Colors.white.withValues(alpha: 0.75);
@@ -75,14 +75,14 @@ class GreetingHeader extends ConsumerWidget {
               const SizedBox(height: 10),
               Text(
                 AppStrings.t('home_greeting').replaceAll('{name}', (user?.name.isNotEmpty ?? false) ? user!.name : AppStrings.t('home_guest')),
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 25,
                   fontWeight: FontWeight.w800,
                   letterSpacing: -0.5,
                   height: 1.1,
                   color: onHero,
                   fontFamily: 'Plus Jakarta Sans',
-                  fontFamilyFallback: const ['NotoSansJP'],
+                  fontFamilyFallback: ['NotoSansJP'],
                 ),
               ),
               const SizedBox(height: 5),

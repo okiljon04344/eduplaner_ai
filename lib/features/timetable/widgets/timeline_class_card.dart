@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/subject_colors.dart';
@@ -46,7 +47,7 @@ class TimelineClassCard extends ConsumerWidget {
     );
     if (!context.mounted) return;
     if (selected == 'edit') {
-      showAddEditClassSheet(context, ref, existing: classModel);
+      unawaited(showAddEditClassSheet(context, ref, existing: classModel));
     } else if (selected == 'delete') {
       final ok = await showConfirmDialog(context,
           title: AppStrings.t('tt_delete_class'),

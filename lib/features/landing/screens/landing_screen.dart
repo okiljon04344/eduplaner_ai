@@ -857,7 +857,7 @@ class _GlowButtonState extends State<_GlowButton> {
     final py = widget.large ? 16.0 : widget.small ? 9.0 : 13.0;
     final fs = widget.large ? 16.0 : widget.small ? 12.0 : 14.0;
 
-    Widget btn = MouseRegion(
+    final Widget btn = MouseRegion(
       onEnter: (_) => setState(() => _hovered = true),
       onExit: (_) => setState(() => _hovered = false),
       cursor: SystemMouseCursors.click,
