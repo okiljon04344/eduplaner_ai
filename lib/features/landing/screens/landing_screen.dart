@@ -172,7 +172,7 @@ class _NavBar extends StatelessWidget {
           const LanguagePickerButton(),
           const SizedBox(width: 12),
           TextButton(
-            onPressed: () => context.push('/login/email'),
+            onPressed: () => context.push('/login'),
             child: Text(
               AppStrings.t('landing_cta_login'),
               style: TextStyle(
@@ -186,7 +186,7 @@ class _NavBar extends StatelessWidget {
           _GlowButton(
             label: AppStrings.t('landing_cta_signup'),
             small: !isDesktop,
-            onTap: () => context.push('/login/signup'),
+            onTap: () => context.push('/login'),
           ),
         ],
       ),
@@ -323,12 +323,12 @@ class _HeroText extends StatelessWidget {
           children: [
             _GlowButton(
               label: AppStrings.t('landing_cta_start'),
-              onTap: () => context.push('/login/signup'),
+              onTap: () => context.push('/login'),
               pulseCtrl: pulseCtrl,
             ),
             const SizedBox(width: 16),
             OutlinedButton(
-              onPressed: () => context.push('/login/email'),
+              onPressed: () => context.push('/login'),
               style: OutlinedButton.styleFrom(
                 foregroundColor: Colors.white.withValues(alpha: 0.75),
                 side: BorderSide(color: Colors.white.withValues(alpha: 0.18)),
@@ -792,7 +792,7 @@ class _CtaSection extends StatelessWidget {
 
           _GlowButton(
             label: AppStrings.t('landing_cta_button'),
-            onTap: () => context.push('/login/signup'),
+            onTap: () => context.push('/login'),
             pulseCtrl: pulseCtrl,
             large: true,
           ).animate().fadeIn(delay: 380.ms).scale(
