@@ -161,28 +161,41 @@ class _NavBar extends StatelessWidget {
               .animate(onPlay: (c) => c.repeat(reverse: true))
               .shimmer(duration: 2400.ms, color: Colors.white.withValues(alpha: 0.15)),
           const SizedBox(width: 10),
-          const Text(
-            'EduPlanner AI',
-            style: TextStyle(
-              fontSize: 16, fontWeight: FontWeight.w800, color: Colors.white,
-              fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: ['NotoSansJP'],
-            ),
-          ),
-          const Spacer(),
-          const LanguagePickerButton(),
-          const SizedBox(width: 12),
-          TextButton(
-            onPressed: () => context.push('/login'),
+          // Expanded (not Flexible+Spacer) so the wordmark claims the *entire*
+          // leftover width instead of splitting it 50/50 with a sibling
+          // Spacer — otherwise it ellipsizes on phones far before it needs to.
+          const Expanded(
             child: Text(
-              AppStrings.t('landing_cta_login'),
+              'EduPlanner AI',
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+              softWrap: false,
               style: TextStyle(
-                fontSize: 13, fontWeight: FontWeight.w600,
-                color: Colors.white.withValues(alpha: 0.7),
-                fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP'],
+                fontSize: 16, fontWeight: FontWeight.w800, color: Colors.white,
+                fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: ['NotoSansJP'],
               ),
             ),
           ),
-          const SizedBox(width: 8),
+          const LanguagePickerButton(),
+          const SizedBox(width: 12),
+          // The hero section right below already repeats both the login and
+          // signup CTAs prominently, so on narrow phones the nav bar only
+          // keeps the signup button — otherwise there isn't enough width for
+          // the full "EduPlanner AI" wordmark next to three separate CTAs.
+          if (isDesktop) ...[
+            TextButton(
+              onPressed: () => context.push('/login'),
+              child: Text(
+                AppStrings.t('landing_cta_login'),
+                style: TextStyle(
+                  fontSize: 13, fontWeight: FontWeight.w600,
+                  color: Colors.white.withValues(alpha: 0.7),
+                  fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP'],
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+          ],
           _GlowButton(
             label: AppStrings.t('landing_cta_signup'),
             small: !isDesktop,
