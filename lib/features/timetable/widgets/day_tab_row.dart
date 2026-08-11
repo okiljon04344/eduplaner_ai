@@ -41,7 +41,7 @@ class DayTabRow extends StatelessWidget {
               ? const Color(0x40A855F7)
               : const Color(0xFF1A1035);
           final activeText = AppColors.isDark ? const Color(0xFFE879F9) : Colors.white;
-          final inactiveBg = AppColors.isDark ? AppColors.surfaceVar : AppColors.surfaceVar;
+          final inactiveBg = AppColors.surfaceVar;
           final inactiveText = AppColors.isDark
               ? const Color(0x66C8AAFF)
               : const Color(0xFF6B7280);

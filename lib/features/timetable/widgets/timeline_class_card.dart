@@ -124,16 +124,14 @@ class TimelineClassCard extends ConsumerWidget {
                   decoration: BoxDecoration(
                     borderRadius:
                         BorderRadius.circular(AppColors.isDark ? 20 : 18),
-                    boxShadow: AppColors.isDark ? null : AppColors.cardShadow,
+                    boxShadow: AppColors.cardShadow,
                   ),
                   child: ClipRRect(
                     borderRadius:
                         BorderRadius.circular(AppColors.isDark ? 20 : 18),
                     child: Container(
                       decoration: BoxDecoration(
-                        color: AppColors.isDark
-                            ? AppColors.surfaceVar
-                            : AppColors.surface,
+                        color: AppColors.cardSurface,
                         border: Border(
                           top: BorderSide(
                               color: AppColors.isDark

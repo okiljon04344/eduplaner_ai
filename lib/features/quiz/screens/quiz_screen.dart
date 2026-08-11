@@ -291,10 +291,10 @@ class _QuizCardState extends State<_QuizCard> {
       margin: const EdgeInsets.only(bottom: 14),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.isDark ? AppColors.surfaceVar : AppColors.surface,
+        color: AppColors.cardSurface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
-        boxShadow: AppColors.isDark ? null : AppColors.cardShadow,
+        border: Border.all(color: AppColors.cardStroke),
+        boxShadow: AppColors.cardShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

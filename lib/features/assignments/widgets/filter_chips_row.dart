@@ -50,7 +50,7 @@ class FilterChipsRow extends ConsumerWidget {
                   decoration: BoxDecoration(
                     color: isSelected
                         ? (AppColors.isDark ? activeColor.withValues(alpha: 0.15) : activeColor)
-                        : (AppColors.isDark ? AppColors.surfaceVar : AppColors.surfaceVar),
+                        : AppColors.surfaceVar,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
                       color: isSelected
