@@ -242,5 +242,6 @@
   "err_class_update_failed": "Failed to update the class",
   "err_class_status_update_failed": "Failed to update",
   "err_prefix": "Error: {message}",
-  "home_weekend_msg": "It's the weekend! Time to relax 🎉"
+  "home_weekend_msg": "It's the weekend! Time to relax 🎉",
+  "err_account_exists": "This email is already registered. Enter the correct password, or use the login screen."
 }

@@ -242,5 +242,6 @@
   "err_class_update_failed": "Nabigo ang pag-update ng klase",
   "err_class_status_update_failed": "Nabigo ang pag-update",
   "err_prefix": "Error: {message}",
-  "home_weekend_msg": "Araw ng pahinga ngayon! Mag-relax ka 🎉"
+  "home_weekend_msg": "Araw ng pahinga ngayon! Mag-relax ka 🎉",
+  "err_account_exists": "Nakarehistro na ang email na ito. Ilagay ang tamang password, o gamitin ang login screen."
 }

@@ -242,5 +242,6 @@
   "err_class_update_failed": "Cập nhật lớp học thất bại",
   "err_class_status_update_failed": "Cập nhật thất bại",
   "err_prefix": "Lỗi: {message}",
-  "home_weekend_msg": "Hôm nay là ngày nghỉ! Hãy thư giãn nhé 🎉"
+  "home_weekend_msg": "Hôm nay là ngày nghỉ! Hãy thư giãn nhé 🎉",
+  "err_account_exists": "Email này đã được đăng ký. Vui lòng nhập đúng mật khẩu hoặc sử dụng màn hình đăng nhập."
 }

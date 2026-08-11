@@ -34,6 +34,20 @@
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
   <link rel="apple-touch-icon" sizes="512x512" href="icons/Icon-512.png">
 
+  <!--
+    Google Sign-In on Flutter Web requires a Web OAuth client id here (the
+    Android/iOS apps get theirs automatically from google-services.json /
+    GoogleService-Info.plist, but web has no such file). Without this tag,
+    tapping "Googleda kirish" on web fails to initialize.
+
+    To get the value: Firebase Console → Authentication → Sign-in method →
+    Google → "Web SDK configuration" → copy the Web client ID (it's
+    auto-created the moment Google sign-in is enabled for this project).
+    Paste it below and uncomment.
+
+  <meta name="google-signin-client_id" content="YOUR_WEB_CLIENT_ID.apps.googleusercontent.com">
+  -->
+
   <!-- Preconnect to CanvasKit CDN so WASM loads without DNS delay -->
   <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
   <link rel="dns-prefetch" href="https://www.gstatic.com">

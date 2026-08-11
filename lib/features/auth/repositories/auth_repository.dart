@@ -57,10 +57,20 @@ class AuthRepository {
 
   /// google_sign_in 7.x requires `initialize()` to be called exactly once
   /// before any other method — see the package's MIGRATION.md.
+  ///
+  /// On web this throws if `web/index.html` has no
+  /// `<meta name="google-signin-client_id" ...>` tag (a required, per-platform
+  /// setup step — see that file). Wrapped so a missing/misconfigured client
+  /// id surfaces as a normal translated error instead of an uncaught
+  /// assertion.
   Future<void> _ensureGoogleSignInInitialized() async {
     if (_googleSignInInitialized) return;
-    await _googleSignIn.initialize();
-    _googleSignInInitialized = true;
+    try {
+      await _googleSignIn.initialize();
+      _googleSignInInitialized = true;
+    } catch (_) {
+      throw Exception(AppStrings.t('err_google_signin_failed'));
+    }
   }
 
   Future<UserModel> signInWithGoogle() async {
@@ -94,6 +104,17 @@ class AuthRepository {
     return UserModel.fromFirestore(doc);
   }
 
+  /// Registers a brand-new account, or — if [email] is already registered —
+  /// transparently logs the user in with the [password] they just typed.
+  ///
+  /// This turns the sign-up form into a "continue" action: a returning user
+  /// who mistakenly lands on sign-up instead of login isn't blocked with a
+  /// bare "email already in use" error. If their password matches the
+  /// existing account, they're simply signed in (Firebase's `userChanges()`
+  /// then routes them to `/home` exactly as a normal login would). If it
+  /// doesn't match, [err_account_exists] is thrown instead of a raw
+  /// FirebaseAuth error so the message is actionable ("this account already
+  /// exists — use the correct password or the login screen").
   Future<UserModel> signUpWithEmail(String email, String password, String name) async {
     try {
       final result = await _auth.createUserWithEmailAndPassword(email: email, password: password);
@@ -104,6 +125,13 @@ class AuthRepository {
       await _db.collection('users').doc(user.uid).set(newUser.toFirestore());
       return newUser;
     } on FirebaseAuthException catch (e) {
+      if (e.code == 'email-already-in-use') {
+        try {
+          return await signInWithEmail(email, password);
+        } catch (_) {
+          throw Exception(AppStrings.t('err_account_exists'));
+        }
+      }
       throw Exception(_authErrorMessage(e.code));
     }
   }

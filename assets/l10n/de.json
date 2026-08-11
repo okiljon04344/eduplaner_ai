@@ -242,5 +242,6 @@
   "err_class_update_failed": "Kurs konnte nicht aktualisiert werden",
   "err_class_status_update_failed": "Aktualisierung fehlgeschlagen",
   "err_prefix": "Fehler: {message}",
-  "home_weekend_msg": "Heute ist ein freier Tag! Entspann dich 🎉"
+  "home_weekend_msg": "Heute ist ein freier Tag! Entspann dich 🎉",
+  "err_account_exists": "Diese E-Mail ist bereits registriert. Gib das richtige Passwort ein oder nutze den Anmeldebildschirm."
 }

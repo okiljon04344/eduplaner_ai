@@ -250,5 +250,6 @@
   "err_class_update_failed": "授業の更新に失敗しました",
   "err_class_status_update_failed": "更新に失敗しました",
   "err_prefix": "エラー: {message}",
-  "home_weekend_msg": "今日は休みの日です。ゆっくり過ごしましょう 🎉"
+  "home_weekend_msg": "今日は休みの日です。ゆっくり過ごしましょう 🎉",
+  "err_account_exists": "このメールアドレスは既に登録されています。正しいパスワードを入力するか、ログイン画面をご利用ください。"
 }

@@ -242,5 +242,6 @@
   "err_class_update_failed": "No se pudo actualizar la clase",
   "err_class_status_update_failed": "Error al actualizar",
   "err_prefix": "Error: {message}",
-  "home_weekend_msg": "¡Hoy es día de descanso! Disfruta 🎉"
+  "home_weekend_msg": "¡Hoy es día de descanso! Disfruta 🎉",
+  "err_account_exists": "Este correo ya está registrado. Ingresa la contraseña correcta o usa la pantalla de inicio de sesión."
 }

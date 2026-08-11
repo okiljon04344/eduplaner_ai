@@ -7,25 +7,29 @@
     "lang": "ja",
     "dir": "ltr",
     "display": "standalone",
-    "display_override": ["standalone", "minimal-ui"],
-    "background_color": "#08060F",
-    "theme_color": "#7C3AED",
+    "display_override": [
+        "standalone",
+        "minimal-ui"
+    ],
+    "background_color": "#0B0B1E",
+    "theme_color": "#0B0B1E",
     "description": "AIを活用したスマート学習管理アプリ。時間割、課題、AIチャット、テスト対策を一つに。",
     "orientation": "any",
-    "categories": ["education", "productivity"],
+    "categories": [
+        "education",
+        "productivity"
+    ],
     "prefer_related_applications": false,
     "icons": [
         {
             "src": "icons/Icon-192.png",
             "sizes": "192x192",
-            "type": "image/png",
-            "purpose": "any"
+            "type": "image/png"
         },
         {
             "src": "icons/Icon-512.png",
             "sizes": "512x512",
-            "type": "image/png",
-            "purpose": "any"
+            "type": "image/png"
         },
         {
             "src": "icons/Icon-maskable-192.png",

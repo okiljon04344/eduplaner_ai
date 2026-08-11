@@ -242,5 +242,6 @@
   "err_class_update_failed": "Не удалось обновить урок",
   "err_class_status_update_failed": "Не удалось обновить",
   "err_prefix": "Ошибка: {message}",
-  "home_weekend_msg": "Сегодня выходной! Отдыхайте 🎉"
+  "home_weekend_msg": "Сегодня выходной! Отдыхайте 🎉",
+  "err_account_exists": "Этот email уже зарегистрирован. Введите правильный пароль или воспользуйтесь экраном входа."
 }
