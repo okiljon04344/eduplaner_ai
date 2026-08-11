@@ -243,5 +243,17 @@
   "err_class_status_update_failed": "Bijwerken mislukt",
   "err_prefix": "Fout: {message}",
   "home_weekend_msg": "Vandaag is het een vrije dag! Geniet ervan 🎉",
-  "err_account_exists": "Dit e-mailadres is al geregistreerd. Voer het juiste wachtwoord in of gebruik het inlogscherm."
+  "err_account_exists": "Dit e-mailadres is al geregistreerd. Voer het juiste wachtwoord in of gebruik het inlogscherm.",
+  "reset_code_title": "Nieuw wachtwoord instellen",
+  "reset_code_intro": "Plak de link of code die je per e-mail hebt ontvangen",
+  "reset_code_hint": "Link of code",
+  "reset_code_verify_btn": "Verifiëren",
+  "reset_code_for_email": "Wachtwoord wordt gereset voor {email}",
+  "reset_code_new_pass_hint": "Nieuw wachtwoord (6+ tekens)",
+  "reset_code_confirm_hint": "Bevestig nieuw wachtwoord",
+  "reset_code_submit_btn": "Wachtwoord wijzigen",
+  "reset_code_success": "Wachtwoord gewijzigd",
+  "reset_code_success_msg": "Log in met je nieuwe wachtwoord",
+  "reset_code_invalid": "De code is ongeldig of verlopen",
+  "login_have_reset_code": "Heb je een resetcode?"
 }

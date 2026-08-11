@@ -243,5 +243,17 @@
   "err_class_status_update_failed": "업데이트에 실패했습니다",
   "err_prefix": "오류: {message}",
   "home_weekend_msg": "오늘은 쉬는 날이에요! 편히 쉬세요 🎉",
-  "err_account_exists": "이 이메일은 이미 등록되어 있습니다. 올바른 비밀번호를 입력하거나 로그인 화면을 이용해 주세요."
+  "err_account_exists": "이 이메일은 이미 등록되어 있습니다. 올바른 비밀번호를 입력하거나 로그인 화면을 이용해 주세요.",
+  "reset_code_title": "새 비밀번호 설정",
+  "reset_code_intro": "이메일로 받은 링크 또는 코드를 붙여넣으세요",
+  "reset_code_hint": "링크 또는 코드",
+  "reset_code_verify_btn": "확인",
+  "reset_code_for_email": "{email}의 비밀번호를 재설정합니다",
+  "reset_code_new_pass_hint": "새 비밀번호 (6자 이상)",
+  "reset_code_confirm_hint": "새 비밀번호 확인",
+  "reset_code_submit_btn": "비밀번호 변경",
+  "reset_code_success": "비밀번호가 변경되었습니다",
+  "reset_code_success_msg": "새 비밀번호로 로그인해 주세요",
+  "reset_code_invalid": "코드가 유효하지 않거나 만료되었습니다",
+  "login_have_reset_code": "재설정 코드가 있으신가요?"
 }

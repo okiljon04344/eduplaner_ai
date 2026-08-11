@@ -158,6 +158,12 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
                       child: Text(AppStrings.t('login_no_account')),
                     ),
                   ),
+                  Center(
+                    child: TextButton(
+                      onPressed: () => context.push('/login/reset'),
+                      child: Text(AppStrings.t('login_have_reset_code')),
+                    ),
+                  ),
                 ],
               ),
             ),

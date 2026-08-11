@@ -243,5 +243,17 @@
   "err_class_status_update_failed": "अपडेट करने में विफल",
   "err_prefix": "त्रुटि: {message}",
   "home_weekend_msg": "आज छुट्टी का दिन है! आराम करें 🎉",
-  "err_account_exists": "यह ईमेल पहले से पंजीकृत है। सही पासवर्ड दर्ज करें, या लॉगिन स्क्रीन का उपयोग करें।"
+  "err_account_exists": "यह ईमेल पहले से पंजीकृत है। सही पासवर्ड दर्ज करें, या लॉगिन स्क्रीन का उपयोग करें।",
+  "reset_code_title": "नया पासवर्ड सेट करें",
+  "reset_code_intro": "ईमेल में मिला लिंक या कोड यहां पेस्ट करें",
+  "reset_code_hint": "लिंक या कोड",
+  "reset_code_verify_btn": "सत्यापित करें",
+  "reset_code_for_email": "{email} के लिए पासवर्ड रीसेट किया जा रहा है",
+  "reset_code_new_pass_hint": "नया पासवर्ड (कम से कम 6 अक्षर)",
+  "reset_code_confirm_hint": "नए पासवर्ड की पुष्टि करें",
+  "reset_code_submit_btn": "पासवर्ड बदलें",
+  "reset_code_success": "पासवर्ड बदल दिया गया",
+  "reset_code_success_msg": "कृपया नए पासवर्ड से लॉगिन करें",
+  "reset_code_invalid": "कोड अमान्य है या समय समाप्त हो गया है",
+  "login_have_reset_code": "क्या आपके पास रीसेट कोड है?"
 }

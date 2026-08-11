@@ -243,5 +243,17 @@
   "err_class_status_update_failed": "Güncelleme başarısız oldu",
   "err_prefix": "Hata: {message}",
   "home_weekend_msg": "Bugün tatil günü! Keyfine bak 🎉",
-  "err_account_exists": "Bu e-posta zaten kayıtlı. Doğru şifreyi girin veya giriş ekranını kullanın."
+  "err_account_exists": "Bu e-posta zaten kayıtlı. Doğru şifreyi girin veya giriş ekranını kullanın.",
+  "reset_code_title": "Yeni Şifre Belirle",
+  "reset_code_intro": "E-postayla aldığınız bağlantı veya kodu yapıştırın",
+  "reset_code_hint": "Bağlantı veya kod",
+  "reset_code_verify_btn": "Doğrula",
+  "reset_code_for_email": "{email} için şifre sıfırlanıyor",
+  "reset_code_new_pass_hint": "Yeni şifre (en az 6 karakter)",
+  "reset_code_confirm_hint": "Yeni şifreyi onayla",
+  "reset_code_submit_btn": "Şifreyi Değiştir",
+  "reset_code_success": "Şifre değiştirildi",
+  "reset_code_success_msg": "Lütfen yeni şifrenizle giriş yapın",
+  "reset_code_invalid": "Kod geçersiz veya süresi dolmuş",
+  "login_have_reset_code": "Sıfırlama kodunuz var mı?"
 }

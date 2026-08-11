@@ -243,5 +243,17 @@
   "err_class_status_update_failed": "อัปเดตล้มเหลว",
   "err_prefix": "ข้อผิดพลาด: {message}",
   "home_weekend_msg": "วันนี้เป็นวันหยุด พักผ่อนให้เต็มที่นะ 🎉",
-  "err_account_exists": "อีเมลนี้ลงทะเบียนไว้แล้ว กรุณากรอกรหัสผ่านที่ถูกต้อง หรือใช้หน้าจอเข้าสู่ระบบ"
+  "err_account_exists": "อีเมลนี้ลงทะเบียนไว้แล้ว กรุณากรอกรหัสผ่านที่ถูกต้อง หรือใช้หน้าจอเข้าสู่ระบบ",
+  "reset_code_title": "ตั้งรหัสผ่านใหม่",
+  "reset_code_intro": "วางลิงก์หรือรหัสที่คุณได้รับทางอีเมล",
+  "reset_code_hint": "ลิงก์หรือรหัส",
+  "reset_code_verify_btn": "ยืนยัน",
+  "reset_code_for_email": "กำลังรีเซ็ตรหัสผ่านสำหรับ {email}",
+  "reset_code_new_pass_hint": "รหัสผ่านใหม่ (อย่างน้อย 6 ตัวอักษร)",
+  "reset_code_confirm_hint": "ยืนยันรหัสผ่านใหม่",
+  "reset_code_submit_btn": "เปลี่ยนรหัสผ่าน",
+  "reset_code_success": "เปลี่ยนรหัสผ่านแล้ว",
+  "reset_code_success_msg": "กรุณาเข้าสู่ระบบด้วยรหัสผ่านใหม่",
+  "reset_code_invalid": "รหัสไม่ถูกต้องหรือหมดอายุ",
+  "login_have_reset_code": "มีรหัสรีเซ็ตหรือไม่?"
 }

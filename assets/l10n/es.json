@@ -243,5 +243,17 @@
   "err_class_status_update_failed": "Error al actualizar",
   "err_prefix": "Error: {message}",
   "home_weekend_msg": "¡Hoy es día de descanso! Disfruta 🎉",
-  "err_account_exists": "Este correo ya está registrado. Ingresa la contraseña correcta o usa la pantalla de inicio de sesión."
+  "err_account_exists": "Este correo ya está registrado. Ingresa la contraseña correcta o usa la pantalla de inicio de sesión.",
+  "reset_code_title": "Establecer una nueva contraseña",
+  "reset_code_intro": "Pega el enlace o código que recibiste por correo",
+  "reset_code_hint": "Enlace o código",
+  "reset_code_verify_btn": "Verificar",
+  "reset_code_for_email": "Restableciendo la contraseña de {email}",
+  "reset_code_new_pass_hint": "Nueva contraseña (6+ caracteres)",
+  "reset_code_confirm_hint": "Confirmar nueva contraseña",
+  "reset_code_submit_btn": "Cambiar contraseña",
+  "reset_code_success": "Contraseña cambiada",
+  "reset_code_success_msg": "Inicia sesión con tu nueva contraseña",
+  "reset_code_invalid": "El código no es válido o ha expirado",
+  "login_have_reset_code": "¿Tienes un código de restablecimiento?"
 }

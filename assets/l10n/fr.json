@@ -243,5 +243,17 @@
   "err_class_status_update_failed": "Échec de la mise à jour",
   "err_prefix": "Erreur : {message}",
   "home_weekend_msg": "Aujourd'hui, c'est un jour de repos ! Profitez-en 🎉",
-  "err_account_exists": "Cet e-mail est déjà enregistré. Entrez le bon mot de passe ou utilisez l'écran de connexion."
+  "err_account_exists": "Cet e-mail est déjà enregistré. Entrez le bon mot de passe ou utilisez l'écran de connexion.",
+  "reset_code_title": "Définir un nouveau mot de passe",
+  "reset_code_intro": "Collez le lien ou le code reçu par e-mail",
+  "reset_code_hint": "Lien ou code",
+  "reset_code_verify_btn": "Vérifier",
+  "reset_code_for_email": "Réinitialisation du mot de passe pour {email}",
+  "reset_code_new_pass_hint": "Nouveau mot de passe (6 caractères min.)",
+  "reset_code_confirm_hint": "Confirmer le nouveau mot de passe",
+  "reset_code_submit_btn": "Changer le mot de passe",
+  "reset_code_success": "Mot de passe modifié",
+  "reset_code_success_msg": "Veuillez vous connecter avec votre nouveau mot de passe",
+  "reset_code_invalid": "Le code est invalide ou a expiré",
+  "login_have_reset_code": "Vous avez un code de réinitialisation ?"
 }

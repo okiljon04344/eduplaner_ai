@@ -167,6 +167,28 @@ class AuthRepository {
     }
   }
 
+  /// Validates a password-reset `oobCode` (the code embedded in the link
+  /// Firebase emails on [sendPasswordResetEmail]) and returns the email
+  /// address it belongs to, so the confirmation screen can show "resetting
+  /// the password for {email}" before the user commits to a new password.
+  Future<String> verifyPasswordResetCode(String code) async {
+    try {
+      final email = await _auth.verifyPasswordResetCode(code);
+      return email;
+    } on FirebaseAuthException catch (_) {
+      throw Exception(AppStrings.t('reset_code_invalid'));
+    }
+  }
+
+  /// Applies [newPassword] using a previously-verified `oobCode`.
+  Future<void> confirmPasswordReset(String code, String newPassword) async {
+    try {
+      await _auth.confirmPasswordReset(code: code, newPassword: newPassword);
+    } on FirebaseAuthException catch (_) {
+      throw Exception(AppStrings.t('reset_code_invalid'));
+    }
+  }
+
   String _authErrorMessage(String code) {
     switch (code) {
       case 'email-already-in-use':

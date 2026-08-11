@@ -243,5 +243,17 @@
   "err_class_status_update_failed": "فشل التحديث",
   "err_prefix": "خطأ: {message}",
   "home_weekend_msg": "اليوم يوم إجازة! استمتع بوقتك 🎉",
-  "err_account_exists": "هذا البريد الإلكتروني مسجل بالفعل. أدخل كلمة المرور الصحيحة، أو استخدم شاشة تسجيل الدخول."
+  "err_account_exists": "هذا البريد الإلكتروني مسجل بالفعل. أدخل كلمة المرور الصحيحة، أو استخدم شاشة تسجيل الدخول.",
+  "reset_code_title": "تعيين كلمة مرور جديدة",
+  "reset_code_intro": "الصق الرابط أو الرمز الذي تلقيته عبر البريد الإلكتروني",
+  "reset_code_hint": "الرابط أو الرمز",
+  "reset_code_verify_btn": "تحقق",
+  "reset_code_for_email": "إعادة تعيين كلمة المرور لـ {email}",
+  "reset_code_new_pass_hint": "كلمة مرور جديدة (6 أحرف على الأقل)",
+  "reset_code_confirm_hint": "تأكيد كلمة المرور الجديدة",
+  "reset_code_submit_btn": "تغيير كلمة المرور",
+  "reset_code_success": "تم تغيير كلمة المرور",
+  "reset_code_success_msg": "يرجى تسجيل الدخول بكلمة المرور الجديدة",
+  "reset_code_invalid": "الرمز غير صالح أو منتهي الصلاحية",
+  "login_have_reset_code": "هل لديك رمز إعادة تعيين؟"
 }

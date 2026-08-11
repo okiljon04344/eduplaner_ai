@@ -243,5 +243,17 @@
   "err_class_status_update_failed": "更新失败",
   "err_prefix": "错误：{message}",
   "home_weekend_msg": "今天是休息日，好好放松一下吧 🎉",
-  "err_account_exists": "该邮箱地址已注册。请输入正确的密码，或使用登录页面。"
+  "err_account_exists": "该邮箱地址已注册。请输入正确的密码，或使用登录页面。",
+  "reset_code_title": "设置新密码",
+  "reset_code_intro": "请粘贴您在邮件中收到的链接或代码",
+  "reset_code_hint": "链接或代码",
+  "reset_code_verify_btn": "验证",
+  "reset_code_for_email": "正在为 {email} 重置密码",
+  "reset_code_new_pass_hint": "新密码（至少6位）",
+  "reset_code_confirm_hint": "确认新密码",
+  "reset_code_submit_btn": "更改密码",
+  "reset_code_success": "密码已更改",
+  "reset_code_success_msg": "请使用新密码登录",
+  "reset_code_invalid": "代码无效或已过期",
+  "login_have_reset_code": "已有重置代码？"
 }

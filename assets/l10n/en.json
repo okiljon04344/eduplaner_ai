@@ -243,5 +243,17 @@
   "err_class_status_update_failed": "Failed to update",
   "err_prefix": "Error: {message}",
   "home_weekend_msg": "It's the weekend! Time to relax 🎉",
-  "err_account_exists": "This email is already registered. Enter the correct password, or use the login screen."
+  "err_account_exists": "This email is already registered. Enter the correct password, or use the login screen.",
+  "reset_code_title": "Set a New Password",
+  "reset_code_intro": "Paste the link or code you received by email",
+  "reset_code_hint": "Link or code",
+  "reset_code_verify_btn": "Verify",
+  "reset_code_for_email": "Resetting the password for {email}",
+  "reset_code_new_pass_hint": "New password (6+ characters)",
+  "reset_code_confirm_hint": "Confirm new password",
+  "reset_code_submit_btn": "Change Password",
+  "reset_code_success": "Password changed",
+  "reset_code_success_msg": "Please log in with your new password",
+  "reset_code_invalid": "The code is invalid or expired",
+  "login_have_reset_code": "Have a reset code?"
 }

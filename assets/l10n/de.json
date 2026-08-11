@@ -243,5 +243,17 @@
   "err_class_status_update_failed": "Aktualisierung fehlgeschlagen",
   "err_prefix": "Fehler: {message}",
   "home_weekend_msg": "Heute ist ein freier Tag! Entspann dich 🎉",
-  "err_account_exists": "Diese E-Mail ist bereits registriert. Gib das richtige Passwort ein oder nutze den Anmeldebildschirm."
+  "err_account_exists": "Diese E-Mail ist bereits registriert. Gib das richtige Passwort ein oder nutze den Anmeldebildschirm.",
+  "reset_code_title": "Neues Passwort festlegen",
+  "reset_code_intro": "Füge den Link oder Code aus der E-Mail ein",
+  "reset_code_hint": "Link oder Code",
+  "reset_code_verify_btn": "Bestätigen",
+  "reset_code_for_email": "Passwort wird für {email} zurückgesetzt",
+  "reset_code_new_pass_hint": "Neues Passwort (mind. 6 Zeichen)",
+  "reset_code_confirm_hint": "Neues Passwort bestätigen",
+  "reset_code_submit_btn": "Passwort ändern",
+  "reset_code_success": "Passwort geändert",
+  "reset_code_success_msg": "Bitte melde dich mit deinem neuen Passwort an",
+  "reset_code_invalid": "Der Code ist ungültig oder abgelaufen",
+  "login_have_reset_code": "Hast du einen Reset-Code?"
 }

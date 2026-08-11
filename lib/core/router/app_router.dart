@@ -9,6 +9,7 @@ import '../../features/auth/providers/auth_provider.dart';
 import '../../features/auth/screens/email_login_screen.dart';
 import '../../features/auth/screens/email_signup_screen.dart';
 import '../../features/auth/screens/login_screen.dart';
+import '../../features/auth/screens/reset_password_screen.dart';
 import '../../features/home/screens/home_screen.dart';
 import '../../features/landing/screens/landing_screen.dart';
 import '../../features/onboarding/providers/onboarding_provider.dart';
@@ -71,6 +72,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/login', pageBuilder: (_, s) => _fade(s, const LoginScreen())),
       GoRoute(path: '/login/signup', pageBuilder: (_, s) => _slideUp(s, const EmailSignupScreen())),
       GoRoute(path: '/login/email', pageBuilder: (_, s) => _slideUp(s, const EmailLoginScreen())),
+      GoRoute(path: '/login/reset', pageBuilder: (_, s) => _slideUp(s, const ResetPasswordScreen())),
       GoRoute(path: '/onboarding', pageBuilder: (_, s) => _fade(s, const OnboardingScreen())),
       GoRoute(path: '/settings', pageBuilder: (_, s) => _slideRight(s, const SettingsScreen())),
       GoRoute(path: '/quiz', pageBuilder: (_, s) => _slideUp(s, const QuizScreen())),

@@ -243,5 +243,17 @@
   "err_class_status_update_failed": "Nabigo ang pag-update",
   "err_prefix": "Error: {message}",
   "home_weekend_msg": "Araw ng pahinga ngayon! Mag-relax ka 🎉",
-  "err_account_exists": "Nakarehistro na ang email na ito. Ilagay ang tamang password, o gamitin ang login screen."
+  "err_account_exists": "Nakarehistro na ang email na ito. Ilagay ang tamang password, o gamitin ang login screen.",
+  "reset_code_title": "Magtakda ng Bagong Password",
+  "reset_code_intro": "I-paste ang link o code na natanggap mo sa email",
+  "reset_code_hint": "Link o code",
+  "reset_code_verify_btn": "I-verify",
+  "reset_code_for_email": "Ina-reset ang password para sa {email}",
+  "reset_code_new_pass_hint": "Bagong password (6+ na karakter)",
+  "reset_code_confirm_hint": "Kumpirmahin ang bagong password",
+  "reset_code_submit_btn": "Palitan ang Password",
+  "reset_code_success": "Napalitan ang password",
+  "reset_code_success_msg": "Mag-log in gamit ang bagong password mo",
+  "reset_code_invalid": "Hindi wasto o expired na ang code",
+  "login_have_reset_code": "May reset code ka na ba?"
 }

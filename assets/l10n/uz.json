@@ -251,5 +251,17 @@
   "err_class_status_update_failed": "Yangilab bo'lmadi",
   "err_prefix": "Xatolik: {message}",
   "home_weekend_msg": "Bugun dam olish kuni! Yaxshi dam oling 🎉",
-  "err_account_exists": "Bu email allaqachon ro'yxatdan o'tgan. To'g'ri parolni kiriting yoki kirish sahifasidan foydalaning."
+  "err_account_exists": "Bu email allaqachon ro'yxatdan o'tgan. To'g'ri parolni kiriting yoki kirish sahifasidan foydalaning.",
+  "reset_code_title": "Yangi parol o'rnatish",
+  "reset_code_intro": "Emailga kelgan havola yoki kodni joylashtiring",
+  "reset_code_hint": "Havola yoki kod",
+  "reset_code_verify_btn": "Tasdiqlash",
+  "reset_code_for_email": "{email} uchun parol tiklanmoqda",
+  "reset_code_new_pass_hint": "Yangi parol (kamida 6 belgi)",
+  "reset_code_confirm_hint": "Yangi parol (tasdiqlash)",
+  "reset_code_submit_btn": "Parolni almashtirish",
+  "reset_code_success": "Parol almashtirildi",
+  "reset_code_success_msg": "Yangi parol bilan tizimga kiring",
+  "reset_code_invalid": "Kod noto'g'ri yoki muddati o'tgan",
+  "login_have_reset_code": "Tiklash kodingiz bormi?"
 }

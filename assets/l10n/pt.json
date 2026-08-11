@@ -243,5 +243,17 @@
   "err_class_status_update_failed": "Falha ao atualizar",
   "err_prefix": "Erro: {message}",
   "home_weekend_msg": "Hoje é dia de descanso! Aproveite para relaxar 🎉",
-  "err_account_exists": "Este e-mail já está registrado. Digite a senha correta ou use a tela de login."
+  "err_account_exists": "Este e-mail já está registrado. Digite a senha correta ou use a tela de login.",
+  "reset_code_title": "Definir Nova Senha",
+  "reset_code_intro": "Cole o link ou código que você recebeu por e-mail",
+  "reset_code_hint": "Link ou código",
+  "reset_code_verify_btn": "Verificar",
+  "reset_code_for_email": "Redefinindo a senha de {email}",
+  "reset_code_new_pass_hint": "Nova senha (mínimo 6 caracteres)",
+  "reset_code_confirm_hint": "Confirmar nova senha",
+  "reset_code_submit_btn": "Alterar Senha",
+  "reset_code_success": "Senha alterada",
+  "reset_code_success_msg": "Faça login com sua nova senha",
+  "reset_code_invalid": "O código é inválido ou expirou",
+  "login_have_reset_code": "Tem um código de redefinição?"
 }
