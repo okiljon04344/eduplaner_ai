@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/foundation.dart';
+import '../../../core/l10n/app_strings.dart';
 import '../../assignments/models/assignment_model.dart';
 import '../../timetable/models/class_model.dart';
 import '../models/message_model.dart';
@@ -28,8 +29,8 @@ class ChatRepository {
   ///   - Classes: `{subject, dayOfWeek, period}` — no teacher names
   ///     (third-party personal data).
   ///
-  /// Throws a localised Japanese [Exception] on error so callers can surface
-  /// it directly in the UI without further translation.
+  /// Throws a localised [Exception] (via [AppStrings]) on error so callers
+  /// can surface it directly in the UI without further translation.
   Future<String> sendMessage({
     required String botId,
     required String userMessage,
@@ -50,15 +51,15 @@ class ChatRepository {
       });
       final reply = result.data['reply'] as String?;
       if (reply == null || reply.isEmpty) {
-        throw Exception('AIからの応答がありませんでした。もう一度お試しください。');
+        throw Exception(AppStrings.t('err_ai_no_response'));
       }
       return reply;
     } on FirebaseFunctionsException catch (e) {
       debugPrint('chatWithTutor error: ${e.code} ${e.message}');
       if (e.code == 'unauthenticated') {
-        throw Exception('ログインが必要です。');
+        throw Exception(AppStrings.t('err_login_required'));
       }
-      throw Exception('AIサーバーに接続できませんでした。しばらくしてからもう一度お試しください。');
+      throw Exception(AppStrings.t('err_ai_connection_failed'));
     }
   }
 

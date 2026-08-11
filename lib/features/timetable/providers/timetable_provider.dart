@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/l10n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/services/notification_service.dart';
 import '../../auth/providers/auth_provider.dart';
@@ -62,7 +63,9 @@ class TimetableNotifier extends AsyncNotifier<void> {
   Future<String?> addClass(ClassModel model) async {
     final groupId = _groupId;
     final occupied = await _repo.slotOccupied(_uid, model.dayOfWeek, model.period, groupId: groupId);
-    if (occupied) return '${model.dayOfWeek}曜日 ${model.period}限にはすでに授業が登録されています';
+    if (occupied) {
+      return AppStrings.t('err_slot_occupied', {'day': weekdayLabel(model.dayOfWeek), 'period': model.period});
+    }
     final toSave = groupId != null ? model.copyWith(groupId: groupId) : model;
     state = const AsyncLoading();
     state = await AsyncValue.guard(() => _repo.add(toSave));
@@ -73,7 +76,7 @@ class TimetableNotifier extends AsyncNotifier<void> {
         debugPrint('Class reminder schedule error: $e');
       }
     }
-    return state.hasError ? '授業の保存に失敗しました' : null;
+    return state.hasError ? AppStrings.t('err_class_save_failed') : null;
   }
 
   /// Updates an existing class, excluding its own id from the conflict check.
@@ -86,7 +89,9 @@ class TimetableNotifier extends AsyncNotifier<void> {
       excludeId: model.id,
       groupId: model.groupId,
     );
-    if (occupied) return '${model.dayOfWeek}曜日 ${model.period}限にはすでに授業が登録されています';
+    if (occupied) {
+      return AppStrings.t('err_slot_occupied', {'day': weekdayLabel(model.dayOfWeek), 'period': model.period});
+    }
     state = const AsyncLoading();
     state = await AsyncValue.guard(() => _repo.update(model));
     if (!state.hasError) {
@@ -96,7 +101,7 @@ class TimetableNotifier extends AsyncNotifier<void> {
         debugPrint('Class reminder schedule error: $e');
       }
     }
-    return state.hasError ? '授業の更新に失敗しました' : null;
+    return state.hasError ? AppStrings.t('err_class_update_failed') : null;
   }
 
   /// Deletes a class by [id].
@@ -122,7 +127,7 @@ class TimetableNotifier extends AsyncNotifier<void> {
         statusDate: DateTime.now(),
       ),
     );
-    return state.hasError ? '更新に失敗しました' : null;
+    return state.hasError ? AppStrings.t('err_class_status_update_failed') : null;
   }
 }
 

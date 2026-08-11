@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/l10n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../models/study_group_model.dart';
@@ -24,11 +25,11 @@ class GroupsNotifier extends AsyncNotifier<void> {
   /// Returns a localised error string on failure, or `null` on success.
   Future<String?> createGroup(String name) async {
     final uid = ref.read(currentUserProvider)?.uid;
-    if (uid == null) return 'ログインが必要です';
+    if (uid == null) return AppStrings.t('err_login_required');
     state = const AsyncLoading();
     state = await AsyncValue.guard(
         () => ref.read(groupsRepositoryProvider).createGroup(name, uid));
-    return state.hasError ? 'グループの作成に失敗しました' : null;
+    return state.hasError ? AppStrings.t('err_group_create_failed') : null;
   }
 
   /// Joins a group by invite [code] via the `joinGroupByCode` Cloud Function.
