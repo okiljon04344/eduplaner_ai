@@ -7,9 +7,10 @@ import '../../assignments/providers/assignments_provider.dart';
 import '../providers/home_provider.dart';
 import '../../../core/l10n/app_strings.dart';
 
-// Fallback strings copied from home_provider.dart for comparison.
-const _fallbackWeakArea = '課題を登録すると、AIが苦手科目を分析します。';
-const _noAssignmentsWeakArea = '課題を登録すると、苦手科目の分析が表示されます。';
+// Fallback strings mirrored from home_provider.dart for comparison.
+// Getters so they always resolve in the currently loaded locale.
+String get _fallbackWeakArea => AppStrings.t('weak_fallback');
+String get _noAssignmentsWeakArea => AppStrings.t('weak_no_assignments');
 
 /// Quick local summary computed synchronously from [assignmentsStreamProvider].
 ///
@@ -33,9 +34,10 @@ final _localWeakSummaryProvider = Provider<String>((ref) {
     countBySubject[a.subject] = (countBySubject[a.subject] ?? 0) + 1;
   }
   final worst = countBySubject.entries.reduce((a, b) => a.value > b.value ? a : b);
-  return overdue.isNotEmpty
-      ? '${worst.key}に${worst.value}件の期限超過があります'
-      : '${worst.key}に${worst.value}件の未完了課題があります';
+  final template = overdue.isNotEmpty
+      ? AppStrings.t('weak_overdue_msg')
+      : AppStrings.t('weak_pending_msg');
+  return template.replaceAll('{subject}', worst.key).replaceAll('{n}', '${worst.value}');
 });
 
 /// 苦手分野の分析 card.

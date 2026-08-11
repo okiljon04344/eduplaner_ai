@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/l10n/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../timetable/models/class_model.dart';
 
@@ -28,13 +29,13 @@ class HomeClassCard extends StatelessWidget {
 
     final start = parse(times.$1);
     final end = parse(times.$2);
-    if (now.isAfter(start) && now.isBefore(end)) return (status: _ClassStatus.live, label: '授業中');
+    if (now.isAfter(start) && now.isBefore(end)) return (status: _ClassStatus.live, label: AppStrings.t('class_live'));
     if (now.isBefore(start)) {
       final diff = start.difference(now);
-      if (diff.inHours < 1) return (status: _ClassStatus.soon, label: '${diff.inMinutes}分後');
-      return (status: _ClassStatus.later, label: '${diff.inHours}時間後');
+      if (diff.inHours < 1) return (status: _ClassStatus.soon, label: AppStrings.t('class_min_later').replaceAll('{n}', '${diff.inMinutes}'));
+      return (status: _ClassStatus.later, label: AppStrings.t('class_hour_later').replaceAll('{n}', '${diff.inHours}'));
     }
-    return (status: _ClassStatus.later, label: '終了');
+    return (status: _ClassStatus.later, label: AppStrings.t('class_ended'));
   }
 
   @override

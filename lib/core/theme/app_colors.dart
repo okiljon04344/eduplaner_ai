@@ -129,17 +129,17 @@ abstract class AppColors {
   static const _darkHeroHomeGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF08060F), Color(0xFF08060F)],
+    colors: [Color(0xFF1A1035), Color(0xFF2D1B69), Color(0xFF08060F)],
   );
   static const _darkHeroScheduleGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF08060F), Color(0xFF08060F)],
+    colors: [Color(0xFF1A1035), Color(0xFF08060F)],
   );
   static const _darkHeroTasksGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF08060F), Color(0xFF08060F)],
+    colors: [Color(0xFF064E3B), Color(0xFF08060F)],
   );
   static const _darkCardShadow = <BoxShadow>[];
   static const _darkHeroCardShadow = <BoxShadow>[

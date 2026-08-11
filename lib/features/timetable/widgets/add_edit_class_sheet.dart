@@ -10,6 +10,7 @@ import '../../../shared/widgets/confirm_dialog.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../models/class_model.dart';
 import '../providers/timetable_provider.dart';
+import 'day_tab_row.dart';
 
 Future<void> showAddEditClassSheet(BuildContext context, WidgetRef ref, {ClassModel? existing}) {
   return showModalBottomSheet(
@@ -51,7 +52,7 @@ class _AddEditClassSheetState extends ConsumerState<_AddEditClassSheet> {
       _selectedPeriod = existing.period;
       _selectedColor = Color(int.parse(existing.colorHex.replaceFirst('#', '0xFF')));
     } else {
-      _selectedDay = '月';
+      _selectedDay = kWeekdayKanji.first;
     }
   }
 
@@ -75,7 +76,7 @@ class _AddEditClassSheetState extends ConsumerState<_AddEditClassSheet> {
             subject: _subjectController.text.trim(),
             teacher: _teacherController.text.trim(),
             room: _roomController.text.trim(),
-            dayOfWeek: _selectedDay ?? '月',
+            dayOfWeek: _selectedDay ?? kWeekdayKanji.first,
             period: _selectedPeriod,
             colorHex: colorHex,
           )
@@ -85,7 +86,7 @@ class _AddEditClassSheetState extends ConsumerState<_AddEditClassSheet> {
             subject: _subjectController.text.trim(),
             teacher: _teacherController.text.trim(),
             room: _roomController.text.trim(),
-            dayOfWeek: _selectedDay ?? '月',
+            dayOfWeek: _selectedDay ?? kWeekdayKanji.first,
             period: _selectedPeriod,
             colorHex: colorHex,
             createdAt: DateTime.now(),
@@ -199,7 +200,11 @@ class _AddEditClassSheetState extends ConsumerState<_AddEditClassSheet> {
                   Text('曜日', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
                   const SizedBox(height: 8),
                   Row(
-                    children: ['月', '火', '水', '木', '金'].map((day) {
+                    children: List.generate(kWeekdayKanji.length, (i) {
+                      // Stored/compared value stays the canonical kanji key;
+                      // only the displayed label follows the app's locale.
+                      final day = kWeekdayKanji[i];
+                      final label = DayTabRow.days[i];
                       final selected = day == _selectedDay;
                       return Padding(
                         padding: const EdgeInsets.only(right: 8),
@@ -214,7 +219,7 @@ class _AddEditClassSheetState extends ConsumerState<_AddEditClassSheet> {
                             ),
                             alignment: Alignment.center,
                             child: Text(
-                              day,
+                              label,
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w500,
@@ -224,7 +229,7 @@ class _AddEditClassSheetState extends ConsumerState<_AddEditClassSheet> {
                           ),
                         ),
                       );
-                    }).toList(),
+                    }),
                   ),
                   const SizedBox(height: 16),
                   Text('時限', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),

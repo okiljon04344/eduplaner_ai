@@ -17,19 +17,22 @@ final assignmentsStreamProvider = StreamProvider<List<AssignmentModel>>((ref) {
 
 /// Currently active status filter on the assignments screen.
 ///
-/// Values: `'すべて'`, `'未着手'`, `'進行中'`, `'完了'`.
-final selectedFilterProvider = StateProvider<String>((_) => 'すべて');
+/// Values are locale-independent ids: `'all'`, `'notStarted'`,
+/// `'inProgress'`, `'completed'` — display labels are looked up via
+/// `AppStrings.t()` in [FilterChipsRow] so switching language never
+/// breaks an active filter.
+final selectedFilterProvider = StateProvider<String>((_) => 'all');
 
 /// The assignment list after applying [selectedFilterProvider].
 final filteredAssignmentsProvider = Provider<List<AssignmentModel>>((ref) {
   final all = ref.watch(assignmentsStreamProvider).valueOrNull ?? [];
   final filter = ref.watch(selectedFilterProvider);
   switch (filter) {
-    case '未着手':
+    case 'notStarted':
       return all.where((a) => a.status == AssignmentStatus.notStarted).toList();
-    case '進行中':
+    case 'inProgress':
       return all.where((a) => a.status == AssignmentStatus.inProgress).toList();
-    case '完了':
+    case 'completed':
       return all.where((a) => a.status == AssignmentStatus.completed).toList();
     default:
       return all;

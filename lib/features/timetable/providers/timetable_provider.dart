@@ -36,10 +36,9 @@ final timetableGridProvider = Provider<Map<String, Map<int, ClassModel>>>((ref) 
 /// Returns an empty list on Saturday/Sunday (weekday > 5).
 final todayClassesProvider = Provider<List<ClassModel>>((ref) {
   final all = ref.watch(timetableStreamProvider).valueOrNull ?? [];
-  const days = ['月', '火', '水', '木', '金'];
   final wd = DateTime.now().weekday;
   if (wd > 5) return [];
-  final today = days[wd - 1];
+  final today = kWeekdayKanji[wd - 1];
   return all.where((c) => c.dayOfWeek == today).toList()
     ..sort((a, b) => a.period.compareTo(b.period));
 });

@@ -1,0 +1,4 @@
+- [ ] Synchronize all 19 remaining localization files with new keys (`en`, `zh`, `zh_TW`, `ko`, `vi`, `th`, `id`, `ms`, `hi`, `ar`, `es`, `fr`, `de`, `pt`, `ru`, `it`, `tr`, `nl`, `fil`)
+- [ ] Verify JSON syntax for all updated files
+- [ ] Check for placeholder consistency (`{n}`, `{name}`, etc.)
+- [ ] Final project analysis to ensure no errors

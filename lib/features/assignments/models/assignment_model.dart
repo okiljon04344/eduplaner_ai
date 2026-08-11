@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import '../../../core/l10n/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/date_helper.dart';
 
@@ -15,11 +16,11 @@ enum AssignmentStatus {
   String get label {
     switch (this) {
       case AssignmentStatus.notStarted:
-        return '未着手';
+        return AppStrings.t('status_not_started');
       case AssignmentStatus.inProgress:
-        return '進行中';
+        return AppStrings.t('status_in_progress');
       case AssignmentStatus.completed:
-        return '完了';
+        return AppStrings.t('status_completed');
     }
   }
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:toastification/toastification.dart';
+import '../../../core/l10n/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/confirm_dialog.dart';
 import '../../groups/providers/groups_provider.dart';
@@ -13,27 +14,27 @@ class GroupShareSection extends ConsumerWidget {
   const GroupShareSection({super.key});
 
   Future<void> _createGroup(BuildContext context, WidgetRef ref) async {
-    final name = await _promptText(context, title: 'グループを作成', hintText: '例：3年A組', confirmLabel: '作成');
+    final name = await _promptText(context, title: AppStrings.t('grp_create'), hintText: AppStrings.t('grp_create_hint'), confirmLabel: AppStrings.t('grp_create_btn'));
     if (name == null || name.trim().isEmpty || !context.mounted) return;
     final error = await ref.read(groupsNotifierProvider.notifier).createGroup(name.trim());
     if (!context.mounted) return;
-    _showToast(context, error ?? 'グループを作成しました', isError: error != null);
+    _showToast(context, error ?? AppStrings.t('grp_created'), isError: error != null);
   }
 
   Future<void> _joinGroup(BuildContext context, WidgetRef ref) async {
-    final code = await _promptText(context, title: 'コードで参加', hintText: '例：AB12CD', confirmLabel: '参加');
+    final code = await _promptText(context, title: AppStrings.t('grp_join'), hintText: AppStrings.t('grp_join_hint'), confirmLabel: AppStrings.t('grp_join_btn'));
     if (code == null || code.trim().isEmpty || !context.mounted) return;
     final error = await ref.read(groupsNotifierProvider.notifier).joinGroup(code.trim());
     if (!context.mounted) return;
-    _showToast(context, error ?? 'グループに参加しました', isError: error != null);
+    _showToast(context, error ?? AppStrings.t('grp_joined'), isError: error != null);
   }
 
   Future<void> _leaveGroup(BuildContext context, WidgetRef ref, String groupId) async {
-    final ok = await showConfirmDialog(context, title: 'グループから退出', message: 'このグループから退出しますか？共有された時間割は表示されなくなります。', confirmLabel: '退出');
+    final ok = await showConfirmDialog(context, title: AppStrings.t('grp_leave'), message: AppStrings.t('grp_leave_msg'), confirmLabel: AppStrings.t('grp_leave_btn'));
     if (!ok) return;
     await ref.read(groupsNotifierProvider.notifier).leaveGroup(groupId);
     if (!context.mounted) return;
-    _showToast(context, 'グループから退出しました');
+    _showToast(context, AppStrings.t('grp_left'));
   }
 
   void _showToast(BuildContext context, String message, {bool isError = false}) {
@@ -55,7 +56,7 @@ class GroupShareSection extends ConsumerWidget {
 
   void _copyCode(BuildContext context, String code) {
     Clipboard.setData(ClipboardData(text: code));
-    _showToast(context, 'コードをコピーしました');
+    _showToast(context, AppStrings.t('grp_code_copied'));
   }
 
   @override
@@ -77,14 +78,14 @@ class GroupShareSection extends ConsumerWidget {
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () => _createGroup(context, ref),
-                    child: const Text('グループを作成', style: TextStyle(fontSize: 12)),
+                    child: Text(AppStrings.t('grp_create'), style: const TextStyle(fontSize: 12)),
                   ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () => _joinGroup(context, ref),
-                    child: const Text('コードで参加', style: TextStyle(fontSize: 12)),
+                    child: Text(AppStrings.t('grp_join'), style: const TextStyle(fontSize: 12)),
                   ),
                 ),
               ],
@@ -111,7 +112,7 @@ class GroupShareSection extends ConsumerWidget {
                     Expanded(
                       child: Text(group.name, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
                     ),
-                    Text('${group.memberIds.length}人', style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
+                    Text(AppStrings.t('grp_members').replaceAll('{n}', '${group.memberIds.length}'), style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
                   ],
                 ),
                 const SizedBox(height: 10),
@@ -130,7 +131,7 @@ class GroupShareSection extends ConsumerWidget {
                         const Spacer(),
                         const Icon(Icons.copy_rounded, size: 15, color: AppColors.primary),
                         const SizedBox(width: 4),
-                        const Text('コピー', style: TextStyle(fontSize: 11, color: AppColors.primary)),
+                        Text(AppStrings.t('common_copy'), style: const TextStyle(fontSize: 11, color: AppColors.primary)),
                       ],
                     ),
                   ),
@@ -140,7 +141,7 @@ class GroupShareSection extends ConsumerWidget {
                   alignment: Alignment.centerRight,
                   child: TextButton(
                     onPressed: () => _leaveGroup(context, ref, group.id),
-                    child: const Text('グループから退出', style: TextStyle(color: AppColors.danger, fontSize: 12)),
+                    child: Text(AppStrings.t('grp_leave'), style: const TextStyle(color: AppColors.danger, fontSize: 12)),
                   ),
                 ),
               ],
@@ -183,7 +184,7 @@ class _TextPromptDialogState extends State<_TextPromptDialog> {
         onSubmitted: (v) => Navigator.pop(context, v),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('キャンセル')),
+        TextButton(onPressed: () => Navigator.pop(context), child: Text(AppStrings.t('common_cancel'))),
         FilledButton(onPressed: () => Navigator.pop(context, _controller.text), child: Text(widget.confirmLabel)),
       ],
     );

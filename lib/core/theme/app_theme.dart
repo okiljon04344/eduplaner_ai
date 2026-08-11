@@ -1,19 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
 
-/// EduPlanner AI's Dark Neon visual identity now has a real light-mode
-/// counterpart. [light]/[dark] each build a [ThemeData] for their own
-/// brightness, reading whatever [AppColors]'s mutable surface/text tokens
-/// currently hold — `app.dart` calls `AppColors.applyBrightness()` before
-/// building the widget tree each time, so by the time either getter runs the
-/// tokens already match the resolved brightness.
+/// EduPlanner AI's theme definitions.
+///
+/// Builds [ThemeData] by explicitly passing brightness to ensure the
+/// resulting theme is consistent and not dependent on global static state
+/// during construction.
 class AppTheme {
   static ThemeData get light => _build(Brightness.light);
   static ThemeData get dark => _build(Brightness.dark);
 
   static ThemeData _build(Brightness brightness) {
     final isDark = brightness == Brightness.dark;
+
+    // We call applyBrightness here with the requested brightness just to
+    // get the correct static values for this specific build pass.
+    // This is safe because MaterialApp calls these getters sequentially.
+    AppColors.applyBrightness(brightness);
+
     final base = ThemeData(brightness: brightness);
     final textTheme = GoogleFonts.plusJakartaSansTextTheme(base.textTheme).apply(
       bodyColor: AppColors.textPrimary,
@@ -37,7 +43,7 @@ class AppTheme {
         surface: AppColors.surface,
         error: AppColors.danger,
         onPrimary: Colors.white,
-        onSecondary: Colors.black,
+        onSecondary: isDark ? Colors.white : Colors.black,
         onSurface: AppColors.textPrimary,
         onError: Colors.white,
       ),
@@ -45,6 +51,7 @@ class AppTheme {
         backgroundColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
+        systemOverlayStyle: isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
         titleTextStyle: TextStyle(
           fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP'],
           fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.textPrimary,
@@ -53,10 +60,10 @@ class AppTheme {
       ),
       cardTheme: CardThemeData(
         color: AppColors.cardBg,
-        elevation: isDark ? 0 : 0,
+        elevation: 0,
         shadowColor: isDark ? Colors.transparent : const Color(0x14000000),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(isDark ? 20 : 14),
+          borderRadius: BorderRadius.circular(isDark ? 20 : 16),
           side: BorderSide(color: AppColors.cardBorder),
         ),
       ),

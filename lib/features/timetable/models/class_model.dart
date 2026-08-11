@@ -1,8 +1,17 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import '../../../core/l10n/app_strings.dart';
 
 part 'class_model.freezed.dart';
 part 'class_model.g.dart';
+
+/// Canonical storage/comparison keys for weekdays (Mon–Fri).
+///
+/// Always Japanese kanji regardless of the app's display locale — this is
+/// the value written to and matched against in Firestore. UI code must
+/// localize what it *displays* (see `DayTabRow.days`) but always compare
+/// and store against this fixed list, never a localized label.
+const List<String> kWeekdayKanji = ['月', '火', '水', '木', '金'];
 
 enum ClassStatus {
   normal,
@@ -12,11 +21,11 @@ enum ClassStatus {
   String get label {
     switch (this) {
       case ClassStatus.normal:
-        return '通常';
+        return AppStrings.t('class_status_normal');
       case ClassStatus.cancelled:
-        return '休講';
+        return AppStrings.t('class_status_cancelled');
       case ClassStatus.changed:
-        return '変更あり';
+        return AppStrings.t('class_status_changed');
     }
   }
 
@@ -62,7 +71,7 @@ class ClassModel with _$ClassModel {
       subject: d['subject'] as String? ?? '',
       teacher: d['teacher'] as String? ?? '',
       room: d['room'] as String? ?? '',
-      dayOfWeek: d['dayOfWeek'] as String? ?? '月',
+      dayOfWeek: d['dayOfWeek'] as String? ?? kWeekdayKanji.first,
       period: (d['period'] as num?)?.toInt() ?? 1,
       colorHex: d['colorHex'] as String? ?? '#4F46E5',
       createdAt: (d['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),

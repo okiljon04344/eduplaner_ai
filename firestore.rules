@@ -87,13 +87,32 @@ service cloud.firestore {
             || request.resource.data.groupId == null
             || isGroupMember(request.resource.data.groupId));
       // Only the original creator may edit or delete their own class row.
-      allow update, delete: if isAuth() && resource.data.userId == request.auth.uid;
+      // Update must keep the same owner and, if groupId changes, the caller
+      // must be a member of the *new* group — otherwise a user could plant
+      // their row into any group's shared timetable, or reassign a row to
+      // another user's uid, just by editing an entry they already own.
+      allow update: if isAuth()
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.userId == resource.data.userId
+        && (!('subject' in request.resource.data) || withinLength(request.resource.data.subject, 100))
+        && (!('groupId' in request.resource.data)
+            || request.resource.data.groupId == null
+            || request.resource.data.groupId == resource.data.groupId
+            || isGroupMember(request.resource.data.groupId));
+      allow delete: if isAuth() && resource.data.userId == request.auth.uid;
     }
 
     // ── Assignments ────────────────────────────────────────────────────────
     // Strictly personal: each assignment belongs to exactly one user.
     match /assignments/{docId} {
-      allow read, update, delete: if isAuth() && resource.data.userId == request.auth.uid;
+      allow read, delete: if isAuth() && resource.data.userId == request.auth.uid;
+      // Update must keep the same owner — otherwise a user could reassign
+      // one of their own assignment docs onto another user's uid.
+      allow update: if isAuth()
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.userId == resource.data.userId
+        && (!('subject' in request.resource.data) || withinLength(request.resource.data.subject, 100))
+        && (!('title'   in request.resource.data) || withinLength(request.resource.data.title,   500));
       allow create: if isAuth()
         && request.resource.data.userId == request.auth.uid
         && (!('subject' in request.resource.data) || withinLength(request.resource.data.subject, 100))

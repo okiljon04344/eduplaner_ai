@@ -1,20 +1,38 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../l10n/app_strings.dart';
 import '../theme/app_colors.dart';
 
 abstract class DateHelper {
-  static const _weekdayKanji = ['月', '火', '水', '木', '金', '土', '日'];
+  static List<String> get _weekdayLabels => [
+        AppStrings.t('day_mon'),
+        AppStrings.t('day_tue'),
+        AppStrings.t('day_wed'),
+        AppStrings.t('day_thu'),
+        AppStrings.t('day_fri'),
+        AppStrings.t('day_sat'),
+        AppStrings.t('day_sun'),
+      ];
 
   static String formatJapaneseDate(DateTime dt) {
-    return '${dt.year}年${dt.month}月${dt.day}日（${_weekdayKanji[dt.weekday - 1]}）';
+    if (AppStrings.currentLocale == 'ja') {
+      return AppStrings.t('date_format_jp', {
+        'y': dt.year,
+        'm': dt.month,
+        'd': dt.day,
+        'w': _weekdayLabels[dt.weekday - 1],
+      });
+    }
+    // Fallback for other locales if date_format_jp is not suitable
+    return DateFormat.yMMMMEEEEd(AppStrings.currentLocale).format(dt);
   }
 
   static String formatTime(DateTime dt) {
     return DateFormat('HH:mm').format(dt);
   }
 
-  static String getDayOfWeekJP(DateTime dt) {
-    return _weekdayKanji[dt.weekday - 1];
+  static String getDayOfWeek(DateTime dt) {
+    return _weekdayLabels[dt.weekday - 1];
   }
 
   static int getWeekNumber(DateTime dt) {
@@ -39,11 +57,11 @@ abstract class DateHelper {
 
   static String dueDateLabel(DateTime dt) {
     final diff = daysUntil(dt);
-    if (diff < 0) return '期限切れ';
-    if (diff == 0) return '今日';
-    if (diff == 1) return '1日後';
-    if (diff < 7) return '$diff日後';
-    return '1週間後';
+    if (diff < 0) return AppStrings.t('due_overdue');
+    if (diff == 0) return AppStrings.t('due_today');
+    if (diff == 1) return AppStrings.t('due_days_later', {'n': 1});
+    if (diff < 7) return AppStrings.t('due_days_later', {'n': diff});
+    return AppStrings.t('due_week_later');
   }
 
   static Color dueDateColor(DateTime dt) {

@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
+import '../../../core/l10n/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
 
 class DayTabRow extends StatelessWidget {
-  static const days = ['月', '火', '水', '木', '金'];
+  /// Localized weekday labels (Mon–Fri), resolved at read time.
+  static List<String> get days => [
+        AppStrings.t('day_mon'),
+        AppStrings.t('day_tue'),
+        AppStrings.t('day_wed'),
+        AppStrings.t('day_thu'),
+        AppStrings.t('day_fri'),
+      ];
 
   final int selectedDay;
   final ValueChanged<int> onSelect;

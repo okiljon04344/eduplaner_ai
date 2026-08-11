@@ -1,12 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/l10n/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../providers/assignments_provider.dart';
 
 class FilterChipsRow extends ConsumerWidget {
   const FilterChipsRow({super.key});
 
-  static const _filters = ['すべて', '未着手', '進行中', '完了'];
+  /// Stable filter ids stored in [selectedFilterProvider]; labels are
+  /// resolved per-locale in [_labelFor].
+  static const _filters = ['all', 'notStarted', 'inProgress', 'completed'];
+
+  static String _labelFor(String id) {
+    switch (id) {
+      case 'notStarted':
+        return AppStrings.t('status_not_started');
+      case 'inProgress':
+        return AppStrings.t('status_in_progress');
+      case 'completed':
+        return AppStrings.t('status_completed');
+      default:
+        return AppStrings.t('as_filter_all');
+    }
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -43,7 +59,7 @@ class FilterChipsRow extends ConsumerWidget {
                     ),
                   ),
                   child: Text(
-                    f,
+                    _labelFor(f),
                     style: TextStyle(
                       fontFamily: 'Plus Jakarta Sans',
                       fontFamilyFallback: const ['NotoSansJP'],

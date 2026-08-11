@@ -2,6 +2,8 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/l10n/app_strings.dart';
+import '../../../shared/widgets/language_picker_button.dart';
 
 class LandingScreen extends StatefulWidget {
   const LandingScreen({super.key});
@@ -167,10 +169,12 @@ class _NavBar extends StatelessWidget {
             ),
           ),
           const Spacer(),
+          const LanguagePickerButton(),
+          const SizedBox(width: 12),
           TextButton(
             onPressed: () => context.push('/login/email'),
             child: Text(
-              'ログイン',
+              AppStrings.t('landing_cta_login'),
               style: TextStyle(
                 fontSize: 13, fontWeight: FontWeight.w600,
                 color: Colors.white.withValues(alpha: 0.7),
@@ -180,7 +184,7 @@ class _NavBar extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           _GlowButton(
-            label: '無料で始める',
+            label: AppStrings.t('landing_cta_signup'),
             small: !isDesktop,
             onTap: () => context.push('/login/signup'),
           ),
@@ -276,9 +280,9 @@ class _HeroText extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 7),
-              const Text(
-                'AI搭載 学習管理アプリ  ✦  無料',
-                style: TextStyle(
+              Text(
+                AppStrings.t('landing_badge'),
+                style: const TextStyle(
                   fontSize: 11, fontWeight: FontWeight.w700,
                   color: Color(0xFFBFB3F5),
                   fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: ['NotoSansJP'],
@@ -301,7 +305,7 @@ class _HeroText extends StatelessWidget {
         const SizedBox(height: 18),
 
         Text(
-          '時間割・課題・AIチャット・テスト対策を\n一つのアプリで完結。毎日の学習が変わる。',
+          AppStrings.t('landing_subtitle'),
           style: TextStyle(
             fontSize: 15, height: 1.75,
             color: Colors.white.withValues(alpha: 0.55),
@@ -318,7 +322,7 @@ class _HeroText extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             _GlowButton(
-              label: '今すぐ始める →',
+              label: AppStrings.t('landing_cta_start'),
               onTap: () => context.push('/login/signup'),
               pulseCtrl: pulseCtrl,
             ),
@@ -331,9 +335,9 @@ class _HeroText extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
               ),
-              child: const Text(
-                'ログイン',
-                style: TextStyle(
+              child: Text(
+                AppStrings.t('landing_cta_login'),
+                style: const TextStyle(
                   fontSize: 14, fontWeight: FontWeight.w600,
                   fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: ['NotoSansJP'],
                 ),
@@ -357,7 +361,7 @@ class _HeroText extends StatelessWidget {
             )),
             const SizedBox(width: 8),
             Text(
-              'AIが24時間サポート  ✦  無料登録',
+              AppStrings.t('social_proof'),
               style: TextStyle(
                 fontSize: 11, color: Colors.white.withValues(alpha: 0.4),
                 fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP'],
@@ -380,9 +384,9 @@ class _GradientTitle extends StatelessWidget {
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
       ).createShader(bounds),
-      child: const Text(
-        '学習をスマートに、\nAIで加速する。',
-        style: TextStyle(
+      child: Text(
+        AppStrings.t('landing_title'),
+        style: const TextStyle(
           fontSize: 46, fontWeight: FontWeight.w900,
           color: Colors.white, height: 1.15, letterSpacing: -1.2,
           fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: ['NotoSansJP'],
@@ -471,17 +475,17 @@ class _MockupHeader extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 4),
-        Text('オンライン', style: TextStyle(fontSize: 10, color: Colors.white.withValues(alpha: 0.4))),
+        Text(AppStrings.t('home_online'), style: TextStyle(fontSize: 10, color: Colors.white.withValues(alpha: 0.4))),
       ],
     );
   }
 }
 
-const _mockupItems = [
-  (Icons.calendar_today_outlined, Color(0xFF06B6D4), '今日の授業 3件', '数学・英語・プログラミング'),
-  (Icons.assignment_outlined,     Color(0xFF10B981), '提出期限が近い課題', '数学レポート — あと2日'),
-  (Icons.smart_toy_outlined,      Color(0xFFA855F7), 'AIが弱点を分析', '数学の二次関数を重点学習'),
-  (Icons.quiz_outlined,           Color(0xFFF59E0B), 'テスト問題を自動生成', '5問のAI問題が完成 ✓'),
+final _mockupItems = [
+  (Icons.calendar_today_outlined, const Color(0xFF06B6D4), 'login_today_classes', 'mock_subjects'),
+  (Icons.assignment_outlined,     const Color(0xFF10B981), 'mock_due_soon', 'mock_assignment'),
+  (Icons.smart_toy_outlined,      const Color(0xFFA855F7), 'feat_analytics', 'mock_weakness'),
+  (Icons.quiz_outlined,           const Color(0xFFF59E0B), 'mock_quiz_gen', 'mock_quiz_status'),
 ];
 
 class _MockupRow extends StatelessWidget {
@@ -513,12 +517,17 @@ class _MockupRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(data.$3, style: const TextStyle(
-                  fontSize: 12, fontWeight: FontWeight.w700, color: Colors.white,
-                  fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: ['NotoSansJP'],
-                )),
+                Text(
+                  data.$3 == 'login_today_classes'
+                      ? AppStrings.t(data.$3, {'n': 3})
+                      : AppStrings.t(data.$3),
+                  style: const TextStyle(
+                    fontSize: 12, fontWeight: FontWeight.w700, color: Colors.white,
+                    fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: ['NotoSansJP'],
+                  ),
+                ),
                 const SizedBox(height: 1),
-                Text(data.$4, style: TextStyle(
+                Text(AppStrings.t(data.$4), style: TextStyle(
                   fontSize: 10, color: Colors.white.withValues(alpha: 0.38),
                   fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP'],
                 )),
@@ -534,12 +543,12 @@ class _MockupRow extends StatelessWidget {
 // ─── Features ─────────────────────────────────────────────────────────────────
 
 const _features = [
-  (Icons.calendar_month_outlined, Color(0xFF06B6D4), '時間割管理',  '毎日の授業をひと目で把握。クラス共有・休講アラートも対応。'),
-  (Icons.assignment_outlined,     Color(0xFF10B981), '課題追跡',    '締め切り管理からAI完成度チェックまで一括サポート。'),
-  (Icons.smart_toy_outlined,      Color(0xFFA855F7), 'AIチャット',  '10人のAI家庭教師が24時間待機。分からないことを即解決。'),
-  (Icons.analytics_outlined,      Color(0xFFF59E0B), '弱点分析',    'AIが苦手科目を自動分析。学習プランを最適化。'),
-  (Icons.quiz_outlined,           Color(0xFFEC4899), 'テスト生成',  'トピックを入力するだけでAIが5問を自動作成。'),
-  (Icons.notifications_outlined,  Color(0xFF60A5FA), '休講アラート','クラス仲間の報告がすぐプッシュ通知で届く。'),
+  (Icons.calendar_month_outlined, Color(0xFF06B6D4), 'feat_timetable',  'feat_timetable_desc'),
+  (Icons.assignment_outlined,     Color(0xFF10B981), 'feat_assignments',    'feat_assignments_desc'),
+  (Icons.smart_toy_outlined,      Color(0xFFA855F7), 'feat_ai_chat',  'feat_ai_chat_desc'),
+  (Icons.analytics_outlined,      Color(0xFFF59E0B), 'feat_analytics',    'feat_analytics_desc'),
+  (Icons.quiz_outlined,           Color(0xFFEC4899), 'feat_quiz',  'feat_quiz_desc'),
+  (Icons.notifications_outlined,  Color(0xFF60A5FA), 'feat_alerts','feat_alerts_desc'),
 ];
 
 class _FeaturesSection extends StatelessWidget {
@@ -564,7 +573,7 @@ class _FeaturesSection extends StatelessWidget {
               borderRadius: BorderRadius.circular(20),
             ),
             child: const Text(
-              '✦  全ての機能',
+              '✦',
               style: TextStyle(
                 fontSize: 11, fontWeight: FontWeight.w700,
                 color: Color(0xFFBFB3F5),
@@ -580,7 +589,7 @@ class _FeaturesSection extends StatelessWidget {
               colors: [Colors.white, Color(0xFFBFB3F5)],
             ).createShader(b),
             child: Text(
-              '全ての学習を一つに',
+              AppStrings.t('landing_features_title'),
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: isDesktop ? 36 : 28,
@@ -594,7 +603,7 @@ class _FeaturesSection extends StatelessWidget {
           const SizedBox(height: 10),
 
           Text(
-            '時間割から課題管理、AIサポートまで EduPlanner AIに全部おまかせ',
+            AppStrings.t('landing_features_subtitle'),
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 14, height: 1.7,
@@ -690,7 +699,7 @@ class _FeatureCardState extends State<_FeatureCard> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    widget.data.$3,
+                    AppStrings.t(widget.data.$3),
                     style: const TextStyle(
                       fontSize: 15, fontWeight: FontWeight.w800, color: Colors.white,
                       fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: ['NotoSansJP'],
@@ -698,7 +707,7 @@ class _FeatureCardState extends State<_FeatureCard> {
                   ),
                   const SizedBox(height: 5),
                   Text(
-                    widget.data.$4,
+                    AppStrings.t(widget.data.$4),
                     style: TextStyle(
                       fontSize: 12, height: 1.6,
                       color: Colors.white.withValues(alpha: 0.45),
@@ -756,10 +765,10 @@ class _CtaSection extends StatelessWidget {
             shaderCallback: (b) => const LinearGradient(
               colors: [Colors.white, Color(0xFFBFB3F5)],
             ).createShader(b),
-            child: const Text(
-              '今日から学習を変えよう',
+            child: Text(
+              AppStrings.t('landing_cta_title'),
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 30, fontWeight: FontWeight.w900, color: Colors.white,
                 letterSpacing: -0.6,
                 fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: ['NotoSansJP'],
@@ -770,7 +779,7 @@ class _CtaSection extends StatelessWidget {
           const SizedBox(height: 10),
 
           Text(
-            '無料で始めて、AIと一緒に成績アップ。',
+            AppStrings.t('landing_cta_subtitle'),
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 14,
@@ -782,7 +791,7 @@ class _CtaSection extends StatelessWidget {
           const SizedBox(height: 32),
 
           _GlowButton(
-            label: '無料アカウントを作成 →',
+            label: AppStrings.t('landing_cta_button'),
             onTap: () => context.push('/login/signup'),
             pulseCtrl: pulseCtrl,
             large: true,

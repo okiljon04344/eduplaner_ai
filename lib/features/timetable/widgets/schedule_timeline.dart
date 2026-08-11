@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/l10n/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../models/class_model.dart';
 import '../providers/timetable_provider.dart';
-import 'day_tab_row.dart';
 import 'timeline_class_card.dart';
 
 /// Vertical timeline of classes for the currently selected day, with a
@@ -15,7 +15,10 @@ class ScheduleTimeline extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final classes = ref.watch(timetableStreamProvider).valueOrNull ?? const <ClassModel>[];
-    final day = DayTabRow.days[selectedDay];
+    // Compare against the canonical (always-kanji) storage key, not the
+    // localized display label from DayTabRow.days — those diverge for any
+    // non-Japanese locale and previously made every day render empty.
+    final day = kWeekdayKanji[selectedDay];
     final dayClasses = classes.where((c) => c.dayOfWeek == day).toList()
       ..sort((a, b) => a.period.compareTo(b.period));
 
@@ -56,7 +59,7 @@ class _EmptyDay extends StatelessWidget {
             const Text('🌤️', style: TextStyle(fontSize: 40)),
             const SizedBox(height: 12),
             Text(
-              'この日は授業がありません',
+              AppStrings.t('tt_no_classes_day'),
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textMuted),
             ),

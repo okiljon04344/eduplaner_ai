@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:toastification/toastification.dart';
+import '../../../core/l10n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/utils/validators.dart';
 import '../../../shared/widgets/app_input_field.dart';
+import '../../../shared/widgets/language_picker_button.dart';
 import '../providers/auth_provider.dart';
 
 class EmailLoginScreen extends ConsumerStatefulWidget {
@@ -38,7 +40,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
         );
     final state = ref.read(authNotifierProvider);
     if (state.hasError && mounted) {
-      _showToast('ログインエラー', state.error.toString().replaceAll('Exception: ', ''), isError: true);
+      _showToast(AppStrings.t('login_error'), state.error.toString().replaceAll('Exception: ', ''), isError: true);
     }
   }
 
@@ -49,11 +51,11 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.bgLayer,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide(color: AppColors.border)),
-        title: Text('パスワードをリセット', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textPrimary, fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP'])),
-        content: AppInputField(controller: controller, hintText: 'メールアドレス'),
+        title: Text(AppStrings.t('login_reset_pass_title'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textPrimary, fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP'])),
+        content: AppInputField(controller: controller, hintText: AppStrings.t('login_email_hint')),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('キャンセル')),
-          TextButton(onPressed: () => Navigator.pop(ctx, controller.text.trim()), child: const Text('送信')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(AppStrings.t('common_cancel'))),
+          TextButton(onPressed: () => Navigator.pop(ctx, controller.text.trim()), child: Text(AppStrings.t('common_send'))),
         ],
       ),
     );
@@ -61,9 +63,9 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
     setState(() => _sendingReset = true);
     try {
       await ref.read(authRepositoryProvider).sendPasswordResetEmail(email);
-      if (mounted) _showToast('送信しました', 'パスワード再設定用のメールを送信しました');
+      if (mounted) _showToast(AppStrings.t('login_reset_sent'), AppStrings.t('login_reset_sent_msg'));
     } catch (e) {
-      if (mounted) _showToast('送信エラー', e.toString().replaceAll('Exception: ', ''), isError: true);
+      if (mounted) _showToast(AppStrings.t('login_send_err'), e.toString().replaceAll('Exception: ', ''), isError: true);
     } finally {
       if (mounted) setState(() => _sendingReset = false);
     }
@@ -88,7 +90,13 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
-        title: const Text('ログイン', style: TextStyle(fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: ['NotoSansJP'])),
+        title: Text(AppStrings.t('login_title'), style: const TextStyle(fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: ['NotoSansJP'])),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: LanguagePickerButton(color: AppColors.textPrimary),
+          ),
+        ],
       ),
       body: SafeArea(
         child: ResponsiveBody(
@@ -101,25 +109,25 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Text(
-                    'おかえりなさい',
+                    AppStrings.t('login_welcome_back'),
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.textPrimary, fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP']),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'メールアドレスとパスワードを入力してください',
+                    AppStrings.t('login_email_pass_prompt'),
                     style: TextStyle(fontSize: 13, color: AppColors.textSecondary, fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP']),
                   ),
                   const SizedBox(height: 28),
                   AppInputField(
                     controller: _emailController,
-                    hintText: 'メールアドレス',
+                    hintText: AppStrings.t('login_email_hint'),
                     textInputAction: TextInputAction.next,
                     validator: Validators.email,
                   ),
                   const SizedBox(height: 14),
                   AppInputField(
                     controller: _passwordController,
-                    hintText: 'パスワード',
+                    hintText: AppStrings.t('login_pass_hint'),
                     obscureText: _obscurePassword,
                     textInputAction: TextInputAction.done,
                     validator: Validators.required,
@@ -133,7 +141,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
                     alignment: Alignment.centerRight,
                     child: TextButton(
                       onPressed: _sendingReset ? null : _forgotPassword,
-                      child: const Text('パスワードをお忘れですか？'),
+                      child: Text(AppStrings.t('login_forgot_pass')),
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -141,13 +149,13 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
                     onPressed: loading ? null : _submit,
                     child: loading
                         ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white))
-                        : const Text('ログイン'),
+                        : Text(AppStrings.t('login_title')),
                   ),
                   const SizedBox(height: 16),
                   Center(
                     child: TextButton(
                       onPressed: () => context.pushReplacement('/login/signup'),
-                      child: const Text('アカウントをお持ちでない方はこちら'),
+                      child: Text(AppStrings.t('login_no_account')),
                     ),
                   ),
                 ],

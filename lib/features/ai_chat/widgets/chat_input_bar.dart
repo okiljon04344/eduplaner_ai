@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/l10n/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../providers/chat_provider.dart';
 
@@ -73,7 +74,7 @@ class _ChatInputBarState extends ConsumerState<ChatInputBar> {
                   color: AppColors.textPrimary,
                 ),
                 decoration: InputDecoration(
-                  hintText: '何でも聞いてください...',
+                  hintText: AppStrings.t('chat_input_hint'),
                   hintStyle: TextStyle(
                     fontFamily: 'Plus Jakarta Sans',
                     fontFamilyFallback: const ['NotoSansJP'],

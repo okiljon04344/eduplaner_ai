@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/subject_colors.dart';
+import '../../../core/l10n/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../models/assignment_model.dart';
 import '../providers/assignments_provider.dart';
@@ -119,7 +120,7 @@ class AssignmentCard extends ConsumerWidget {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                '${(assignment.progress * 100).round()}% 完了',
+                                AppStrings.t('as_pct_done').replaceAll('{pct}', '${(assignment.progress * 100).round()}'),
                                 style: TextStyle(
                                   fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP'],
                                   fontSize: 10, fontWeight: FontWeight.w600,
