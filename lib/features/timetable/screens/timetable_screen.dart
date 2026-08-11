@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/l10n/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../providers/timetable_provider.dart';
@@ -89,7 +90,7 @@ class _WeekNavigator extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
-                isCurrentWeek ? '今週 · $label' : label,
+                isCurrentWeek ? '${AppStrings.t('tt_this_week')} · $label' : label,
                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textSecondary.withValues(alpha: 0.8)),
               ),
             ),
@@ -175,7 +176,7 @@ class _Header extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'スケジュール',
+                        AppStrings.t('tt_overline'),
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
@@ -186,10 +187,10 @@ class _Header extends ConsumerWidget {
                         ),
                       ),
                       const SizedBox(height: 6),
-                      Text('📅 時間割', style: AppTextStyles.headLG),
+                      Text('📅 ${AppStrings.t('tt_title')}', style: AppTextStyles.headLG),
                       const SizedBox(height: 4),
                       Text(
-                        '今週 $classCount コマ登録済み',
+                        AppStrings.t('tt_count').replaceAll('{n}', '$classCount'),
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w500,

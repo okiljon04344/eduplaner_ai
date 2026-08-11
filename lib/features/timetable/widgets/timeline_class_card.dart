@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/subject_colors.dart';
+import '../../../core/l10n/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/confirm_dialog.dart';
 import '../models/class_model.dart';
@@ -38,9 +39,9 @@ class TimelineClassCard extends ConsumerWidget {
         overlay.size.width - globalPosition.dx,
         overlay.size.height - globalPosition.dy,
       ),
-      items: const [
-        PopupMenuItem(value: 'edit', child: Text('編集')),
-        PopupMenuItem(value: 'delete', child: Text('削除')),
+      items: [
+        PopupMenuItem(value: 'edit', child: Text(AppStrings.t('common_edit'))),
+        PopupMenuItem(value: 'delete', child: Text(AppStrings.t('common_delete'))),
       ],
     );
     if (!context.mounted) return;
@@ -48,7 +49,8 @@ class TimelineClassCard extends ConsumerWidget {
       showAddEditClassSheet(context, ref, existing: classModel);
     } else if (selected == 'delete') {
       final ok = await showConfirmDialog(context,
-          title: '授業を削除', message: '${classModel.subject}を削除しますか？');
+          title: AppStrings.t('tt_delete_class'),
+          message: AppStrings.t('tt_delete_confirm').replaceAll('{subject}', classModel.subject));
       if (ok) {
         await ref
             .read(timetableNotifierProvider.notifier)
@@ -222,7 +224,7 @@ class TimelineClassCard extends ConsumerWidget {
                                                 .withValues(alpha: 0.25)),
                                       ),
                                       child: Text(
-                                        '${classModel.period}限',
+                                        AppStrings.t('tt_period').replaceAll('{n}', '${classModel.period}'),
                                         style: TextStyle(
                                             fontSize: 10,
                                             fontWeight: FontWeight.w700,

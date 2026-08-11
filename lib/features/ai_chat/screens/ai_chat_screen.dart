@@ -28,7 +28,12 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
   }
 
   Future<void> _clearHistory() async {
-    final ok = await showConfirmDialog(context, title: 'チャットをクリア', message: '会話履歴をすべて削除しますか？', confirmLabel: 'クリア');
+    final ok = await showConfirmDialog(
+      context,
+      title: AppStrings.t('chat_clear_title'),
+      message: AppStrings.t('chat_clear_msg'),
+      confirmLabel: AppStrings.t('ai_clear_btn'),
+    );
     if (ok) {
       await ref.read(chatProvider.notifier).clearHistory();
     }

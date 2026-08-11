@@ -31,26 +31,26 @@ void main() {
     ));
 
     // Default state.
-    expect(container.read(selectedFilterProvider), 'すべて');
+    expect(container.read(selectedFilterProvider), 'all');
 
     await tester.tap(find.text('進行中'));
     await tester.pumpAndSettle();
-    expect(container.read(selectedFilterProvider), '進行中');
+    expect(container.read(selectedFilterProvider), 'inProgress');
 
     await tester.tap(find.text('完了'));
     await tester.pumpAndSettle();
-    expect(container.read(selectedFilterProvider), '完了');
+    expect(container.read(selectedFilterProvider), 'completed');
 
     await tester.tap(find.text('未着手'));
     await tester.pumpAndSettle();
-    expect(container.read(selectedFilterProvider), '未着手');
+    expect(container.read(selectedFilterProvider), 'notStarted');
   });
 
   testWidgets('reflects an externally-set filter as the visually-active chip', (tester) async {
     final container = ProviderContainer();
     addTearDown(container.dispose);
     // Preset before first frame.
-    container.read(selectedFilterProvider.notifier).state = '完了';
+    container.read(selectedFilterProvider.notifier).state = 'completed';
 
     await tester.pumpWidget(UncontrolledProviderScope(
       container: container,
@@ -59,7 +59,7 @@ void main() {
 
     // Widget still renders all four labels regardless of which is active.
     expect(find.text('完了'), findsOneWidget);
-    expect(container.read(selectedFilterProvider), '完了');
+    expect(container.read(selectedFilterProvider), 'completed');
     expect(tester.takeException(), isNull);
   });
 }

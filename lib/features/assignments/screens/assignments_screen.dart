@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:table_calendar/table_calendar.dart';
+import '../../../core/l10n/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../models/assignment_model.dart';
@@ -76,7 +77,10 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
                   child: Text(
-                    '${_selectedDay!.month}月${_selectedDay!.day}日の課題 (${displayAssignments.length}件)',
+                    AppStrings.t('as_day_title')
+                        .replaceAll('{month}', '${_selectedDay!.month}')
+                        .replaceAll('{day}', '${_selectedDay!.day}')
+                        .replaceAll('{n}', '${displayAssignments.length}'),
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
@@ -94,8 +98,8 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
                   child: Center(
                     child: Text(
                       _calendarMode && _selectedDay != null
-                          ? 'この日に締め切りの課題はありません'
-                          : '課題がありません',
+                          ? AppStrings.t('as_empty_day')
+                          : AppStrings.t('as_empty'),
                       style: TextStyle(
                         fontSize: 13,
                         color: AppColors.textMuted,
@@ -197,7 +201,7 @@ class _TasksHeader extends StatelessWidget {
               Row(
                 children: [
                   Text(
-                    '課題管理',
+                    AppStrings.t('as_overline'),
                     style: AppTextStyles.overline.copyWith(
                       color: isDark ? const Color(0x8C22D3EE) : Colors.white.withValues(alpha: 0.75),
                     ),
@@ -225,7 +229,7 @@ class _TasksHeader extends StatelessWidget {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            calendarMode ? 'リスト' : 'カレンダー',
+                            calendarMode ? AppStrings.t('as_list_view') : AppStrings.t('as_calendar_view'),
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
@@ -242,12 +246,14 @@ class _TasksHeader extends StatelessWidget {
               ),
               const SizedBox(height: 6),
               Text(
-                '📝 課題一覧',
+                '📝 ${AppStrings.t('as_title')}',
                 style: AppTextStyles.headLG.copyWith(fontSize: 24),
               ),
               const SizedBox(height: 5),
               Text(
-                '$doneCount件完了 · 全$totalCount件',
+                AppStrings.t('as_summary')
+                    .replaceAll('{done}', '$doneCount')
+                    .replaceAll('{total}', '$totalCount'),
                 style: TextStyle(
                   fontFamily: 'Plus Jakarta Sans',
                   fontFamilyFallback: const ['NotoSansJP'],
@@ -347,7 +353,7 @@ class _WeeklyProgressBar extends StatelessWidget {
                   ),
                   const SizedBox(width: 5),
                   Text(
-                    '今週の進捗',
+                    AppStrings.t('as_week_progress'),
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
@@ -359,7 +365,7 @@ class _WeeklyProgressBar extends StatelessWidget {
                 ],
               ),
               Text(
-                '$completed / $total件  $pctText',
+                '${AppStrings.t('as_progress_count').replaceAll('{done}', '$completed').replaceAll('{total}', '$total')}  $pctText',
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
@@ -452,7 +458,7 @@ class _AssignmentCalendar extends StatelessWidget {
         eventLoader: (day) =>
             assignments.where((a) => isSameDay(a.dueDate, day)).toList(),
         calendarFormat: CalendarFormat.month,
-        availableCalendarFormats: const {CalendarFormat.month: '月表示'},
+        availableCalendarFormats: {CalendarFormat.month: AppStrings.t('as_month_view')},
         calendarStyle: CalendarStyle(
           outsideDaysVisible: false,
           defaultTextStyle: TextStyle(
@@ -577,7 +583,7 @@ class _AddTaskButton extends StatelessWidget {
           ],
         ),
         child: Text(
-          '＋ 新しい課題を追加',
+          '＋ ${AppStrings.t('as_add_new')}',
           style: TextStyle(
             fontFamily: 'Plus Jakarta Sans',
             fontFamilyFallback: const ['NotoSansJP'],

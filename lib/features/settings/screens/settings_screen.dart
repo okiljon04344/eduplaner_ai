@@ -55,7 +55,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _signOut() async {
-    final ok = await showConfirmDialog(context, title: 'ログアウト', message: 'ログアウトしますか？', confirmLabel: 'ログアウト');
+    final ok = await showConfirmDialog(context,
+        title: AppStrings.t('set_logout'),
+        message: AppStrings.t('set_logout_msg'),
+        confirmLabel: AppStrings.t('set_logout'));
     if (!ok) return;
     await ref.read(authNotifierProvider.notifier).signOut();
     if (mounted) context.go('/login');
@@ -64,9 +67,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Future<void> _deleteAccount() async {
     final ok = await showConfirmDialog(
       context,
-      title: 'アカウントを削除',
-      message: 'アカウントと課題・時間割・AIチャット履歴を含むすべてのデータが完全に削除されます。この操作は取り消せません。本当に削除しますか？',
-      confirmLabel: '完全に削除',
+      title: AppStrings.t('set_delete_account'),
+      message: AppStrings.t('set_delete_msg'),
+      confirmLabel: AppStrings.t('set_delete_confirm'),
     );
     if (!ok || !mounted) return;
 
@@ -83,7 +86,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         context: context,
         type: ToastificationType.error,
         style: ToastificationStyle.flat,
-        title: const Text('削除に失敗しました。もう一度お試しください。'),
+        title: Text(AppStrings.t('set_delete_failed')),
         autoCloseDuration: const Duration(seconds: 3),
       );
     }
@@ -97,7 +100,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(title: const Text('設定'), backgroundColor: AppColors.background, elevation: 0),
+      appBar: AppBar(title: Text(AppStrings.t('set_title')), backgroundColor: AppColors.background, elevation: 0),
       body: ResponsiveBody(
         maxWidth: 640,
         child: ListView(
@@ -105,51 +108,51 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           children: [
           ListTile(
             leading: CircleAvatar(radius: 20, backgroundColor: AppColors.primary, child: Text(initials, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white))),
-            title: Text(user?.name ?? 'ユーザー', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+            title: Text(user?.name ?? AppStrings.t('set_user_fallback'), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
             subtitle: Text(user?.email ?? '', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
           ),
           const Divider(),
-          const _SectionTitle('AI設定'),
-          const ListTile(
-            leading: Icon(Icons.smart_toy_outlined, color: AppColors.success),
-            title: Text('AIアシスタント'),
-            subtitle: Text('有効 ✓ — 設定不要でご利用いただけます', style: TextStyle(color: AppColors.success)),
+          _SectionTitle(AppStrings.t('settings_section_ai')),
+          ListTile(
+            leading: const Icon(Icons.smart_toy_outlined, color: AppColors.success),
+            title: Text(AppStrings.t('set_ai_assistant')),
+            subtitle: Text(AppStrings.t('set_ai_enabled_sub'), style: const TextStyle(color: AppColors.success)),
           ),
-          const _SectionTitle('クラス共有'),
+          _SectionTitle(AppStrings.t('set_class_share')),
           const GroupShareSection(),
-          const _SectionTitle('通知'),
+          _SectionTitle(AppStrings.t('settings_section_notifications')),
           SwitchListTile(
             secondary: const Icon(Icons.notifications_outlined),
-            title: const Text('通知設定'),
+            title: Text(AppStrings.t('settings_notifications')),
             value: _notificationsEnabled,
             onChanged: _toggleNotifications,
           ),
-          const _SectionTitle('表示'),
+          _SectionTitle(AppStrings.t('settings_section_display')),
           _LanguageTile(),
           ListTile(
             leading: const Icon(Icons.palette_outlined),
-            title: const Text('テーマ'),
+            title: Text(AppStrings.t('settings_theme')),
             trailing: SegmentedButton<ThemeMode>(
-              segments: const [
-                ButtonSegment(value: ThemeMode.light, label: Text('ライト')),
-                ButtonSegment(value: ThemeMode.system, label: Text('システム')),
-                ButtonSegment(value: ThemeMode.dark, label: Text('ダーク')),
+              segments: [
+                ButtonSegment(value: ThemeMode.light, label: Text(AppStrings.t('set_theme_light'))),
+                ButtonSegment(value: ThemeMode.system, label: Text(AppStrings.t('set_theme_system'))),
+                ButtonSegment(value: ThemeMode.dark, label: Text(AppStrings.t('set_theme_dark'))),
               ],
               selected: {themeMode},
               onSelectionChanged: (s) => ref.read(themeProvider.notifier).setTheme(s.first),
             ),
           ),
-          const _SectionTitle('その他'),
-          ListTile(leading: const Icon(Icons.info_outline), title: const Text('バージョン'), trailing: Text('1.0.0', style: TextStyle(color: AppColors.textMuted))),
+          _SectionTitle(AppStrings.t('settings_section_other')),
+          ListTile(leading: const Icon(Icons.info_outline), title: Text(AppStrings.t('settings_version')), trailing: Text('1.0.0', style: TextStyle(color: AppColors.textMuted))),
           ListTile(
             leading: const Icon(Icons.privacy_tip_outlined),
-            title: const Text('プライバシーポリシー'),
+            title: Text(AppStrings.t('set_privacy')),
             trailing: const Icon(Icons.open_in_new),
             onTap: () => launchUrl(Uri.parse('https://okiljon04344.github.io/eduplaner_ai/privacy-policy.html')),
           ),
           ListTile(
             leading: const Icon(Icons.gavel_outlined),
-            title: const Text('利用規約'),
+            title: Text(AppStrings.t('set_terms')),
             trailing: const Icon(Icons.open_in_new),
             onTap: () => launchUrl(Uri.parse('https://okiljon04344.github.io/eduplaner_ai/terms-of-service.html')),
           ),
@@ -158,7 +161,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             child: Center(
               child: TextButton(
                 onPressed: _signOut,
-                child: const Text('ログアウト', style: TextStyle(color: AppColors.danger)),
+                child: Text(AppStrings.t('set_logout'), style: const TextStyle(color: AppColors.danger)),
               ),
             ),
           ),
@@ -169,7 +172,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 onPressed: _deletingAccount ? null : _deleteAccount,
                 child: _deletingAccount
                     ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.danger))
-                    : const Text('アカウントを削除', style: TextStyle(color: AppColors.danger, fontSize: 12)),
+                    : Text(AppStrings.t('set_delete_account'), style: const TextStyle(color: AppColors.danger, fontSize: 12)),
               ),
             ),
           ),

@@ -379,7 +379,7 @@ export const analyzeWeakArea = onCall({
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'Login is required.');
   }
-  const {stats} = request.data ?? {};
+  const {stats, language} = request.data ?? {};
   if (!Array.isArray(stats) || stats.length === 0) {
     throw new HttpsError('invalid-argument', 'stats is required.');
   }
@@ -388,12 +388,23 @@ export const analyzeWeakArea = onCall({
     throw new HttpsError('invalid-argument', 'stats array too large.');
   }
 
+  // BCP-47 code from the client's active locale; allow-list so an arbitrary
+  // string can never be injected into the prompt. Falls back to Japanese.
+  const LANGUAGE_NAMES = {
+    ja: 'Japanese', en: 'English', uz: 'Uzbek', zh: 'Simplified Chinese',
+    zh_TW: 'Traditional Chinese', ko: 'Korean', vi: 'Vietnamese', th: 'Thai',
+    id: 'Indonesian', ms: 'Malay', hi: 'Hindi', ar: 'Arabic', es: 'Spanish',
+    fr: 'French', de: 'German', pt: 'Portuguese', ru: 'Russian', it: 'Italian',
+    tr: 'Turkish', nl: 'Dutch', fil: 'Filipino',
+  };
+  const replyLanguage = LANGUAGE_NAMES[language] ?? 'Japanese';
+
   const prompt = [
-    'You are Focus Bot, a study analytics assistant for a Japanese vocational school student.',
+    'You are Focus Bot, a study analytics assistant for a vocational school student.',
     'Below is per-subject assignment statistics as JSON: subject, totalCount, completedCount, overdueCount, avgDifficulty (1-5).',
     JSON.stringify(stats).slice(0, 3000),
     'Identify the 1-2 weakest subjects (highest overdue/incomplete ratio and/or difficulty) and give one concrete, practical tip for each.',
-    'Reply in Japanese, 3 sentences maximum, plain text with no markdown formatting.'
+    `Reply in ${replyLanguage}, 3 sentences maximum, plain text with no markdown formatting.`
   ].join('\n\n');
 
   try {

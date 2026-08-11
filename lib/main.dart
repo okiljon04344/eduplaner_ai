@@ -27,14 +27,7 @@ import 'firebase_options.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-    statusBarColor: Colors.transparent,
-    statusBarBrightness: Brightness.dark, // iOS: light icons on dark bg
-    statusBarIconBrightness: Brightness.light, // Android: light icons on dark bg
-    systemNavigationBarColor: Color(0xFF08060F),
-    systemNavigationBarIconBrightness: Brightness.light,
-  ));
-  await initializeDateFormatting('ja_JP');
+  await initializeDateFormatting(null);
   tzdata.initializeTimeZones();
   tz.setLocalLocation(tz.getLocation('Asia/Tokyo'));
   try {

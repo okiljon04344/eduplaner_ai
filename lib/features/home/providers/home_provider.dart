@@ -1,12 +1,15 @@
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../core/l10n/app_strings.dart';
+import '../../../core/providers/locale_provider.dart';
 import '../../assignments/models/assignment_model.dart';
 import '../../assignments/providers/assignments_provider.dart';
 
-const _fallbackTip = '今日も一歩ずつ頑張りましょう！';
-const _fallbackWeakArea = '課題を登録すると、AIが苦手科目を分析します。';
-const _noAssignmentsWeakArea = '課題を登録すると、苦手科目の分析が表示されます。';
+// Getters (not consts) so they always resolve in the currently loaded locale.
+String get _fallbackTip => AppStrings.t('tip_fallback');
+String get _fallbackWeakArea => AppStrings.t('weak_fallback');
+String get _noAssignmentsWeakArea => AppStrings.t('weak_no_assignments');
 
 /// Tracks consecutive-day app-open streak and persists it to [SharedPreferences].
 ///
@@ -41,10 +44,13 @@ final dailyStreakProvider = FutureProvider<int>((ref) async {
 /// function is called at most once per calendar day.  Falls back to a static
 /// motivational string if the call fails or returns empty.
 final aiStudyTipProvider = FutureProvider<String>((ref) async {
+  final locate = ref.watch(localeProvider);
   final now = DateTime.now();
   final dateKey = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
   final prefs = await SharedPreferences.getInstance();
-  final cacheKey = 'study_tip_$dateKey';
+  // Cache per locale as well as per day, so switching language re-fetches the
+  // tip in the new language instead of serving yesterday's-locale cache.
+  final cacheKey = 'study_tip_${locate}_$dateKey';
   final cached = prefs.getString(cacheKey);
   if (cached != null && cached.isNotEmpty) return cached;
 
@@ -52,7 +58,7 @@ final aiStudyTipProvider = FutureProvider<String>((ref) async {
     final callable = FirebaseFunctions.instance.httpsCallable('chatWithTutor');
     final result = await callable.call<Map<String, dynamic>>({
       'botId': 'focus',
-      'message': '日本語で短い学習アドバイスを1つだけ教えてください（40文字以内）。返答はアドバイスの文章のみにしてください。',
+      'message': AppStrings.t('ai_tip_prompt'),
     });
     final tip = (result.data['reply'] as String?)?.trim();
     if (tip == null || tip.isEmpty) return _fallbackTip;
@@ -62,6 +68,7 @@ final aiStudyTipProvider = FutureProvider<String>((ref) async {
     return _fallbackTip;
   }
 });
+
 
 /// Per-subject assignment stat accumulator for [weakAreaProvider].
 class _SubjectStat {
@@ -80,13 +87,14 @@ class _SubjectStat {
 /// [aiStudyTipProvider].  Falls back to a static string on error or when the
 /// user has no assignments yet.
 final weakAreaProvider = FutureProvider<String>((ref) async {
+  final locate = ref.watch(localeProvider);
   final assignments = ref.watch(assignmentsStreamProvider).valueOrNull ?? [];
   if (assignments.isEmpty) return _noAssignmentsWeakArea;
 
   final now = DateTime.now();
   final dateKey = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
   final prefs = await SharedPreferences.getInstance();
-  final cacheKey = 'weak_area_$dateKey';
+  final cacheKey = 'weak_area_${locate}_$dateKey';
   final cached = prefs.getString(cacheKey);
   if (cached != null && cached.isNotEmpty) return cached;
 
@@ -111,7 +119,10 @@ final weakAreaProvider = FutureProvider<String>((ref) async {
 
   try {
     final callable = FirebaseFunctions.instance.httpsCallable('analyzeWeakArea');
-    final result = await callable.call<Map<String, dynamic>>({'stats': stats});
+    final result = await callable.call<Map<String, dynamic>>({
+      'stats': stats,
+      'language': locate,
+    });
     final analysis = (result.data['analysis'] as String?)?.trim();
     if (analysis == null || analysis.isEmpty) return _fallbackWeakArea;
     await prefs.setString(cacheKey, analysis);

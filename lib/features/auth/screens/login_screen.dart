@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:toastification/toastification.dart';
+import '../../../core/l10n/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../shared/widgets/language_picker_button.dart';
 import '../../../shared/widgets/lottie_helpers.dart';
 import '../../timetable/providers/timetable_provider.dart';
 import '../providers/auth_provider.dart';
@@ -33,7 +35,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       context: context,
       type: ToastificationType.error,
       style: ToastificationStyle.flat,
-      title: const Text('ログインエラー'),
+      title: Text(AppStrings.t('login_error')),
       description: Text(message),
       autoCloseDuration: const Duration(seconds: 3),
     );
@@ -97,6 +99,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ),
                         ),
                       ),
+                      const Positioned(
+                        top: 16,
+                        right: 16,
+                        child: LanguagePickerButton(),
+                      ),
                       Positioned.fill(
                         child: Center(
                           child: Column(
@@ -126,7 +133,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                '学習をスマートに管理しよう',
+                                AppStrings.t('login_welcome_sub'),
                                 style: TextStyle(
                                   fontSize: 13,
                                   color: AppColors.textSecondary,
@@ -155,9 +162,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                       ),
                                     ),
                                     const SizedBox(width: 6),
-                                    const Text(
-                                      'AI オンライン',
-                                      style: TextStyle(
+                                    Text(
+                                      AppStrings.t('login_ai_online'),
+                                      style: const TextStyle(
                                         fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.primaryLight,
                                         fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: ['NotoSansJP'],
                                       ),
@@ -184,7 +191,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     child: Column(
                       children: [
                         Text(
-                          '続けるには方法を選んでください',
+                          AppStrings.t('login_subtitle'),
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 13, color: AppColors.textSecondary,
@@ -221,7 +228,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 ),
                                 const SizedBox(width: 10),
                                 Text(
-                                  'Googleでログイン',
+                                  AppStrings.t('login_google'),
                                   style: TextStyle(
                                     fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary,
                                     fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP'],
@@ -237,7 +244,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             const Expanded(child: Divider()),
                             Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 12),
-                              child: Text('または', style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
+                              child: Text(AppStrings.t('login_or'), style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
                             ),
                             const Expanded(child: Divider()),
                           ],
@@ -245,12 +252,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         const SizedBox(height: 14),
                         ElevatedButton(
                           onPressed: () => context.push('/login/signup'),
-                          child: const Text('メールで登録'),
+                          child: Text(AppStrings.t('login_email_register')),
                         ),
                         const SizedBox(height: 16),
                         TextButton(
                           onPressed: () => context.push('/login/email'),
-                          child: const Text('すでにアカウントをお持ちの方はこちら'),
+                          child: Text(AppStrings.t('login_have_account')),
                         ),
                       ],
                     ),
@@ -316,7 +323,7 @@ class _DesktopLoginLayout extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    '学習をスマートに管理しよう',
+                    AppStrings.t('login_welcome_sub'),
                     style: TextStyle(
                       fontSize: 16, height: 1.5, color: AppColors.textSecondary,
                       fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP'],
@@ -369,13 +376,19 @@ class _DesktopLoginLayout extends StatelessWidget {
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 380),
                   child: Stack(
+                    clipBehavior: Clip.none,
                     children: [
+                      Positioned(
+                        top: -80,
+                        right: 0,
+                        child: LanguagePickerButton(color: AppColors.textPrimary),
+                      ),
                       Column(
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           Text(
-                            'ログイン',
+                            AppStrings.t('login_title'),
                             style: TextStyle(
                               fontSize: 26, fontWeight: FontWeight.w900,
                               color: AppColors.textPrimary, letterSpacing: -0.4,
@@ -384,7 +397,7 @@ class _DesktopLoginLayout extends StatelessWidget {
                           ),
                           const SizedBox(height: 6),
                           Text(
-                            '続けるには方法を選んでください',
+                            AppStrings.t('login_subtitle'),
                             style: TextStyle(
                               fontSize: 13, color: AppColors.textSecondary,
                               fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP'],
@@ -415,7 +428,7 @@ class _DesktopLoginLayout extends StatelessWidget {
                                   ),
                                   const SizedBox(width: 10),
                                   Text(
-                                    'Googleでログイン',
+                                    AppStrings.t('login_google'),
                                     style: TextStyle(
                                       fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary,
                                       fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP'],
@@ -431,7 +444,7 @@ class _DesktopLoginLayout extends StatelessWidget {
                               const Expanded(child: Divider()),
                               Padding(
                                 padding: const EdgeInsets.symmetric(horizontal: 12),
-                                child: Text('または', style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
+                                child: Text(AppStrings.t('login_or'), style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
                               ),
                               const Expanded(child: Divider()),
                             ],
@@ -439,18 +452,18 @@ class _DesktopLoginLayout extends StatelessWidget {
                           const SizedBox(height: 16),
                           ElevatedButton(
                             onPressed: () => context.push('/login/signup'),
-                            child: const Text('メールで登録'),
+                            child: Text(AppStrings.t('login_email_register')),
                           ),
                           const SizedBox(height: 14),
                           TextButton(
                             onPressed: () => context.push('/login/email'),
-                            child: const Text('すでにアカウントをお持ちの方はこちら'),
+                            child: Text(AppStrings.t('login_have_account')),
                           ),
                           const SizedBox(height: 24),
                           TextButton.icon(
                             onPressed: () => context.go('/'),
                             icon: const Icon(Icons.arrow_back, size: 14),
-                            label: const Text('トップページに戻る'),
+                            label: Text(AppStrings.t('login_back_to_top')),
                             style: TextButton.styleFrom(foregroundColor: AppColors.textMuted),
                           ),
                         ],
@@ -474,11 +487,11 @@ class _DesktopLoginLayout extends StatelessWidget {
   }
 }
 
-const _desktopFeatures = [
-  ('時間割管理', Icons.calendar_month_outlined, Color(0xFF06B6D4), '毎日の授業をひと目で確認'),
-  ('課題追跡', Icons.assignment_outlined, Color(0xFF10B981), 'AIで課題の完成度をチェック'),
-  ('AIチャット', Icons.smart_toy_outlined, Color(0xFFA855F7), '10人のAI家庭教師がサポート'),
-  ('テスト生成', Icons.quiz_outlined, Color(0xFFF59E0B), 'AIが問題を自動作成'),
+final _desktopFeatures = [
+  (AppStrings.t('feat_timetable'), Icons.calendar_month_outlined, const Color(0xFF06B6D4), AppStrings.t('feat_timetable_desc')),
+  (AppStrings.t('feat_assignments'), Icons.assignment_outlined, const Color(0xFF10B981), AppStrings.t('feat_assignments_desc')),
+  (AppStrings.t('feat_ai_chat'), Icons.smart_toy_outlined, const Color(0xFFA855F7), AppStrings.t('feat_ai_chat_desc')),
+  (AppStrings.t('feat_quiz'), Icons.quiz_outlined, const Color(0xFFF59E0B), AppStrings.t('feat_quiz_desc')),
 ];
 
 class _TodayClassesPill extends ConsumerWidget {
@@ -499,7 +512,7 @@ class _TodayClassesPill extends ConsumerWidget {
           const Icon(Icons.calendar_today_outlined, size: 16, color: AppColors.primaryLight),
           const SizedBox(width: 6),
           Text(
-            '📅 今日の授業 $count件',
+            AppStrings.t('login_today_classes', {'n': count}),
             style: const TextStyle(
               fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.primaryLight,
               fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: ['NotoSansJP'],

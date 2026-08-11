@@ -4,21 +4,22 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
+import '../../core/l10n/app_strings.dart';
 import '../../features/assignments/models/assignment_model.dart';
 import '../../features/timetable/models/class_model.dart';
 
 abstract class NotificationService {
   static final FlutterLocalNotificationsPlugin _plugin = FlutterLocalNotificationsPlugin();
 
-  static const _androidDetails = AndroidNotificationDetails(
+  static AndroidNotificationDetails get _androidDetails => AndroidNotificationDetails(
     'eduplanner_reminders',
-    'EduPlanner Reminders',
-    channelDescription: '授業と課題のリマインダー通知',
+    AppStrings.t('notif_channel_name'),
+    channelDescription: AppStrings.t('notif_channel_desc'),
     importance: Importance.high,
     priority: Priority.high,
   );
 
-  static const _details = NotificationDetails(android: _androidDetails, iOS: DarwinNotificationDetails());
+  static NotificationDetails get _details => NotificationDetails(android: _androidDetails, iOS: const DarwinNotificationDetails());
 
   static Future<void> initialize() async {
     const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -117,8 +118,12 @@ abstract class NotificationService {
 
     await _plugin.zonedSchedule(
       c.hashCode,
-      '授業リマインダー',
-      '${c.period}限 ${c.subject} (${c.room}) が今日あります',
+      AppStrings.t('notif_class_rem_title'),
+      AppStrings.t('notif_class_rem_today', {
+        'n': c.period,
+        'subject': c.subject,
+        'room': c.room,
+      }),
       morning,
       _details,
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
@@ -129,8 +134,12 @@ abstract class NotificationService {
     if (beforeClass.isAfter(tz.TZDateTime.now(tz.local))) {
       await _plugin.zonedSchedule(
         c.hashCode + 1,
-        '授業リマインダー',
-        '${c.period}限 ${c.subject} (${c.room}) が30分後に始まります',
+        AppStrings.t('notif_class_rem_title'),
+        AppStrings.t('notif_class_rem_soon', {
+          'n': c.period,
+          'subject': c.subject,
+          'room': c.room,
+        }),
         beforeClass,
         _details,
         androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
@@ -151,11 +160,14 @@ abstract class NotificationService {
     final oneDayBefore = tz.TZDateTime.from(dueDay.subtract(const Duration(days: 1)).add(const Duration(hours: 9)), tz.local);
     final onDueDay = tz.TZDateTime.from(dueDay.add(const Duration(hours: 8)), tz.local);
 
+    final title = AppStrings.t('notif_assign_rem_title');
+    final args = {'subject': a.subject, 'title': a.title};
+
     if (threeDaysBefore.isAfter(now)) {
       await _plugin.zonedSchedule(
         a.id.hashCode,
-        '課題リマインダー',
-        '${a.subject}「${a.title}」の締め切りまで3日です',
+        title,
+        AppStrings.t('notif_assign_rem_3d', args),
         threeDaysBefore,
         _details,
         androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
@@ -165,8 +177,8 @@ abstract class NotificationService {
     if (oneDayBefore.isAfter(now)) {
       await _plugin.zonedSchedule(
         a.id.hashCode + 1,
-        '課題リマインダー',
-        '${a.subject}「${a.title}」の締め切りは明日です！',
+        title,
+        AppStrings.t('notif_assign_rem_1d', args),
         oneDayBefore,
         _details,
         androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
@@ -176,8 +188,8 @@ abstract class NotificationService {
     if (onDueDay.isAfter(now)) {
       await _plugin.zonedSchedule(
         a.id.hashCode + 2,
-        '課題リマインダー',
-        '今日が締め切り！${a.subject}「${a.title}」を提出しましょう',
+        title,
+        AppStrings.t('notif_assign_rem_today', args),
         onDueDay,
         _details,
         androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,

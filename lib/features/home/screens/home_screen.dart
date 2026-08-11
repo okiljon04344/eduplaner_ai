@@ -44,16 +44,16 @@ class HomeScreen extends ConsumerWidget {
                       ),
                       child: InkWell(
                         onTap: () => context.push('/landing-preview'),
-                        child: const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.play_circle_outline, size: 16, color: Colors.white),
-                              SizedBox(width: 8),
+                              const Icon(Icons.play_circle_outline, size: 16, color: Colors.white),
+                              const SizedBox(width: 8),
                               Text(
-                                'ランディングページを確認 →',
-                                style: TextStyle(
+                                AppStrings.t('home_landing_banner'),
+                                style: const TextStyle(
                                   fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white,
                                   fontFamily: 'Plus Jakarta Sans',
                                 ),
@@ -115,15 +115,13 @@ class _HeroHeader extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         gradient: AppColors.heroHomeGradient,
-        borderRadius: AppColors.isDark
-            ? null
-            : const BorderRadius.only(
-                bottomLeft: Radius.circular(32),
-                bottomRight: Radius.circular(32),
-              ),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(32),
+          bottomRight: Radius.circular(32),
+        ),
       ),
       child: Padding(
-        padding: EdgeInsets.fromLTRB(20, 20, 20, AppColors.isDark ? 8 : 28),
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
         child: Stack(
           clipBehavior: Clip.none,
           children: [

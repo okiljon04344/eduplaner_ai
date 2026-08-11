@@ -40,9 +40,20 @@ class AppStrings {
 
   /// Returns the translated string for [key].
   ///
+  /// Optional [args] map can be used to replace placeholders in the string
+  /// (e.g. `t('hello', {'name': 'User'})` replaces `{name}` in the translation).
+  ///
   /// Falls back to [key] itself when the key is absent — visible as raw keys
   /// in the UI, which makes gaps in a new translation file obvious during QA.
-  static String t(String key) => _strings[key] ?? key;
+  static String t(String key, [Map<String, dynamic>? args]) {
+    var value = _strings[key] ?? key;
+    if (args != null) {
+      args.forEach((k, v) {
+        value = value.replaceAll('{$k}', v.toString());
+      });
+    }
+    return value;
+  }
 
   /// BCP-47 locale codes supported by the app.
   static const _supported = {

@@ -14,7 +14,7 @@ class GreetingHeader extends ConsumerWidget {
     final user = ref.watch(currentUserProvider);
     final urgentCount = ref.watch(urgentAssignmentsCountProvider);
     final initial = (user?.name.isNotEmpty ?? false) ? user!.name.substring(0, 1) : 'U';
-    final onHero = AppColors.isDark ? AppColors.textOnHero : AppColors.textOnHero;
+    final onHero = Colors.white;
     final heroSub = AppColors.isDark
         ? AppColors.textSecondary
         : Colors.white.withValues(alpha: 0.75);

@@ -99,17 +99,17 @@ void main() {
         buildAssignment(id: 'done', status: AssignmentStatus.completed, dueDate: today),
       ]);
 
-      expect(container.read(filteredAssignmentsProvider).length, 3, reason: 'すべて default');
+      expect(container.read(filteredAssignmentsProvider).length, 3, reason: 'all default');
 
-      container.read(selectedFilterProvider.notifier).state = '未着手';
+      container.read(selectedFilterProvider.notifier).state = 'notStarted';
       final notStarted = container.read(filteredAssignmentsProvider);
       expect(notStarted.length, 1);
       expect(notStarted.first.id, 'ns');
 
-      container.read(selectedFilterProvider.notifier).state = '進行中';
+      container.read(selectedFilterProvider.notifier).state = 'inProgress';
       expect(container.read(filteredAssignmentsProvider).single.id, 'ip');
 
-      container.read(selectedFilterProvider.notifier).state = '完了';
+      container.read(selectedFilterProvider.notifier).state = 'completed';
       expect(container.read(filteredAssignmentsProvider).single.id, 'done');
     });
   });

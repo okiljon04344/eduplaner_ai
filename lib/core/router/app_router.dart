@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../l10n/app_strings.dart';
+import '../theme/app_colors.dart';
 import '../../features/ai_chat/screens/ai_chat_screen.dart';
 import '../../features/assignments/screens/assignments_screen.dart';
 import '../../features/auth/providers/auth_provider.dart';
@@ -83,9 +85,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
     ],
     errorBuilder: (_, state) => Scaffold(
+      backgroundColor: AppColors.background,
       body: Center(
         child: Text(
-          'ページが見つかりません: ${state.error}',
+          AppStrings.t('err_page_not_found', {'error': state.error}),
           style: const TextStyle(color: Colors.red),
         ),
       ),
