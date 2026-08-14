@@ -437,8 +437,20 @@ class _AssignmentCalendar extends StatelessWidget {
     required this.onFocusedDayChanged,
   });
 
+  /// Groups [assignments] by due-day once so `eventLoader` below is an O(1)
+  /// map lookup per visible cell instead of an O(n) scan per cell.
+  Map<DateTime, List<AssignmentModel>> _groupByDueDay() {
+    final byDay = <DateTime, List<AssignmentModel>>{};
+    for (final a in assignments) {
+      final key = DateTime(a.dueDate.year, a.dueDate.month, a.dueDate.day);
+      byDay.putIfAbsent(key, () => []).add(a);
+    }
+    return byDay;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final eventsByDay = _groupByDueDay();
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 8, 16, 4),
       decoration: BoxDecoration(
@@ -456,7 +468,7 @@ class _AssignmentCalendar extends StatelessWidget {
         onDaySelected: onDaySelected,
         onPageChanged: onFocusedDayChanged,
         eventLoader: (day) =>
-            assignments.where((a) => isSameDay(a.dueDate, day)).toList(),
+            eventsByDay[DateTime(day.year, day.month, day.day)] ?? const [],
         calendarFormat: CalendarFormat.month,
         availableCalendarFormats: {CalendarFormat.month: AppStrings.t('as_month_view')},
         calendarStyle: CalendarStyle(

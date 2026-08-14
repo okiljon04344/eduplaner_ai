@@ -43,6 +43,11 @@ abstract class DateHelper {
     return (diff / 7).floor() + 1;
   }
 
+  /// Stable `yyyy-MM-dd` cache key for "once per calendar day" logic
+  /// (streaks, cached AI tips/weak-area analysis).
+  static String dayKey(DateTime dt) =>
+      '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
+
   static bool isToday(DateTime dt) {
     final now = DateTime.now();
     return dt.year == now.year && dt.month == now.month && dt.day == now.day;

@@ -116,6 +116,26 @@ abstract class NotificationService {
     return scheduled;
   }
 
+  /// Shared `zonedSchedule` call shape used by every reminder below.
+  static Future<void> _schedule(
+    int id,
+    String title,
+    String body,
+    tz.TZDateTime time, {
+    DateTimeComponents? matchComponents,
+  }) {
+    return _plugin.zonedSchedule(
+      id,
+      title,
+      body,
+      time,
+      _details,
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+      matchDateTimeComponents: matchComponents,
+    );
+  }
+
   static Future<void> scheduleClassReminder(ClassModel c) async {
     final weekday = _weekday(c.dayOfWeek);
     final start = _periodStart(c.period);
@@ -124,38 +144,29 @@ abstract class NotificationService {
     final classStart = _nextWeekdayTime(weekday: weekday, hour: start.$1, minute: start.$2);
     final morning = _nextWeekdayTime(weekday: weekday, hour: 7, minute: 0);
     final beforeClass = classStart.subtract(const Duration(minutes: 30));
+    final args = {'n': c.period, 'subject': c.subject, 'room': c.room};
 
-    await _plugin.zonedSchedule(
-      c.hashCode,
-      AppStrings.t('notif_class_rem_title'),
-      AppStrings.t('notif_class_rem_today', {
-        'n': c.period,
-        'subject': c.subject,
-        'room': c.room,
-      }),
-      morning,
-      _details,
-      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
-      matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
-    );
-
+    // The morning notice and the pre-class notice are independent
+    // notifications (different ids/times) — schedule them concurrently.
+    final futures = <Future<void>>[
+      _schedule(
+        c.hashCode,
+        AppStrings.t('notif_class_rem_title'),
+        AppStrings.t('notif_class_rem_today', args),
+        morning,
+        matchComponents: DateTimeComponents.dayOfWeekAndTime,
+      ),
+    ];
     if (beforeClass.isAfter(tz.TZDateTime.now(tz.local))) {
-      await _plugin.zonedSchedule(
+      futures.add(_schedule(
         c.hashCode + 1,
         AppStrings.t('notif_class_rem_title'),
-        AppStrings.t('notif_class_rem_soon', {
-          'n': c.period,
-          'subject': c.subject,
-          'room': c.room,
-        }),
+        AppStrings.t('notif_class_rem_soon', args),
         beforeClass,
-        _details,
-        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
-        matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
-      );
+        matchComponents: DateTimeComponents.dayOfWeekAndTime,
+      ));
     }
+    await Future.wait(futures);
   }
 
   static Future<void> scheduleAssignmentReminders(AssignmentModel a) async {
@@ -172,44 +183,26 @@ abstract class NotificationService {
     final title = AppStrings.t('notif_assign_rem_title');
     final args = {'subject': a.subject, 'title': a.title};
 
+    // The three reminders are independent notifications — schedule the ones
+    // that are still in the future concurrently instead of one-by-one.
+    final futures = <Future<void>>[];
     if (threeDaysBefore.isAfter(now)) {
-      await _plugin.zonedSchedule(
-        a.id.hashCode,
-        title,
-        AppStrings.t('notif_assign_rem_3d', args),
-        threeDaysBefore,
-        _details,
-        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
-      );
+      futures.add(_schedule(a.id.hashCode, title, AppStrings.t('notif_assign_rem_3d', args), threeDaysBefore));
     }
     if (oneDayBefore.isAfter(now)) {
-      await _plugin.zonedSchedule(
-        a.id.hashCode + 1,
-        title,
-        AppStrings.t('notif_assign_rem_1d', args),
-        oneDayBefore,
-        _details,
-        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
-      );
+      futures.add(_schedule(a.id.hashCode + 1, title, AppStrings.t('notif_assign_rem_1d', args), oneDayBefore));
     }
     if (onDueDay.isAfter(now)) {
-      await _plugin.zonedSchedule(
-        a.id.hashCode + 2,
-        title,
-        AppStrings.t('notif_assign_rem_today', args),
-        onDueDay,
-        _details,
-        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
-      );
+      futures.add(_schedule(a.id.hashCode + 2, title, AppStrings.t('notif_assign_rem_today', args), onDueDay));
     }
+    await Future.wait(futures);
   }
 
-  static Future<void> cancelAssignmentReminders(String id) async {
-    await _plugin.cancel(id.hashCode);
-    await _plugin.cancel(id.hashCode + 1);
-    await _plugin.cancel(id.hashCode + 2);
+  static Future<void> cancelAssignmentReminders(String id) {
+    return Future.wait([
+      _plugin.cancel(id.hashCode),
+      _plugin.cancel(id.hashCode + 1),
+      _plugin.cancel(id.hashCode + 2),
+    ]);
   }
 }

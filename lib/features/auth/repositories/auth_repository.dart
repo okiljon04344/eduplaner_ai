@@ -127,20 +127,25 @@ class AuthRepository {
     final result = await _auth.signInWithCredential(credential);
     final user = result.user;
     if (user == null) throw Exception(AppStrings.t('err_user_info_unavailable'));
+    return _getOrCreateUserDoc(user);
+  }
+
+  /// Reads the `users/{uid}` doc for [user], creating it with sensible
+  /// defaults if it doesn't exist yet. [fallbackEmail] is used only when
+  /// [user] itself has no email on file (e.g. some email/password flows).
+  Future<UserModel> _getOrCreateUserDoc(User user, {String? fallbackEmail}) async {
     final docRef = _db.collection('users').doc(user.uid);
     final doc = await docRef.get();
-    if (!doc.exists) {
-      final newUser = UserModel(
-        uid: user.uid,
-        name: user.displayName ?? 'ユーザー',
-        email: user.email ?? '',
-        photoUrl: user.photoURL,
-        createdAt: DateTime.now(),
-      );
-      await docRef.set(newUser.toFirestore());
-      return newUser;
-    }
-    return UserModel.fromFirestore(doc);
+    if (doc.exists) return UserModel.fromFirestore(doc);
+    final newUser = UserModel(
+      uid: user.uid,
+      name: user.displayName ?? 'ユーザー',
+      email: user.email ?? fallbackEmail ?? '',
+      photoUrl: user.photoURL,
+      createdAt: DateTime.now(),
+    );
+    await docRef.set(newUser.toFirestore());
+    return newUser;
   }
 
   /// Registers a brand-new account, or — if [email] is already registered —
@@ -180,19 +185,7 @@ class AuthRepository {
       final result = await _auth.signInWithEmailAndPassword(email: email, password: password);
       final user = result.user;
       if (user == null) throw Exception(AppStrings.t('err_user_info_unavailable'));
-      final docRef = _db.collection('users').doc(user.uid);
-      final doc = await docRef.get();
-      if (!doc.exists) {
-        final newUser = UserModel(
-          uid: user.uid,
-          name: user.displayName ?? 'ユーザー',
-          email: user.email ?? email,
-          createdAt: DateTime.now(),
-        );
-        await docRef.set(newUser.toFirestore());
-        return newUser;
-      }
-      return UserModel.fromFirestore(doc);
+      return await _getOrCreateUserDoc(user, fallbackEmail: email);
     } on FirebaseAuthException catch (e) {
       throw Exception(_authErrorMessage(e.code));
     }

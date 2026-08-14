@@ -42,7 +42,6 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
   @override
   Widget build(BuildContext context) {
     final messages = ref.watch(chatProvider);
-    final reversed = messages.reversed.toList();
 
     final selectedBot = botById(ref.watch(selectedBotIdProvider));
 
@@ -59,8 +58,8 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
                 child: ListView.builder(
                   reverse: true,
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                  itemCount: reversed.length,
-                  itemBuilder: (context, i) => ChatBubble(message: reversed[i]),
+                  itemCount: messages.length,
+                  itemBuilder: (context, i) => ChatBubble(message: messages[messages.length - 1 - i]),
                 ),
               ),
             ),

@@ -431,7 +431,10 @@ class _DesktopLoginLayout extends StatelessWidget {
   }
 }
 
-final _desktopFeatures = [
+// Getter (not a top-level const/final) so it re-resolves in the currently
+// loaded locale — a plain `final` would freeze these strings at first
+// access and never update when the user switches language.
+List<(String, IconData, Color, String)> get _desktopFeatures => [
   (AppStrings.t('feat_timetable'), Icons.calendar_month_outlined, const Color(0xFF06B6D4), AppStrings.t('feat_timetable_desc')),
   (AppStrings.t('feat_assignments'), Icons.assignment_outlined, const Color(0xFF10B981), AppStrings.t('feat_assignments_desc')),
   (AppStrings.t('feat_ai_chat'), Icons.smart_toy_outlined, const Color(0xFFA855F7), AppStrings.t('feat_ai_chat_desc')),

@@ -18,23 +18,30 @@ import 'firebase_options.dart';
 ///   1. Flutter engine binding
 ///   2. Portrait-only orientation lock
 ///   3. System UI overlay colours (dark-mode safe transparent status bar)
-///   4. Japanese date symbols for [intl] formatting
-///   5. Timezone data + Asia/Tokyo default (school schedule context)
-///   6. Firebase (failures are logged and swallowed — app still boots offline)
+///   4. Timezone data + Asia/Tokyo default (school schedule context)
+///   5. Japanese date symbols for [intl] formatting, and Firebase (failures
+///      are logged and swallowed — app still boots offline) — run concurrently,
+///      neither depends on the other
 ///   7. Local push-notification channels
 ///   8. Pre-load saved locale into [AppStrings] so the first frame is never
 ///      rendered with untranslated strings
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-  await initializeDateFormatting(null);
   tzdata.initializeTimeZones();
   tz.setLocalLocation(tz.getLocation('Asia/Tokyo'));
-  try {
-    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  } catch (e) {
-    debugPrint('Firebase init error: $e');
+
+  Future<void> initFirebase() async {
+    try {
+      await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+    } catch (e) {
+      debugPrint('Firebase init error: $e');
+    }
   }
+
+  // intl date symbols and Firebase are independent subsystems — initialise
+  // them concurrently instead of one after another.
+  await Future.wait([initializeDateFormatting(null), initFirebase()]);
   try {
     await NotificationService.initialize();
   } catch (e) {

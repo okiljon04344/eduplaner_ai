@@ -17,7 +17,6 @@ class _LandingScreenState extends State<LandingScreen>
   late final AnimationController _bgCtrl;
   late final AnimationController _floatCtrl;
   late final AnimationController _pulseCtrl;
-  late final AnimationController _shimmerCtrl;
 
   @override
   void initState() {
@@ -28,8 +27,6 @@ class _LandingScreenState extends State<LandingScreen>
       ..repeat(reverse: true);
     _pulseCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 1800))
       ..repeat(reverse: true);
-    _shimmerCtrl = AnimationController(vsync: this, duration: const Duration(seconds: 2))
-      ..repeat();
   }
 
   @override
@@ -37,7 +34,6 @@ class _LandingScreenState extends State<LandingScreen>
     _bgCtrl.dispose();
     _floatCtrl.dispose();
     _pulseCtrl.dispose();
-    _shimmerCtrl.dispose();
     super.dispose();
   }
 
@@ -62,7 +58,6 @@ class _LandingScreenState extends State<LandingScreen>
                   isDesktop: isDesktop,
                   floatCtrl: _floatCtrl,
                   pulseCtrl: _pulseCtrl,
-                  shimmerCtrl: _shimmerCtrl,
                 ),
                 _FeaturesSection(isDesktop: isDesktop),
                 _CtaSection(pulseCtrl: _pulseCtrl),
@@ -213,13 +208,11 @@ class _HeroSection extends StatelessWidget {
   final bool isDesktop;
   final AnimationController floatCtrl;
   final AnimationController pulseCtrl;
-  final AnimationController shimmerCtrl;
 
   const _HeroSection({
     required this.isDesktop,
     required this.floatCtrl,
     required this.pulseCtrl,
-    required this.shimmerCtrl,
   });
 
   @override
@@ -234,7 +227,7 @@ class _HeroSection extends StatelessWidget {
           ? Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Expanded(flex: 5, child: _HeroText(pulseCtrl: pulseCtrl, shimmerCtrl: shimmerCtrl)),
+                Expanded(flex: 5, child: _HeroText(pulseCtrl: pulseCtrl)),
                 const SizedBox(width: 56),
                 Expanded(flex: 4, child: _FloatingMockup(ctrl: floatCtrl)),
               ],
@@ -242,7 +235,7 @@ class _HeroSection extends StatelessWidget {
           : Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _HeroText(pulseCtrl: pulseCtrl, shimmerCtrl: shimmerCtrl),
+                _HeroText(pulseCtrl: pulseCtrl),
                 const SizedBox(height: 44),
                 _FloatingMockup(ctrl: floatCtrl),
               ],
@@ -253,8 +246,7 @@ class _HeroSection extends StatelessWidget {
 
 class _HeroText extends StatelessWidget {
   final AnimationController pulseCtrl;
-  final AnimationController shimmerCtrl;
-  const _HeroText({required this.pulseCtrl, required this.shimmerCtrl});
+  const _HeroText({required this.pulseCtrl});
 
   @override
   Widget build(BuildContext context) {

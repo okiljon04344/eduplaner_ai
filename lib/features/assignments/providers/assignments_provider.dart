@@ -83,17 +83,24 @@ class AssignmentsNotifier extends AsyncNotifier<void> {
   @override
   Future<void> build() async {}
 
+  /// Runs a [NotificationService] call, logging (not rethrowing) any
+  /// failure — reminder scheduling is best-effort and must never surface
+  /// as a user-facing error for what is otherwise a successful write.
+  Future<void> _safeNotify(Future<void> Function() action, String label) async {
+    try {
+      await action();
+    } catch (e) {
+      debugPrint('$label error: $e');
+    }
+  }
+
   /// Creates a new assignment and schedules due-date reminders.
   Future<void> add(AssignmentModel model) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(
         () => ref.read(assignmentsRepositoryProvider).add(model));
     if (!state.hasError) {
-      try {
-        await NotificationService.scheduleAssignmentReminders(model);
-      } catch (e) {
-        debugPrint('Assignment reminder schedule error: $e');
-      }
+      await _safeNotify(() => NotificationService.scheduleAssignmentReminders(model), 'Assignment reminder schedule');
     }
   }
 
@@ -103,11 +110,7 @@ class AssignmentsNotifier extends AsyncNotifier<void> {
     state = await AsyncValue.guard(
         () => ref.read(assignmentsRepositoryProvider).update(model));
     if (!state.hasError) {
-      try {
-        await NotificationService.scheduleAssignmentReminders(model);
-      } catch (e) {
-        debugPrint('Assignment reminder schedule error: $e');
-      }
+      await _safeNotify(() => NotificationService.scheduleAssignmentReminders(model), 'Assignment reminder schedule');
     }
   }
 
@@ -116,11 +119,7 @@ class AssignmentsNotifier extends AsyncNotifier<void> {
     state = const AsyncLoading();
     state = await AsyncValue.guard(
         () => ref.read(assignmentsRepositoryProvider).delete(id));
-    try {
-      await NotificationService.cancelAssignmentReminders(id);
-    } catch (e) {
-      debugPrint('Assignment reminder cancel error: $e');
-    }
+    await _safeNotify(() => NotificationService.cancelAssignmentReminders(id), 'Assignment reminder cancel');
   }
 
   /// Updates only the status field of an assignment.
@@ -129,11 +128,7 @@ class AssignmentsNotifier extends AsyncNotifier<void> {
   Future<void> updateStatus(String id, AssignmentStatus status) async {
     await ref.read(assignmentsRepositoryProvider).updateStatus(id, status);
     if (status == AssignmentStatus.completed) {
-      try {
-        await NotificationService.cancelAssignmentReminders(id);
-      } catch (e) {
-        debugPrint('Assignment reminder cancel error: $e');
-      }
+      await _safeNotify(() => NotificationService.cancelAssignmentReminders(id), 'Assignment reminder cancel');
     }
   }
 

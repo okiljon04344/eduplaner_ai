@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/providers/locale_provider.dart';
+import '../../../core/utils/date_helper.dart';
 import '../../assignments/models/assignment_model.dart';
 import '../../assignments/providers/assignments_provider.dart';
 
@@ -19,7 +20,7 @@ String get _noAssignmentsWeakArea => AppStrings.t('weak_no_assignments');
 final dailyStreakProvider = FutureProvider<int>((ref) async {
   final prefs = await SharedPreferences.getInstance();
   final now = DateTime.now();
-  final todayKey = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+  final todayKey = DateHelper.dayKey(now);
   final lastOpen = prefs.getString('streak_last_open');
   var streak = prefs.getInt('streak_count') ?? 0;
 
@@ -27,7 +28,7 @@ final dailyStreakProvider = FutureProvider<int>((ref) async {
 
   if (lastOpen != null) {
     final yesterday = now.subtract(const Duration(days: 1));
-    final yesterdayKey = '${yesterday.year}-${yesterday.month.toString().padLeft(2, '0')}-${yesterday.day.toString().padLeft(2, '0')}';
+    final yesterdayKey = DateHelper.dayKey(yesterday);
     streak = (lastOpen == yesterdayKey) ? streak + 1 : 1;
   } else {
     streak = 1;
@@ -46,7 +47,7 @@ final dailyStreakProvider = FutureProvider<int>((ref) async {
 final aiStudyTipProvider = FutureProvider<String>((ref) async {
   final locate = ref.watch(localeProvider);
   final now = DateTime.now();
-  final dateKey = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+  final dateKey = DateHelper.dayKey(now);
   final prefs = await SharedPreferences.getInstance();
   // Cache per locale as well as per day, so switching language re-fetches the
   // tip in the new language instead of serving yesterday's-locale cache.
@@ -92,7 +93,7 @@ final weakAreaProvider = FutureProvider<String>((ref) async {
   if (assignments.isEmpty) return _noAssignmentsWeakArea;
 
   final now = DateTime.now();
-  final dateKey = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+  final dateKey = DateHelper.dayKey(now);
   final prefs = await SharedPreferences.getInstance();
   final cacheKey = 'weak_area_${locate}_$dateKey';
   final cached = prefs.getString(cacheKey);
