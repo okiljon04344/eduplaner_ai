@@ -26,6 +26,7 @@ import {HttpsError, onCall} from 'firebase-functions/https';
 import {defineSecret} from 'firebase-functions/params';
 import {onDocumentUpdated} from 'firebase-functions/v2/firestore';
 import {logger} from 'firebase-functions';
+import mammoth from 'mammoth';
 
 initializeApp();
 
@@ -59,6 +60,21 @@ const LANGUAGE_NAMES = {
 };
 const replyLanguageOf = (language) => LANGUAGE_NAMES[language] ?? 'Japanese';
 
+/// Throws the standard `unauthenticated` error every callable function opens
+/// with. Centralised so the message/code stays identical across all six
+/// callables instead of being retyped at each one.
+function requireAuth(request) {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Login is required.');
+  }
+}
+
+/// `JSON.stringify` a value and cap it to [max] chars — the shared truncation
+/// idiom used everywhere untrusted/unbounded data is embedded in a prompt.
+function truncatedJson(value, max = 3000) {
+  return JSON.stringify(value).slice(0, max);
+}
+
 // Bot system prompts. Keep ids in sync with lib/features/ai_chat/models/ai_bot.dart.
 // These prompts are tiny (~100 chars each) — well below the ~1024-token minimum
 // for Gemini's cached-content API, so caching would add cost without benefit.
@@ -75,6 +91,10 @@ const botPrompts = {
   career: 'You are Career Bot. Help with school goals and career planning.'
 };
 
+const QUOTA_ERROR_RE = /quota|rate limit/i;
+const INVALID_ARG_ERROR_RE = /invalid|bad request/i;
+const UNAVAILABLE_ERROR_RE = /unavailable|timeout|deadline/i;
+
 /// Map any thrown Gemini SDK error into an `HttpsError` with a code the
 /// client can distinguish. Never let raw SDK error text (which may include
 /// prompt fragments, endpoint URLs, or stack traces) reach the client.
@@ -83,19 +103,31 @@ function mapGeminiError(err, japaneseFallback) {
   const message = String(err?.message ?? '');
   logger.error('Gemini call failed', {status, message: message.slice(0, 500)});
 
-  if (status === 429 || /quota|rate limit/i.test(message)) {
+  if (status === 429 || QUOTA_ERROR_RE.test(message)) {
     return new HttpsError('resource-exhausted', 'AIの利用上限に達しました。しばらくしてからもう一度お試しください。');
   }
-  if (status === 400 || /invalid|bad request/i.test(message)) {
+  if (status === 400 || INVALID_ARG_ERROR_RE.test(message)) {
     return new HttpsError('invalid-argument', '入力内容を確認してください。');
   }
   if (status === 401 || status === 403) {
     return new HttpsError('internal', japaneseFallback);
   }
-  if (status === 503 || status === 504 || /unavailable|timeout|deadline/i.test(message)) {
+  if (status === 503 || status === 504 || UNAVAILABLE_ERROR_RE.test(message)) {
     return new HttpsError('unavailable', 'AIサーバーが混雑しています。少し時間をおいてお試しください。');
   }
   return new HttpsError('internal', japaneseFallback);
+}
+
+/// Shared call+error-mapping wrapper for the four callables that make a
+/// single, directly-awaited `generateContent` call and translate any
+/// failure via [mapGeminiError]. Not used by `generateQuiz`'s grounding
+/// stage, which intentionally catches-and-falls-back instead of throwing.
+async function callGemini(config, japaneseFallback) {
+  try {
+    return await gemini().models.generateContent(config);
+  } catch (err) {
+    throw mapGeminiError(err, japaneseFallback);
+  }
 }
 
 /// Extract a JSON object from a Gemini text response. Handles ```json fences,
@@ -131,9 +163,7 @@ export const chatWithTutor = onCall({
   timeoutSeconds: 30,
   concurrency: 40,
 }, async (request) => {
-  if (!request.auth) {
-    throw new HttpsError('unauthenticated', 'Login is required.');
-  }
+  requireAuth(request);
 
   const {botId = 'planner', message, assignments = [], classes = [], language} = request.data ?? {};
 
@@ -157,20 +187,16 @@ export const chatWithTutor = onCall({
     botPrompts[resolvedBotId],
     `Reply in ${replyLanguage}.`,
     'Keep answers practical and student-friendly.',
-    `Current assignments: ${JSON.stringify(safeAssignments).slice(0, 3000)}`,
-    `Current classes: ${JSON.stringify(safeClasses).slice(0, 3000)}`,
+    `Current assignments: ${truncatedJson(safeAssignments)}`,
+    `Current classes: ${truncatedJson(safeClasses)}`,
     `Student message: ${message}`
   ].join('\n\n');
 
-  try {
-    const response = await gemini().models.generateContent({
-      model: GEMINI_MODEL,
-      contents: prompt,
-    });
-    return {reply: response.text ?? 'すみません、もう一度質問してください。'};
-  } catch (err) {
-    throw mapGeminiError(err, 'AIの応答に失敗しました。もう一度お試しください。');
-  }
+  const response = await callGemini(
+    {model: GEMINI_MODEL, contents: prompt},
+    'AIの応答に失敗しました。もう一度お試しください。',
+  );
+  return {reply: response.text ?? 'すみません、もう一度質問してください。'};
 });
 
 // ---------------------------------------------------------------------------
@@ -181,9 +207,7 @@ export const deleteAccount = onCall({
   memory: '256MiB',
   timeoutSeconds: 120,
 }, async (request) => {
-  if (!request.auth) {
-    throw new HttpsError('unauthenticated', 'Login is required.');
-  }
+  requireAuth(request);
 
   const uid = request.auth.uid;
   const firestore = db();
@@ -207,8 +231,10 @@ export const deleteAccount = onCall({
       deleteQuery(firestore.collection('ai_chats').doc(uid).collection('messages')),
     ]);
     await Promise.all([
-      firestore.collection('ai_chats').doc(uid).delete().catch(() => {}),
-      firestore.collection('users').doc(uid).delete().catch(() => {}),
+      firestore.collection('ai_chats').doc(uid).delete().catch((err) =>
+        logger.warn('deleteAccount: ai_chats doc delete failed', {uid, message: String(err?.message ?? '').slice(0, 300)})),
+      firestore.collection('users').doc(uid).delete().catch((err) =>
+        logger.warn('deleteAccount: users doc delete failed', {uid, message: String(err?.message ?? '').slice(0, 300)})),
     ]);
     await getAuth().deleteUser(uid);
     return {success: true};
@@ -228,9 +254,7 @@ export const joinGroupByCode = onCall({
   memory: '256MiB',
   timeoutSeconds: 15,
 }, async (request) => {
-  if (!request.auth) {
-    throw new HttpsError('unauthenticated', 'Login is required.');
-  }
+  requireAuth(request);
   const {code} = request.data ?? {};
   if (typeof code !== 'string' || code.trim().length !== GROUP_CODE_LENGTH) {
     throw new HttpsError('invalid-argument', 'A valid 6-character code is required.');
@@ -302,9 +326,7 @@ export const generateQuiz = onCall({
   timeoutSeconds: 120,
   concurrency: 20,
 }, async (request) => {
-  if (!request.auth) {
-    throw new HttpsError('unauthenticated', 'Login is required.');
-  }
+  requireAuth(request);
   const {subject, topic = '', useSearch = false, language} = request.data ?? {};
   if (typeof subject !== 'string' || subject.trim().length === 0) {
     throw new HttpsError('invalid-argument', 'subject is required.');
@@ -354,16 +376,10 @@ export const generateQuiz = onCall({
   );
   const prompt = promptLines.join('\n');
 
-  let response;
-  try {
-    response = await gemini().models.generateContent({
-      model: GEMINI_MODEL,
-      contents: prompt,
-      config: {responseMimeType: 'application/json'},
-    });
-  } catch (err) {
-    throw mapGeminiError(err, 'クイズの生成に失敗しました。もう一度お試しください。');
-  }
+  const response = await callGemini(
+    {model: GEMINI_MODEL, contents: prompt, config: {responseMimeType: 'application/json'}},
+    'クイズの生成に失敗しました。もう一度お試しください。',
+  );
 
   const parsed = extractJson(response.text ?? '');
   if (!parsed) {
@@ -392,9 +408,7 @@ export const analyzeWeakArea = onCall({
   timeoutSeconds: 30,
   concurrency: 20,
 }, async (request) => {
-  if (!request.auth) {
-    throw new HttpsError('unauthenticated', 'Login is required.');
-  }
+  requireAuth(request);
   const {stats, language} = request.data ?? {};
   if (!Array.isArray(stats) || stats.length === 0) {
     throw new HttpsError('invalid-argument', 'stats is required.');
@@ -409,17 +423,16 @@ export const analyzeWeakArea = onCall({
   const prompt = [
     'You are Focus Bot, a study analytics assistant for a vocational school student.',
     'Below is per-subject assignment statistics as JSON: subject, totalCount, completedCount, overdueCount, avgDifficulty (1-5).',
-    JSON.stringify(stats).slice(0, 3000),
+    truncatedJson(stats),
     'Identify the 1-2 weakest subjects (highest overdue/incomplete ratio and/or difficulty) and give one concrete, practical tip for each.',
     `Reply in ${replyLanguage}, 3 sentences maximum, plain text with no markdown formatting.`
   ].join('\n\n');
 
-  try {
-    const response = await gemini().models.generateContent({model: GEMINI_MODEL, contents: prompt});
-    return {analysis: response.text ?? '分析に必要なデータが不足しています。'};
-  } catch (err) {
-    throw mapGeminiError(err, '分析に失敗しました。もう一度お試しください。');
-  }
+  const response = await callGemini(
+    {model: GEMINI_MODEL, contents: prompt},
+    '分析に失敗しました。もう一度お試しください。',
+  );
+  return {analysis: response.text ?? '分析に必要なデータが不足しています。'};
 });
 
 // 10MB decoded ceiling — base64 inflates size by ~4/3, so this bounds the
@@ -450,9 +463,7 @@ export const analyzeAssignmentSubmission = onCall({
   timeoutSeconds: 120,
   concurrency: 5,
 }, async (request) => {
-  if (!request.auth) {
-    throw new HttpsError('unauthenticated', 'Login is required.');
-  }
+  requireAuth(request);
 
   const {subject, title = '', description = '', fileBase64, mimeType} = request.data ?? {};
   // Validate and cap all text fields before they enter the AI prompt.
@@ -493,8 +504,7 @@ export const analyzeAssignmentSubmission = onCall({
     let extractedText;
     try {
       if (mimeType === DOCX_MIME_TYPE) {
-        const mammoth = await import('mammoth');
-        const result = await mammoth.default.extractRawText({buffer});
+        const result = await mammoth.extractRawText({buffer});
         extractedText = result.value;
       } else {
         extractedText = buffer.toString('utf8');
@@ -514,16 +524,10 @@ export const analyzeAssignmentSubmission = onCall({
     contents = [{role: 'user', parts: [{text: `${instructions}\n\nSubmitted work (extracted text):\n${extractedText}`}]}];
   }
 
-  let response;
-  try {
-    response = await gemini().models.generateContent({
-      model: GEMINI_MODEL,
-      contents,
-      config: {responseMimeType: 'application/json'},
-    });
-  } catch (err) {
-    throw mapGeminiError(err, '課題のチェックに失敗しました。もう一度お試しください。');
-  }
+  const response = await callGemini(
+    {model: GEMINI_MODEL, contents, config: {responseMimeType: 'application/json'}},
+    '課題のチェックに失敗しました。もう一度お試しください。',
+  );
 
   // Never log `response.text` or the submitted content — it's the student's work.
   const parsed = extractJson(response.text ?? '');

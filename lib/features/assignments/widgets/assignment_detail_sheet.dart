@@ -151,6 +151,11 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
 
   void _onProgressChanged(double value) {
     setState(() => _progress = value);
+  }
+
+  // Committing on drag-end (not every `onChanged` tick) avoids firing a
+  // Firestore write per pixel of drag while the slider is being dragged.
+  void _onProgressChangeEnd(double value) {
     ref.read(assignmentsNotifierProvider.notifier).updateProgress(widget.assignment.id, value);
   }
 
@@ -244,7 +249,7 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
                     Text('${(_progress * 100).round()}%', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.primary)),
                   ],
                 ),
-                Slider(value: _progress, min: 0, max: 1, divisions: 10, activeColor: AppColors.primary, onChanged: _onProgressChanged),
+                Slider(value: _progress, min: 0, max: 1, divisions: 10, activeColor: AppColors.primary, onChanged: _onProgressChanged, onChangeEnd: _onProgressChangeEnd),
                 const SizedBox(height: 12),
                 Text('ステータス', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
                 const SizedBox(height: 8),

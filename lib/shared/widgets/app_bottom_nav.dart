@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import '../../core/l10n/app_strings.dart';
-import '../../core/providers/app_providers.dart';
 import '../../core/theme/app_colors.dart';
-
-const _tabRoutes = ['/home', '/timetable', '/assignments', '/ai'];
+import 'nav_destinations.dart';
 
 /// Mobile bottom navigation bar — four main destinations.
 ///
@@ -72,18 +69,14 @@ class _NavItem extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final active = GoRouterState.of(context).matchedLocation.startsWith(route);
+    final active = isNavRouteActive(context, route);
     final activeColor = AppColors.isDark ? AppColors.primaryLight : AppColors.primaryIndigo;
     final inactiveColor = AppColors.textMuted;
 
     return Expanded(
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTap: () {
-          final idx = _tabRoutes.indexOf(route);
-          if (idx >= 0) ref.read(shellTabIndexProvider.notifier).state = idx;
-          context.go(route);
-        },
+        onTap: () => navigateToNavRoute(ref, context, route),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

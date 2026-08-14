@@ -56,44 +56,26 @@ class TimetableNotifier extends AsyncNotifier<void> {
   String get _uid => ref.read(currentUserProvider)?.uid ?? '';
   String? get _groupId => ref.read(myGroupProvider).valueOrNull?.id;
 
-  /// Adds a new class, auto-attaching the caller's current group id if present.
-  ///
-  /// Returns a localised error string if the target slot is already occupied,
-  /// or `null` on success.
-  Future<String?> addClass(ClassModel model) async {
-    final groupId = _groupId;
-    final occupied = await _repo.slotOccupied(_uid, model.dayOfWeek, model.period, groupId: groupId);
-    if (occupied) {
-      return AppStrings.t('err_slot_occupied', {'day': weekdayLabel(model.dayOfWeek), 'period': model.period});
-    }
-    final toSave = groupId != null ? model.copyWith(groupId: groupId) : model;
-    state = const AsyncLoading();
-    state = await AsyncValue.guard(() => _repo.add(toSave));
-    if (!state.hasError) {
-      try {
-        await NotificationService.scheduleClassReminder(toSave);
-      } catch (e) {
-        debugPrint('Class reminder schedule error: $e');
-      }
-    }
-    return state.hasError ? AppStrings.t('err_class_save_failed') : null;
-  }
-
-  /// Updates an existing class, excluding its own id from the conflict check.
-  ///
-  /// Returns a localised error string on slot conflict or save failure,
-  /// or `null` on success.
-  Future<String?> updateClass(ClassModel model) async {
+  /// Shared conflict-check + write + reminder-schedule sequence for
+  /// [addClass]/[updateClass] — they differ only in the conflict-check
+  /// params, the repository call, and the save-failure message.
+  Future<String?> _saveClass({
+    required ClassModel model,
+    required String? excludeId,
+    required String? groupId,
+    required Future<void> Function() write,
+    required String saveFailedKey,
+  }) async {
     final occupied = await _repo.slotOccupied(
       _uid, model.dayOfWeek, model.period,
-      excludeId: model.id,
-      groupId: model.groupId,
+      excludeId: excludeId,
+      groupId: groupId,
     );
     if (occupied) {
       return AppStrings.t('err_slot_occupied', {'day': weekdayLabel(model.dayOfWeek), 'period': model.period});
     }
     state = const AsyncLoading();
-    state = await AsyncValue.guard(() => _repo.update(model));
+    state = await AsyncValue.guard(write);
     if (!state.hasError) {
       try {
         await NotificationService.scheduleClassReminder(model);
@@ -101,7 +83,37 @@ class TimetableNotifier extends AsyncNotifier<void> {
         debugPrint('Class reminder schedule error: $e');
       }
     }
-    return state.hasError ? AppStrings.t('err_class_update_failed') : null;
+    return state.hasError ? AppStrings.t(saveFailedKey) : null;
+  }
+
+  /// Adds a new class, auto-attaching the caller's current group id if present.
+  ///
+  /// Returns a localised error string if the target slot is already occupied,
+  /// or `null` on success.
+  Future<String?> addClass(ClassModel model) async {
+    final groupId = _groupId;
+    final toSave = groupId != null ? model.copyWith(groupId: groupId) : model;
+    return _saveClass(
+      model: toSave,
+      excludeId: null,
+      groupId: groupId,
+      write: () => _repo.add(toSave),
+      saveFailedKey: 'err_class_save_failed',
+    );
+  }
+
+  /// Updates an existing class, excluding its own id from the conflict check.
+  ///
+  /// Returns a localised error string on slot conflict or save failure,
+  /// or `null` on success.
+  Future<String?> updateClass(ClassModel model) async {
+    return _saveClass(
+      model: model,
+      excludeId: model.id,
+      groupId: model.groupId,
+      write: () => _repo.update(model),
+      saveFailedKey: 'err_class_update_failed',
+    );
   }
 
   /// Deletes a class by [id].

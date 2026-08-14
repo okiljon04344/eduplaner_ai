@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import '../../core/l10n/app_strings.dart';
-import '../../core/providers/app_providers.dart';
 import '../../core/theme/app_colors.dart';
-
-const _railRoutes = ['/home', '/timetable', '/assignments', '/ai'];
+import 'nav_destinations.dart';
 
 /// Tablet/desktop side navigation rail — same four destinations as
 /// [AppBottomNav] but laid out vertically to make use of extra width.
@@ -70,14 +67,10 @@ class _RailItem extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final active = GoRouterState.of(context).matchedLocation.startsWith(route);
+    final active = isNavRouteActive(context, route);
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: () {
-        final idx = _railRoutes.indexOf(route);
-        if (idx >= 0) ref.read(shellTabIndexProvider.notifier).state = idx;
-        context.go(route);
-      },
+      onTap: () => navigateToNavRoute(ref, context, route),
       child: SizedBox(
         width: 96,
         child: Column(

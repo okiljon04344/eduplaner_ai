@@ -11,15 +11,21 @@ class ThemeNotifier extends Notifier<ThemeMode> {
     return ThemeMode.system;
   }
 
+  // Fire-and-forget from build() — must not let a SharedPreferences failure
+  // escape as an unhandled async error.
   Future<void> _loadFromPrefs() async {
-    final prefs = await SharedPreferences.getInstance();
-    final saved = prefs.getString(_key);
-    if (saved == 'light') {
-      state = ThemeMode.light;
-    } else if (saved == 'dark') {
-      state = ThemeMode.dark;
-    } else {
-      state = ThemeMode.system;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final saved = prefs.getString(_key);
+      if (saved == 'light') {
+        state = ThemeMode.light;
+      } else if (saved == 'dark') {
+        state = ThemeMode.dark;
+      } else {
+        state = ThemeMode.system;
+      }
+    } catch (e) {
+      debugPrint('Theme prefs load error: $e');
     }
   }
 
