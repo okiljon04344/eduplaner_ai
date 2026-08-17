@@ -158,9 +158,10 @@ function extractJson(raw) {
 // under load matters more than idle cost (~$5-10/mo per pinned instance).
 // ---------------------------------------------------------------------------
 export const chatWithTutor = onCall({
+  region: 'asia-northeast1',
   secrets: [geminiApiKey],
   memory: '256MiB',
-  timeoutSeconds: 30,
+  timeoutSeconds: 120,
   concurrency: 40,
 }, async (request) => {
   requireAuth(request);
@@ -204,6 +205,7 @@ export const chatWithTutor = onCall({
 // batched fan-out; the messages subcollection can grow large so batch it.
 // ---------------------------------------------------------------------------
 export const deleteAccount = onCall({
+  region: 'asia-northeast1',
   memory: '256MiB',
   timeoutSeconds: 120,
 }, async (request) => {
@@ -251,8 +253,9 @@ const GROUP_CODE_LENGTH = 6;
 /// Firestore rules only let *existing* group members update `memberIds`; a
 /// joiner isn't a member yet, so the add must happen server-side.
 export const joinGroupByCode = onCall({
+  region: 'asia-northeast1',
   memory: '256MiB',
-  timeoutSeconds: 15,
+  timeoutSeconds: 120,
 }, async (request) => {
   requireAuth(request);
   const {code} = request.data ?? {};
@@ -281,6 +284,7 @@ export const joinGroupByCode = onCall({
 /// member has a registered token (e.g. notifications disabled).
 export const onClassStatusChanged = onDocumentUpdated({
   document: 'timetables/{classId}',
+  region: 'asia-northeast1',
   memory: '256MiB',
   timeoutSeconds: 30,
 }, async (event) => {
@@ -321,6 +325,7 @@ export const onClassStatusChanged = onDocumentUpdated({
 /// quiz for a subject on demand, returned as structured JSON (not a chat
 /// reply) so the client can render tappable question cards.
 export const generateQuiz = onCall({
+  region: 'asia-northeast1',
   secrets: [geminiApiKey],
   memory: '512MiB',
   timeoutSeconds: 120,
@@ -403,9 +408,10 @@ export const generateQuiz = onCall({
 /// locally (no AI needed for counting) and sends just the summary numbers
 /// here; Gemini turns that into a short, actionable Japanese analysis.
 export const analyzeWeakArea = onCall({
+  region: 'asia-northeast1',
   secrets: [geminiApiKey],
   memory: '256MiB',
-  timeoutSeconds: 30,
+  timeoutSeconds: 120,
   concurrency: 20,
 }, async (request) => {
   requireAuth(request);
@@ -458,6 +464,7 @@ const TEXT_MIME_TYPE = 'text/plain';
 // DOCX-unzip + XML parse can temporarily hold several multiples of that in
 // V8 heap. 512MiB gave OOM crashes in past testing; 1GiB is the safe floor.
 export const analyzeAssignmentSubmission = onCall({
+  region: 'asia-northeast1',
   secrets: [geminiApiKey],
   memory: '1GiB',
   timeoutSeconds: 120,

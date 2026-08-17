@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:toastification/toastification.dart';
 import 'package:uuid/uuid.dart';
 import '../../../core/constants/subject_colors.dart';
+import '../../../core/l10n/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/date_helper.dart';
@@ -116,7 +117,7 @@ class _AddEditAssignmentSheetState extends ConsumerState<_AddEditAssignmentSheet
       context: context,
       type: ToastificationType.success,
       style: ToastificationStyle.flat,
-      title: Text(existing != null ? '課題を更新しました' : '課題を追加しました'),
+      title: Text(existing != null ? AppStrings.t('as_updated') : AppStrings.t('as_added')),
       autoCloseDuration: const Duration(seconds: 2),
     );
   }
@@ -124,7 +125,7 @@ class _AddEditAssignmentSheetState extends ConsumerState<_AddEditAssignmentSheet
   Future<void> _delete() async {
     final existing = widget.existing;
     if (existing == null) return;
-    final ok = await showConfirmDialog(context, title: '課題を削除', message: '${existing.title}を削除しますか？');
+    final ok = await showConfirmDialog(context, title: AppStrings.t('as_delete_title'), message: AppStrings.t('as_delete_confirm', {'title': existing.title}));
     if (!ok) return;
     await ref.read(assignmentsNotifierProvider.notifier).delete(existing.id);
     if (!mounted) return;
@@ -133,7 +134,7 @@ class _AddEditAssignmentSheetState extends ConsumerState<_AddEditAssignmentSheet
       context: context,
       type: ToastificationType.success,
       style: ToastificationStyle.flat,
-      title: const Text('課題を削除しました'),
+      title: Text(AppStrings.t('as_deleted')),
       autoCloseDuration: const Duration(seconds: 2),
     );
   }
@@ -162,7 +163,7 @@ class _AddEditAssignmentSheetState extends ConsumerState<_AddEditAssignmentSheet
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    existing != null ? '課題を編集' : '課題を追加',
+                    existing != null ? AppStrings.t('as_edit_title') : AppStrings.t('as_add_title'),
                     style: AppTextStyles.h2,
                   ),
                   GestureDetector(
@@ -183,7 +184,7 @@ class _AddEditAssignmentSheetState extends ConsumerState<_AddEditAssignmentSheet
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 20),
-                  Text('科目名', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
+                  Text(AppStrings.t('fld_subject'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
                   const SizedBox(height: 6),
                   Autocomplete<String>(
                     optionsBuilder: (value) {
@@ -198,26 +199,26 @@ class _AddEditAssignmentSheetState extends ConsumerState<_AddEditAssignmentSheet
                       return AppInputField(
                         controller: controller,
                         focusNode: focusNode,
-                        hintText: '例：数学、または自由に入力',
+                        hintText: AppStrings.t('fld_subject_hint_free'),
                         onChanged: (v) => _subjectController.text = v,
-                        validator: (_) => _subjectController.text.trim().isEmpty ? '科目名を入力してください' : null,
+                        validator: (_) => _subjectController.text.trim().isEmpty ? AppStrings.t('val_subject_required') : null,
                       );
                     },
                   ),
                   const SizedBox(height: 16),
-                  Text('課題タイトル', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
+                  Text(AppStrings.t('fld_assign_title'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
                   const SizedBox(height: 6),
                   AppInputField(
                     controller: _titleController,
-                    hintText: '例：第3章 練習問題',
-                    validator: (v) => (v == null || v.trim().isEmpty) ? '課題タイトルを入力してください' : null,
+                    hintText: AppStrings.t('fld_assign_title_hint'),
+                    validator: (v) => (v == null || v.trim().isEmpty) ? AppStrings.t('val_assign_title_required') : null,
                   ),
                   const SizedBox(height: 16),
-                  Text('詳細メモ', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
+                  Text(AppStrings.t('fld_memo'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
                   const SizedBox(height: 6),
-                  AppInputField(controller: _descriptionController, hintText: '補足メモを入力...', maxLines: 3),
+                  AppInputField(controller: _descriptionController, hintText: AppStrings.t('fld_memo_hint'), maxLines: 3),
                   const SizedBox(height: 16),
-                  Text('提出期限', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
+                  Text(AppStrings.t('fld_due'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
                   const SizedBox(height: 6),
                   GestureDetector(
                     onTap: _pickDate,
@@ -234,7 +235,7 @@ class _AddEditAssignmentSheetState extends ConsumerState<_AddEditAssignmentSheet
                           const Icon(Icons.calendar_today_outlined, size: 18, color: AppColors.primary),
                           const SizedBox(width: 10),
                           Text(
-                            _selectedDate != null ? DateHelper.formatJapaneseDate(_selectedDate ?? DateTime.now()) : '日付を選択',
+                            _selectedDate != null ? DateHelper.formatJapaneseDate(_selectedDate ?? DateTime.now()) : AppStrings.t('fld_pick_date'),
                             style: TextStyle(
                               fontSize: 14,
                               color: _selectedDate != null ? AppColors.textPrimary : AppColors.textMuted,
@@ -249,7 +250,7 @@ class _AddEditAssignmentSheetState extends ConsumerState<_AddEditAssignmentSheet
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('進捗', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
+                        Text(AppStrings.t('fld_progress'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
                         Text('${(_progress * 100).round()}%', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.primary)),
                       ],
                     ),
@@ -262,13 +263,13 @@ class _AddEditAssignmentSheetState extends ConsumerState<_AddEditAssignmentSheet
                       onChanged: (v) => setState(() => _progress = v),
                     ),
                     const SizedBox(height: 8),
-                    Text('ステータス', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
+                    Text(AppStrings.t('fld_status'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
                     const SizedBox(height: 8),
                     SegmentedButton<AssignmentStatus>(
-                      segments: const [
-                        ButtonSegment(value: AssignmentStatus.notStarted, label: Text('未着手')),
-                        ButtonSegment(value: AssignmentStatus.inProgress, label: Text('進行中')),
-                        ButtonSegment(value: AssignmentStatus.completed, label: Text('完了')),
+                      segments: [
+                        ButtonSegment(value: AssignmentStatus.notStarted, label: Text(AppStrings.t('status_not_started'))),
+                        ButtonSegment(value: AssignmentStatus.inProgress, label: Text(AppStrings.t('status_in_progress'))),
+                        ButtonSegment(value: AssignmentStatus.completed, label: Text(AppStrings.t('status_completed'))),
                       ],
                       selected: {_status},
                       onSelectionChanged: (s) => setState(() => _status = s.first),
@@ -278,7 +279,7 @@ class _AddEditAssignmentSheetState extends ConsumerState<_AddEditAssignmentSheet
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('難易度', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
+                      Text(AppStrings.t('fld_difficulty'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
                       StarRating(initialRating: _difficulty, onChanged: (v) => setState(() => _difficulty = v)),
                     ],
                   ),
@@ -287,14 +288,14 @@ class _AddEditAssignmentSheetState extends ConsumerState<_AddEditAssignmentSheet
                     Center(
                       child: TextButton(
                         onPressed: _delete,
-                        child: const Text('削除', style: TextStyle(color: AppColors.danger)),
+                        child: Text(AppStrings.t('common_delete'), style: const TextStyle(color: AppColors.danger)),
                       ),
                     ),
                   ],
                   const Padding(padding: EdgeInsets.symmetric(vertical: 24), child: Divider(height: 1)),
                   ElevatedButton(
                     onPressed: _save,
-                    child: Text(existing != null ? '更新する' : '保存する'),
+                    child: Text(existing != null ? AppStrings.t('btn_update') : AppStrings.t('btn_save')),
                   ),
                 ],
               ),

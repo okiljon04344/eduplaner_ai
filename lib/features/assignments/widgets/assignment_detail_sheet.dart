@@ -1,8 +1,9 @@
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:toastification/toastification.dart';
+import '../../../core/l10n/app_strings.dart';
+import '../../../core/services/functions_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/confirm_dialog.dart';
 import '../../../shared/widgets/donut_chart.dart';
@@ -69,34 +70,38 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
     setState(() => _aiLoading = true);
     final a = widget.assignment;
     try {
-      final callable = FirebaseFunctions.instance.httpsCallable('chatWithTutor');
+      final callable = FunctionsService.callable('chatWithTutor');
       final result = await callable.call<Map<String, dynamic>>({
         'botId': 'planner',
-        'message':
-            '次の課題を完了までの具体的なステップに分解し、番号付きの短い学習プランを作ってください。'
-            '課題名: ${a.title}／科目: ${a.subject}／締め切り: ${a.dueDateLabel}／難易度(1-5): ${a.difficulty}'
-            '${a.description?.isNotEmpty == true ? '／詳細: ${a.description}' : ''}',
+        'message': AppStrings.t('ai_plan_prompt', {
+              'title': a.title,
+              'subject': a.subject,
+              'due': a.dueDateLabel,
+              'difficulty': a.difficulty,
+            }) +
+            (a.description?.isNotEmpty == true ? AppStrings.t('ai_plan_prompt_detail', {'description': a.description ?? ''}) : ''),
+        'language': AppStrings.currentLocale,
       });
       final reply = (result.data['reply'] as String?)?.trim();
       if (!mounted) return;
       setState(() => _aiLoading = false);
       if (reply == null || reply.isEmpty) {
-        _showAiError('AIプランを取得できませんでした。もう一度お試しください。');
+        _showAiError(AppStrings.t('ai_plan_failed'));
         return;
       }
       await showDialog<void>(
         context: context,
         builder: (ctx) => AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: Text('🎯 AI学習プラン — ${a.title}'),
+          title: Text(AppStrings.t('ai_plan_title', {'title': a.title})),
           content: SingleChildScrollView(child: Text(reply)),
-          actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('閉じる'))],
+          actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: Text(AppStrings.t('common_close')))],
         ),
       );
     } catch (e) {
       if (!mounted) return;
       setState(() => _aiLoading = false);
-      _showAiError('AIプランを取得できませんでした。もう一度お試しください。');
+      _showAiError(AppStrings.t('ai_plan_failed'));
     }
   }
 
@@ -125,16 +130,16 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
     final file = result.files.first;
     final bytes = file.bytes;
     if (bytes == null) {
-      _showAiError('ファイルを読み込めませんでした。もう一度お試しください。');
+      _showAiError(AppStrings.t('file_read_failed'));
       return;
     }
     if (bytes.lengthInBytes > _kMaxSubmissionBytes) {
-      _showAiError('ファイルサイズが大きすぎます（10MB以下にしてください）。');
+      _showAiError(AppStrings.t('file_too_large'));
       return;
     }
     final mimeType = _mimeTypeForExtension(file.extension);
     if (mimeType == null) {
-      _showAiError('対応していないファイル形式です（jpg, png, pdf, docx, txtのみ）。');
+      _showAiError(AppStrings.t('file_unsupported'));
       return;
     }
 
@@ -143,7 +148,7 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
     if (!mounted) return;
     setState(() => _aiCheckLoading = false);
     if (outcome.model == null) {
-      _showAiError(outcome.error ?? '課題のチェックに失敗しました。もう一度お試しください。');
+      _showAiError(outcome.error ?? AppStrings.t('err_assignment_check_failed'));
       return;
     }
     setState(() => _current = outcome.model!);
@@ -170,7 +175,7 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
   }
 
   Future<void> _delete() async {
-    final ok = await showConfirmDialog(context, title: '課題を削除', message: '${widget.assignment.title}を削除しますか？');
+    final ok = await showConfirmDialog(context, title: AppStrings.t('as_delete_title'), message: AppStrings.t('as_delete_confirm', {'title': widget.assignment.title}));
     if (!ok) return;
     await ref.read(assignmentsNotifierProvider.notifier).delete(widget.assignment.id);
     if (!mounted) return;
@@ -179,7 +184,7 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
       context: context,
       type: ToastificationType.success,
       style: ToastificationStyle.flat,
-      title: const Text('課題を削除しました'),
+      title: Text(AppStrings.t('as_deleted')),
       autoCloseDuration: const Duration(seconds: 2),
     );
   }
@@ -228,7 +233,7 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    Text('提出: ${assignment.dueDateLabel}', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                    Text(AppStrings.t('as_due_prefix', {'date': assignment.dueDateLabel}), style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
                     const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
@@ -245,13 +250,13 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('進捗', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                    Text(AppStrings.t('fld_progress'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
                     Text('${(_progress * 100).round()}%', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.primary)),
                   ],
                 ),
                 Slider(value: _progress, min: 0, max: 1, divisions: 10, activeColor: AppColors.primary, onChanged: _onProgressChanged, onChangeEnd: _onProgressChangeEnd),
                 const SizedBox(height: 12),
-                Text('ステータス', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                Text(AppStrings.t('fld_status'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
                 const SizedBox(height: 8),
                 Row(
                   children: AssignmentStatus.values.map((s) {
@@ -277,7 +282,7 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
                     icon: _aiLoading
                         ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                         : const Text('🎯'),
-                    label: Text(_aiLoading ? 'AIが考えています...' : 'AIで学習プランを作成'),
+                    label: Text(_aiLoading ? AppStrings.t('ai_thinking') : AppStrings.t('ai_plan_btn')),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -288,7 +293,7 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
                     icon: _aiCheckLoading
                         ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
                         : const Icon(Icons.upload_file_outlined, size: 18),
-                    label: Text(_aiCheckLoading ? 'AIがチェックしています...' : '課題をアップロードしてAIチェック'),
+                    label: Text(_aiCheckLoading ? AppStrings.t('ai_checking') : AppStrings.t('ai_check_btn')),
                   ),
                 ),
                 if (assignment.hasAiAnalysis) ...[
@@ -298,13 +303,13 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
                 const SizedBox(height: 12),
                 Row(
                   children: [
-                    Expanded(child: OutlinedButton(onPressed: _edit, child: const Text('編集'))),
+                    Expanded(child: OutlinedButton(onPressed: _edit, child: Text(AppStrings.t('common_edit')))),
                     const SizedBox(width: 12),
                     Expanded(
                       child: OutlinedButton(
                         onPressed: _delete,
                         style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.danger), foregroundColor: AppColors.danger),
-                        child: const Text('削除'),
+                        child: Text(AppStrings.t('common_delete')),
                       ),
                     ),
                   ],
@@ -347,13 +352,13 @@ class _AiCheckResult extends StatelessWidget {
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: Text('AIチェック結果', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
+                child: Text(AppStrings.t('ai_check_result'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
               ),
             ],
           ),
           if (assignment.aiMissingParts.isNotEmpty) ...[
             const SizedBox(height: 12),
-            const Text('不足している部分', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.warning)),
+            Text(AppStrings.t('ai_missing_parts'), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.warning)),
             const SizedBox(height: 6),
             ...assignment.aiMissingParts.map(
               (m) => Padding(

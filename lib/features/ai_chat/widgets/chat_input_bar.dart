@@ -44,7 +44,9 @@ class _ChatInputBarState extends ConsumerState<ChatInputBar> {
     return Container(
       padding: EdgeInsets.fromLTRB(16, 10, 16, 16 + MediaQuery.viewInsetsOf(context).bottom),
       decoration: BoxDecoration(
-        color: const Color(0xFF0E0C18),
+        // Theme-aware: was a hardcoded dark tone, which left a dark bar at the
+        // bottom of the chat screen in light mode.
+        color: AppColors.surface,
         border: Border(top: BorderSide(color: AppColors.borderLight, width: 1)),
       ),
       child: Row(

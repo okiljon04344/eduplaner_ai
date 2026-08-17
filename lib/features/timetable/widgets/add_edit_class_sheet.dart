@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:toastification/toastification.dart';
 import 'package:uuid/uuid.dart';
 import '../../../core/constants/subject_colors.dart';
+import '../../../core/l10n/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../shared/widgets/app_input_field.dart';
@@ -104,7 +105,7 @@ class _AddEditClassSheetState extends ConsumerState<_AddEditClassSheet> {
       context: context,
       type: ToastificationType.success,
       style: ToastificationStyle.flat,
-      title: Text(existing != null ? '授業を更新しました' : '授業を追加しました'),
+      title: Text(existing != null ? AppStrings.t('cls_updated') : AppStrings.t('cls_added')),
       autoCloseDuration: const Duration(seconds: 2),
     );
   }
@@ -112,7 +113,7 @@ class _AddEditClassSheetState extends ConsumerState<_AddEditClassSheet> {
   Future<void> _deleteClass() async {
     final existing = widget.existing;
     if (existing == null) return;
-    final ok = await showConfirmDialog(context, title: '授業を削除', message: '${existing.subject}を削除しますか？');
+    final ok = await showConfirmDialog(context, title: AppStrings.t('tt_delete_class'), message: AppStrings.t('tt_delete_confirm', {'subject': existing.subject}));
     if (!ok) return;
     await ref.read(timetableNotifierProvider.notifier).deleteClass(existing.id);
     if (!mounted) return;
@@ -121,7 +122,7 @@ class _AddEditClassSheetState extends ConsumerState<_AddEditClassSheet> {
       context: context,
       type: ToastificationType.success,
       style: ToastificationStyle.flat,
-      title: const Text('授業を削除しました'),
+      title: Text(AppStrings.t('cls_deleted')),
       autoCloseDuration: const Duration(seconds: 2),
     );
   }
@@ -149,7 +150,7 @@ class _AddEditClassSheetState extends ConsumerState<_AddEditClassSheet> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(existing != null ? '授業を編集' : '授業を追加', style: AppTextStyles.h2),
+                  Text(existing != null ? AppStrings.t('cls_edit_title') : AppStrings.t('cls_add_title'), style: AppTextStyles.h2),
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
                     child: Container(
@@ -168,7 +169,7 @@ class _AddEditClassSheetState extends ConsumerState<_AddEditClassSheet> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 20),
-                  Text('科目名', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
+                  Text(AppStrings.t('fld_subject'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
                   const SizedBox(height: 6),
                   Autocomplete<String>(
                     optionsBuilder: (value) {
@@ -182,22 +183,22 @@ class _AddEditClassSheetState extends ConsumerState<_AddEditClassSheet> {
                       return AppInputField(
                         controller: controller,
                         focusNode: focusNode,
-                        hintText: '例：数学',
+                        hintText: AppStrings.t('fld_subject_hint'),
                         onChanged: (v) => _subjectController.text = v,
-                        validator: (_) => _subjectController.text.trim().isEmpty ? '科目名を入力してください' : null,
+                        validator: (_) => _subjectController.text.trim().isEmpty ? AppStrings.t('val_subject_required') : null,
                       );
                     },
                   ),
                   const SizedBox(height: 16),
-                  Text('担当教員', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
+                  Text(AppStrings.t('fld_teacher'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
                   const SizedBox(height: 6),
-                  AppInputField(controller: _teacherController, hintText: '例：田中先生'),
+                  AppInputField(controller: _teacherController, hintText: AppStrings.t('fld_teacher_hint')),
                   const SizedBox(height: 16),
-                  Text('教室番号', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
+                  Text(AppStrings.t('fld_room'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
                   const SizedBox(height: 6),
-                  AppInputField(controller: _roomController, hintText: '例：A-201'),
+                  AppInputField(controller: _roomController, hintText: AppStrings.t('fld_room_hint')),
                   const SizedBox(height: 16),
-                  Text('曜日', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
+                  Text(AppStrings.t('fld_day'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
                   const SizedBox(height: 8),
                   Row(
                     children: List.generate(kWeekdayKanji.length, (i) {
@@ -232,12 +233,12 @@ class _AddEditClassSheetState extends ConsumerState<_AddEditClassSheet> {
                     }),
                   ),
                   const SizedBox(height: 16),
-                  Text('時限', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
+                  Text(AppStrings.t('fld_period'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
                   const SizedBox(height: 6),
                   DropdownButtonFormField<int>(
                     initialValue: _selectedPeriod,
                     items: List.generate(6, (i) => i + 1)
-                        .map((p) => DropdownMenuItem(value: p, child: Text('$p限')))
+                        .map((p) => DropdownMenuItem(value: p, child: Text(AppStrings.t('tt_period', {'n': p}))))
                         .toList(),
                     onChanged: (v) => setState(() => _selectedPeriod = v ?? 1),
                     dropdownColor: AppColors.bgLayer,
@@ -252,7 +253,7 @@ class _AddEditClassSheetState extends ConsumerState<_AddEditClassSheet> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  Text('カラー', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
+                  Text(AppStrings.t('fld_color'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
                   const SizedBox(height: 8),
                   Row(
                     children: SubjectColors.colorOptions.map((c) {
@@ -280,14 +281,14 @@ class _AddEditClassSheetState extends ConsumerState<_AddEditClassSheet> {
                     Center(
                       child: TextButton(
                         onPressed: _deleteClass,
-                        child: const Text('削除', style: TextStyle(color: AppColors.danger)),
+                        child: Text(AppStrings.t('common_delete'), style: const TextStyle(color: AppColors.danger)),
                       ),
                     ),
                   ],
                   const Padding(padding: EdgeInsets.symmetric(vertical: 24), child: Divider(height: 1)),
                   ElevatedButton(
                     onPressed: _saveClass,
-                    child: Text(existing != null ? '更新する' : '保存する'),
+                    child: Text(existing != null ? AppStrings.t('btn_update') : AppStrings.t('btn_save')),
                   ),
                 ],
               ),

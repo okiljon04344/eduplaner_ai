@@ -35,6 +35,15 @@ abstract class DateHelper {
     return _weekdayLabels[dt.weekday - 1];
   }
 
+  /// Localized label for a canonical kanji weekday key ('月'..'金') as stored
+  /// in Firestore (`ClassModel.dayOfWeek`). Returns the input unchanged for
+  /// anything outside the known keys.
+  static String localizedWeekday(String kanjiDay) {
+    const kanjiOrder = ['月', '火', '水', '木', '金', '土', '日'];
+    final i = kanjiOrder.indexOf(kanjiDay);
+    return i == -1 ? kanjiDay : _weekdayLabels[i];
+  }
+
   static int getWeekNumber(DateTime dt) {
     final firstDayOfYear = DateTime(dt.year, 1, 1);
     final daysOffset = firstDayOfYear.weekday - 1;

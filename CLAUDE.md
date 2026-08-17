@@ -60,6 +60,26 @@ Oldingi sessiyadan qolgan uncommitted theme-flicker fix + i18n ishi commit qilin
 
 Har bir bosqichdan keyin `flutter analyze` (toza) va `flutter test` (barcha 40 test o'tdi) bilan tekshirildi, alohida commit qilindi.
 
+### 2026-08-17 (2-raund) — Senior sifat raundi: 2 ta UI bug + to'liq i18n sweep
+**Buglar:** `quiz_screen.dart` — `_QuizCard`ga `ObjectKey(question)` qo'shildi (yangi test generatsiyasida eski `_selected` javob holati yangi savollarga yopishib qolardi — element/state reuse bugi). `chat_input_bar.dart` — hardcoded `Color(0xFF0E0C18)` fon `AppColors.surface`ga almashtirildi (light-themeda chat pastida qora panel ko'rinardi).
+
+**Chat tezligi/to'g'riligi:** `chat_provider.sendMessage` — user xabarini Firestore'ga yozish endi AI chaqiruvi bilan parallel (`saveMessage` xatolarni repo ichida yutadi, shuning uchun behavior-safe; 08-14 da "xavfli" deb qoldirilgan holatdan farqli — bu safar faqat *user* xabari paralleldir, error-path'lar o'zgarmagan). `aiStudyTipProvider` va `_askAiToPlan` chaqiruvlariga yetishmayotgan `'language'` parametri qo'shildi — endi AI javoblari tanlangan tilda keladi.
+
+**i18n sweep (72 yangi kalit × 21 til):** `onboarding_screen` (allaqachon mavjud `onboard_*` kalitlarga o'tkazildi — `_pages` const'dan getter'ga), `quiz_screen`, `assignment_detail_sheet`, `add_edit_assignment_sheet`, `add_edit_class_sheet`, `class_detail_sheet` — barcha hardcoded yapon UI matnlari `AppStrings.t()`ga ko'chirildi. Yangi kalit guruhlari: `fld_*` (forma maydonlari, sheetlar o'rtasida umumiy), `as_*`/`cls_*` (CRUD toast/dialoglar), `ai_plan_*`/`ai_check_*`/`file_*` (AI tekshiruv oqimi), `quiz_*`, `common_close`, `btn_save`/`btn_update`. `DateHelper.localizedWeekday(kanji)` helper qo'shildi — `cls_day_period`da kanonik kanji kun Firestore'da qoladi, displey lokalizatsiyalanadi. `ai_plan_prompt` ham lokalizatsiyalangan (AI prompti foydalanuvchi tilida + `language` param). Kanonik kanji qiymatlar (fan nomlari, `kWeekdayKanji`, `home_class_card` emoji-matching) ataylab tegilmadi. JSON fayllar endi sort_keys+indent 2 formatda.
+
+Tekshirildi: `flutter analyze` toza, `flutter test` 40/40.
+
+### 2026-08-17 — Server sync (region/timeout) + platformalararo bug fixlar
+**Region migratsiyasi:** barcha 7 ta Cloud Function (`chatWithTutor`, `deleteAccount`, `joinGroupByCode`, `onClassStatusChanged`, `generateQuiz`, `analyzeWeakArea`, `analyzeAssignmentSubmission`) endi `region: 'asia-northeast1'`. Barcha 6 ta onCall'da `timeoutSeconds: 120`. **DEPLOY ESLATMASI:** deploy paytida Firebase eski us-central1 nusxalarni o'chirishni so'raydi — tasdiqlash kerak; klient endi faqat asia-northeast1'ga murojaat qiladi, shuning uchun deploy qilinmaguncha barcha funksiya chaqiruvlari `not-found` bilan tushadi.
+
+**Yangi `lib/core/services/functions_service.dart`:** `FirebaseFunctions.instanceFor(region: 'asia-northeast1')` + 120s `HttpsCallableOptions` bilan yagona `callable(name)` kirish nuqtasi, va `describeError()` — umumiy kodlarni (`unauthenticated`/`deadline-exceeded`/`unavailable`/default) mavjud `err_*` l10n kalitlariga o'giradi. Barcha 7 ta call site migratsiya qilindi: `chat_repository`, `assignments_repository`, `quiz_repository`, `groups_repository`, `home_provider` (2 joyda), `settings_screen` (`deleteAccount`), `assignment_detail_sheet` (`_askAiToPlan`). Har bir call site'ning funksiyaga xos kodlari (`not-found`→quiz_unavailable, `invalid-argument`→server xabari, va h.k.) saqlanib qoldi, umumiy kodlar `describeError`ga o'tdi. Hech qayerda to'g'ridan-to'g'ri `FirebaseFunctions.instance` qolmadi.
+
+**Desktop fix:** `notification_service.dart` — `initialize()`da `kIsWeb` skip'idan keyin `defaultTargetPlatform` Windows/Linux bo'lsa FCM (`requestPermission`/`getToken`) butunlay o'tkazib yuboriladi (desktopda push transport yo'q, osilib qolardi). `dart:io` emas, `foundation`ning `defaultTargetPlatform`i ishlatildi — web build xavfsiz. Lokal `zonedSchedule` eslatmalar barcha platformada ishlashda davom etadi.
+
+**Logic fixlar:** `assignments_provider.checkWithAi` — base64'dan OLDIN 10MB tekshiruv (`_kMaxAssignmentFileBytes`, serverdagi `MAX_FILE_BYTES`ga mos), oshsa `err_invalid_file` bilan erta qaytadi. `chat_provider.sendMessage` — `_contextOf()` helper: timetable/assignments stream hali yuklanmagan bo'lsa `.future`ni 5s timeout bilan kutadi (ikkalasi record `.wait` bilan parallel), cold-open'da AIga bo'sh kontekst ketishi bartaraf; timeout/xato bo'lsa avvalgidek bo'sh ro'yxat.
+
+Tekshirildi: `flutter analyze` toza, `flutter test` 40/40, `node --check` + `npm run lint` (functions) toza.
+
 ### 2026-08-14 — Senior-level ichki refactoring (algoritm/performance, behavior o'zgarishisiz)
 To'liq repo auditi (4 ta parallel tadqiqot: core, providers/repositories, UI, `functions/index.js`) asosida faqat ichki implementatsiya yaxshilandi — tashqi xatti-harakat, UI/UX, API contract va DB schema o'zgarmadi.
 

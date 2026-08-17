@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/subject_colors.dart';
+import '../../../core/l10n/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../shared/widgets/app_input_field.dart';
@@ -45,7 +46,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('📝 テスト問題'),
+        title: Text(AppStrings.t('quiz_title')),
         backgroundColor: AppColors.background,
         elevation: 0,
       ),
@@ -74,7 +75,11 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                   return ListView.builder(
                     padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
                     itemCount: questions.length,
-                    itemBuilder: (context, i) => _QuizCard(index: i, question: questions[i]),
+                    // Keyed by question identity: without this, regenerating a
+                    // quiz reuses the old _QuizCardState at each position, so
+                    // answers from the previous quiz appear pre-selected on the
+                    // new questions.
+                    itemBuilder: (context, i) => _QuizCard(key: ObjectKey(questions[i]), index: i, question: questions[i]),
                   );
                 },
               ),
@@ -112,7 +117,7 @@ class _ConfigPanel extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            '科目',
+            AppStrings.t('quiz_subject'),
             style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.5, color: AppColors.textSecondary),
           ),
           const SizedBox(height: 6),
@@ -139,13 +144,13 @@ class _ConfigPanel extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            'トピック（任意）',
+            AppStrings.t('quiz_topic'),
             style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.5, color: AppColors.textSecondary),
           ),
           const SizedBox(height: 6),
           AppInputField(
             controller: topicCtrl,
-            hintText: '例：二次関数、光合成、江戸時代',
+            hintText: AppStrings.t('quiz_topic_hint'),
             textInputAction: TextInputAction.done,
             onSubmitted: (_) => isLoading ? null : onGenerate(),
           ),
@@ -162,11 +167,11 @@ class _ConfigPanel extends StatelessWidget {
               contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
               activeThumbColor: AppColors.primary,
               title: Text(
-                '🌐 インターネット検索を使う',
+                AppStrings.t('quiz_use_search'),
                 style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
               ),
               subtitle: Text(
-                'Google検索で最新情報を参照します',
+                AppStrings.t('quiz_use_search_sub'),
                 style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
               ),
             ),
@@ -179,7 +184,7 @@ class _ConfigPanel extends StatelessWidget {
               icon: isLoading
                   ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                   : const Icon(Icons.auto_awesome, size: 18),
-              label: Text(isLoading ? '生成中...' : 'テストを生成'),
+              label: Text(isLoading ? AppStrings.t('quiz_generating') : AppStrings.t('quiz_generate_btn')),
             ),
           ),
         ],
@@ -200,12 +205,12 @@ class _LoadingState extends StatelessWidget {
           AppLottie.loading(size: 90),
           const SizedBox(height: 16),
           Text(
-            'AIが問題を作成しています...',
+            AppStrings.t('quiz_loading'),
             style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
           ),
           const SizedBox(height: 4),
           Text(
-            '最大60秒ほどかかる場合があります',
+            AppStrings.t('quiz_loading_sub'),
             style: TextStyle(fontSize: 11, color: AppColors.textMuted),
           ),
         ],
@@ -228,7 +233,7 @@ class _EmptyState extends StatelessWidget {
             const Text('📚', style: TextStyle(fontSize: 40)),
             const SizedBox(height: 12),
             Text(
-              '科目とトピックを指定して「テストを生成」を押してください',
+              AppStrings.t('quiz_empty'),
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 13, color: AppColors.textSecondary, height: 1.5),
             ),
@@ -263,7 +268,7 @@ class _ErrorState extends StatelessWidget {
             OutlinedButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh, size: 16),
-              label: const Text('再試行'),
+              label: Text(AppStrings.t('common_retry')),
             ),
           ],
         ),
@@ -275,7 +280,7 @@ class _ErrorState extends StatelessWidget {
 class _QuizCard extends StatefulWidget {
   final int index;
   final QuizQuestion question;
-  const _QuizCard({required this.index, required this.question});
+  const _QuizCard({super.key, required this.index, required this.question});
 
   @override
   State<_QuizCard> createState() => _QuizCardState();
