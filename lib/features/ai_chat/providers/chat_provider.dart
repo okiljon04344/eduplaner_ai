@@ -22,6 +22,22 @@ class ChatNotifier extends Notifier<List<MessageModel>> {
   String get _uid => ref.read(currentUserProvider)?.uid ?? '';
   ChatRepository get _repo => ref.read(chatRepositoryProvider);
 
+  /// Resolves the AI context from [current], briefly awaiting [whenLoaded]
+  /// when the stream hasn't emitted yet (cold open: a message sent right
+  /// after the chat screen mounts would otherwise silently give the AI an
+  /// empty timetable/assignment context). Context is optional, so timeout
+  /// and error (e.g. signed-out empty stream) fall back to an empty list
+  /// instead of failing the send.
+  Future<List<T>> _contextOf<T>(AsyncValue<List<T>> current, Future<List<T>> whenLoaded) async {
+    final value = current.valueOrNull;
+    if (value != null) return value;
+    try {
+      return await whenLoaded.timeout(const Duration(seconds: 5));
+    } catch (_) {
+      return [];
+    }
+  }
+
   /// Loads the last 50 messages from Firestore and replaces the current state.
   ///
   /// Called once when the chat screen mounts.  No-op when not signed in.
@@ -57,10 +73,15 @@ class ChatNotifier extends Notifier<List<MessageModel>> {
       botId: botId,
     );
     state = [...state, userMsg, loadingMsg];
-    if (_uid.isNotEmpty) await _repo.saveMessage(_uid, userMsg);
+    // saveMessage swallows its own errors (see ChatRepository), so the user
+    // message write can safely run concurrently with the AI round-trip
+    // instead of delaying it by one Firestore write.
+    final userMsgSave = _uid.isNotEmpty ? _repo.saveMessage(_uid, userMsg) : Future<void>.value();
     try {
-      final classes = ref.read(timetableStreamProvider).valueOrNull ?? [];
-      final assignments = ref.read(assignmentsStreamProvider).valueOrNull ?? [];
+      final (classes, assignments) = await (
+        _contextOf(ref.read(timetableStreamProvider), ref.read(timetableStreamProvider.future)),
+        _contextOf(ref.read(assignmentsStreamProvider), ref.read(assignmentsStreamProvider.future)),
+      ).wait;
       final response = await _repo.sendMessage(
         botId: botId,
         userMessage: trimmed,
@@ -69,6 +90,7 @@ class ChatNotifier extends Notifier<List<MessageModel>> {
       );
       final assistantMsg = loadingMsg.copyWith(content: response, isLoading: false);
       state = state.map((m) => m.id == loadingMsg.id ? assistantMsg : m).toList();
+      await userMsgSave;
       if (_uid.isNotEmpty) await _repo.saveMessage(_uid, assistantMsg);
     } catch (e) {
       final errMsg = loadingMsg.copyWith(

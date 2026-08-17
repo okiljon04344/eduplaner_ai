@@ -1,8 +1,8 @@
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/providers/locale_provider.dart';
+import '../../../core/services/functions_service.dart';
 import '../../../core/utils/date_helper.dart';
 import '../../assignments/models/assignment_model.dart';
 import '../../assignments/providers/assignments_provider.dart';
@@ -56,10 +56,11 @@ final aiStudyTipProvider = FutureProvider<String>((ref) async {
   if (cached != null && cached.isNotEmpty) return cached;
 
   try {
-    final callable = FirebaseFunctions.instance.httpsCallable('chatWithTutor');
+    final callable = FunctionsService.callable('chatWithTutor');
     final result = await callable.call<Map<String, dynamic>>({
       'botId': 'focus',
       'message': AppStrings.t('ai_tip_prompt'),
+      'language': locate,
     });
     final tip = (result.data['reply'] as String?)?.trim();
     if (tip == null || tip.isEmpty) return _fallbackTip;
@@ -119,7 +120,7 @@ final weakAreaProvider = FutureProvider<String>((ref) async {
       }).toList();
 
   try {
-    final callable = FirebaseFunctions.instance.httpsCallable('analyzeWeakArea');
+    final callable = FunctionsService.callable('analyzeWeakArea');
     final result = await callable.call<Map<String, dynamic>>({
       'stats': stats,
       'language': locate,

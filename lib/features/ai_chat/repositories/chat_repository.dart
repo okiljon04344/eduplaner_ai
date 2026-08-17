@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/foundation.dart';
 import '../../../core/l10n/app_strings.dart';
+import '../../../core/services/functions_service.dart';
 import '../../assignments/models/assignment_model.dart';
 import '../../timetable/models/class_model.dart';
 import '../models/message_model.dart';
@@ -15,7 +16,6 @@ import '../models/message_model.dart';
 ///   - Loads the last 50 messages on demand (capped to keep read costs low).
 class ChatRepository {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
-  final FirebaseFunctions _functions = FirebaseFunctions.instance;
 
   /// Reference to the messages sub-collection for a given user.
   CollectionReference _msgs(String userId) =>
@@ -38,7 +38,7 @@ class ChatRepository {
     required List<AssignmentModel> assignments,
   }) async {
     try {
-      final callable = _functions.httpsCallable('chatWithTutor');
+      final callable = FunctionsService.callable('chatWithTutor');
       final result = await callable.call<Map<String, dynamic>>({
         'botId': botId,
         'message': userMessage,
@@ -59,6 +59,9 @@ class ChatRepository {
       debugPrint('chatWithTutor error: ${e.code} ${e.message}');
       if (e.code == 'unauthenticated') {
         throw Exception(AppStrings.t('err_login_required'));
+      }
+      if (e.code == 'deadline-exceeded' || e.code == 'unavailable') {
+        throw Exception(FunctionsService.describeError(e));
       }
       throw Exception(AppStrings.t('err_ai_connection_failed'));
     }

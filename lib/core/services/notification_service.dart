@@ -42,6 +42,16 @@ abstract class NotificationService {
     // notifications plugin above on every platform.
     if (kIsWeb) return;
 
+    // FCM push tokens aren't wired up to any desktop notification channel,
+    // and `requestPermission()`/`getToken()` can hang indefinitely on
+    // Windows/Linux (no native push transport there). Skip FCM entirely on
+    // desktop, same as the web skip above — local reminders below (used on
+    // every platform) don't depend on this and are unaffected.
+    if (defaultTargetPlatform == TargetPlatform.windows ||
+        defaultTargetPlatform == TargetPlatform.linux) {
+      return;
+    }
+
     try {
       await FirebaseMessaging.instance.requestPermission();
       FirebaseMessaging.onMessage.listen(_onForegroundMessage);

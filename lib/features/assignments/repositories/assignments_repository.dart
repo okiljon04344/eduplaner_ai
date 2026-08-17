@@ -1,11 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import '../../../core/l10n/app_strings.dart';
+import '../../../core/services/functions_service.dart';
 import '../models/assignment_model.dart';
 
 class AssignmentsRepository {
   final _db = FirebaseFirestore.instance;
-  final _functions = FirebaseFunctions.instance;
   CollectionReference get _col => _db.collection('assignments');
 
   Stream<List<AssignmentModel>> watch(String userId) =>
@@ -35,10 +35,7 @@ class AssignmentsRepository {
     required String mimeType,
   }) async {
     try {
-      final callable = _functions.httpsCallable(
-        'analyzeAssignmentSubmission',
-        options: HttpsCallableOptions(timeout: const Duration(seconds: 90)),
-      );
+      final callable = FunctionsService.callable('analyzeAssignmentSubmission');
       final result = await callable.call<Map<String, dynamic>>({
         'subject': subject,
         'title': title,
@@ -48,8 +45,10 @@ class AssignmentsRepository {
       });
       return Map<String, dynamic>.from(result.data);
     } on FirebaseFunctionsException catch (e) {
-      if (e.code == 'unauthenticated') throw Exception(AppStrings.t('err_login_required'));
       if (e.code == 'invalid-argument') throw Exception(e.message ?? AppStrings.t('err_invalid_file'));
+      if (e.code == 'unauthenticated' || e.code == 'deadline-exceeded' || e.code == 'unavailable') {
+        throw Exception(FunctionsService.describeError(e));
+      }
       throw Exception(AppStrings.t('err_assignment_check_failed'));
     }
   }

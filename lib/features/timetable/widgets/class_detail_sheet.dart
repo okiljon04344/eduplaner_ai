@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:toastification/toastification.dart';
 import '../../../core/constants/subject_colors.dart';
+import '../../../core/l10n/app_strings.dart';
+import '../../../core/utils/date_helper.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/confirm_dialog.dart';
 import '../models/class_model.dart';
@@ -27,7 +29,7 @@ class _ClassDetailSheet extends ConsumerWidget {
   }
 
   Future<void> _delete(BuildContext context, WidgetRef ref) async {
-    final ok = await showConfirmDialog(context, title: '授業を削除', message: '${classModel.subject}を削除しますか？');
+    final ok = await showConfirmDialog(context, title: AppStrings.t('tt_delete_class'), message: AppStrings.t('tt_delete_confirm', {'subject': classModel.subject}));
     if (!ok) return;
     await ref.read(timetableNotifierProvider.notifier).deleteClass(classModel.id);
     if (!context.mounted) return;
@@ -36,7 +38,7 @@ class _ClassDetailSheet extends ConsumerWidget {
       context: context,
       type: ToastificationType.success,
       style: ToastificationStyle.flat,
-      title: const Text('授業を削除しました'),
+      title: Text(AppStrings.t('cls_deleted')),
       autoCloseDuration: const Duration(seconds: 2),
     );
   }
@@ -70,7 +72,7 @@ class _ClassDetailSheet extends ConsumerWidget {
       context: context,
       type: ToastificationType.success,
       style: ToastificationStyle.flat,
-      title: Text(result.status == ClassStatus.cancelled ? '休講として通知しました' : '変更を通知しました'),
+      title: Text(result.status == ClassStatus.cancelled ? AppStrings.t('cls_notified_cancelled') : AppStrings.t('cls_notified_changed')),
       autoCloseDuration: const Duration(seconds: 2),
     );
   }
@@ -100,7 +102,7 @@ class _ClassDetailSheet extends ConsumerWidget {
               children: [
                 Text(classModel.subject, style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: style.text)),
                 const SizedBox(height: 6),
-                Text('${classModel.teacher}先生', style: TextStyle(fontSize: 14, color: AppColors.textSecondary)),
+                Text(AppStrings.t('cls_teacher_name', {'name': classModel.teacher}), style: TextStyle(fontSize: 14, color: AppColors.textSecondary)),
                 const SizedBox(height: 2),
                 Text(classModel.room, style: TextStyle(fontSize: 13, color: AppColors.textMuted)),
               ],
@@ -114,23 +116,23 @@ class _ClassDetailSheet extends ConsumerWidget {
                   _StatusBanner(classModel: classModel, onClear: () => _clearStatus(context, ref)),
                   const SizedBox(height: 16),
                 ],
-                _InfoRow(icon: Icons.event, label: '${classModel.dayOfWeek}曜日 ${classModel.period}限'),
+                _InfoRow(icon: Icons.event, label: AppStrings.t('cls_day_period', {'day': DateHelper.localizedWeekday(classModel.dayOfWeek), 'period': classModel.period})),
                 const SizedBox(height: 10),
-                _InfoRow(icon: Icons.person_outline, label: '${classModel.teacher}先生'),
+                _InfoRow(icon: Icons.person_outline, label: AppStrings.t('cls_teacher_name', {'name': classModel.teacher})),
                 const SizedBox(height: 10),
                 _InfoRow(icon: Icons.location_on_outlined, label: classModel.room),
                 const SizedBox(height: 20),
                 Row(
                   children: [
                     Expanded(
-                      child: OutlinedButton(onPressed: () => _edit(context, ref), child: const Text('編集')),
+                      child: OutlinedButton(onPressed: () => _edit(context, ref), child: Text(AppStrings.t('common_edit'))),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: OutlinedButton(
                         onPressed: () => _delete(context, ref),
                         style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.danger), foregroundColor: AppColors.danger),
-                        child: const Text('削除'),
+                        child: Text(AppStrings.t('common_delete')),
                       ),
                     ),
                   ],
@@ -141,7 +143,7 @@ class _ClassDetailSheet extends ConsumerWidget {
                   child: TextButton.icon(
                     onPressed: () => _reportStatus(context, ref),
                     icon: const Icon(Icons.campaign_outlined, size: 18, color: AppColors.warning),
-                    label: const Text('休講・変更を報告', style: TextStyle(color: AppColors.warning)),
+                    label: Text(AppStrings.t('cls_report_btn'), style: const TextStyle(color: AppColors.warning)),
                   ),
                 ),
               ],
@@ -179,7 +181,7 @@ class _StatusBanner extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('本日は${classModel.status.label}です', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: color)),
+                Text(AppStrings.t('cls_today_status', {'status': classModel.status.label}), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: color)),
                 if (classModel.statusNote != null && classModel.statusNote!.isNotEmpty) ...[
                   const SizedBox(height: 2),
                   Text(classModel.statusNote!, style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
@@ -189,7 +191,7 @@ class _StatusBanner extends StatelessWidget {
           ),
           GestureDetector(
             onTap: onClear,
-            child: Text('取り消す', style: TextStyle(fontSize: 11, color: color, decoration: TextDecoration.underline)),
+            child: Text(AppStrings.t('cls_undo'), style: TextStyle(fontSize: 11, color: color, decoration: TextDecoration.underline)),
           ),
         ],
       ),
@@ -231,13 +233,13 @@ class _StatusReportSheetState extends State<_StatusReportSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('${widget.classModel.subject} — 本日の連絡', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+            Text(AppStrings.t('cls_report_title', {'subject': widget.classModel.subject}), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
             const SizedBox(height: 16),
             Row(
               children: [
                 Expanded(
                   child: _StatusChoiceChip(
-                    label: '休講',
+                    label: AppStrings.t('class_status_cancelled'),
                     selected: _status == ClassStatus.cancelled,
                     color: AppColors.danger,
                     onTap: () => setState(() => _status = ClassStatus.cancelled),
@@ -246,7 +248,7 @@ class _StatusReportSheetState extends State<_StatusReportSheet> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: _StatusChoiceChip(
-                    label: '変更あり',
+                    label: AppStrings.t('cls_changed_label'),
                     selected: _status == ClassStatus.changed,
                     color: AppColors.warning,
                     onTap: () => setState(() => _status = ClassStatus.changed),
@@ -258,14 +260,14 @@ class _StatusReportSheetState extends State<_StatusReportSheet> {
             TextField(
               controller: _noteController,
               maxLines: 2,
-              decoration: const InputDecoration(hintText: '例：教室がB-102に変更になりました', border: OutlineInputBorder()),
+              decoration: InputDecoration(hintText: AppStrings.t('cls_note_hint'), border: const OutlineInputBorder()),
             ),
             const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () => Navigator.pop(context, _StatusReport(_status, _noteController.text.trim().isEmpty ? null : _noteController.text.trim())),
-                child: const Text('メンバーに通知する'),
+                child: Text(AppStrings.t('cls_notify_btn')),
               ),
             ),
           ],

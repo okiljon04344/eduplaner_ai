@@ -1,10 +1,17 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/l10n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/services/notification_service.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../models/assignment_model.dart';
+
+/// Mirrors the server-side cap in `functions/index.js`'s
+/// `analyzeAssignmentSubmission` (`MAX_FILE_BYTES`). Checked here too so an
+/// oversized file is rejected before it's base64-encoded (~4/3 size bloat)
+/// and sent over the network, only to be rejected server-side anyway.
+const _kMaxAssignmentFileBytes = 10 * 1024 * 1024;
 
 /// Streams all assignments for the current user from Firestore.
 ///
@@ -152,6 +159,9 @@ class AssignmentsNotifier extends AsyncNotifier<void> {
     required Uint8List fileBytes,
     required String mimeType,
   }) async {
+    if (fileBytes.length > _kMaxAssignmentFileBytes) {
+      return (model: null, error: AppStrings.t('err_invalid_file'));
+    }
     final repo = ref.read(assignmentsRepositoryProvider);
     try {
       final result = await repo.analyzeSubmission(

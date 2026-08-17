@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/l10n/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../providers/onboarding_provider.dart';
 
@@ -15,34 +16,36 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final _controller = PageController();
   int _page = 0;
 
-  static const _pages = [
+  // Getter, not const: titles/subtitles resolve in the currently loaded
+  // locale (same pattern as AppTextStyles/SubjectColors).
+  static List<_PageData> get _pages => [
     _PageData(
       icon: Icons.auto_awesome,
-      color: Color(0xFF8B5CF6),
-      accentColor: Color(0xFF6D28D9),
-      title: 'EduPlanner AI へようこそ',
-      subtitle: 'AIを活用したスマート学習管理アプリで\n学習の効率を最大化しよう。',
+      color: const Color(0xFF8B5CF6),
+      accentColor: const Color(0xFF6D28D9),
+      title: AppStrings.t('onboard_1_title'),
+      subtitle: AppStrings.t('onboard_1_sub'),
     ),
     _PageData(
       icon: Icons.calendar_month_outlined,
-      color: Color(0xFF06B6D4),
-      accentColor: Color(0xFF0891B2),
-      title: '時間割を管理',
-      subtitle: '毎日の授業をひと目で把握。\n大切な授業を絶対に逃さない。',
+      color: const Color(0xFF06B6D4),
+      accentColor: const Color(0xFF0891B2),
+      title: AppStrings.t('onboard_2_title'),
+      subtitle: AppStrings.t('onboard_2_sub'),
     ),
     _PageData(
       icon: Icons.assignment_outlined,
-      color: Color(0xFF10B981),
-      accentColor: Color(0xFF059669),
-      title: '課題を追跡',
-      subtitle: '締め切りを管理して、\nプレッシャーなく学習を進めよう。',
+      color: const Color(0xFF10B981),
+      accentColor: const Color(0xFF059669),
+      title: AppStrings.t('onboard_3_title'),
+      subtitle: AppStrings.t('onboard_3_sub'),
     ),
     _PageData(
       icon: Icons.smart_toy_outlined,
-      color: Color(0xFFA855F7),
-      accentColor: Color(0xFF7C3AED),
-      title: 'AIがいつでもサポート',
-      subtitle: 'わからないことはAIに相談。\nクイズ生成や弱点分析も対応。',
+      color: const Color(0xFFA855F7),
+      accentColor: const Color(0xFF7C3AED),
+      title: AppStrings.t('onboard_4_title'),
+      subtitle: AppStrings.t('onboard_4_sub'),
     ),
   ];
 
@@ -88,7 +91,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     child: TextButton(
                       onPressed: _page < _pages.length - 1 ? _finish : null,
                       child: Text(
-                        'スキップ',
+                        AppStrings.t('onboard_skip'),
                         style: TextStyle(
                           fontSize: 13,
                           color: AppColors.textMuted,
@@ -168,7 +171,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         onTap: _next,
                         child: Center(
                           child: Text(
-                            _page < _pages.length - 1 ? '次へ →' : '始める ✨',
+                            _page < _pages.length - 1 ? AppStrings.t('onboard_next') : AppStrings.t('onboard_start'),
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
