@@ -6,6 +6,8 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../shared/widgets/app_input_field.dart';
 import '../../../shared/widgets/lottie_helpers.dart';
+import '../../assignments/providers/assignments_provider.dart';
+import '../../timetable/providers/timetable_provider.dart';
 import '../models/quiz_question.dart';
 import '../providers/quiz_provider.dart';
 
@@ -20,20 +22,32 @@ class QuizScreen extends ConsumerStatefulWidget {
 }
 
 class _QuizScreenState extends ConsumerState<QuizScreen> {
-  String _subject = SubjectColors.all.first;
+  final _subjectCtrl = TextEditingController(text: SubjectColors.all.first);
   final _topicCtrl = TextEditingController();
   bool _useSearch = true;
 
   @override
   void dispose() {
+    _subjectCtrl.dispose();
     _topicCtrl.dispose();
     super.dispose();
   }
 
+  /// Suggestions only — the field always accepts a freely typed subject
+  /// name too (school/college/university subject names vary), not just
+  /// these. Combines the fixed color-coded subjects with any subject the
+  /// student already uses in their timetable classes or assignments.
+  List<String> _subjectSuggestions() {
+    final fromClasses = (ref.read(timetableStreamProvider).valueOrNull ?? []).map((c) => c.subject);
+    final fromAssignments = (ref.read(assignmentsStreamProvider).valueOrNull ?? []).map((a) => a.subject);
+    return {...SubjectColors.all, ...fromClasses, ...fromAssignments}.where((s) => s.trim().isNotEmpty).toList();
+  }
+
   Future<void> _generate() async {
+    if (_subjectCtrl.text.trim().isEmpty) return;
     FocusScope.of(context).unfocus();
     await ref.read(quizNotifierProvider.notifier).generate(
-      subject: _subject,
+      subject: _subjectCtrl.text.trim(),
       topic: _topicCtrl.text.trim(),
       useSearch: _useSearch,
     );
@@ -54,11 +68,11 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
         child: Column(
           children: [
             _ConfigPanel(
-              subject: _subject,
+              subjectCtrl: _subjectCtrl,
+              subjectSuggestions: _subjectSuggestions(),
               topicCtrl: _topicCtrl,
               useSearch: _useSearch,
               isLoading: quizState.isLoading,
-              onSubjectChanged: (v) => setState(() => _subject = v),
               onUseSearchChanged: (v) => setState(() => _useSearch = v),
               onGenerate: _generate,
             ),
@@ -92,19 +106,19 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
 }
 
 class _ConfigPanel extends StatelessWidget {
-  final String subject;
+  final TextEditingController subjectCtrl;
+  final List<String> subjectSuggestions;
   final TextEditingController topicCtrl;
   final bool useSearch;
   final bool isLoading;
-  final ValueChanged<String> onSubjectChanged;
   final ValueChanged<bool> onUseSearchChanged;
   final VoidCallback onGenerate;
   const _ConfigPanel({
-    required this.subject,
+    required this.subjectCtrl,
+    required this.subjectSuggestions,
     required this.topicCtrl,
     required this.useSearch,
     required this.isLoading,
-    required this.onSubjectChanged,
     required this.onUseSearchChanged,
     required this.onGenerate,
   });
@@ -121,26 +135,22 @@ class _ConfigPanel extends StatelessWidget {
             style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.5, color: AppColors.textSecondary),
           ),
           const SizedBox(height: 6),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14),
-            decoration: BoxDecoration(
-              color: AppColors.bgInput,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: AppColors.border),
-            ),
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
-                value: subject,
-                isExpanded: true,
-                icon: Icon(Icons.keyboard_arrow_down, color: AppColors.textSecondary),
-                dropdownColor: AppColors.surface,
-                style: TextStyle(fontSize: 14, color: AppColors.textPrimary, fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP']),
-                items: SubjectColors.all
-                    .map((s) => DropdownMenuItem(value: s, child: Text(s)))
-                    .toList(),
-                onChanged: isLoading ? null : (v) { if (v != null) onSubjectChanged(v); },
-              ),
-            ),
+          Autocomplete<String>(
+            optionsBuilder: (value) {
+              if (value.text.isEmpty) return subjectSuggestions;
+              return subjectSuggestions.where((s) => s.contains(value.text));
+            },
+            onSelected: (value) => subjectCtrl.text = value,
+            fieldViewBuilder: (context, controller, focusNode, onSubmit) {
+              controller.text = subjectCtrl.text;
+              controller.selection = TextSelection.collapsed(offset: controller.text.length);
+              return AppInputField(
+                controller: controller,
+                focusNode: focusNode,
+                hintText: AppStrings.t('fld_subject_hint_free'),
+                onChanged: (v) => subjectCtrl.text = v,
+              );
+            },
           ),
           const SizedBox(height: 12),
           Text(

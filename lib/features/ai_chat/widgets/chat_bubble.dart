@@ -5,13 +5,7 @@ import '../../../core/theme/app_colors.dart';
 import '../models/message_model.dart';
 import 'typing_indicator.dart';
 
-/// Light-purple message text used inside the AI glass bubble in dark mode
-/// (matches the prototype's `#E5E0FF` bubble copy color). Light mode
-/// swaps to plain dark text on a subtle gray bubble per README.md.
-const _kAiTextColorDark = Color(0xFFE5E0FF);
-const _kAiTextColorLight = Color(0xFF1A1035);
-const _kAiBorderColorDark = Color(0x33A855F7); // rgba(168,85,247,.2)
-const _kAiBubbleBgLight = Color(0xFFF3F4F6);
+const _kAiBorderColorDark = Color(0x3306D6A0); // rgba(6,214,160,.2)
 
 class ChatBubble extends StatelessWidget {
   final MessageModel message;
@@ -100,7 +94,7 @@ class ChatBubble extends StatelessWidget {
             constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width * 0.7),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: AppColors.isDark ? AppColors.bgLayer : _kAiBubbleBgLight,
+              color: AppColors.bgLayer,
               border: AppColors.isDark
                   ? Border.all(color: _kAiBorderColorDark, width: 1)
                   : null,
@@ -133,7 +127,7 @@ class ChatBubble extends StatelessWidget {
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
                           height: 1.6,
-                          color: AppColors.isDark ? _kAiTextColorDark : _kAiTextColorLight,
+                          color: AppColors.textPrimary,
                         ),
                       ),
           ),

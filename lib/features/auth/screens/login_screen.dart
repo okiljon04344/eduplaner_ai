@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:toastification/toastification.dart';
@@ -83,9 +84,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     clipBehavior: Clip.none,
                     children: [
                       Container(
-                        decoration: const BoxDecoration(
-                          gradient: AppColors.gradientDark,
-                          borderRadius: BorderRadius.only(
+                        decoration: BoxDecoration(
+                          gradient: AppColors.brandPanelGradient,
+                          borderRadius: const BorderRadius.only(
                             bottomLeft: Radius.circular(40),
                             bottomRight: Radius.circular(40),
                           ),
@@ -97,27 +98,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ),
                           child: Stack(
                             children: [
-                              Positioned(
-                                top: -60,
-                                right: -40,
-                                child: Container(
-                                  width: 220,
-                                  height: 220,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    gradient: RadialGradient(colors: [AppColors.primaryMid.withValues(alpha: 0.3), Colors.transparent]),
-                                  ),
-                                ),
-                              ),
+                              const _FloatingOrbs(),
                               CustomPaint(painter: _DotPatternPainter(), size: Size.infinite),
                             ],
                           ),
                         ),
                       ),
-                      const Positioned(
+                      Positioned(
                         top: 16,
                         right: 16,
-                        child: LanguagePickerButton(),
+                        child: LanguagePickerButton(color: AppColors.textOnHero),
                       ),
                       Positioned.fill(
                         child: Center(
@@ -133,17 +123,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   boxShadow: [BoxShadow(color: AppColors.primaryMid.withValues(alpha: 0.6), blurRadius: 24)],
                                 ),
                                 child: const Icon(Icons.auto_awesome, size: 28, color: Colors.white),
-                              ),
+                              )
+                                  .animate(onPlay: (c) => c.repeat(reverse: true))
+                                  .moveY(begin: 0, end: -8, duration: 2000.ms, curve: Curves.easeInOut),
                               const SizedBox(height: 14),
-                              const Text(
+                              Text(
                                 'EduPlanner AI',
                                 style: TextStyle(
                                   fontSize: 26,
                                   fontWeight: FontWeight.w800,
                                   letterSpacing: -0.4,
-                                  color: Colors.white,
+                                  color: AppColors.textOnHero,
                                   fontFamily: 'Plus Jakarta Sans',
-                                  fontFamilyFallback: ['NotoSansJP'],
+                                  fontFamilyFallback: const ['NotoSansJP'],
                                 ),
                               ),
                               const SizedBox(height: 4),
@@ -274,9 +266,12 @@ class _DesktopLoginLayout extends StatelessWidget {
           Expanded(
             flex: 5,
             child: Container(
-              decoration: const BoxDecoration(gradient: AppColors.gradientDark),
+              decoration: BoxDecoration(gradient: AppColors.brandPanelGradient),
               padding: const EdgeInsets.symmetric(horizontal: 56, vertical: 48),
-              child: Column(
+              child: Stack(
+                children: [
+                  const Positioned.fill(child: _FloatingOrbs()),
+                  Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -288,14 +283,16 @@ class _DesktopLoginLayout extends StatelessWidget {
                       boxShadow: [BoxShadow(color: AppColors.primaryMid.withValues(alpha: 0.6), blurRadius: 24)],
                     ),
                     child: const Icon(Icons.auto_awesome, size: 28, color: Colors.white),
-                  ),
+                  )
+                      .animate(onPlay: (c) => c.repeat(reverse: true))
+                      .moveY(begin: 0, end: -8, duration: 2000.ms, curve: Curves.easeInOut),
                   const SizedBox(height: 24),
-                  const Text(
+                  Text(
                     'EduPlanner AI',
                     style: TextStyle(
-                      fontSize: 32, fontWeight: FontWeight.w900, color: Colors.white,
+                      fontSize: 32, fontWeight: FontWeight.w900, color: AppColors.textOnHero,
                       letterSpacing: -0.5,
-                      fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: ['NotoSansJP'],
+                      fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP'],
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -324,9 +321,9 @@ class _DesktopLoginLayout extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(f.$1, style: const TextStyle(
-                                fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white,
-                                fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: ['NotoSansJP'],
+                              Text(f.$1, style: TextStyle(
+                                fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textOnHero,
+                                fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP'],
                               )),
                               Text(f.$4, style: TextStyle(
                                 fontSize: 11, color: AppColors.textMuted,
@@ -338,6 +335,8 @@ class _DesktopLoginLayout extends StatelessWidget {
                       ],
                     ),
                   )),
+                ],
+              ),
                 ],
               ),
             ),
@@ -360,7 +359,15 @@ class _DesktopLoginLayout extends StatelessWidget {
                         right: 0,
                         child: LanguagePickerButton(color: AppColors.textPrimary),
                       ),
-                      Column(
+                      Container(
+                        padding: const EdgeInsets.all(32),
+                        decoration: BoxDecoration(
+                          color: AppColors.cardSurface,
+                          borderRadius: BorderRadius.circular(28),
+                          border: Border.all(color: AppColors.cardStroke),
+                          boxShadow: AppColors.cardShadow,
+                        ),
+                        child: Column(
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
@@ -403,14 +410,19 @@ class _DesktopLoginLayout extends StatelessWidget {
                             onPressed: () => context.push('/login/email'),
                             child: Text(AppStrings.t('login_have_account')),
                           ),
-                          const SizedBox(height: 24),
-                          TextButton.icon(
+                        ],
+                      ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 16),
+                        child: Center(
+                          child: TextButton.icon(
                             onPressed: () => context.go('/'),
                             icon: const Icon(Icons.arrow_back, size: 14),
                             label: Text(AppStrings.t('login_back_to_top')),
                             style: TextButton.styleFrom(foregroundColor: AppColors.textMuted),
                           ),
-                        ],
+                        ),
                       ),
                       if (loading)
                         Positioned.fill(
@@ -526,6 +538,43 @@ class _GoogleSignInArea extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// A handful of soft, slowly-pulsing radial-gradient blobs behind the brand
+/// panel — a livelier, more youthful alternative to a single static glow.
+class _FloatingOrbs extends StatelessWidget {
+  const _FloatingOrbs();
+
+  @override
+  Widget build(BuildContext context) {
+    Widget orb({required double top, required double left, required double size, required Color color, required int delayMs}) {
+      return Positioned(
+        top: top,
+        left: left,
+        child: IgnorePointer(
+          child: Container(
+            width: size,
+            height: size,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(colors: [color.withValues(alpha: 0.32), Colors.transparent]),
+            ),
+          )
+              .animate(onPlay: (c) => c.repeat(reverse: true), delay: delayMs.ms)
+              .scale(begin: const Offset(1, 1), end: const Offset(1.15, 1.15), duration: 3200.ms, curve: Curves.easeInOut)
+              .fadeIn(duration: 1000.ms),
+        ),
+      );
+    }
+
+    return Stack(
+      children: [
+        orb(top: -60, left: -40, size: 220, color: AppColors.primary, delayMs: 0),
+        orb(top: 120, left: 260, size: 160, color: AppColors.primaryLight, delayMs: 400),
+        orb(top: 320, left: -20, size: 180, color: AppColors.primaryMid, delayMs: 800),
+      ],
     );
   }
 }

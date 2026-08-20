@@ -6,7 +6,7 @@ import '../../assignments/providers/assignments_provider.dart';
 import '../../assignments/widgets/assignment_detail_sheet.dart';
 
 /// One row in [UpcomingAssignmentsList]: a circular checkbox (tap toggles
-/// completion directly), title + colored deadline, and an urgency badge.
+/// completion directly) and title + colored deadline text.
 class AssignmentRowItem extends ConsumerWidget {
   final AssignmentModel assignment;
   final bool showDivider;
@@ -74,19 +74,6 @@ class AssignmentRowItem extends ConsumerWidget {
                         ),
                       ),
                     ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: assignment.dueDateBgColor,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: assignment.dueDateColor.withValues(alpha: 0.3)),
-                  ),
-                  child: Text(
-                    assignment.dueDateLabel,
-                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: assignment.dueDateColor),
                   ),
                 ),
               ],

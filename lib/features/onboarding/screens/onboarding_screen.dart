@@ -302,14 +302,14 @@ class _PageContent extends StatelessWidget {
           Text(
             data.title,
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w800,
-              color: Colors.white,
+              color: AppColors.textPrimary,
               height: 1.3,
               letterSpacing: -0.4,
               fontFamily: 'Plus Jakarta Sans',
-              fontFamilyFallback: ['NotoSansJP'],
+              fontFamilyFallback: const ['NotoSansJP'],
             ),
           )
               .animate()

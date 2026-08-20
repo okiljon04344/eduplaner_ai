@@ -30,8 +30,8 @@ class AppBottomNav extends StatelessWidget {
               decoration: const BoxDecoration(
                 gradient: LinearGradient(colors: [
                   Colors.transparent,
-                  Color(0x607C3AED),
-                  Color(0x3522D3EE),
+                  Color(0x6006D6A0),
+                  Color(0x3534D399),
                   Colors.transparent,
                 ]),
               ),
@@ -95,7 +95,14 @@ class _NavItem extends ConsumerWidget {
               scale: active ? 1.18 : 1.0,
               duration: const Duration(milliseconds: 250),
               curve: Curves.easeOutExpo,
-              child: Icon(active ? activeIcon : icon, size: 24, color: active ? activeColor : inactiveColor),
+              child: Icon(
+                active ? activeIcon : icon,
+                size: 24,
+                color: active ? activeColor : inactiveColor,
+                shadows: active
+                    ? [Shadow(color: activeColor.withValues(alpha: 0.7), blurRadius: 8)]
+                    : null,
+              ),
             ),
             const SizedBox(height: 3),
             Text(

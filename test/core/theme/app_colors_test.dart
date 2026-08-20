@@ -17,16 +17,16 @@ void main() {
       expect(AppColors.brightness, Brightness.light);
 
       // Surface family
-      expect(AppColors.background, const Color(0xFFF2F0FF));
+      expect(AppColors.background, const Color(0xFFFFFFFF));
       expect(AppColors.surface, const Color(0xFFFFFFFF));
-      expect(AppColors.bgDeep, const Color(0xFFFFFFFF));
-      expect(AppColors.bgInput, const Color(0xFFF9FAFB));
-      expect(AppColors.bgLayer, const Color(0xFFFFFFFF));
+      expect(AppColors.bgDeep, const Color(0xFFF7F6F3));
+      expect(AppColors.bgInput, const Color(0xFFFFFFFF));
+      expect(AppColors.bgLayer, const Color(0xFFF0FDF9));
 
       // Text family
-      expect(AppColors.textPrimary, const Color(0xFF1A1035));
+      expect(AppColors.textPrimary, const Color(0xFF1C1917));
       expect(AppColors.textSecondary, const Color(0xFF9CA3AF));
-      expect(AppColors.textMuted, const Color(0xFFC4B5FD));
+      expect(AppColors.textMuted, const Color(0xFFA7F3D0));
 
       // Borders / dividers
       expect(AppColors.border, const Color(0xFFE5E7EB));
@@ -44,15 +44,15 @@ void main() {
       AppColors.applyBrightness(Brightness.dark);
 
       expect(AppColors.isDark, isTrue);
-      expect(AppColors.background, const Color(0xFF08060F));
-      expect(AppColors.surface, const Color(0xFF12101C));
-      expect(AppColors.textPrimary, const Color(0xFFF0E6FF));
+      expect(AppColors.background, const Color(0xFF100C08));
+      expect(AppColors.surface, const Color(0xFF17120A));
+      expect(AppColors.textPrimary, const Color(0xFFFFF3E8));
       expect(AppColors.mathText, const Color(0xFFFBBF24));
     });
 
     test('leaves brand/accent tokens unchanged across theme flips', () {
-      const brandPrimary = Color(0xFF7C3AED);
-      const brandPrimaryMid = Color(0xFFA855F7);
+      const brandPrimary = Color(0xFF06D6A0);
+      const brandPrimaryMid = Color(0xFF34D399);
       const brandDanger = Color(0xFFF87171);
       const brandCyan = Color(0xFF22D3EE);
       const brandSuccess = Color(0xFF34D399);

@@ -80,7 +80,7 @@ class WeakAreaCard extends ConsumerWidget {
           decoration: BoxDecoration(
             color: AppColors.surfaceVar,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppColors.warning.withValues(alpha: 0.25)),
+            border: Border.all(color: AppColors.primaryMid.withValues(alpha: 0.25)),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -89,7 +89,7 @@ class WeakAreaCard extends ConsumerWidget {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: AppColors.warning.withValues(alpha: 0.14),
+                  color: AppColors.primaryMid.withValues(alpha: 0.14),
                   borderRadius: BorderRadius.circular(14),
                 ),
                 alignment: Alignment.center,
@@ -157,9 +157,9 @@ class WeakAreaCard extends ConsumerWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.warning.withValues(alpha: 0.08),
+                color: AppColors.primaryMid.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: AppColors.warning.withValues(alpha: 0.18)),
+                border: Border.all(color: AppColors.primaryMid.withValues(alpha: 0.18)),
               ),
               child: Text(text, style: TextStyle(fontSize: 13, height: 1.6, color: AppColors.textPrimary)),
             ),
@@ -209,7 +209,7 @@ class _AnalysisText extends StatelessWidget {
                 const SizedBox(width: 6),
                 const SizedBox(
                   width: 12, height: 12,
-                  child: CircularProgressIndicator(strokeWidth: 1.5, color: AppColors.warning),
+                  child: CircularProgressIndicator(strokeWidth: 1.5, color: AppColors.primaryMid),
                 ),
               ],
             )

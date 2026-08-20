@@ -84,7 +84,7 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.cyan.withValues(alpha: 0.7),
+                      color: AppColors.primaryMid.withValues(alpha: 0.8),
                       fontFamily: 'Plus Jakarta Sans',
                       fontFamilyFallback: const ['NotoSansJP'],
                     ),
@@ -159,13 +159,13 @@ class _TasksHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = AppColors.isDark;
-    final accent = isDark ? AppColors.cyan : Colors.white;
+    final accent = AppColors.accentText;
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
       decoration: BoxDecoration(
         gradient: isDark ? null : AppColors.heroTasksGradient,
         border: isDark
-            ? const Border(bottom: BorderSide(color: Color(0x2622D3EE)))
+            ? const Border(bottom: BorderSide(color: Color(0x2606D6A0)))
             : null,
         borderRadius: isDark
             ? null
@@ -186,11 +186,11 @@ class _TasksHeader extends StatelessWidget {
                 shape: BoxShape.circle,
                 gradient: isDark
                     ? const RadialGradient(
-                        colors: [Color(0x2E22D3EE), Color(0x0022D3EE)],
+                        colors: [Color(0x2E06D6A0), Color(0x0006D6A0)],
                         stops: [0.0, 0.7],
                       )
                     : null,
-                color: isDark ? null : Colors.white.withValues(alpha: 0.06),
+                color: isDark ? null : AppColors.primary.withValues(alpha: 0.06),
               ),
             ),
           ),
@@ -202,9 +202,7 @@ class _TasksHeader extends StatelessWidget {
                 children: [
                   Text(
                     AppStrings.t('as_overline'),
-                    style: AppTextStyles.overline.copyWith(
-                      color: isDark ? const Color(0x8C22D3EE) : Colors.white.withValues(alpha: 0.75),
-                    ),
+                    style: AppTextStyles.overline.copyWith(color: accent),
                   ),
                   const Spacer(),
                   GestureDetector(
@@ -259,7 +257,7 @@ class _TasksHeader extends StatelessWidget {
                   fontFamilyFallback: const ['NotoSansJP'],
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
-                  color: isDark ? const Color(0x8022D3EE) : Colors.white.withValues(alpha: 0.8),
+                  color: AppColors.textSecondary,
                 ),
               ),
               const SizedBox(height: 14),
@@ -268,9 +266,9 @@ class _TasksHeader extends StatelessWidget {
               Container(
                 height: 8,
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0x12FFFFFF) : Colors.white.withValues(alpha: 0.25),
+                  color: isDark ? const Color(0x12FFFFFF) : AppColors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(4),
-                  border: isDark ? Border.all(color: const Color(0x1A22D3EE)) : null,
+                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.1)),
                 ),
                 clipBehavior: Clip.hardEdge,
                 // Isolate the 600ms tween's per-frame paint from the header's
@@ -286,12 +284,9 @@ class _TasksHeader extends StatelessWidget {
                       alignment: Alignment.centerLeft,
                       child: Container(
                         decoration: BoxDecoration(
-                          gradient: isDark ? AppColors.gradientCyan : null,
-                          color: isDark ? null : Colors.white,
+                          gradient: AppColors.gradientPrimary,
                           borderRadius: BorderRadius.circular(4),
-                          boxShadow: isDark
-                              ? const [BoxShadow(color: Color(0x9922D3EE), blurRadius: 14)]
-                              : null,
+                          boxShadow: [BoxShadow(color: AppColors.primaryMid.withValues(alpha: 0.6), blurRadius: 14)],
                         ),
                       ),
                     ),
@@ -323,20 +318,14 @@ class _WeeklyProgressBar extends StatelessWidget {
     final pct = total == 0 ? 0.0 : completed / total;
     final pctText = '${(pct * 100).round()}%';
     final isDark = AppColors.isDark;
-    final labelColor = isDark ? AppColors.primaryLight : Colors.white;
+    final labelColor = AppColors.isDark ? AppColors.primaryLight : AppColors.primaryIndigo;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: isDark
-            ? AppColors.primaryMid.withValues(alpha: 0.07)
-            : Colors.white.withValues(alpha: 0.15),
+        color: AppColors.primaryMid.withValues(alpha: isDark ? 0.07 : 0.1),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: isDark
-              ? AppColors.primaryMid.withValues(alpha: 0.18)
-              : Colors.white.withValues(alpha: 0.25),
-        ),
+        border: Border.all(color: AppColors.primaryMid.withValues(alpha: isDark ? 0.18 : 0.22)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -381,9 +370,7 @@ class _WeeklyProgressBar extends StatelessWidget {
             borderRadius: BorderRadius.circular(4),
             child: Container(
               height: 6,
-              color: isDark
-                  ? AppColors.primaryMid.withValues(alpha: 0.15)
-                  : Colors.white.withValues(alpha: 0.25),
+              color: AppColors.primaryMid.withValues(alpha: isDark ? 0.15 : 0.12),
               // Isolate the tween from the header's radial-gradient decoration
               // so it repaints in its own layer during the 700ms animation.
               child: RepaintBoundary(
@@ -396,17 +383,9 @@ class _WeeklyProgressBar extends StatelessWidget {
                     alignment: Alignment.centerLeft,
                     child: Container(
                       decoration: BoxDecoration(
-                        gradient: isDark ? AppColors.gradientPrimary : null,
-                        color: isDark ? null : Colors.white,
+                        gradient: AppColors.gradientPrimary,
                         borderRadius: BorderRadius.circular(4),
-                        boxShadow: isDark
-                            ? [
-                                BoxShadow(
-                                  color: AppColors.primaryMid.withValues(alpha: 0.6),
-                                  blurRadius: 8,
-                                ),
-                              ]
-                            : null,
+                        boxShadow: [BoxShadow(color: AppColors.primaryMid.withValues(alpha: 0.6), blurRadius: 8)],
                       ),
                     ),
                   ),
@@ -499,11 +478,7 @@ class _AssignmentCalendar extends StatelessWidget {
             fontWeight: FontWeight.w700,
           ),
           selectedDecoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF8B5CF6), Color(0xFF6D28D9)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+            gradient: AppColors.gradientPrimary,
             shape: BoxShape.circle,
           ),
           selectedTextStyle: const TextStyle(
@@ -513,7 +488,7 @@ class _AssignmentCalendar extends StatelessWidget {
             fontWeight: FontWeight.w700,
           ),
           markerDecoration: const BoxDecoration(
-            color: AppColors.cyan,
+            color: AppColors.primaryMid,
             shape: BoxShape.circle,
           ),
           markerSize: 5,
@@ -576,19 +551,17 @@ class _AddTaskButton extends StatelessWidget {
         alignment: Alignment.center,
         decoration: BoxDecoration(
           gradient: isDark
-              ? const LinearGradient(
+              ? LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [Color(0x3322D3EE), Color(0x1A06B6D4)],
+                  colors: [AppColors.primary.withValues(alpha: 0.2), AppColors.primaryDark.withValues(alpha: 0.1)],
                 )
               : AppColors.gradientAddTaskLight,
           borderRadius: BorderRadius.circular(isDark ? 20 : 18),
-          border: isDark ? Border.all(color: const Color(0x4D22D3EE)) : null,
+          border: isDark ? Border.all(color: AppColors.primary.withValues(alpha: 0.3)) : null,
           boxShadow: [
             BoxShadow(
-              color: isDark
-                  ? const Color(0x2622D3EE)
-                  : const Color(0x5900B894),
+              color: isDark ? AppColors.primary.withValues(alpha: 0.15) : const Color(0x5900B894),
               blurRadius: isDark ? 20 : 24,
               offset: isDark ? Offset.zero : const Offset(0, 6),
             ),
@@ -601,7 +574,7 @@ class _AddTaskButton extends StatelessWidget {
             fontFamilyFallback: const ['NotoSansJP'],
             fontSize: 15,
             fontWeight: FontWeight.w800,
-            color: isDark ? AppColors.cyan : Colors.white,
+            color: isDark ? AppColors.accentText : Colors.white,
           ),
         ),
       ),

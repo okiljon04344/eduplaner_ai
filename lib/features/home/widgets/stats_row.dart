@@ -37,8 +37,8 @@ class _StreakPill extends ConsumerWidget {
     return _StatPill(
       value: '$streak',
       label: AppStrings.t('home_streak'),
-      color: AppColors.isDark ? AppColors.primaryLight : Colors.white,
-      tint: AppColors.isDark ? AppColors.primaryMid : Colors.white,
+      color: AppColors.isDark ? AppColors.primaryLight : AppColors.primaryIndigo,
+      tint: AppColors.primaryMid,
     );
   }
 }
@@ -52,8 +52,8 @@ class _WeeklyPill extends ConsumerWidget {
     return _StatPill(
       value: '${weekly.completed}/${weekly.total}',
       label: AppStrings.t('home_completed'),
-      color: AppColors.isDark ? AppColors.cyan : Colors.white,
-      tint: AppColors.isDark ? AppColors.cyan : Colors.white,
+      color: AppColors.isDark ? AppColors.primaryMid : AppColors.primaryIndigo,
+      tint: AppColors.primaryMid,
     );
   }
 }
@@ -63,12 +63,13 @@ class _UrgentPill extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final urgent = ref.watch(urgentAssignmentsCountProvider);
+    final weekly = ref.watch(weeklyProgressProvider);
+    final percent = weekly.total == 0 ? 0 : ((weekly.completed / weekly.total) * 100).round();
     return _StatPill(
-      value: '$urgent',
-      label: AppStrings.t('home_urgent'),
-      color: AppColors.isDark ? AppColors.amber : Colors.white,
-      tint: AppColors.isDark ? AppColors.amber : Colors.white,
+      value: '$percent%',
+      label: AppStrings.t('home_weekly_percent'),
+      color: AppColors.isDark ? AppColors.primaryLight : AppColors.primaryIndigo,
+      tint: AppColors.primaryLight,
     );
   }
 }

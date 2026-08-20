@@ -14,10 +14,8 @@ class GreetingHeader extends ConsumerWidget {
     final user = ref.watch(currentUserProvider);
     final urgentCount = ref.watch(urgentAssignmentsCountProvider);
     final initial = (user?.name.isNotEmpty ?? false) ? user!.name.substring(0, 1) : 'U';
-    const onHero = Colors.white;
-    final heroSub = AppColors.isDark
-        ? AppColors.textSecondary
-        : Colors.white.withValues(alpha: 0.75);
+    final onHero = AppColors.textOnHero;
+    final heroSub = AppColors.textSecondary;
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -29,14 +27,8 @@ class GreetingHeader extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.isDark
-                      ? AppColors.primaryMid.withValues(alpha: 0.12)
-                      : Colors.white.withValues(alpha: 0.13),
-                  border: Border.all(
-                    color: AppColors.isDark
-                        ? AppColors.primaryMid.withValues(alpha: 0.25)
-                        : Colors.white.withValues(alpha: 0.15),
-                  ),
+                  color: AppColors.primary.withValues(alpha: 0.12),
+                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
@@ -46,15 +38,9 @@ class GreetingHeader extends ConsumerWidget {
                       width: 6,
                       height: 6,
                       decoration: BoxDecoration(
-                        color: AppColors.isDark ? AppColors.primaryMid : AppColors.success,
+                        color: AppColors.primary,
                         shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: (AppColors.isDark ? AppColors.primaryMid : AppColors.success)
-                                .withValues(alpha: 0.8),
-                            blurRadius: 6,
-                          ),
-                        ],
+                        boxShadow: [BoxShadow(color: AppColors.primary.withValues(alpha: 0.8), blurRadius: 6)],
                       ),
                     ),
                     const SizedBox(width: 6),
@@ -64,7 +50,7 @@ class GreetingHeader extends ConsumerWidget {
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 0.8,
-                        color: AppColors.isDark ? AppColors.primaryLight : Colors.white,
+                        color: AppColors.accentText,
                         fontFamily: 'Plus Jakarta Sans',
                         fontFamilyFallback: const ['NotoSansJP'],
                       ),
@@ -75,14 +61,14 @@ class GreetingHeader extends ConsumerWidget {
               const SizedBox(height: 10),
               Text(
                 AppStrings.t('home_greeting').replaceAll('{name}', (user?.name.isNotEmpty ?? false) ? user!.name : AppStrings.t('home_guest')),
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 25,
                   fontWeight: FontWeight.w800,
                   letterSpacing: -0.5,
                   height: 1.1,
                   color: onHero,
                   fontFamily: 'Plus Jakarta Sans',
-                  fontFamilyFallback: ['NotoSansJP'],
+                  fontFamilyFallback: const ['NotoSansJP'],
                 ),
               ),
               const SizedBox(height: 5),
@@ -114,7 +100,7 @@ class GreetingHeader extends ConsumerWidget {
             child: Icon(
               Icons.settings_outlined,
               size: 18,
-              color: AppColors.isDark ? AppColors.textOnHero : Colors.white,
+              color: AppColors.textOnHero,
             ),
           ),
         ),
@@ -132,7 +118,7 @@ class GreetingHeader extends ConsumerWidget {
               child: Icon(
                 Icons.notifications_outlined,
                 size: 18,
-                color: AppColors.isDark ? AppColors.textOnHero : Colors.white,
+                color: AppColors.textOnHero,
               ),
             ),
             if (urgentCount > 0)
@@ -165,7 +151,7 @@ class GreetingHeader extends ConsumerWidget {
             borderRadius: BorderRadius.circular(16),
             border: AppColors.isDark ? null : Border.all(color: Colors.white, width: 2.5),
             boxShadow: AppColors.isDark
-                ? [BoxShadow(color: AppColors.pink.withValues(alpha: 0.4), blurRadius: 18)]
+                ? [BoxShadow(color: AppColors.primaryMid.withValues(alpha: 0.5), blurRadius: 18)]
                 : [BoxShadow(color: Colors.black.withValues(alpha: 0.12), blurRadius: 12)],
           ),
           alignment: Alignment.center,

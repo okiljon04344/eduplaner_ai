@@ -34,7 +34,7 @@ Append a short dated entry per session — what changed and why, not a line-by-l
 **Features built:** multi-bot AI chat (server-side), deleteAccount CF, groups/sharing (`lib/features/groups/`), quiz (`lib/features/quiz/`), weak-area analysis, AI assignment check (file upload → Gemini), cancellation alerts (FCM via `onClassStatusChanged`), timetable calendar dates + week nav, responsive tablet layout (`ResponsiveBody`, `AppNavRail`), real light/dark theme (`AppColors.applyBrightness`), all English UI strings → Japanese.
 
 **Critical constraints:**
-- `file_picker` pinned to `^10.3.10` — do NOT upgrade past 11.0.0 until `cloud_functions`/`firebase_analytics` support AGP9 built-in Kotlin. `10.3.11` is retracted on pub.dev.
+- `file_picker` was pinned to `^10.3.10` (do NOT upgrade past 11.0.0 without the fix below — `10.3.11` is retracted on pub.dev). **Superseded 2026-08-19/20**: upgraded to `^12.0.0` by explicitly applying `id("org.jetbrains.kotlin.android")` in `android/app/build.gradle.kts` plus a root-level `forceJava17()` in `android/build.gradle.kts` — this satisfies `cloud_functions`/`firebase_analytics`'s Kotlin Gradle Plugin requirement without needing AGP9's built-in Kotlin (`android.newDsl`/`android.builtInKotlin` stay `false` in `gradle.properties`, since `newDsl=true` crashes the Flutter Gradle plugin on this Flutter version). `flutter build apk --debug` verified working; Flutter does warn this KGP-applying setup will eventually be unsupported once those plugins migrate to built-in Kotlin themselves.
 - `google_sign_in` v7: use `GoogleSignIn.instance` singleton + `await .initialize()` once + `.authenticate()` (throws `GoogleSignInExceptionCode.canceled`, not null). Only `idToken` goes to Firebase.
 - `AppTextStyles` and `SubjectColors`: must be getters, never `static const` — they read mutable `AppColors` tokens.
 - Firebase suite: core 4.12, auth 6.5, firestore 6.7, functions 6.3, messaging 16.4, analytics 12.4.
@@ -94,3 +94,16 @@ To'liq repo auditi (4 ta parallel tadqiqot: core, providers/repositories, UI, `f
 **Qasddan o'tkazib yuborilgan:** `chat_provider.dart`dagi `saveMessage`/`sendMessage`ni parallellashtirish — original kodda ikkalasining xato-propagatsiya yo'li boshqacha (biri try/catch tashqarisida, ikkinchisi ichida); bu farqni yo'qotmaslik uchun qo'llanilmadi.
 
 Tekshirildi: `flutter analyze` (toza), `flutter test` (barcha 40 test o'tdi), `npm run lint` (functions, toza), `node --check` (functions, toza). Git diff faqat shu 16 faylni qamrab oladi, boshqa hech narsaga tegilmadi.
+
+### 2026-08-19/20 — Green Neon redesign + settings ekrani + AGP9/file_picker fix (commit qilindi)
+Oldingi sessiya(lar)dan (shu jumladan Android Studio'dagi Gemini agentdan — [GEMINI_CONTEXT.md](GEMINI_CONTEXT.md)ga qarang) qolgan katta hajmdagi uncommitted ish topildi va tekshirilgandan so'ng commit qilindi.
+
+**Dizayn:** `AppColors`/`AppTheme` to'liq Green Neon palette'ga o'tkazildi (`AGENTS.md`dagi "Design tokens — Green Neon (2026-08-19 redesign)" bo'limiga mos), `applyBrightness` endi `darkX`/`lightX` nomli public konstantalardan qayta quriladi (avval private `_darkX`). Settings ekrani `_SettingsCard`/`_SettingsRow` bilan qayta dizayn qilindi (profil hero-karta, guruhlangan bo'limlar). Yangi `shared/widgets/ambient_grid_background.dart` — Home ekraniga fon effekti sifatida ulandi.
+
+**Android/AGP9:** `file_picker` `^10.3.10` → `^12.0.0`ga ko'tarildi — `android/app/build.gradle.kts`ga aniq `id("org.jetbrains.kotlin.android")` va `android/build.gradle.kts`ga `forceJava17()` qo'shish orqali (tafsilot: yuqoridagi "Critical constraints" bo'limi). Firebase paketlari yangilandi (`firebase_core` 4.13.0, `cloud_firestore` 6.8.0, va h.k. — aniq versiyalar `AGENTS.md`da). `flutter build apk --debug` bilan tasdiqlandi — muvaffaqiyatli quriladi (Flutter faqat kelajakdagi built-in Kotlin migratsiyasi haqida ogohlantiradi, xato emas).
+
+**i18n:** `home_weekly_percent` kaliti 21 tilga qo'shildi (`stats_row.dart`da ishlatiladi).
+
+**Tozalash:** ildiz katalogidagi tasodifiy `node_modules/`/`package.json`/`package-lock.json` (noto'g'ri joyda — kerakli `firebase-functions` paketi allaqachon `functions/package.json`da bor edi) o'chirildi. `app_theme.dart`da 2 ta ishlatilmagan lokal o'zgaruvchi (`borderLight`, `dividerSubtle`) olib tashlandi.
+
+Tekshirildi: `flutter analyze` (toza), `flutter test` (40/40), `flutter build apk --debug` (muvaffaqiyatli). Deploy hali qilinmagan.

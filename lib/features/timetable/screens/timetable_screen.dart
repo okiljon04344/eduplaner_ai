@@ -181,9 +181,7 @@ class _Header extends ConsumerWidget {
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 0.8,
-                          color: isDark
-                              ? AppColors.primaryMid.withValues(alpha: 0.6)
-                              : Colors.white.withValues(alpha: 0.75),
+                          color: AppColors.accentText,
                         ),
                       ),
                       const SizedBox(height: 6),
@@ -194,9 +192,7 @@ class _Header extends ConsumerWidget {
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
-                          color: isDark
-                              ? AppColors.textSecondary.withValues(alpha: 0.7)
-                              : Colors.white.withValues(alpha: 0.75),
+                          color: AppColors.textSecondary,
                         ),
                       ),
                     ],
@@ -211,12 +207,8 @@ class _Header extends ConsumerWidget {
                     margin: const EdgeInsets.only(top: 2),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      gradient: isDark ? AppColors.gradientPrimary : null,
-                      color: isDark ? null : Colors.white.withValues(alpha: 0.2),
-                      border: isDark ? null : Border.all(color: Colors.white.withValues(alpha: 0.35)),
-                      boxShadow: isDark
-                          ? [BoxShadow(color: AppColors.primaryMid.withValues(alpha: 0.5), blurRadius: 20)]
-                          : null,
+                      gradient: AppColors.gradientPrimary,
+                      boxShadow: [BoxShadow(color: AppColors.primaryMid.withValues(alpha: 0.5), blurRadius: 20)],
                     ),
                     child: const Icon(Icons.add, color: Colors.white, size: 22),
                   ),

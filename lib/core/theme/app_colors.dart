@@ -1,62 +1,59 @@
 import 'package:flutter/material.dart';
 
-/// EduPlanner AI design tokens — Dark Neon (HTML prototype) + Light (README handoff).
-/// Theme-dependent tokens are mutable statics reassigned by [applyBrightness].
+/// EduPlanner AI dizayn tokenlari — Green Neon.
+/// Tema o'zgarganda [applyBrightness] orqali statik ranglar yangilanadi.
 abstract class AppColors {
-  // ==================== Theme-dependent ====================
-  static Color bgDeep = _darkBgDeep;
-  static Color background = _darkBackground;
-  static Color surface = _darkSurface;
-  static Color surfaceVar = _darkSurfaceVar;
-  static Color bgInput = _darkBgInput;
-  static Color bgLayer = _darkBgLayer;
+  // ==================== Tema holatiga bog'liq ranglar (Mutable) ====================
+  static Color bgDeep = darkBgDeep;
+  static Color background = darkBackground;
+  static Color surface = darkSurface;
+  static Color surfaceVar = darkSurfaceVar;
+  static Color bgInput = darkBgInput;
+  static Color bgLayer = darkBgLayer;
 
-  static Color textPrimary = _darkTextPrimary;
-  static Color textSecondary = _darkTextSecondary;
-  static Color textMuted = _darkTextMuted;
+  static Color textPrimary = darkTextPrimary;
+  static Color textSecondary = darkTextSecondary;
+  static Color textMuted = darkTextMuted;
+
+  /// Hero panellardagi matn rangi. 
+  /// Darkda oq, Lightda textPrimary (qora) bo'lishi shart.
   static Color textOnHero = Colors.white;
 
-  static Color border = _darkBorder;
-  static Color borderLight = _darkBorderLight;
+  static Color border = darkBorder;
+  static Color borderLight = darkBorderLight;
 
-  static Color cardBg = _darkCardBg;
-  static Color cardBorder = _darkCardBorder;
-  static Color dividerSubtle = _darkDividerSubtle;
-  static Color glassBg = _darkGlassBg;
-  static Color glassBorder = _darkGlassBorder;
-  static Color navBg = _darkNavBg;
-  static Color navBorder = _darkNavBorder;
-  static Color checkboxUnchecked = _darkCheckboxUnchecked;
-  static Color iconButtonBg = _darkIconButtonBg;
+  static Color cardBg = darkCardBg;
+  static Color cardBorder = darkCardBorder;
+  static Color dividerSubtle = darkDividerSubtle;
+  static Color glassBg = darkGlassBg;
+  static Color glassBorder = darkGlassBorder;
+  static Color navBg = darkNavBg;
+  static Color navBorder = darkNavBorder;
+  static Color checkboxUnchecked = darkCheckboxUnchecked;
+  static Color iconButtonBg = darkIconButtonBg;
 
-  static Color progText = _darkProgText;
-  static Color progDot = _darkProgDot;
-  static Color mathText = _darkMathText;
-  static Color mathDot = _darkMathDot;
-  static Color engText = _darkEngText;
-  static Color engDot = _darkEngDot;
-  static Color physText = _darkPhysText;
-  static Color physDot = _darkPhysDot;
-  static Color chemText = _darkChemText;
-  static Color chemDot = _darkChemDot;
-  static Color histText = _darkHistText;
-  static Color histDot = _darkHistDot;
+  // Subject colors (Mutable statics for theme-aware coloring)
+  static Color progText = darkProgText;
+  static Color progDot = darkProgDot;
+  static Color mathText = darkMathText;
+  static Color mathDot = darkMathDot;
+  static Color engText = darkEngText;
+  static Color engDot = darkEngDot;
+  static Color physText = darkPhysText;
+  static Color physDot = darkPhysDot;
+  static Color chemText = darkChemText;
+  static Color chemDot = darkChemDot;
+  static Color histText = darkHistText;
+  static Color histDot = darkHistDot;
 
-  static LinearGradient get heroHomeGradient => isDark ? _darkHeroHomeGradient : _lightHeroHomeGradient;
-  static LinearGradient get heroScheduleGradient => isDark ? _darkHeroScheduleGradient : _lightHeroScheduleGradient;
-  static LinearGradient get heroTasksGradient => isDark ? _darkHeroTasksGradient : _lightHeroTasksGradient;
+  static LinearGradient get heroHomeGradient => isDark ? darkHeroHomeGradient : lightHeroHomeGradient;
+  static LinearGradient get heroScheduleGradient => isDark ? darkHeroScheduleGradient : lightHeroScheduleGradient;
+  static LinearGradient get heroTasksGradient => isDark ? darkHeroTasksGradient : lightHeroTasksGradient;
 
-  static List<BoxShadow> get cardShadow => isDark ? _darkCardShadow : _lightCardShadow;
-  static List<BoxShadow> get heroCardShadow => isDark ? _darkHeroCardShadow : _lightHeroCardShadow;
+  static List<BoxShadow> get cardShadow => isDark ? darkCardShadow : lightCardShadow;
+  static List<BoxShadow> get heroCardShadow => isDark ? darkHeroCardShadow : lightHeroCardShadow;
 
-  /// Standard card background — the single source of truth for the
-  /// `isDark ? surfaceVar/cardBg : surface` pattern repeated across cards.
-  /// (`surfaceVar` and `cardBg` are always equal, in both themes.)
   static Color get cardSurface => isDark ? surfaceVar : surface;
-
-  /// Standard card border color — `border` and `cardBorder` are always
-  /// equal, in both themes; this is the single named token to use in card
-  /// decorations instead of picking between the two ad hoc.
   static Color get cardStroke => border;
 
   static Brightness _brightness = Brightness.dark;
@@ -67,157 +64,161 @@ abstract class AppColors {
     if (_brightness == value) return;
     _brightness = value;
     final isDarkMode = value == Brightness.dark;
-    bgDeep = isDarkMode ? _darkBgDeep : _lightBgDeep;
-    background = isDarkMode ? _darkBackground : _lightBackground;
-    surface = isDarkMode ? _darkSurface : _lightSurface;
-    surfaceVar = isDarkMode ? _darkSurfaceVar : _lightSurfaceVar;
-    bgInput = isDarkMode ? _darkBgInput : _lightBgInput;
-    bgLayer = isDarkMode ? _darkBgLayer : _lightBgLayer;
-    textPrimary = isDarkMode ? _darkTextPrimary : _lightTextPrimary;
-    textSecondary = isDarkMode ? _darkTextSecondary : _lightTextSecondary;
-    textMuted = isDarkMode ? _darkTextMuted : _lightTextMuted;
-    textOnHero = Colors.white;
-    border = isDarkMode ? _darkBorder : _lightBorder;
-    borderLight = isDarkMode ? _darkBorderLight : _lightBorderLight;
-    cardBg = isDarkMode ? _darkCardBg : _lightCardBg;
-    cardBorder = isDarkMode ? _darkCardBorder : _lightCardBorder;
-    dividerSubtle = isDarkMode ? _darkDividerSubtle : _lightDividerSubtle;
-    glassBg = isDarkMode ? _darkGlassBg : _lightGlassBg;
-    glassBorder = isDarkMode ? _darkGlassBorder : _lightGlassBorder;
-    navBg = isDarkMode ? _darkNavBg : _lightNavBg;
-    navBorder = isDarkMode ? _darkNavBorder : _lightNavBorder;
-    checkboxUnchecked = isDarkMode ? _darkCheckboxUnchecked : _lightCheckboxUnchecked;
-    iconButtonBg = isDarkMode ? _darkIconButtonBg : _lightIconButtonBg;
-    progText = isDarkMode ? _darkProgText : _lightProgText;
-    progDot = isDarkMode ? _darkProgDot : _lightProgDot;
-    mathText = isDarkMode ? _darkMathText : _lightMathText;
-    mathDot = isDarkMode ? _darkMathDot : _lightMathDot;
-    engText = isDarkMode ? _darkEngText : _lightEngText;
-    engDot = isDarkMode ? _darkEngDot : _lightEngDot;
-    physText = isDarkMode ? _darkPhysText : _lightPhysText;
-    physDot = isDarkMode ? _darkPhysDot : _lightPhysDot;
-    chemText = isDarkMode ? _darkChemText : _lightChemText;
-    chemDot = isDarkMode ? _darkChemDot : _lightChemDot;
-    histText = isDarkMode ? _darkHistText : _lightHistText;
-    histDot = isDarkMode ? _darkHistDot : _lightHistDot;
+    
+    bgDeep = isDarkMode ? darkBgDeep : lightBgDeep;
+    background = isDarkMode ? darkBackground : lightBackground;
+    surface = isDarkMode ? darkSurface : lightSurface;
+    surfaceVar = isDarkMode ? darkSurfaceVar : lightSurfaceVar;
+    bgInput = isDarkMode ? darkBgInput : lightBgInput;
+    bgLayer = isDarkMode ? darkBgLayer : lightBgLayer;
+    
+    textPrimary = isDarkMode ? darkTextPrimary : lightTextPrimary;
+    textSecondary = isDarkMode ? darkTextSecondary : lightTextSecondary;
+    textMuted = isDarkMode ? darkTextMuted : lightTextMuted;
+    textOnHero = isDarkMode ? Colors.white : lightTextPrimary;
+    
+    border = isDarkMode ? darkBorder : lightBorder;
+    borderLight = isDarkMode ? darkBorderLight : lightBorderLight;
+    cardBg = isDarkMode ? darkCardBg : lightCardBg;
+    cardBorder = isDarkMode ? darkCardBorder : lightCardBorder;
+    dividerSubtle = isDarkMode ? darkDividerSubtle : lightDividerSubtle;
+    glassBg = isDarkMode ? darkGlassBg : lightGlassBg;
+    glassBorder = isDarkMode ? darkGlassBorder : lightGlassBorder;
+    navBg = isDarkMode ? darkNavBg : lightNavBg;
+    navBorder = isDarkMode ? darkNavBorder : lightNavBorder;
+    checkboxUnchecked = isDarkMode ? darkCheckboxUnchecked : lightCheckboxUnchecked;
+    iconButtonBg = isDarkMode ? darkIconButtonBg : lightIconButtonBg;
+    
+    progText = isDarkMode ? darkProgText : lightProgText;
+    progDot = isDarkMode ? darkProgDot : lightProgDot;
+    mathText = isDarkMode ? darkMathText : lightMathText;
+    mathDot = isDarkMode ? darkMathDot : lightMathDot;
+    engText = isDarkMode ? darkEngText : lightEngText;
+    engDot = isDarkMode ? darkEngDot : lightEngDot;
+    physText = isDarkMode ? darkPhysText : lightPhysText;
+    physDot = isDarkMode ? darkPhysDot : lightPhysDot;
+    chemText = isDarkMode ? darkChemText : lightChemText;
+    chemDot = isDarkMode ? darkChemDot : lightChemDot;
+    histText = isDarkMode ? darkHistText : lightHistText;
+    histDot = isDarkMode ? darkHistDot : lightHistDot;
   }
 
-  // ---- dark (HTML prototype) ----
-  static const _darkBgDeep = Color(0xFF050508);
-  static const _darkBackground = Color(0xFF08060F);
-  static const _darkSurface = Color(0xFF12101C);
-  static const _darkSurfaceVar = Color(0x0AFFFFFF);
-  static const _darkBgInput = Color(0xFF16112A);
-  static const _darkBgLayer = Color(0xFF1A1828);
-  static const _darkTextPrimary = Color(0xFFF0E6FF);
-  static const _darkTextSecondary = Color(0x80C8AAFF);
-  static const _darkTextMuted = Color(0x40C8AAFF);
-  static const _darkBorder = Color(0x12FFFFFF);
-  static const _darkBorderLight = Color(0x0CFFFFFF);
-  static const _darkCardBg = Color(0x0AFFFFFF);
-  static const _darkCardBorder = Color(0x12FFFFFF);
-  static const _darkDividerSubtle = Color(0x0AFFFFFF);
-  static const _darkGlassBg = Color(0x21FFFFFF);
-  static const _darkGlassBorder = Color(0x26FFFFFF);
-  static const _darkNavBg = Color(0xF508060F);
-  static const _darkNavBorder = Color(0x0FFFFFFF);
-  static const _darkCheckboxUnchecked = Color(0x26FFFFFF);
-  static const _darkIconButtonBg = Color(0x14FFFFFF);
-  static const _darkProgText = Color(0xFFC084FC);
-  static const _darkProgDot = Color(0xFFA855F7);
-  static const _darkMathText = Color(0xFFFBBF24);
-  static const _darkMathDot = Color(0xFFFBBF24);
-  static const _darkEngText = Color(0xFFF472B6);
-  static const _darkEngDot = Color(0xFFF472B6);
-  static const _darkPhysText = Color(0xFF60A5FA);
-  static const _darkPhysDot = Color(0xFF60A5FA);
-  static const _darkChemText = Color(0xFF34D399);
-  static const _darkChemDot = Color(0xFF34D399);
-  static const _darkHistText = Color(0xFFF87171);
-  static const _darkHistDot = Color(0xFFF87171);
+  // ---- Dark Mode Constants ----
+  static const darkBgDeep = Color(0xFF0C0A08);
+  static const darkBackground = Color(0xFF100C08);
+  static const darkSurface = Color(0xFF17120A);
+  static const darkSurfaceVar = Color(0x0AFFFFFF);
+  static const darkBgInput = Color(0xFF221A0E);
+  static const darkBgLayer = Color(0xFF241C10);
+  static const darkTextPrimary = Color(0xFFFFF3E8);
+  static const darkTextSecondary = Color(0x80D1FAE5);
+  static const darkTextMuted = Color(0x40D1FAE5);
+  static const darkBorder = Color(0x12FFFFFF);
+  static const darkBorderLight = Color(0x0CFFFFFF);
+  static const darkCardBg = Color(0x0AFFFFFF);
+  static const darkCardBorder = Color(0x12FFFFFF);
+  static const darkDividerSubtle = Color(0x0AFFFFFF);
+  static const darkGlassBg = Color(0x21FFFFFF);
+  static const darkGlassBorder = Color(0x26FFFFFF);
+  static const darkNavBg = Color(0xF508060F);
+  static const darkNavBorder = Color(0x0FFFFFFF);
+  static const darkCheckboxUnchecked = Color(0x26FFFFFF);
+  static const darkIconButtonBg = Color(0x14FFFFFF);
+  static const darkProgText = Color(0xFFC084FC);
+  static const darkProgDot = Color(0xFFA855F7);
+  static const darkMathText = Color(0xFFFBBF24);
+  static const darkMathDot = Color(0xFFFBBF24);
+  static const darkEngText = Color(0xFFF472B6);
+  static const darkEngDot = Color(0xFFF472B6);
+  static const darkPhysText = Color(0xFF60A5FA);
+  static const darkPhysDot = Color(0xFF60A5FA);
+  static const darkChemText = Color(0xFF34D399);
+  static const darkChemDot = Color(0xFF34D399);
+  static const darkHistText = Color(0xFFF87171);
+  static const darkHistDot = Color(0xFFF87171);
 
-  static const _darkHeroHomeGradient = LinearGradient(
+  static const darkHeroHomeGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF1A1035), Color(0xFF2D1B69), Color(0xFF08060F)],
+    colors: [Color(0xFF17120A), Color(0xFF1C1108), Color(0xFF100C08)],
   );
-  static const _darkHeroScheduleGradient = LinearGradient(
+  static const darkHeroScheduleGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF1A1035), Color(0xFF08060F)],
+    colors: [Color(0xFF17120A), Color(0xFF100C08)],
   );
-  static const _darkHeroTasksGradient = LinearGradient(
+  static const darkHeroTasksGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF064E3B), Color(0xFF08060F)],
+    colors: [Color(0xFF0F1F19), Color(0xFF100C08)],
   );
-  static const _darkCardShadow = <BoxShadow>[];
-  static const _darkHeroCardShadow = <BoxShadow>[
-    BoxShadow(color: Color(0x40A855F7), blurRadius: 20, offset: Offset(0, 4)),
+  static const darkCardShadow = <BoxShadow>[];
+  static const darkHeroCardShadow = <BoxShadow>[
+    BoxShadow(color: Color(0x4006D6A0), blurRadius: 20, offset: Offset(0, 4)),
   ];
 
-  // ---- light (README handoff) ----
-  static const _lightBgDeep = Color(0xFFFFFFFF);
-  static const _lightBackground = Color(0xFFF2F0FF);
-  static const _lightSurface = Color(0xFFFFFFFF);
-  static const _lightSurfaceVar = Color(0xFFF3F4F6);
-  static const _lightBgInput = Color(0xFFF9FAFB);
-  static const _lightBgLayer = Color(0xFFFFFFFF);
-  static const _lightTextPrimary = Color(0xFF1A1035);
-  static const _lightTextSecondary = Color(0xFF9CA3AF);
-  static const _lightTextMuted = Color(0xFFC4B5FD);
-  static const _lightBorder = Color(0xFFE5E7EB);
-  static const _lightBorderLight = Color(0xFFF3F4F6);
-  static const _lightCardBg = Color(0xFFFFFFFF);
-  static const _lightCardBorder = Color(0xFFE5E7EB);
-  static const _lightDividerSubtle = Color(0xFFF3F4F6);
-  static const _lightGlassBg = Color(0x21FFFFFF);
-  static const _lightGlassBorder = Color(0x26FFFFFF);
-  static const _lightNavBg = Color(0xF5FFFFFF);
-  static const _lightNavBorder = Color(0x126B7280);
-  static const _lightCheckboxUnchecked = Color(0xFFD1D5DB);
-  static const _lightIconButtonBg = Color(0xFFF3F4F6);
-  static const _lightProgText = Color(0xFF6D28D9);
-  static const _lightProgDot = Color(0xFF6C5CE7);
-  static const _lightMathText = Color(0xFFB45309);
-  static const _lightMathDot = Color(0xFFF59E0B);
-  static const _lightEngText = Color(0xFF9D174D);
-  static const _lightEngDot = Color(0xFFEF4444);
-  static const _lightPhysText = Color(0xFF1D4ED8);
-  static const _lightPhysDot = Color(0xFF74B9FF);
-  static const _lightChemText = Color(0xFF065F46);
-  static const _lightChemDot = Color(0xFF10B981);
-  static const _lightHistText = Color(0xFF991B1B);
-  static const _lightHistDot = Color(0xFFEF4444);
+  // ---- Light Mode Constants ----
+  static const lightBgDeep = Color(0xFFF7F6F3);
+  static const lightBackground = Color(0xFFFFFFFF);
+  static const lightSurface = Color(0xFFFFFFFF);
+  static const lightSurfaceVar = Color(0xFFF3F4F6);
+  static const lightBgInput = Color(0xFFFFFFFF);
+  static const lightBgLayer = Color(0xFFF0FDF9);
+  static const lightTextPrimary = Color(0xFF1C1917);
+  static const lightTextSecondary = Color(0xFF9CA3AF);
+  static const lightTextMuted = Color(0xFFA7F3D0);
+  static const lightBorder = Color(0xFFE5E7EB);
+  static const lightBorderLight = Color(0xFFF3F4F6);
+  static const lightCardBg = Color(0xFFFFFFFF);
+  static const lightCardBorder = Color(0xFFE5E7EB);
+  static const lightDividerSubtle = Color(0xFFF3F4F6);
+  static const lightGlassBg = Color(0x1406D6A0);
+  static const lightGlassBorder = Color(0x2606D6A0);
+  static const lightNavBg = Color(0xEBFFFFFF);
+  static const lightNavBorder = Color(0x126B7280);
+  static const lightCheckboxUnchecked = Color(0xFFD1D5DB);
+  static const lightIconButtonBg = Color(0xFFF3F4F6);
+  static const lightProgText = Color(0xFF6D28D9);
+  static const lightProgDot = Color(0xFF6C5CE7);
+  static const lightMathText = Color(0xFFB45309);
+  static const lightMathDot = Color(0xFFF59E0B);
+  static const lightEngText = Color(0xFF9D174D);
+  static const lightEngDot = Color(0xFFEF4444);
+  static const lightPhysText = Color(0xFF1D4ED8);
+  static const lightPhysDot = Color(0xFF74B9FF);
+  static const lightChemText = Color(0xFF065F46);
+  static const lightChemDot = Color(0xFF10B981);
+  static const lightHistText = Color(0xFF991B1B);
+  static const lightHistDot = Color(0xFFEF4444);
 
-  static const _lightHeroHomeGradient = LinearGradient(
+  static const lightHeroHomeGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF6C5CE7), Color(0xFF8B7CF8), Color(0xFFA29BFE)],
+    colors: [Color(0xFFECFDF5), Color(0xFFD1FAE5), Color(0xFFFFFFFF)],
   );
-  static const _lightHeroScheduleGradient = LinearGradient(
+  static const lightHeroScheduleGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF6C5CE7), Color(0xFFA29BFE)],
+    colors: [Color(0xFFECFDF5), Color(0xFFFFFFFF)],
   );
-  static const _lightHeroTasksGradient = LinearGradient(
+  static const lightHeroTasksGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF00B894), Color(0xFF00CEC9)],
+    colors: [Color(0xFFD1FAE5), Color(0xFFFFFFFF)],
   );
-  static const _lightCardShadow = <BoxShadow>[
+  static const lightCardShadow = <BoxShadow>[
     BoxShadow(color: Color(0x14000000), blurRadius: 16, offset: Offset(0, 2)),
   ];
-  static const _lightHeroCardShadow = <BoxShadow>[
-    BoxShadow(color: Color(0x1A6C5CE7), blurRadius: 24, offset: Offset(0, 4)),
+  static const lightHeroCardShadow = <BoxShadow>[
+    BoxShadow(color: Color(0x1A06D6A0), blurRadius: 24, offset: Offset(0, 4)),
   ];
 
   // ==================== Brand/accent (shared) ====================
-  static const primary = Color(0xFF7C3AED);
-  static const primaryMid = Color(0xFFA855F7);
-  static const primaryLight = Color(0xFFC084FC);
-  static const primaryDark = Color(0xFF4C1D95);
-  static const primaryIndigo = Color(0xFF6C5CE7);
+  static const primary = Color(0xFF06D6A0);
+  static const primaryMid = Color(0xFF34D399);
+  static const primaryLight = Color(0xFF5EEAD4);
+  static const primaryDark = Color(0xFF059669);
+  static const primaryIndigo = Color(0xFF059669);
 
   static const cyan = Color(0xFF22D3EE);
   static const cyanDeep = Color(0xFF06B6D4);
@@ -234,7 +235,7 @@ abstract class AppColors {
   static const danger = Color(0xFFF87171);
   static const dangerLight = Color(0x26F87171);
 
-  static const borderPrimary = Color(0x4DA855F7);
+  static const borderPrimary = Color(0x4D34D399);
 
   static const progFill = Color(0x26A855F7);
   static const mathFill = Color(0x1FFBBF24);
@@ -246,38 +247,38 @@ abstract class AppColors {
   static const gradientPrimary = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF7C3AED), Color(0xFFA855F7), Color(0xFFC084FC)],
+    colors: [Color(0xFF059669), Color(0xFF06D6A0), Color(0xFF5EEAD4)],
   );
   static const gradientCyan = LinearGradient(
     begin: Alignment.centerLeft,
     end: Alignment.centerRight,
-    colors: [Color(0xFF06B6D4), Color(0xFF22D3EE), Color(0xFF67E8F9)],
+    colors: [Color(0xFF059669), Color(0xFF34D399), Color(0xFF5EEAD4)],
   );
   static const gradientAmber = LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFFBBF24)]);
   static const gradientAvatar = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFFF59E0B), Color(0xFFEC4899), Color(0xFFA855F7)],
+    colors: [Color(0xFF06D6A0), Color(0xFF5EEAD4)],
   );
   static const gradientAvatarLight = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFFFDCB6E), Color(0xFFFD79A8)],
+    colors: [Color(0xFF059669), Color(0xFF06D6A0)],
   );
   static const gradientDark = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF0D0521), Color(0xFF1A0A38), Color(0xFF0D0521)],
+    colors: [Color(0xFF1C1108), Color(0xFF2A1B0C), Color(0xFF1C1108)],
   );
   static const gradientUserBubble = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF7C3AED), Color(0xFFA855F7)],
+    colors: [Color(0xFF059669), Color(0xFF06D6A0)],
   );
   static const gradientUserBubbleLight = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF6C5CE7), Color(0xFFA29BFE)],
+    colors: [Color(0xFF059669), Color(0xFF06D6A0)],
   );
   static const gradientAddTaskLight = LinearGradient(
     begin: Alignment.topLeft,
@@ -298,7 +299,7 @@ abstract class AppColors {
   static const gradientAiBannerLight = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF1A1035), Color(0xFF2D1B69)],
+    colors: [Color(0xFFECFDF5), Color(0xFFD1FAE5)],
   );
 
   static LinearGradient get aiBannerGradient =>
@@ -306,4 +307,30 @@ abstract class AppColors {
 
   static LinearGradient get avatarGradient =>
       isDark ? gradientAvatar : gradientAvatarLight;
+
+  /// AI banner/header gradient stops (`ai-grad-1`/`ai-grad-2` in the design
+  /// tokens) — exposed individually for headers that need just the two
+  /// stops rather than the full 3-stop [aiBannerGradient].
+  static Color get aiGrad1 => isDark ? const Color(0xFF1C1108) : const Color(0xFFECFDF5);
+  static Color get aiGrad2 => isDark ? const Color(0xFF2A1B0C) : const Color(0xFFD1FAE5);
+
+  /// Small accent links/timestamps needing extra pop (`accent-text` token).
+  static Color get accentText => isDark ? const Color(0xFF06D6A0) : const Color(0xFF059669);
+
+  /// Vibrant green-toned brand panel background (login/onboarding hero
+  /// panels) — deliberately distinct from [aiBannerGradient]/[gradientDark],
+  /// which use the design's warm-brown `ai-grad` tokens meant only for the
+  /// AI chat screen. Reusing those elsewhere muddies the brand color.
+  static const _darkBrandPanelGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF0F1F19), Color(0xFF0C1611), Color(0xFF100C08)],
+  );
+  static const _lightBrandPanelGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFFD1FAE5), Color(0xFFECFDF5), Color(0xFFFFFFFF)],
+  );
+  static LinearGradient get brandPanelGradient =>
+      isDark ? _darkBrandPanelGradient : _lightBrandPanelGradient;
 }

@@ -1,38 +1,31 @@
-# Senior Level Mahalliylashtirish (i18n) Tizimi
+# Walkthrough - Mavzular Almashinuvi va Vizual Barqarorlik Tuzatildi
 
-Ilovadagi barcha 21 ta til uchun to'liq va professional darajadagi mahalliylashtirish tizimi yakunlandi. Bu nafaqat matnlarni tarjima qilish, balki dinamik parametrlar va tizimli bildirishnomalarni ham o'z ichiga oladi.
+Ilovadagi Light va Dark mode rejimlari o'rtasidagi ziddiyatlar (ranglar almashib qolishi, miltillash) bartaraf etildi. Dizayn Senior Developer darajasida takomillashtirildi.
 
-## Senior Developer Yondashuvi bilan Amalga Oshirilgan Ishlar
+## Amalga Oshirilgan Tuzatishlar
 
-### 1. Dinamik Parametrlash (Interpolation)
-`AppStrings.t` metodi endi `{n}`, `{name}`, `{subject}` kabi parametrlarni qabul qiladi. Bu murakkab gaplarni turli tillar grammatikasiga mos ravishda shakllantirish imkonini beradi.
-```dart
-AppStrings.t('notif_class_rem_today', {'n': 1, 'subject': 'Math'})
-// O'zbekcha: "Bugun 1-dars: Math"
-// English: "Period 1: Math is today"
-```
+### 1. Arxitektura: Mavzularni Mustaqil Qurish
+`ThemeData` endi global statik o'zgaruvchilarga tayanmasdan quriladi. Bu foydalanuvchi rejimni o'zgartirganda ranglarning "chalkashib" ketishini (inverted theme) butunlay to'xtatadi.
+- [AppTheme](file:///home/yashiloyceo/Desktop/eduplanner_ai/lib/core/theme/app_theme.dart): Har bir rejim uchun ranglar to'g'ridan-to'g'ri `Brightness` asosida tanlanadi.
 
-### 2. Barcha 21 ta Til Sinxronlashtirildi
-Batch processing orqali barcha `.json` fayllari yangi kalitlar bilan boyitildi:
-- **Tizim bildirishnomalari**: Har bir tilda dars va vazifa eslatmalari.
-- **Forma validatorlari**: Xatolik xabarlari (required, email, length, match).
-- **Login/Signup UI**: Barcha bannerlar, tugmalar va yordamchi matnlar.
-- **Chat boshqaruvi**: Tarixni tozalash va AI bilan bog'liq interfeys.
+### 2. Dark Mode Sarlavhasi (Header) Yangilandi
+Dark mode-da sarlavha endi qop-qora emas, balki chiroyli to'q binafsha gradientga ega. Bu interfeysga chuqurlik va go'zallik qo'shadi.
+- [AppColors](file:///home/yashiloyceo/Desktop/eduplanner_ai/lib/core/theme/app_colors.dart): `_darkHeroHomeGradient` va boshqalar neon-binafsha rangga o'tkazildi.
 
-### 3. Tizimli Bildirishnomalar (Notification Channels)
-Android uchun bildirishnoma kanallari nomlari va tavsiflari ham tanlangan tilga qarab o'zgaradi. Bu Senior darajadagi foydalanuvchi tajribasini (UX) ta'minlaydi.
+### 3. Avtomatik Tizim Paneli (Status Bar)
+Tepa panel (batareya, soat) ranglari endi ilova mavzusiga qarab avtomatik ravishda o'zgaradi (Light rejimda to'q, Dark rejimda oq).
+- [main.dart](file:///home/yashiloyceo/Desktop/eduplanner_ai/lib/main.dart): Qattiq kodlangan (hardcoded) tizim uslublari olib tashlandi.
+- [AppTheme](file:///home/yashiloyceo/Desktop/eduplanner_ai/lib/core/theme/app_theme.dart): `systemOverlayStyle` qo'shildi.
 
-## Texnik Tafsilotlar
-
-| O'zgartirilgan fayllar | Soni | Holati |
-| :--- | :--- | :--- |
-| `assets/l10n/*.json` | 21 ta | Yangilandi |
-| `lib/core/l10n/app_strings.dart` | 1 ta | Takomillashtirildi |
-| `lib/core/services/notification_service.dart` | 1 ta | Tilga bog'landi |
-| `lib/core/utils/validators.dart` | 1 ta | Tilga bog'landi |
-
-> [!IMPORTANT]
-> Har bir tilda JSON sintaksisi va parametrlar butunligi (integrity) tekshirildi. Hech qanday "raw key" foydalanuvchi ko'ziga ko'rinmaydi.
+### 4. Vizual Aniqlik (UI Cleanup)
+- **GreetingHeader**: "Salom, admin" matni barcha rejimlarda o'qilishi oson bo'lishi uchun ranglar to'g'irlandi.
+- **HomeScreen**: Sarlavhaning yumaloq burchaklari (`borderRadius`) endi har ikki rejimda ham bir xil va barqaror ko'rinadi.
 
 ## Tekshirish
-Sozlamalardan istalgan tilni (masalan, **Arab**, **Rus** yoki **Ispan**) tanlang va ilovaning barcha burchaklarini (login, bildirishnomalar, xatoliklar) tekshirib ko'ring. Hamma joy professional darajada tarjima qilingan.
+1. **Sozlamalar**ga kiring va **Mavzu**ni o'zgartiring.
+2. **Light Mode**: Orqa fon ochiq binafsha, tepa panel belgilari qora.
+3. **Dark Mode**: Orqa fon qora, sarlavha binafsha gradientli, tepa panel belgilari oq.
+4. Hech qanday "miltillash" yoki teskari ranglar chiqmasligiga ishonch hosil qiling.
+
+> [!TIP]
+> Senior darajadagi ushbu yondashuv ilovani kelajakda kengaytirishni (yangi ranglar qo'shishni) ancha osonlashtiradi.

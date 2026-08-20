@@ -16,21 +16,23 @@ Target: iOS + Android. Language: Dart (Flutter). Backend: Firebase. AI: Google G
 - All Firestore writes use `Timestamp.fromDate()` or `FieldValue.serverTimestamp()`.
 - Navigation: `context.go()` to replace, `context.push()` to layer. Never `Navigator.push` directly.
 
-## Tech stack (exact versions — do not change)
+## Tech stack (exact versions — required for AGP 9.0 compatibility)
 ```
 flutter_riverpod: ^2.5.1
 riverpod_annotation: ^2.3.5
 go_router: ^14.2.0
-firebase_core: ^3.4.0
-firebase_auth: ^5.2.0
-cloud_firestore: ^5.3.0
-firebase_messaging: ^15.1.0
+firebase_core: ^4.13.0
+firebase_auth: ^6.5.7
+cloud_firestore: ^6.8.0
+firebase_messaging: ^16.5.0
+firebase_analytics: ^12.4.6
+cloud_functions: ^6.3.6
 google_generative_ai: ^0.4.6
-google_sign_in: ^6.2.1
+google_sign_in: ^7.2.0
 fl_chart: ^0.69.0
 flutter_animate: ^4.5.0
 table_calendar: ^3.1.2
-intl: ^0.19.0
+intl: ^0.20.2
 flutter_local_notifications: ^17.2.3
 timezone: ^0.9.4
 shared_preferences: ^2.3.2
@@ -40,43 +42,64 @@ uuid: ^4.4.2
 dio: ^5.7.0
 freezed: ^2.5.7
 json_serializable: ^6.8.0
+file_picker: ^12.0.0
 ```
 
-## Design tokens (use these exact values everywhere)
-```dart
-// Colors
-primary       = Color(0xFF4F46E5)
-primaryLight  = Color(0xFFEEF2FF)
-success       = Color(0xFF10B981)
-successLight  = Color(0xFFD1FAE5)
-warning       = Color(0xFFF97316)
-warningLight  = Color(0xFFFFF7ED)
-danger        = Color(0xFFDC2626)
-dangerLight   = Color(0xFFFEF2F2)
-textPrimary   = Color(0xFF111827)
-textSecondary = Color(0xFF6B7280)
-textMuted     = Color(0xFF9CA3AF)
-border        = Color(0xFFE5E7EB)
-borderLight   = Color(0xFFF3F4F6)
-surface       = Color(0xFFFFFFFF)
-background    = Color(0xFFF9FAFB)
+## Design tokens — Green Neon (2026-08-19 redesign)
 
-// Subject colors
-数学:          fill(0xFFDBEAFE) text(0xFF1D4ED8) dot(0xFF3B82F6)
-英語:          fill(0xFFFEF3C7) text(0xFFB45309) dot(0xFFF59E0B)
-プログラミング:  fill(0xFFEDE9FE) text(0xFF6D28D9) dot(0xFF8B5CF6)
-物理:          fill(0xFFD1FAE5) text(0xFF065F46) dot(0xFF10B981)
-化学:          fill(0xFFFCE7F3) text(0xFF9D174D) dot(0xFFEC4899)
-歴史:          fill(0xFFFEE2E2) text(0xFF991B1B) dot(0xFFEF4444)
+**`lib/core/theme/app_colors.dart` is the single source of truth. Do NOT hardcode
+color hex values from this section into new code, and do NOT regenerate
+`app_colors.dart`/`app_theme.dart` from this doc — read the actual file.** This
+section is a human-readable summary only, kept in sync by hand; if it and the
+Dart file ever disagree, the Dart file wins. (A prior session had this
+backwards — some tooling regenerated `app_colors.dart` from an older,
+now-wrong version of this section and reverted the entire app to a stale
+indigo/purple palette, breaking ~26 call sites. Don't repeat that.)
+
+```dart
+// Brand accent (same literal value in both themes)
+primary      = Color(0xFF06D6A0)  // green
+primaryMid   = Color(0xFF34D399)  // green mid
+primaryLight = Color(0xFF5EEAD4)  // green light
+primaryDark  = Color(0xFF059669)  // green deep (== primaryIndigo)
+danger       = Color(0xFFF87171)
+success      = Color(0xFF34D399)
+
+// Surface/text — mutable statics on AppColors, reassigned by
+// AppColors.applyBrightness(Brightness). Read the current value from
+// AppColors.xxx at call time; never cache/const it.
+                  dark        light
+background        0xFF100C08  0xFFFFFFFF
+surface            0xFF17120A  0xFFFFFFFF
+bgLayer            0xFF241C10  0xFFF0FDF9   (dialogs/sheets/chat bubble bg)
+bgInput            0xFF221A0E  0xFFFFFFFF
+textPrimary        0xFFFFF3E8  0xFF1C1917
+textSecondary      80%D1FAE5   0xFF9CA3AF
+textOnHero (theme-aware — dark:white / light:textPrimary; NEVER hardcode
+  Colors.white on a hero/gradient panel, light-mode hero backgrounds are pale)
+
+// Subject colors — UNCHANGED from the original design, kept deliberately
+// (per-subject color-coding is real, useful functionality; the new design
+// mockup's "green family only" suggestion was not applied to these).
+数学:          fill(0x1FFBBF24) text(dark 0xFFFBBF24 / light 0xFFB45309) dot(0xFFFBBF24/0xFFF59E0B)
+英語:          fill(0x1FF472B6) text(dark 0xFFF472B6 / light 0xFF9D174D) dot(0xFFF472B6/0xFFEF4444)
+プログラミング:  fill(0x26A855F7) text(dark 0xFFC084FC / light 0xFF6D28D9) dot(0xFFA855F7/0xFF6C5CE7)
+物理:          fill(0x1F60A5FA) text(dark 0xFF60A5FA / light 0xFF1D4ED8) dot(0xFF60A5FA/0xFF74B9FF)
+化学:          fill(0x1F34D399) text(dark 0xFF34D399 / light 0xFF065F46) dot(0xFF34D399/0xFF10B981)
+歴史:          fill(0x1FF87171) text(dark 0xFFF87171 / light 0xFF991B1B) dot(0xFFF87171/0xFFEF4444)
 
 // Border radius
-cards: 16px | buttons: 14px | chips: 20px | inputs: 12px
-bottom-sheet top corners: 24px | timetable cells: 10px
+cards: 20-22px | buttons: 14-16px | chips/pills: 20px | inputs: 16px
+bottom-sheet top corners: 24px
 
-// Elevation — NO box shadows on cards. Border only.
-cards: Border.all(color: border, width: 1)
-FAB:   BoxShadow(color: Color(0x604F46E5), blurRadius: 16, offset: Offset(0, 6))
+// Elevation — dark mode: no box shadows, border only. Light mode: soft
+// shadows OK (see AppColors.cardShadow). Glow/pulse shadows use
+// primaryMid at low alpha, e.g. BoxShadow(color: primaryMid.withValues(alpha: 0.5), blurRadius: 20).
 ```
+
+Fonts: Plus Jakarta Sans (400/600/700/800) body/UI, Space Grotesk (700) for
+stat numbers only, both via `google_fonts`, `NotoSansJP` fallback for CJK
+glyphs (Plus Jakarta Sans/Space Grotesk have no Japanese coverage).
 
 ## File structure
 ```

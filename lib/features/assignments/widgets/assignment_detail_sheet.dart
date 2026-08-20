@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -115,29 +117,33 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
     );
   }
 
-  /// 課題の自動チェック — picks an image/PDF/Word/text file (using
-  /// `withData: true` so bytes are available on web, desktop, and mobile
-  /// alike, since only web guarantees bytes by default), sends it for
-  /// AI review, and shows the result inline.
+  /// 課題の自動チェック — picks an image/PDF/Word/text file and reads its
+  /// bytes via `PlatformFile.readAsBytes()` (file_picker 12's API — the
+  /// platform-agnostic way to get bytes on web, desktop, and mobile alike,
+  /// replacing the old synchronous `.bytes` getter + `withData` param),
+  /// sends it for AI review, and shows the result inline.
   Future<void> _pickAndCheckSubmission() async {
-    final result = await FilePicker.platform.pickFiles(
+    final file = await FilePicker.pickFile(
       type: FileType.custom,
       allowedExtensions: _kSupportedSubmissionExtensions,
-      withData: true,
     );
-    if (result == null || result.files.isEmpty || !mounted) return;
+    if (file == null || !mounted) return;
 
-    final file = result.files.first;
-    final bytes = file.bytes;
-    if (bytes == null) {
+    final Uint8List bytes;
+    try {
+      bytes = await file.readAsBytes();
+    } catch (_) {
+      if (!mounted) return;
       _showAiError(AppStrings.t('file_read_failed'));
       return;
     }
+    if (!mounted) return;
     if (bytes.lengthInBytes > _kMaxSubmissionBytes) {
       _showAiError(AppStrings.t('file_too_large'));
       return;
     }
-    final mimeType = _mimeTypeForExtension(file.extension);
+    final extension = file.name.contains('.') ? file.name.split('.').last : null;
+    final mimeType = _mimeTypeForExtension(extension);
     if (mimeType == null) {
       _showAiError(AppStrings.t('file_unsupported'));
       return;

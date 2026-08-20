@@ -3,6 +3,10 @@ import java.util.Properties
 
 plugins {
     id("com.android.application")
+    // android.newDsl / android.builtInKotlin are set to false in
+    // gradle.properties (AGP 9's new DSL crashes the Flutter Gradle plugin
+    // on this Flutter version) — so the explicit Kotlin plugin is required.
+    id("org.jetbrains.kotlin.android")
     // START: FlutterFire Configuration
     id("com.google.gms.google-services")
     // END: FlutterFire Configuration
@@ -60,6 +64,11 @@ kotlin {
         jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
     }
 }
+
+// NOTE: no `options.release.set(17)` here — AGP disallows the `--release`
+// javac flag for tasks compiling against Android APIs (breaks bootclasspath
+// setup, see https://issuetracker.google.com/278800528). `compileOptions`
+// above (sourceCompatibility/targetCompatibility) is the correct mechanism.
 
 flutter {
     source = "../.."

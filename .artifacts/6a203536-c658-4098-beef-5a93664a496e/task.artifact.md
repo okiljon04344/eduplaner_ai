@@ -1,4 +1,5 @@
-- [ ] Synchronize all 19 remaining localization files with new keys (`en`, `zh`, `zh_TW`, `ko`, `vi`, `th`, `id`, `ms`, `hi`, `ar`, `es`, `fr`, `de`, `pt`, `ru`, `it`, `tr`, `nl`, `fil`)
-- [ ] Verify JSON syntax for all updated files
-- [ ] Check for placeholder consistency (`{n}`, `{name}`, etc.)
-- [ ] Final project analysis to ensure no errors
+- [x] `AppColors` klassini har bir rejim uchun alohida rang qaytaradigan qilib yangilash
+- [x] `AppTheme` ni statik o'zgaruvchilarga bog'lanmagan holda mustaqil qurish
+- [x] `GreetingHeader` va `HomeScreen` dagi vizual xatoliklarni (ranglar va burchaklar) to'g'irlash
+- [x] `main.dart` dagi qattiq kodlangan tizim ranglarini olib tashlash
+- [x] Barcha o'zgarishlarni Light va Dark mode'da tekshirish

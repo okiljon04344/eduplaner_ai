@@ -46,6 +46,13 @@ class AppInputField extends StatelessWidget {
       onFieldSubmitted: onSubmitted,
       obscureText: obscureText,
       textInputAction: textInputAction,
+      style: TextStyle(
+        fontSize: 15,
+        color: AppColors.textPrimary,
+        fontFamily: 'Plus Jakarta Sans',
+        fontFamilyFallback: const ['NotoSansJP'],
+      ),
+      cursorColor: AppColors.primary,
       decoration: InputDecoration(
         hintText: hintText,
         hintStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: AppColors.textMuted),
