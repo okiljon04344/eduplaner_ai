@@ -38,7 +38,7 @@ class FilterChipsRow extends ConsumerWidget {
         child: Row(
           children: _filters.map((f) {
             final isSelected = f == selected;
-            final activeColor = AppColors.isDark ? AppColors.cyan : AppColors.primaryIndigo;
+            final activeColor = AppColors.isDark ? AppColors.primaryMid : AppColors.primaryIndigo;
             return Padding(
               padding: const EdgeInsets.only(right: 8),
               child: GestureDetector(

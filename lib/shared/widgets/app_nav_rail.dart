@@ -36,7 +36,7 @@ class AppNavRail extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [Colors.transparent, Color(0x807C3AED), Color(0x4D22D3EE), Colors.transparent],
+                  colors: [Colors.transparent, Color(0x8006D6A0), Color(0x4D34D399), Colors.transparent],
                 ),
               ),
             ),

@@ -1,42 +1,56 @@
-# Mavzular Almashinuvi va Vizual Barqarorlikni Tuzatish Rejasi
+# EduPlanner AI — To'liq Taxlil va Tuzatish Rejasi (Senior Audit)
 
-Ushbu reja ilovadagi Light va Dark mode rejimlari o'rtasidagi ziddiyatlarni (ranglar almashib qolishi, miltillash) bartaraf etish hamda dizaynni professional (Senior) darajaga olib chiqishni maqsad qilgan.
+Ushbu hujjat loyihaning barcha qismlarini to'liq audit qilish natijasida aniqlangan kamchiliklar va ularni bartaraf etish rejasini o'z ichiga oladi. Maqsad — ilovani "Production-ready" (yakuniy mahsulot) holatiga keltirish.
 
-## Muammo Tahlili
-Hozirgi vaqtda `AppColors` klassidagi ranglar global statik o'zgaruvchilar sifatida saqlangan. Foydalanuvchi rejimi o'zgartirganda, bu o'zgaruvchilar qiymati yangilanadi. Biroq, `MaterialApp` bir vaqtning o'zida ikkala mavzuni (Light va Dark) qurishga harakat qilganda, ular bir-birining ranglarini "o'g'irlab" qo'ymoqda. Bu esa vizual chalkashliklarga olib keladi.
+## Tadqiqot Natijalari va Muammolar
 
-## Foydalanuvchi Tasdig'i Kerak
-> [!IMPORTANT]
-> Dizayn o'zgarmaydi, faqat Dark mode-da sarlavha (header) qop-qora bo'lib qolmasligi uchun unga chiroyli binafsha gradient beriladi. Shuningdek, tizim paneli (status bar) ranglari avtomatlashtiriladi.
+### 1. Mahalliylashtirish (i18n) — *Eng katta muammo*
+Ilovada 21 ta til qo'llab-quvvatlanadi, lekin kod ichida yuzlab yaponcha matnlar (hardcoded) qolib ketgan:
+- **Xatolik xabarlari**: Barcha repository va notifierlarda xatoliklar faqat yapon tilida.
+- **Biznes mantiq**: Dars jadvalidagi kunlar (`月`, `火`...) qattiq yozib qo'yilgan, bu boshqa tillarda "Bugungi darslar" chiqmasligiga sabab bo'ladi.
+- **AI Promptlari**: AI ga beriladigan ko'rsatmalar faqat yapon tilida, bu o'zbek yoki ingliz tilidagi foydalanuvchilar uchun AI javob sifati pasayishiga olib keladi.
 
-## Taklif etilayotgan O'zgarishlar
+### 2. UI/UX Barqarorligi
+- **Inconsistent Design**: Turli vidjetlarda har xil burchak radiuslari (`borderRadius`) va soyalar (`boxShadow`) ishlatilgan.
+- **Manual Theme Checks**: Kodda juda ko'p joyda `AppColors.isDark ? ...` sharti ishlatilgan. Bu Senior darajadagi kodda `Theme.of(context)` yoki `AppColors` dagi abstraksiyalar orqali hal qilinishi kerak.
 
-### 1. Core Architecture (Mavzu Mantiqi)
+### 3. Arxitektura va Samaradorlik
+- **Auth Stream**: Har safar auth holati o'zgarganda foydalanuvchi hujjatini qayta-qayta yuklaydi (optimization kerak).
+- **Error Handling**: Ba'zi xatolar faqat konsolga (`debugPrint`) chiqariladi, foydalanuvchiga tushunarli xabar berilmaydi.
 
-#### [MODIFY] [app_colors.dart](file:///home/yashiloyceo/Desktop/eduplanner_ai/lib/core/theme/app_colors.dart)
-- Ranglarni tanlash mantiqini statik o'zgaruvchilardan metodlarga o'tkazish. `AppColors.background(brightness)` ko'rinishida har bir rejim uchun aniq rang qaytariladi.
-- `_darkHeroHomeGradient` ni qora rangdan binafsha neon gradientga o'zgartirish.
+## Tavsiya etilayotgan Tuzatishlar
 
-#### [MODIFY] [app_theme.dart](file:///home/yashiloyceo/Desktop/eduplanner_ai/lib/core/theme/app_theme.dart)
-- `ThemeData` qurilayotganda global holatga qaram bo'lmasligi uchun ranglarni to'g'ridan-to'g'ri `Brightness` orqali olish.
-- `AppBarTheme` ichida `systemOverlayStyle` ni sozlash, shunda batareya va soat belgilari avtomatik ravishda (oq yoki qora) o'zgaradi.
+### Phase 1: To'liq i18n Migratsiyasi (4-6 soat)
+- [ ] Barcha `Exception('...')` matnlarini kalit so'zlarga (key) almashtirish.
+- [ ] Dars jadvalidagi kun nomlarini raqamlarga yoki tilga bog'liq bo'lmagan konstantalarga o'tkazish.
+- [ ] AI promptlarini foydalanuvchi tiliga moslab dinamik qilish.
 
-### 2. Feature Widgets (Interfeys)
+### Phase 2: UI Standardizatsiyasi (2-3 soat)
+- [ ] `AppColors` klassida "Production Tokens" tizimini yaratish (barcha burchak va soyalar uchun).
+- [ ] Manual `isDark` tekshiruvlarini markazlashtirish.
+- [ ] Divider va Card uslublarini butun ilova bo'ylab bir xil qilish.
 
-#### [MODIFY] [greeting_header.dart](file:///home/yashiloyceo/Desktop/eduplanner_ai/lib/features/home/widgets/greeting_header.dart)
-- "Salom, admin" matni va pastki yozuvlar uchun ranglar mantig'ini (ternary operator) to'g'irlash.
+### Phase 3: "Senior" Kod Sifati (2 soat)
+- [ ] `AuthRepository` dagi streamni keshlashtirish (memoization).
+- [ ] `analysis_options.yaml` ga qat'iyroq qoidalar (lints) qo'shish.
+- [ ] Foydalanuvchi uchun "Global Error Handler" (toast yoki dialog) tizimini yaxshilash.
 
-#### [MODIFY] [home_screen.dart](file:///home/yashiloyceo/Desktop/eduplanner_ai/lib/features/home/screens/home_screen.dart)
-- `_HeroHeader` vidjetida yumaloq burchaklar va gradientlarni ikkala rejim uchun ham chiroyli qilish.
+## Vaqt Smeta (Estimation)
 
-#### [MODIFY] [main.dart](file:///home/yashiloyceo/Desktop/eduplanner_ai/lib/main.dart)
-- `SystemChrome` orqali qattiq yozilgan ranglarni olib tashlash (mavzu tizimi buni o'zi eplaydi).
+| Bosqich | Tavsif | Taxminiy vaqt |
+| :--- | :--- | :--- |
+| **I bosqich** | To'liq mahalliylashtirish va AI promptlar | 5 soat |
+| **II bosqich** | UI/UX va Dizayn tizimi barqarorligi | 3 soat |
+| **III bosqich** | Arxitektura va samaradorlikni oshirish | 2 soat |
+| **Jami** | **Mukammal holatga keltirish** | **~10 soat** |
 
-## Tekshirish Rejasi
+---
 
-### Qo'lda Tekshirish
-1. **Rejimlar almashinuvi**: Sozlamalardan Light va Dark mode'ga o'tib, fon va sarlavha ranglarini tekshirish.
-2. **Status Bar**: Tepa panel ranglari fon oq bo'lganda qora, qora bo'lganda oq chiqayotganini ko'rish.
-3. **Sarlavha (Header)**: Dark mode'da sarlavha qora fon bilan qo'shilib ketmayotganini (gradient borligini) tekshirish.
+## Ochiq Savollar
+- [ ] AI chatida javoblar har doim foydalanuvchi tanlagan tilda bo'lishini qat'iy talab qilamizmi?
+- [ ] Shanba va Yakshanba kunlari uchun maxsus "Dam olish kuni" UI-ni qo'shishni xohlaysizmi?
 
-Ushbu rejani ma'qullasangiz, amalga oshirishga kirishaman.
+> [!CAUTION]
+> Ushbu o'zgarishlar ilovaning deyarli barcha fayllariga ta'sir qiladi. Tizimli yondashuv talab etiladi.
+
+Ushbu taxlil va reja ma'qulmi? Agar rozilik bersangiz, I bosqichdan — eng dolzarb muammo bo'lgan mahalliylashtirishdan boshlayman.

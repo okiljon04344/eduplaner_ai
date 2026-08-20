@@ -260,6 +260,7 @@ class _StatusReportSheetState extends State<_StatusReportSheet> {
             TextField(
               controller: _noteController,
               maxLines: 2,
+              style: TextStyle(color: AppColors.textPrimary),
               decoration: InputDecoration(hintText: AppStrings.t('cls_note_hint'), border: const OutlineInputBorder()),
             ),
             const SizedBox(height: 20),

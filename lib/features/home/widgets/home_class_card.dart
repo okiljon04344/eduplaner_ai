@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../timetable/models/class_model.dart';
+import '../../timetable/widgets/class_detail_sheet.dart';
 
 const Map<int, (String start, String end)> _periodTimes = {
   1: ('09:00', '10:30'),
@@ -14,7 +16,7 @@ const Map<int, (String start, String end)> _periodTimes = {
 
 enum _ClassStatus { live, soon, later }
 
-class HomeClassCard extends StatelessWidget {
+class HomeClassCard extends ConsumerWidget {
   final ClassModel classModel;
   const HomeClassCard({super.key, required this.classModel});
 
@@ -39,12 +41,14 @@ class HomeClassCard extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final times = _periodTimes[classModel.period] ?? ('--:--', '--:--');
     final result = _computeStatus();
     final isLive = result.status == _ClassStatus.live;
 
-    return Container(
+    return GestureDetector(
+      onTap: () => showClassDetailSheet(context, ref, classModel),
+      child: Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -125,6 +129,7 @@ class HomeClassCard extends StatelessWidget {
           const SizedBox(width: 8),
           _StatusBadge(status: result.status, label: result.label),
         ],
+      ),
       ),
     );
   }

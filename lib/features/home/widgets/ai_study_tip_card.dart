@@ -88,9 +88,9 @@ class _AiStudyTipCardState extends ConsumerState<AiStudyTipCard> with SingleTick
                 children: [
                   Text(
                     AppStrings.t('home_ai_title'),
-                    style: const TextStyle(
-                      fontSize: 15, fontWeight: FontWeight.w800, letterSpacing: -0.2, color: Colors.white,
-                      fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: ['NotoSansJP'],
+                    style: TextStyle(
+                      fontSize: 15, fontWeight: FontWeight.w800, letterSpacing: -0.2, color: AppColors.textOnHero,
+                      fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP'],
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -101,18 +101,18 @@ class _AiStudyTipCardState extends ConsumerState<AiStudyTipCard> with SingleTick
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontSize: 12, fontWeight: FontWeight.w500, height: 1.4,
-                        color: AppColors.primaryLight.withValues(alpha: 0.6),
+                        color: AppColors.textSecondary,
                         fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP'],
                       ),
                     ),
                     loading: () => SizedBox(
                       width: 14,
                       height: 14,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primaryLight.withValues(alpha: 0.6)),
+                      child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.textSecondary),
                     ),
                     error: (_, __) => Text(
                       AppStrings.t('home_ai_fallback'),
-                      style: TextStyle(fontSize: 12, color: AppColors.primaryLight.withValues(alpha: 0.6)),
+                      style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
                     ),
                   ),
                 ],

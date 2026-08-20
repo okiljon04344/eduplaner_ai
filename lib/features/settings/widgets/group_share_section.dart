@@ -180,6 +180,7 @@ class _TextPromptDialogState extends State<_TextPromptDialog> {
         controller: _controller,
         autofocus: true,
         textCapitalization: TextCapitalization.characters,
+        style: TextStyle(color: AppColors.textPrimary),
         decoration: InputDecoration(hintText: widget.hintText),
         onSubmitted: (v) => Navigator.pop(context, v),
       ),

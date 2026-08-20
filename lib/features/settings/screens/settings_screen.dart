@@ -104,78 +104,253 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       body: ResponsiveBody(
         maxWidth: 640,
         child: ListView(
-          padding: const EdgeInsets.only(bottom: 40),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 40),
           children: [
-          ListTile(
-            leading: CircleAvatar(radius: 20, backgroundColor: AppColors.primary, child: Text(initials, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white))),
-            title: Text(user?.name ?? AppStrings.t('set_user_fallback'), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-            subtitle: Text(user?.email ?? '', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
-          ),
-          const Divider(),
-          _SectionTitle(AppStrings.t('settings_section_ai')),
-          ListTile(
-            leading: const Icon(Icons.smart_toy_outlined, color: AppColors.success),
-            title: Text(AppStrings.t('set_ai_assistant')),
-            subtitle: Text(AppStrings.t('set_ai_enabled_sub'), style: const TextStyle(color: AppColors.success)),
-          ),
-          _SectionTitle(AppStrings.t('set_class_share')),
-          const GroupShareSection(),
-          _SectionTitle(AppStrings.t('settings_section_notifications')),
-          SwitchListTile(
-            secondary: const Icon(Icons.notifications_outlined),
-            title: Text(AppStrings.t('settings_notifications')),
-            value: _notificationsEnabled,
-            onChanged: _toggleNotifications,
-          ),
-          _SectionTitle(AppStrings.t('settings_section_display')),
-          _LanguageTile(),
-          ListTile(
-            leading: const Icon(Icons.palette_outlined),
-            title: Text(AppStrings.t('settings_theme')),
-            trailing: SegmentedButton<ThemeMode>(
-              segments: [
-                ButtonSegment(value: ThemeMode.light, label: Text(AppStrings.t('set_theme_light'))),
-                ButtonSegment(value: ThemeMode.system, label: Text(AppStrings.t('set_theme_system'))),
-                ButtonSegment(value: ThemeMode.dark, label: Text(AppStrings.t('set_theme_dark'))),
-              ],
-              selected: {themeMode},
-              onSelectionChanged: (s) => ref.read(themeProvider.notifier).setTheme(s.first),
-            ),
-          ),
-          _SectionTitle(AppStrings.t('settings_section_other')),
-          ListTile(leading: const Icon(Icons.info_outline), title: Text(AppStrings.t('settings_version')), trailing: Text('1.0.0', style: TextStyle(color: AppColors.textMuted))),
-          ListTile(
-            leading: const Icon(Icons.privacy_tip_outlined),
-            title: Text(AppStrings.t('set_privacy')),
-            trailing: const Icon(Icons.open_in_new),
-            onTap: () => launchUrl(Uri.parse('https://okiljon04344.github.io/eduplaner_ai/privacy-policy.html')),
-          ),
-          ListTile(
-            leading: const Icon(Icons.gavel_outlined),
-            title: Text(AppStrings.t('set_terms')),
-            trailing: const Icon(Icons.open_in_new),
-            onTap: () => launchUrl(Uri.parse('https://okiljon04344.github.io/eduplaner_ai/terms-of-service.html')),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Center(
-              child: TextButton(
-                onPressed: _signOut,
-                child: Text(AppStrings.t('set_logout'), style: const TextStyle(color: AppColors.danger)),
+            // Profile hero — gradient-tinted card so it reads as the top of the
+            // page, not just another row.
+            Container(
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [AppColors.primary.withValues(alpha: 0.16), AppColors.primary.withValues(alpha: 0.04)],
+                ),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      gradient: AppColors.avatarGradient,
+                      shape: BoxShape.circle,
+                      boxShadow: [BoxShadow(color: AppColors.primaryMid.withValues(alpha: 0.5), blurRadius: 18)],
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(initials, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: Colors.white)),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          user?.name ?? AppStrings.t('set_user_fallback'),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.textPrimary, fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP']),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          user?.email ?? '',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Center(
+            _SectionTitle(AppStrings.t('settings_section_ai')),
+            _SettingsCard(
+              children: [
+                _SettingsRow(
+                  icon: Icons.smart_toy_outlined,
+                  iconColor: AppColors.primary,
+                  title: AppStrings.t('set_ai_assistant'),
+                  subtitle: AppStrings.t('set_ai_enabled_sub'),
+                  subtitleColor: AppColors.accentText,
+                ),
+              ],
+            ),
+            _SectionTitle(AppStrings.t('set_class_share')),
+            const _SettingsCard(children: [GroupShareSection()]),
+            _SectionTitle(AppStrings.t('settings_section_notifications')),
+            _SettingsCard(
+              children: [
+                _SettingsRow(
+                  icon: Icons.notifications_outlined,
+                  iconColor: AppColors.primaryMid,
+                  title: AppStrings.t('settings_notifications'),
+                  trailing: Switch(
+                    value: _notificationsEnabled,
+                    onChanged: _toggleNotifications,
+                    activeThumbColor: AppColors.primary,
+                  ),
+                ),
+              ],
+            ),
+            _SectionTitle(AppStrings.t('settings_section_display')),
+            _SettingsCard(
+              children: [
+                _LanguageTile(),
+                Divider(height: 1, color: AppColors.dividerSubtle),
+                _SettingsRow(
+                  icon: Icons.palette_outlined,
+                  iconColor: AppColors.primaryMid,
+                  title: AppStrings.t('settings_theme'),
+                  trailing: SegmentedButton<ThemeMode>(
+                    showSelectedIcon: false,
+                    style: SegmentedButton.styleFrom(
+                      backgroundColor: AppColors.surfaceVar,
+                      selectedBackgroundColor: AppColors.primary.withValues(alpha: 0.22),
+                      selectedForegroundColor: AppColors.accentText,
+                      foregroundColor: AppColors.textSecondary,
+                      side: BorderSide(color: AppColors.border),
+                      textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                    ),
+                    segments: [
+                      ButtonSegment(value: ThemeMode.light, label: Text(AppStrings.t('set_theme_light'))),
+                      ButtonSegment(value: ThemeMode.system, label: Text(AppStrings.t('set_theme_system'))),
+                      ButtonSegment(value: ThemeMode.dark, label: Text(AppStrings.t('set_theme_dark'))),
+                    ],
+                    selected: {themeMode},
+                    onSelectionChanged: (s) => ref.read(themeProvider.notifier).setTheme(s.first),
+                  ),
+                ),
+              ],
+            ),
+            _SectionTitle(AppStrings.t('settings_section_other')),
+            _SettingsCard(
+              children: [
+                _SettingsRow(
+                  icon: Icons.info_outline,
+                  iconColor: AppColors.textMuted,
+                  title: AppStrings.t('settings_version'),
+                  trailing: Text('1.0.0', style: TextStyle(color: AppColors.textMuted, fontSize: 13)),
+                ),
+                Divider(height: 1, color: AppColors.dividerSubtle),
+                _SettingsRow(
+                  icon: Icons.privacy_tip_outlined,
+                  iconColor: AppColors.textMuted,
+                  title: AppStrings.t('set_privacy'),
+                  trailing: Icon(Icons.open_in_new, size: 16, color: AppColors.textMuted),
+                  onTap: () => launchUrl(Uri.parse('https://okiljon04344.github.io/eduplaner_ai/privacy-policy.html')),
+                ),
+                Divider(height: 1, color: AppColors.dividerSubtle),
+                _SettingsRow(
+                  icon: Icons.gavel_outlined,
+                  iconColor: AppColors.textMuted,
+                  title: AppStrings.t('set_terms'),
+                  trailing: Icon(Icons.open_in_new, size: 16, color: AppColors.textMuted),
+                  onTap: () => launchUrl(Uri.parse('https://okiljon04344.github.io/eduplaner_ai/terms-of-service.html')),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: _signOut,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.danger,
+                  side: BorderSide(color: AppColors.danger.withValues(alpha: 0.4)),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
+                child: Text(AppStrings.t('set_logout'), style: const TextStyle(fontWeight: FontWeight.w700)),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Center(
               child: TextButton(
                 onPressed: _deletingAccount ? null : _deleteAccount,
                 child: _deletingAccount
                     ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.danger))
-                    : Text(AppStrings.t('set_delete_account'), style: const TextStyle(color: AppColors.danger, fontSize: 12)),
+                    : Text(AppStrings.t('set_delete_account'), style: TextStyle(color: AppColors.danger.withValues(alpha: 0.7), fontSize: 12)),
               ),
             ),
-          ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Rounded card grouping related settings rows — the single visual
+/// container every section below uses, replacing bare `ListTile`s directly
+/// on the scaffold background.
+class _SettingsCard extends StatelessWidget {
+  final List<Widget> children;
+  const _SettingsCard({required this.children});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.cardSurface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.cardStroke),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(children: children),
+    );
+  }
+}
+
+/// One row inside a [_SettingsCard]: colored icon chip + title (+ optional
+/// subtitle) + trailing widget, tappable when [onTap] is given.
+class _SettingsRow extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final String title;
+  final String? subtitle;
+  final Color? subtitleColor;
+  final Widget? trailing;
+  final VoidCallback? onTap;
+  const _SettingsRow({
+    required this.icon,
+    required this.iconColor,
+    required this.title,
+    this.subtitle,
+    this.subtitleColor,
+    this.trailing,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(color: iconColor.withValues(alpha: 0.14), borderRadius: BorderRadius.circular(11)),
+              alignment: Alignment.center,
+              child: Icon(icon, size: 18, color: iconColor),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textPrimary, fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP']),
+                  ),
+                  if (subtitle != null) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 12, color: subtitleColor ?? AppColors.textSecondary),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            if (trailing != null) ...[const SizedBox(width: 8), trailing!],
           ],
         ),
       ),
@@ -190,8 +365,11 @@ class _SectionTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
-      child: Text(title, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textMuted)),
+      padding: const EdgeInsets.fromLTRB(4, 20, 4, 10),
+      child: Text(
+        title,
+        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.5, color: AppColors.textMuted),
+      ),
     );
   }
 }
@@ -203,9 +381,10 @@ class _LanguageTile extends ConsumerWidget {
     final currentEntry = AppStrings.locales.where((l) => l.$1 == currentLocale).firstOrNull;
     final currentLabel = currentEntry != null ? '${currentEntry.$3} ${currentEntry.$2}' : currentLocale;
 
-    return ListTile(
-      leading: const Icon(Icons.language_outlined),
-      title: Text(AppStrings.t('settings_language')),
+    return _SettingsRow(
+      icon: Icons.language_outlined,
+      iconColor: AppColors.primaryMid,
+      title: AppStrings.t('settings_language'),
       trailing: Text(currentLabel, style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
       onTap: () => _showLanguagePicker(context, ref, currentLocale),
     );

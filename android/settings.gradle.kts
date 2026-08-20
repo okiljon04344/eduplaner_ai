@@ -23,6 +23,8 @@ plugins {
     // START: FlutterFire Configuration
     id("com.google.gms.google-services") version("4.4.4") apply false
     // END: FlutterFire Configuration
+    // android.newDsl=false in gradle.properties, so the explicit Kotlin
+    // plugin (not AGP 9's built-in Kotlin) is what actually compiles Kotlin.
     id("org.jetbrains.kotlin.android") version "2.3.20" apply false
 }
 

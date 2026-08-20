@@ -63,11 +63,11 @@ void main() {
       ),
     ));
 
-    // In dark mode, the active tab background is the neon purple #40A855F7
-    // (see day_tab_row.dart); no other tab uses that colour. Finding exactly
-    // one such container proves that (a) some tab is selected, and (b) only
-    // one is — no state leak across tabs.
-    const activeBg = Color(0x40A855F7);
+    // The active tab background is AppColors.primary at 22% alpha (see
+    // day_tab_row.dart); no other tab uses that colour. Finding exactly one
+    // such container proves that (a) some tab is selected, and (b) only one
+    // is — no state leak across tabs.
+    final activeBg = AppColors.primary.withValues(alpha: 0.22);
     final activeContainers = find.byWidgetPredicate((w) {
       if (w is! AnimatedContainer) return false;
       final deco = w.decoration;

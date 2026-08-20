@@ -43,26 +43,30 @@ class _LandingScreenState extends State<LandingScreen>
     final isDesktop = width >= 860;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF050508),
+      backgroundColor: const Color(0xFF100C08),
       body: Stack(
         children: [
           // Animated background orbs
           _AnimatedBg(ctrl: _bgCtrl),
-          // Scrollable content
-          SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _NavBar(isDesktop: isDesktop),
-                _HeroSection(
-                  isDesktop: isDesktop,
-                  floatCtrl: _floatCtrl,
-                  pulseCtrl: _pulseCtrl,
-                ),
-                _FeaturesSection(isDesktop: isDesktop),
-                _CtaSection(pulseCtrl: _pulseCtrl),
-                _Footer(),
-              ],
+          // Scrollable content — SafeArea keeps the nav bar (title + CTA
+          // button) clear of the OS status bar/notch on phones.
+          SafeArea(
+            bottom: false,
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _NavBar(isDesktop: isDesktop),
+                  _HeroSection(
+                    isDesktop: isDesktop,
+                    floatCtrl: _floatCtrl,
+                    pulseCtrl: _pulseCtrl,
+                  ),
+                  _FeaturesSection(isDesktop: isDesktop),
+                  _CtaSection(pulseCtrl: _pulseCtrl),
+                  _Footer(),
+                ],
+              ),
             ),
           ),
         ],
@@ -113,10 +117,10 @@ class _OrbPainter extends CustomPainter {
       );
     }
 
-    orb(0.15, 0.2,  size.width * 0.38, const Color(0xFF7C3AED), 0.0);
-    orb(0.85, 0.15, size.width * 0.32, const Color(0xFF2563EB), 0.33);
-    orb(0.7,  0.7,  size.width * 0.28, const Color(0xFF9333EA), 0.66);
-    orb(0.1,  0.75, size.width * 0.22, const Color(0xFF0891B2), 0.15);
+    orb(0.15, 0.2,  size.width * 0.38, const Color(0xFF06D6A0), 0.0);
+    orb(0.85, 0.15, size.width * 0.32, const Color(0xFF34D399), 0.33);
+    orb(0.7,  0.7,  size.width * 0.28, const Color(0xFF5EEAD4), 0.66);
+    orb(0.1,  0.75, size.width * 0.22, const Color(0xFF059669), 0.15);
   }
 
   @override
@@ -145,11 +149,11 @@ class _NavBar extends StatelessWidget {
             width: 34, height: 34,
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Color(0xFF8B5CF6), Color(0xFF3B82F6)],
+                colors: [Color(0xFF059669), Color(0xFF06D6A0)],
                 begin: Alignment.topLeft, end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(10),
-              boxShadow: [BoxShadow(color: const Color(0xFF7C3AED).withValues(alpha: 0.6), blurRadius: 12)],
+              boxShadow: [BoxShadow(color: const Color(0xFF06D6A0).withValues(alpha: 0.6), blurRadius: 12)],
             ),
             child: const Icon(Icons.auto_awesome, size: 18, color: Colors.white),
           )
@@ -258,11 +262,11 @@ class _HeroText extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
           decoration: BoxDecoration(
-            border: Border.all(color: const Color(0xFF7C3AED).withValues(alpha: 0.5)),
+            border: Border.all(color: const Color(0xFF06D6A0).withValues(alpha: 0.5)),
             gradient: LinearGradient(
               colors: [
-                const Color(0xFF7C3AED).withValues(alpha: 0.15),
-                const Color(0xFF2563EB).withValues(alpha: 0.1),
+                const Color(0xFF06D6A0).withValues(alpha: 0.15),
+                const Color(0xFF34D399).withValues(alpha: 0.1),
               ],
             ),
             borderRadius: BorderRadius.circular(20),
@@ -289,7 +293,7 @@ class _HeroText extends StatelessWidget {
                 AppStrings.t('landing_badge'),
                 style: const TextStyle(
                   fontSize: 11, fontWeight: FontWeight.w700,
-                  color: Color(0xFFBFB3F5),
+                  color: Color(0xFFA7F3D0),
                   fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: ['NotoSansJP'],
                 ),
               ),
@@ -384,7 +388,7 @@ class _GradientTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return ShaderMask(
       shaderCallback: (bounds) => const LinearGradient(
-        colors: [Color(0xFFE2D9F3), Color(0xFF9F7AEA), Color(0xFF60A5FA), Color(0xFFE2D9F3)],
+        colors: [Color(0xFFD1FAE5), Color(0xFF34D399), Color(0xFF60A5FA), Color(0xFFD1FAE5)],
         stops: [0.0, 0.35, 0.7, 1.0],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
@@ -423,7 +427,7 @@ class _FloatingMockup extends StatelessWidget {
           border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF7C3AED).withValues(alpha: 0.25),
+              color: const Color(0xFF06D6A0).withValues(alpha: 0.25),
               blurRadius: 40, spreadRadius: 0, offset: const Offset(0, 20),
             ),
           ],
@@ -457,7 +461,7 @@ class _MockupHeader extends StatelessWidget {
         Container(
           width: 28, height: 28,
           decoration: BoxDecoration(
-            gradient: const LinearGradient(colors: [Color(0xFF8B5CF6), Color(0xFF3B82F6)]),
+            gradient: const LinearGradient(colors: [Color(0xFF059669), Color(0xFF06D6A0)]),
             borderRadius: BorderRadius.circular(8),
           ),
           child: const Icon(Icons.auto_awesome, size: 15, color: Colors.white),
@@ -573,15 +577,15 @@ class _FeaturesSection extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
             decoration: BoxDecoration(
-              border: Border.all(color: const Color(0xFF7C3AED).withValues(alpha: 0.4)),
-              color: const Color(0xFF7C3AED).withValues(alpha: 0.08),
+              border: Border.all(color: const Color(0xFF06D6A0).withValues(alpha: 0.4)),
+              color: const Color(0xFF06D6A0).withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(20),
             ),
             child: const Text(
               '✦',
               style: TextStyle(
                 fontSize: 11, fontWeight: FontWeight.w700,
-                color: Color(0xFFBFB3F5),
+                color: Color(0xFFA7F3D0),
                 fontFamily: 'Plus Jakarta Sans',
               ),
             ),
@@ -591,7 +595,7 @@ class _FeaturesSection extends StatelessWidget {
 
           ShaderMask(
             shaderCallback: (b) => const LinearGradient(
-              colors: [Colors.white, Color(0xFFBFB3F5)],
+              colors: [Colors.white, Color(0xFFA7F3D0)],
             ).createShader(b),
             child: Text(
               AppStrings.t('landing_features_title'),
@@ -743,16 +747,16 @@ class _CtaSection extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            const Color(0xFF6D28D9).withValues(alpha: 0.5),
-            const Color(0xFF1D4ED8).withValues(alpha: 0.5),
+            const Color(0xFF059669).withValues(alpha: 0.5),
+            const Color(0xFF06D6A0).withValues(alpha: 0.5),
           ],
           begin: Alignment.topLeft, end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: const Color(0xFF7C3AED).withValues(alpha: 0.3)),
+        border: Border.all(color: const Color(0xFF06D6A0).withValues(alpha: 0.3)),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF7C3AED).withValues(alpha: 0.25),
+            color: const Color(0xFF06D6A0).withValues(alpha: 0.25),
             blurRadius: 40, offset: const Offset(0, 10),
           ),
         ],
@@ -768,7 +772,7 @@ class _CtaSection extends StatelessWidget {
 
           ShaderMask(
             shaderCallback: (b) => const LinearGradient(
-              colors: [Colors.white, Color(0xFFBFB3F5)],
+              colors: [Colors.white, Color(0xFFA7F3D0)],
             ).createShader(b),
             child: Text(
               AppStrings.t('landing_cta_title'),
@@ -873,13 +877,13 @@ class _GlowButtonState extends State<_GlowButton> {
           padding: EdgeInsets.symmetric(horizontal: px, vertical: py),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [Color(0xFF8B5CF6), Color(0xFF3B82F6)],
+              colors: [Color(0xFF059669), Color(0xFF06D6A0)],
               begin: Alignment.topLeft, end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(14),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF7C3AED).withValues(alpha: _hovered ? 0.65 : 0.35),
+                color: const Color(0xFF06D6A0).withValues(alpha: _hovered ? 0.65 : 0.35),
                 blurRadius: _hovered ? 28 : 16,
                 offset: const Offset(0, 6),
               ),
@@ -905,7 +909,7 @@ class _GlowButtonState extends State<_GlowButton> {
             borderRadius: BorderRadius.circular(14),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF7C3AED)
+                color: const Color(0xFF06D6A0)
                     .withValues(alpha: 0.15 + 0.15 * widget.pulseCtrl!.value),
                 blurRadius: 20 + 16 * widget.pulseCtrl!.value,
                 spreadRadius: widget.pulseCtrl!.value * 2,

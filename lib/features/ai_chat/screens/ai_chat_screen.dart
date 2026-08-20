@@ -111,12 +111,12 @@ class _AiChatHeader extends StatelessWidget {
                     children: [
                       Text(
                         AppStrings.t('ai_badge'),
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontFamily: 'Plus Jakarta Sans',
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 0.8,
-                          color: Color(0x8CA855F7),
+                          color: AppColors.accentText,
                         ),
                       ),
                       const SizedBox(height: 6),
@@ -129,7 +129,7 @@ class _AiChatHeader extends StatelessWidget {
                           fontFamilyFallback: const ['NotoSansJP'],
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
-                          color: AppColors.primaryLight.withValues(alpha: 0.4),
+                          color: AppColors.textSecondary,
                         ),
                       ),
                     ],

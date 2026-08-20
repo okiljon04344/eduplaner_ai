@@ -23,8 +23,8 @@
 
   <!-- Theme color follows the actual in-app palette. Two variants let the
        browser chrome match the user's OS theme before Flutter boots. -->
-  <meta name="theme-color" content="#08060F" media="(prefers-color-scheme: dark)">
-  <meta name="theme-color" content="#F2F0FF" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#100C08" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
 
   <!-- iOS meta tags & icons -->
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -52,29 +52,29 @@
   <link rel="manifest" href="manifest.json">
 
   <!-- Splash / loading screen shown until Flutter's first frame paints.
-       Uses the dark palette's true background (#08060F) so a first-load user
+       Uses the dark palette's true background (#100C08) so a first-load user
        doesn't see a flash of white before the app renders. The bootstrap
        script removes #splash once the Flutter engine is initialized. -->
   <style>
-    html, body { margin: 0; padding: 0; height: 100%; background: #08060F; }
+    html, body { margin: 0; padding: 0; height: 100%; background: #100C08; }
     @media (prefers-color-scheme: light) {
-      html, body { background: #F2F0FF; }
+      html, body { background: #FFFFFF; }
     }
     #splash {
       position: fixed; inset: 0;
       display: flex; align-items: center; justify-content: center;
-      background: #08060F;
+      background: #100C08;
       transition: opacity 300ms ease-out;
       z-index: 9999;
     }
     @media (prefers-color-scheme: light) {
-      #splash { background: #F2F0FF; }
+      #splash { background: #FFFFFF; }
     }
     #splash.hidden { opacity: 0; pointer-events: none; }
     .spinner {
       width: 42px; height: 42px; border-radius: 50%;
-      border: 3px solid rgba(124, 58, 237, 0.25);
-      border-top-color: #7C3AED;
+      border: 3px solid rgba(6, 214, 160, 0.25);
+      border-top-color: #06D6A0;
       animation: spin 900ms linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }

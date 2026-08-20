@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../shared/widgets/ambient_grid_background.dart';
 import '../providers/home_provider.dart';
 import '../widgets/ai_study_tip_card.dart';
 import '../widgets/greeting_header.dart';
@@ -18,7 +19,10 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: SafeArea(
+      body: Stack(
+        children: [
+          const AmbientGridBackground(),
+          SafeArea(
         bottom: false,
         child: RefreshIndicator(
           color: AppColors.primaryLight,
@@ -39,7 +43,7 @@ class HomeScreen extends ConsumerWidget {
                     child: Ink(
                       decoration: const BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [Color(0xFF6D28D9), Color(0xFF1D4ED8)],
+                          colors: [Color(0xFF059669), Color(0xFF06D6A0)],
                         ),
                       ),
                       child: InkWell(
@@ -49,12 +53,12 @@ class HomeScreen extends ConsumerWidget {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.play_circle_outline, size: 16, color: Colors.white),
+                              Icon(Icons.play_circle_outline, size: 16, color: AppColors.textOnHero),
                               const SizedBox(width: 8),
                               Text(
                                 AppStrings.t('home_landing_banner'),
-                                style: const TextStyle(
-                                  fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white,
+                                style: TextStyle(
+                                  fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textOnHero,
                                   fontFamily: 'Plus Jakarta Sans',
                                 ),
                               ),
@@ -84,7 +88,7 @@ class HomeScreen extends ConsumerWidget {
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
                   child: _SectionLabel(
                     text: AppStrings.t('home_upcoming'),
-                    tint: AppColors.isDark ? AppColors.cyan : AppColors.primaryIndigo,
+                    tint: AppColors.isDark ? AppColors.primaryMid : AppColors.primaryIndigo,
                     trailingLabel: AppStrings.t('home_view_all'),
                     onTap: () => context.go('/assignments'),
                   ),
@@ -102,6 +106,8 @@ class HomeScreen extends ConsumerWidget {
             ],
           ),
         ),
+          ),
+        ],
       ),
     );
   }
@@ -152,7 +158,7 @@ class _HeroHeader extends StatelessWidget {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       gradient: RadialGradient(
-                        colors: [AppColors.cyan.withValues(alpha: 0.15), Colors.transparent],
+                        colors: [AppColors.primaryMid.withValues(alpha: 0.15), Colors.transparent],
                       ),
                     ),
                   ),

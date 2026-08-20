@@ -37,14 +37,10 @@ class DayTabRow extends StatelessWidget {
           final date = weekStart.add(Duration(days: index));
           final today = _isToday(date);
 
-          final activeBg = AppColors.isDark
-              ? const Color(0x40A855F7)
-              : const Color(0xFF1A1035);
-          final activeText = AppColors.isDark ? const Color(0xFFE879F9) : Colors.white;
+          final activeBg = AppColors.primary.withValues(alpha: 0.22);
+          final activeText = AppColors.accentText;
           final inactiveBg = AppColors.surfaceVar;
-          final inactiveText = AppColors.isDark
-              ? const Color(0x66C8AAFF)
-              : const Color(0xFF6B7280);
+          final inactiveText = AppColors.textSecondary;
 
           return Expanded(
             child: Padding(
@@ -61,7 +57,7 @@ class DayTabRow extends StatelessWidget {
                     borderRadius: BorderRadius.circular(AppColors.isDark ? 16 : 14),
                     border: Border.all(
                       color: active
-                          ? (AppColors.isDark ? const Color(0x80A855F7) : Colors.transparent)
+                          ? AppColors.primary.withValues(alpha: 0.5)
                           : (today ? AppColors.primaryMid.withValues(alpha: 0.5) : AppColors.border),
                     ),
                   ),
