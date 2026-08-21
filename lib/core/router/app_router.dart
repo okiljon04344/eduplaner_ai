@@ -12,6 +12,7 @@ import '../../features/auth/screens/login_screen.dart';
 import '../../features/auth/screens/reset_password_screen.dart';
 import '../../features/home/screens/home_screen.dart';
 import '../../features/landing/screens/landing_screen.dart';
+import '../../features/auth/screens/profile_setup_screen.dart';
 import '../../features/onboarding/providers/onboarding_provider.dart';
 import '../../features/onboarding/screens/onboarding_screen.dart';
 import '../../features/quiz/screens/quiz_screen.dart';
@@ -28,8 +29,12 @@ import '../../shared/widgets/app_shell.dart';
 /// Redirect logic (evaluated on every navigation and on auth/onboarding state changes):
 ///   - While either provider is loading → no redirect (avoid flicker).
 ///   - Not logged in and not on an auth/landing path → redirect to `'/'`.
-///   - Logged in and on login/root → redirect to `/home` or `/onboarding`.
+///   - Logged in and on login/root → redirect to `/home`, `/onboarding`, or `/profile-setup`.
 ///   - Logged in but onboarding not done → redirect to `/onboarding`.
+///   - Logged in, onboarded, but the mandatory school-profile step isn't done
+///     (`UserModel.profileComplete` false) → redirect to `/profile-setup`.
+///     This also catches pre-existing accounts from before this field
+///     existed — they're prompted once, same as a brand-new sign-up.
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateProvider);
   final onboardingState = ref.watch(onboardingProvider);
@@ -38,14 +43,17 @@ final routerProvider = Provider<GoRouter>((ref) {
     initialLocation: '/home',
     refreshListenable: _RouterRefreshNotifier(ref),
     redirect: (context, state) {
-      final isLoggedIn = authState.valueOrNull != null;
+      final currentUser = authState.valueOrNull;
+      final isLoggedIn = currentUser != null;
       final isAuthLoading = authState.isLoading;
       final isOnboardingLoading = onboardingState.isLoading;
       final onboardingDone = onboardingState.valueOrNull ?? false;
+      final needsProfileSetup = isLoggedIn && !currentUser.profileComplete;
 
       final isOnLogin = state.matchedLocation.startsWith('/login');
       final isOnLanding = state.matchedLocation == '/' || state.matchedLocation == '/landing-preview';
       final isOnOnboarding = state.matchedLocation == '/onboarding';
+      final isOnProfileSetup = state.matchedLocation == '/profile-setup';
 
       // Wait for both auth and onboarding state to load
       if (isAuthLoading || isOnboardingLoading) return null;
@@ -56,12 +64,20 @@ final routerProvider = Provider<GoRouter>((ref) {
       // Logged in but on login → redirect to appropriate screen
       // '/landing-preview' is exempt — allows logged-in users to preview the page
       if (isLoggedIn && (isOnLogin || state.matchedLocation == '/')) {
-        return onboardingDone ? '/home' : '/onboarding';
+        if (!onboardingDone) return '/onboarding';
+        if (needsProfileSetup) return '/profile-setup';
+        return '/home';
       }
 
       // Logged in but hasn't seen onboarding → show onboarding
       if (isLoggedIn && !isOnOnboarding && !onboardingDone) {
         return '/onboarding';
+      }
+
+      // Logged in, onboarded, but the mandatory school-profile step is
+      // missing → block every other route until it's filled in.
+      if (isLoggedIn && onboardingDone && needsProfileSetup && !isOnProfileSetup) {
+        return '/profile-setup';
       }
 
       return null;
@@ -74,6 +90,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/login/email', pageBuilder: (_, s) => _slideUp(s, const EmailLoginScreen())),
       GoRoute(path: '/login/reset', pageBuilder: (_, s) => _slideUp(s, const ResetPasswordScreen())),
       GoRoute(path: '/onboarding', pageBuilder: (_, s) => _fade(s, const OnboardingScreen())),
+      GoRoute(path: '/profile-setup', pageBuilder: (_, s) => _fade(s, const ProfileSetupScreen())),
       GoRoute(path: '/settings', pageBuilder: (_, s) => _slideRight(s, const SettingsScreen())),
       GoRoute(path: '/quiz', pageBuilder: (_, s) => _slideUp(s, const QuizScreen())),
       ShellRoute(

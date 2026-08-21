@@ -26,6 +26,11 @@ mixin _$UserModel {
   String? get photoUrl => throw _privateConstructorUsedError;
   String? get classId => throw _privateConstructorUsedError;
   String? get school => throw _privateConstructorUsedError;
+  String? get schoolType => throw _privateConstructorUsedError;
+  String? get grade => throw _privateConstructorUsedError;
+  String? get faculty => throw _privateConstructorUsedError;
+  String? get department => throw _privateConstructorUsedError;
+  String? get course => throw _privateConstructorUsedError;
   DateTime get createdAt => throw _privateConstructorUsedError;
 
   /// Serializes this UserModel to a JSON map.
@@ -50,6 +55,11 @@ abstract class $UserModelCopyWith<$Res> {
       String? photoUrl,
       String? classId,
       String? school,
+      String? schoolType,
+      String? grade,
+      String? faculty,
+      String? department,
+      String? course,
       DateTime createdAt});
 }
 
@@ -74,6 +84,11 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
     Object? photoUrl = freezed,
     Object? classId = freezed,
     Object? school = freezed,
+    Object? schoolType = freezed,
+    Object? grade = freezed,
+    Object? faculty = freezed,
+    Object? department = freezed,
+    Object? course = freezed,
     Object? createdAt = null,
   }) {
     return _then(_value.copyWith(
@@ -101,6 +116,26 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
           ? _value.school
           : school // ignore: cast_nullable_to_non_nullable
               as String?,
+      schoolType: freezed == schoolType
+          ? _value.schoolType
+          : schoolType // ignore: cast_nullable_to_non_nullable
+              as String?,
+      grade: freezed == grade
+          ? _value.grade
+          : grade // ignore: cast_nullable_to_non_nullable
+              as String?,
+      faculty: freezed == faculty
+          ? _value.faculty
+          : faculty // ignore: cast_nullable_to_non_nullable
+              as String?,
+      department: freezed == department
+          ? _value.department
+          : department // ignore: cast_nullable_to_non_nullable
+              as String?,
+      course: freezed == course
+          ? _value.course
+          : course // ignore: cast_nullable_to_non_nullable
+              as String?,
       createdAt: null == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -124,6 +159,11 @@ abstract class _$$UserModelImplCopyWith<$Res>
       String? photoUrl,
       String? classId,
       String? school,
+      String? schoolType,
+      String? grade,
+      String? faculty,
+      String? department,
+      String? course,
       DateTime createdAt});
 }
 
@@ -146,6 +186,11 @@ class __$$UserModelImplCopyWithImpl<$Res>
     Object? photoUrl = freezed,
     Object? classId = freezed,
     Object? school = freezed,
+    Object? schoolType = freezed,
+    Object? grade = freezed,
+    Object? faculty = freezed,
+    Object? department = freezed,
+    Object? course = freezed,
     Object? createdAt = null,
   }) {
     return _then(_$UserModelImpl(
@@ -173,6 +218,26 @@ class __$$UserModelImplCopyWithImpl<$Res>
           ? _value.school
           : school // ignore: cast_nullable_to_non_nullable
               as String?,
+      schoolType: freezed == schoolType
+          ? _value.schoolType
+          : schoolType // ignore: cast_nullable_to_non_nullable
+              as String?,
+      grade: freezed == grade
+          ? _value.grade
+          : grade // ignore: cast_nullable_to_non_nullable
+              as String?,
+      faculty: freezed == faculty
+          ? _value.faculty
+          : faculty // ignore: cast_nullable_to_non_nullable
+              as String?,
+      department: freezed == department
+          ? _value.department
+          : department // ignore: cast_nullable_to_non_nullable
+              as String?,
+      course: freezed == course
+          ? _value.course
+          : course // ignore: cast_nullable_to_non_nullable
+              as String?,
       createdAt: null == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -191,6 +256,11 @@ class _$UserModelImpl extends _UserModel {
       this.photoUrl,
       this.classId,
       this.school,
+      this.schoolType,
+      this.grade,
+      this.faculty,
+      this.department,
+      this.course,
       required this.createdAt})
       : super._();
 
@@ -210,11 +280,21 @@ class _$UserModelImpl extends _UserModel {
   @override
   final String? school;
   @override
+  final String? schoolType;
+  @override
+  final String? grade;
+  @override
+  final String? faculty;
+  @override
+  final String? department;
+  @override
+  final String? course;
+  @override
   final DateTime createdAt;
 
   @override
   String toString() {
-    return 'UserModel(uid: $uid, name: $name, email: $email, photoUrl: $photoUrl, classId: $classId, school: $school, createdAt: $createdAt)';
+    return 'UserModel(uid: $uid, name: $name, email: $email, photoUrl: $photoUrl, classId: $classId, school: $school, schoolType: $schoolType, grade: $grade, faculty: $faculty, department: $department, course: $course, createdAt: $createdAt)';
   }
 
   @override
@@ -229,6 +309,13 @@ class _$UserModelImpl extends _UserModel {
                 other.photoUrl == photoUrl) &&
             (identical(other.classId, classId) || other.classId == classId) &&
             (identical(other.school, school) || other.school == school) &&
+            (identical(other.schoolType, schoolType) ||
+                other.schoolType == schoolType) &&
+            (identical(other.grade, grade) || other.grade == grade) &&
+            (identical(other.faculty, faculty) || other.faculty == faculty) &&
+            (identical(other.department, department) ||
+                other.department == department) &&
+            (identical(other.course, course) || other.course == course) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt));
   }
@@ -236,7 +323,19 @@ class _$UserModelImpl extends _UserModel {
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
-      runtimeType, uid, name, email, photoUrl, classId, school, createdAt);
+      runtimeType,
+      uid,
+      name,
+      email,
+      photoUrl,
+      classId,
+      school,
+      schoolType,
+      grade,
+      faculty,
+      department,
+      course,
+      createdAt);
 
   /// Create a copy of UserModel
   /// with the given fields replaced by the non-null parameter values.
@@ -262,6 +361,11 @@ abstract class _UserModel extends UserModel {
       final String? photoUrl,
       final String? classId,
       final String? school,
+      final String? schoolType,
+      final String? grade,
+      final String? faculty,
+      final String? department,
+      final String? course,
       required final DateTime createdAt}) = _$UserModelImpl;
   const _UserModel._() : super._();
 
@@ -280,6 +384,16 @@ abstract class _UserModel extends UserModel {
   String? get classId;
   @override
   String? get school;
+  @override
+  String? get schoolType;
+  @override
+  String? get grade;
+  @override
+  String? get faculty;
+  @override
+  String? get department;
+  @override
+  String? get course;
   @override
   DateTime get createdAt;
 

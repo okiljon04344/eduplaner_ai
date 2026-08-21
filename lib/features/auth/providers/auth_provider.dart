@@ -60,6 +60,34 @@ class AuthNotifier extends AsyncNotifier<void> {
     state = await AsyncValue.guard(
         () => ref.read(authRepositoryProvider).signOut());
   }
+
+  /// Saves the mandatory school-profile fields, then invalidates
+  /// [authStateProvider] so it re-subscribes and re-reads the freshly
+  /// written Firestore doc — without this, [currentUserProvider] would keep
+  /// returning the pre-save (incomplete) model until the next unrelated
+  /// auth-state emission, and the router's profile-setup redirect wouldn't
+  /// clear until then.
+  Future<void> saveSchoolProfile({
+    required String schoolType,
+    required String schoolName,
+    String? grade,
+    String? faculty,
+    String? department,
+    String? course,
+  }) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      await ref.read(authRepositoryProvider).saveSchoolProfile(
+            schoolType: schoolType,
+            schoolName: schoolName,
+            grade: grade,
+            faculty: faculty,
+            department: department,
+            course: course,
+          );
+      ref.invalidate(authStateProvider);
+    });
+  }
 }
 
 /// Global provider for [AuthNotifier].

@@ -249,4 +249,35 @@ class AuthRepository {
   }
 
   String? get currentUid => _auth.currentUser?.uid;
+
+  /// Merges the mandatory school-profile fields into the current user's
+  /// Firestore doc. [grade]/[faculty]/[department]/[course] are optional —
+  /// blank strings are written as `null` so they render as "not set" rather
+  /// than an empty label.
+  Future<void> saveSchoolProfile({
+    required String schoolType,
+    required String schoolName,
+    String? grade,
+    String? faculty,
+    String? department,
+    String? course,
+  }) async {
+    final uid = _auth.currentUser?.uid;
+    if (uid == null) throw Exception(AppStrings.t('err_user_info_unavailable'));
+    String? blankToNull(String? v) => (v == null || v.trim().isEmpty) ? null : v.trim();
+    await _db.collection('users').doc(uid).set({
+      'schoolType': schoolType,
+      'school': schoolName.trim(),
+      'grade': blankToNull(grade),
+      'faculty': blankToNull(faculty),
+      'department': blankToNull(department),
+      'course': blankToNull(course),
+    }, SetOptions(merge: true));
+    // authStateStream memoizes the model per-uid (see field docs above) and
+    // only re-reads Firestore when the uid changes — this write wouldn't
+    // otherwise surface until the next unrelated userChanges() emission
+    // (token refresh, up to ~1h later). Forcing a re-read here is what makes
+    // the router's profileComplete redirect fire immediately after saving.
+    _cachedFromDoc = false;
+  }
 }

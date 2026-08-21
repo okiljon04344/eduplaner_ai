@@ -264,18 +264,17 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
                 const SizedBox(height: 12),
                 Text(AppStrings.t('fld_status'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
                 const SizedBox(height: 8),
-                Row(
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
                   children: AssignmentStatus.values.map((s) {
                     final selected = s == _status;
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: ChoiceChip(
-                        label: Text(s.label),
-                        selected: selected,
-                        onSelected: (_) => _onStatusChanged(s),
-                        selectedColor: AppColors.primary,
-                        labelStyle: TextStyle(color: selected ? Colors.white : AppColors.textPrimary, fontWeight: FontWeight.w500),
-                      ),
+                    return ChoiceChip(
+                      label: Text(s.label),
+                      selected: selected,
+                      onSelected: (_) => _onStatusChanged(s),
+                      selectedColor: AppColors.primary,
+                      labelStyle: TextStyle(color: selected ? Colors.white : AppColors.textPrimary, fontWeight: FontWeight.w500),
                     );
                   }).toList(),
                 ),

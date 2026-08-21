@@ -13,6 +13,11 @@ class UserModel with _$UserModel {
     String? photoUrl,
     String? classId,
     String? school,
+    String? schoolType,
+    String? grade,
+    String? faculty,
+    String? department,
+    String? course,
     required DateTime createdAt,
   }) = _UserModel;
 
@@ -27,11 +32,22 @@ class UserModel with _$UserModel {
       photoUrl: data['photoUrl'] as String?,
       classId: data['classId'] as String?,
       school: data['school'] as String?,
+      schoolType: data['schoolType'] as String?,
+      grade: data['grade'] as String?,
+      faculty: data['faculty'] as String?,
+      department: data['department'] as String?,
+      course: data['course'] as String?,
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }
 
   const UserModel._();
+
+  /// True once the mandatory school-profile setup step is done. `schoolType`
+  /// is the gate — it's only ever written together with `school` by
+  /// [AuthRepository.saveSchoolProfile], never independently, so checking it
+  /// alone is enough to know the whole step was completed.
+  bool get profileComplete => schoolType != null && schoolType!.isNotEmpty;
 
   Map<String, dynamic> toFirestore() => {
         'name': name,
@@ -39,6 +55,11 @@ class UserModel with _$UserModel {
         'photoUrl': photoUrl,
         'classId': classId,
         'school': school,
+        'schoolType': schoolType,
+        'grade': grade,
+        'faculty': faculty,
+        'department': department,
+        'course': course,
         'createdAt': Timestamp.fromDate(createdAt),
       };
 }
