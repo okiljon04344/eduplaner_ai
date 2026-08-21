@@ -12,6 +12,7 @@ import '../../../core/services/functions_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../shared/widgets/confirm_dialog.dart';
+import '../../auth/models/school_type.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../widgets/group_share_section.dart';
 
@@ -155,6 +156,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                 ],
               ),
+            ),
+            _SectionTitle(AppStrings.t('settings_school_info')),
+            _SettingsCard(
+              children: [
+                _SettingsRow(
+                  icon: Icons.school_outlined,
+                  iconColor: AppColors.primaryMid,
+                  title: (user?.school?.isNotEmpty ?? false) ? user!.school! : AppStrings.t('school_setup_title'),
+                  subtitle: SchoolType.fromKey(user?.schoolType)?.label,
+                  trailing: Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
+                  onTap: () => context.push('/profile-setup'),
+                ),
+              ],
             ),
             _SectionTitle(AppStrings.t('settings_section_ai')),
             _SettingsCard(

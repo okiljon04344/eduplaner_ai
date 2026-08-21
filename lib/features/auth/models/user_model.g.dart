@@ -14,6 +14,11 @@ _$UserModelImpl _$$UserModelImplFromJson(Map<String, dynamic> json) =>
       photoUrl: json['photoUrl'] as String?,
       classId: json['classId'] as String?,
       school: json['school'] as String?,
+      schoolType: json['schoolType'] as String?,
+      grade: json['grade'] as String?,
+      faculty: json['faculty'] as String?,
+      department: json['department'] as String?,
+      course: json['course'] as String?,
       createdAt: DateTime.parse(json['createdAt'] as String),
     );
 
@@ -25,5 +30,10 @@ Map<String, dynamic> _$$UserModelImplToJson(_$UserModelImpl instance) =>
       'photoUrl': instance.photoUrl,
       'classId': instance.classId,
       'school': instance.school,
+      'schoolType': instance.schoolType,
+      'grade': instance.grade,
+      'faculty': instance.faculty,
+      'department': instance.department,
+      'course': instance.course,
       'createdAt': instance.createdAt.toIso8601String(),
     };

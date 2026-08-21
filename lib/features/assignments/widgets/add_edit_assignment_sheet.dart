@@ -266,6 +266,11 @@ class _AddEditAssignmentSheetState extends ConsumerState<_AddEditAssignmentSheet
                     Text(AppStrings.t('fld_status'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
                     const SizedBox(height: 8),
                     SegmentedButton<AssignmentStatus>(
+                      showSelectedIcon: false,
+                      style: SegmentedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                      ),
                       segments: [
                         ButtonSegment(value: AssignmentStatus.notStarted, label: Text(AppStrings.t('status_not_started'))),
                         ButtonSegment(value: AssignmentStatus.inProgress, label: Text(AppStrings.t('status_in_progress'))),
