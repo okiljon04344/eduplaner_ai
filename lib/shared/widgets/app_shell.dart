@@ -44,12 +44,20 @@ class _DirectionalTab extends ConsumerStatefulWidget {
 
 class _DirectionalTabState extends ConsumerState<_DirectionalTab> {
   bool _goingRight = true;
+  // Bumped on every tab switch (even back to a previously-visited index) so
+  // the KeyedSubtree below is never reused across visits — AppColors' mutable
+  // statics don't flow through InheritedWidget, so a reused Element can paint
+  // stale colors picked up from before this tab was last hidden.
+  int _visitNonce = 0;
 
   @override
   Widget build(BuildContext context) {
     ref.listen<int>(shellTabIndexProvider, (prev, next) {
       if (prev != null && prev != next) {
-        setState(() => _goingRight = next > prev);
+        setState(() {
+          _goingRight = next > prev;
+          _visitNonce++;
+        });
       }
     });
 
@@ -68,7 +76,7 @@ class _DirectionalTabState extends ConsumerState<_DirectionalTab> {
           ),
         );
       },
-      child: KeyedSubtree(key: ValueKey(index), child: widget.child),
+      child: KeyedSubtree(key: ValueKey('${index}_$_visitNonce'), child: widget.child),
     );
   }
 }

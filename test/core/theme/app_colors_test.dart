@@ -26,7 +26,7 @@ void main() {
       // Text family
       expect(AppColors.textPrimary, const Color(0xFF1C1917));
       expect(AppColors.textSecondary, const Color(0xFF9CA3AF));
-      expect(AppColors.textMuted, const Color(0xFFA7F3D0));
+      expect(AppColors.textMuted, const Color(0xFFB0B7C3));
 
       // Borders / dividers
       expect(AppColors.border, const Color(0xFFE5E7EB));

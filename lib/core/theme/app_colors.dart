@@ -166,7 +166,7 @@ abstract class AppColors {
   static const lightBgLayer = Color(0xFFF0FDF9);
   static const lightTextPrimary = Color(0xFF1C1917);
   static const lightTextSecondary = Color(0xFF9CA3AF);
-  static const lightTextMuted = Color(0xFFA7F3D0);
+  static const lightTextMuted = Color(0xFFB0B7C3);
   static const lightBorder = Color(0xFFE5E7EB);
   static const lightBorderLight = Color(0xFFF3F4F6);
   static const lightCardBg = Color(0xFFFFFFFF);

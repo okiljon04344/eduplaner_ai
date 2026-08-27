@@ -70,7 +70,7 @@ class HomeScreen extends ConsumerWidget {
                   ),
                 ),
               ),
-              const SliverToBoxAdapter(child: _HeroHeader()),
+              SliverToBoxAdapter(child: KeyedSubtree(key: ValueKey(AppColors.brightness), child: const _HeroHeader())),
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16, 4, 16, 14),

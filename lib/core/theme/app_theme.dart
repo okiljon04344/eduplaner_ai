@@ -96,6 +96,7 @@ class AppTheme {
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
+          backgroundColor: Colors.transparent,
           side: const BorderSide(color: AppColors.primaryMid),
           foregroundColor: isDark ? AppColors.primaryLight : AppColors.primaryDark,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),

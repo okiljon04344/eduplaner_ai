@@ -21,8 +21,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   static List<_PageData> get _pages => [
     _PageData(
       icon: Icons.auto_awesome,
-      color: const Color(0xFF8B5CF6),
-      accentColor: const Color(0xFF6D28D9),
+      color: AppColors.blue,
+      accentColor: const Color(0xFF2563EB),
       title: AppStrings.t('onboard_1_title'),
       subtitle: AppStrings.t('onboard_1_sub'),
     ),
@@ -42,8 +42,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     ),
     _PageData(
       icon: Icons.smart_toy_outlined,
-      color: const Color(0xFFA855F7),
-      accentColor: const Color(0xFF7C3AED),
+      color: AppColors.amber,
+      accentColor: AppColors.amberDeep,
       title: AppStrings.t('onboard_4_title'),
       subtitle: AppStrings.t('onboard_4_sub'),
     ),
