@@ -183,7 +183,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ],
             ),
             _SectionTitle(AppStrings.t('set_class_share')),
-            const _SettingsCard(children: [GroupShareSection()]),
+            _SettingsCard(children: [GroupShareSection()]),
             _SectionTitle(AppStrings.t('settings_section_notifications')),
             _SettingsCard(
               children: [
