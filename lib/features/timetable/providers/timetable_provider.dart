@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
+import '../../../core/providers/clock_provider.dart';
 import '../../../core/services/notification_service.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../groups/providers/groups_provider.dart';
@@ -10,15 +12,22 @@ import '../repositories/timetable_repository.dart';
 
 /// Streams the current user's full timetable.
 ///
-/// When the user belongs to a study group the stream switches to the
-/// group's unified timetable (queried by `groupId`) instead of the user's
-/// personal classes.  The switch is reactive — joining or leaving a group
-/// automatically updates every listener of this provider.
+/// When the user belongs to a study group the stream is the union of the
+/// group's shared classes (queried by `groupId`) and the user's own personal
+/// classes, de-duplicated by id.  The switch is reactive — joining or leaving
+/// a group automatically updates every listener of this provider.
 final timetableStreamProvider = StreamProvider<List<ClassModel>>((ref) {
   final uid = ref.watch(currentUserProvider)?.uid;
   if (uid == null) return const Stream.empty();
   final groupId = ref.watch(myGroupProvider).valueOrNull?.id;
-  return ref.watch(timetableRepositoryProvider).watch(uid, groupId: groupId);
+  var synced = false;
+  return ref.watch(timetableRepositoryProvider).watch(uid, groupId: groupId).map((classes) {
+    if (!synced) {
+      synced = true;
+      unawaited(NotificationService.syncAllReminders(classes: classes));
+    }
+    return classes;
+  });
 });
 
 /// Transforms the flat class list into a `{dayOfWeek: {period: ClassModel}}`
@@ -37,7 +46,8 @@ final timetableGridProvider = Provider<Map<String, Map<int, ClassModel>>>((ref) 
 /// Returns an empty list on Saturday/Sunday (weekday > 5).
 final todayClassesProvider = Provider<List<ClassModel>>((ref) {
   final all = ref.watch(timetableStreamProvider).valueOrNull ?? [];
-  final wd = DateTime.now().weekday;
+  // Watching the clock re-evaluates this at each local midnight.
+  final wd = (ref.watch(todayProvider).valueOrNull ?? DateTime.now()).weekday;
   if (wd > 5) return [];
   final today = kWeekdayKanji[wd - 1];
   return all.where((c) => c.dayOfWeek == today).toList()
@@ -66,11 +76,17 @@ class TimetableNotifier extends AsyncNotifier<void> {
     required Future<void> Function() write,
     required String saveFailedKey,
   }) async {
-    final occupied = await _repo.slotOccupied(
-      _uid, model.dayOfWeek, model.period,
-      excludeId: excludeId,
-      groupId: groupId,
-    );
+    final bool occupied;
+    try {
+      occupied = await _repo.slotOccupied(
+        _uid, model.dayOfWeek, model.period,
+        excludeId: excludeId,
+        groupId: groupId,
+      );
+    } catch (e) {
+      debugPrint('Class slot check error: $e');
+      return AppStrings.t(saveFailedKey);
+    }
     if (occupied) {
       return AppStrings.t('err_slot_occupied', {'day': weekdayLabel(model.dayOfWeek), 'period': model.period});
     }
@@ -107,36 +123,55 @@ class TimetableNotifier extends AsyncNotifier<void> {
   /// Returns a localised error string on slot conflict or save failure,
   /// or `null` on success.
   Future<String?> updateClass(ClassModel model) async {
+    // Check against the group the user is in *now*. A class still tagged with
+    // a group the user has since left is detached first: querying that group
+    // would be rejected by the rules, and the row is theirs alone again.
+    final groupId = _groupId;
+    final toSave = model.groupId != null && model.groupId != groupId ? model.copyWith(groupId: null) : model;
     return _saveClass(
-      model: model,
-      excludeId: model.id,
-      groupId: model.groupId,
-      write: () => _repo.update(model),
+      model: toSave,
+      excludeId: toSave.id,
+      groupId: groupId,
+      write: () => _repo.update(toSave),
       saveFailedKey: 'err_class_update_failed',
     );
   }
 
   /// Deletes a class by [id].
-  Future<void> deleteClass(String id) async {
+  ///
+  /// Returns a localised error string on failure, or `null` on success.
+  Future<String?> deleteClass(String id) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() => _repo.delete(id));
+    if (state.hasError) return AppStrings.t('err_generic_retry');
+    try {
+      await NotificationService.cancelClassReminders(id);
+    } catch (e) {
+      debugPrint('Class reminder cancel error: $e');
+    }
+    return null;
   }
 
-  /// 休講・変更のアラート — marks [model] as cancelled/changed for today and,
-  /// if it's shared with a study group, triggers `onClassStatusChanged` in
-  /// functions/index.js to push-notify the other members.
+  /// 休講・変更のアラート — marks [model] as cancelled/changed for its next
+  /// occurrence (see [nextClassDate]) and, if it's shared with a study group,
+  /// triggers `onClassStatusChanged` in functions/index.js to push-notify the
+  /// other members. Passing [ClassStatus.normal] clears the alert.
   Future<String?> setStatus(
     ClassModel model, {
     required ClassStatus status,
     String? statusNote,
   }) async {
+    final statusDate = status == ClassStatus.normal
+        ? null
+        : nextClassDate(dayOfWeek: model.dayOfWeek, period: model.period);
     state = const AsyncLoading();
     state = await AsyncValue.guard(
       () => _repo.setStatus(
         model.id,
         status: status,
         statusNote: statusNote,
-        statusDate: DateTime.now(),
+        statusDate: statusDate,
+        reportedBy: _uid.isEmpty ? null : _uid,
       ),
     );
     return state.hasError ? AppStrings.t('err_class_status_update_failed') : null;

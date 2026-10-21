@@ -50,12 +50,28 @@ android {
 
     buildTypes {
         release {
+            // Debug-key fallback only for local release testing
+            // (ALLOW_DEBUG_SIGNING=true); otherwise key.properties is required.
             signingConfig = if (keystorePropertiesFile.exists()) {
                 signingConfigs.getByName("release")
             } else {
                 signingConfigs.getByName("debug")
             }
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
+    }
+}
+
+// Never ship a release build signed with the debug key by accident.
+gradle.taskGraph.whenReady {
+    val releaseRequested = allTasks.any { it.name.contains("Release", ignoreCase = false) }
+    if (releaseRequested && !keystorePropertiesFile.exists() && System.getenv("ALLOW_DEBUG_SIGNING") != "true") {
+        throw GradleException(
+            "Release build requires android/key.properties (storeFile, storePassword, keyAlias, keyPassword) " +
+                "pointing at the upload keystore. For local release testing only, set ALLOW_DEBUG_SIGNING=true."
+        )
     }
 }
 

@@ -8,8 +8,7 @@ import 'package:edu_planner_ai/features/auth/models/user_model.dart';
 /// in the test harness.
 class FakeAssignmentsRepository implements AssignmentsRepository {
   final List<AssignmentModel> initial;
-  final List<({String id, AssignmentStatus status})> statusCalls = [];
-  final List<({String id, double progress})> progressCalls = [];
+  final List<({String id, AssignmentStatus status, double progress})> statusProgressCalls = [];
   final List<AssignmentModel> addedModels = [];
   final List<AssignmentModel> updatedModels = [];
   final List<String> deletedIds = [];
@@ -29,13 +28,8 @@ class FakeAssignmentsRepository implements AssignmentsRepository {
   Future<void> delete(String id) async => deletedIds.add(id);
 
   @override
-  Future<void> updateStatus(String id, AssignmentStatus status) async {
-    statusCalls.add((id: id, status: status));
-  }
-
-  @override
-  Future<void> updateProgress(String id, double progress) async {
-    progressCalls.add((id: id, progress: progress));
+  Future<void> updateStatusAndProgress(String id, AssignmentStatus status, double progress) async {
+    statusProgressCalls.add((id: id, status: status, progress: progress));
   }
 
   @override

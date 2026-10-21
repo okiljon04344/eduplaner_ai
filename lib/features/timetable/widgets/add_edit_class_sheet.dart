@@ -39,6 +39,10 @@ class _AddEditClassSheetState extends ConsumerState<_AddEditClassSheet> {
 
   String? _selectedDay;
   int _selectedPeriod = 1;
+
+  /// True while a save is in flight — a second tap would pass the slot check
+  /// before the first write lands and create a duplicate class.
+  bool _saving = false;
   Color _selectedColor = AppColors.primary;
 
   @override
@@ -66,7 +70,9 @@ class _AddEditClassSheetState extends ConsumerState<_AddEditClassSheet> {
   }
 
   Future<void> _saveClass() async {
+    if (_saving) return;
     if (!(_formKey.currentState?.validate() ?? false)) return;
+    setState(() => _saving = true);
     final existing = widget.existing;
     final uid = existing?.userId ?? ref.read(currentUserProvider)?.uid ?? '';
     final colorHex = '#${_selectedColor.toARGB32().toRadixString(16).substring(2).toUpperCase()}';
@@ -97,7 +103,15 @@ class _AddEditClassSheetState extends ConsumerState<_AddEditClassSheet> {
         : await ref.read(timetableNotifierProvider.notifier).addClass(model);
     if (!mounted) return;
     if (error != null) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error)));
+      setState(() => _saving = false);
+      // A toast, not a SnackBar: the root Scaffold's SnackBar sits behind this sheet.
+      toastification.show(
+        context: context,
+        type: ToastificationType.error,
+        style: ToastificationStyle.flat,
+        title: Text(error),
+        autoCloseDuration: const Duration(seconds: 3),
+      );
       return;
     }
     Navigator.pop(context);
@@ -115,8 +129,18 @@ class _AddEditClassSheetState extends ConsumerState<_AddEditClassSheet> {
     if (existing == null) return;
     final ok = await showConfirmDialog(context, title: AppStrings.t('tt_delete_class'), message: AppStrings.t('tt_delete_confirm', {'subject': existing.subject}));
     if (!ok) return;
-    await ref.read(timetableNotifierProvider.notifier).deleteClass(existing.id);
+    final error = await ref.read(timetableNotifierProvider.notifier).deleteClass(existing.id);
     if (!mounted) return;
+    if (error != null) {
+      toastification.show(
+        context: context,
+        type: ToastificationType.error,
+        style: ToastificationStyle.flat,
+        title: Text(error),
+        autoCloseDuration: const Duration(seconds: 3),
+      );
+      return;
+    }
     Navigator.pop(context);
     toastification.show(
       context: context,
@@ -172,17 +196,19 @@ class _AddEditClassSheetState extends ConsumerState<_AddEditClassSheet> {
                   Text(AppStrings.t('fld_subject'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
                   const SizedBox(height: 6),
                   Autocomplete<String>(
+                    // Seeded once; fieldViewBuilder must not reassign the text
+                    // or every rebuild would move the cursor to the end.
+                    initialValue: TextEditingValue(text: _subjectController.text),
                     optionsBuilder: (value) {
                       if (value.text.isEmpty) return SubjectColors.all;
                       return SubjectColors.all.where((s) => s.contains(value.text));
                     },
                     onSelected: (value) => setState(() => _subjectController.text = value),
                     fieldViewBuilder: (context, controller, focusNode, onSubmit) {
-                      controller.text = _subjectController.text;
-                      controller.selection = TextSelection.collapsed(offset: controller.text.length);
                       return AppInputField(
                         controller: controller,
                         focusNode: focusNode,
+                        maxLength: 100,
                         hintText: AppStrings.t('fld_subject_hint'),
                         onChanged: (v) => _subjectController.text = v,
                         validator: (_) => _subjectController.text.trim().isEmpty ? AppStrings.t('val_subject_required') : null,
@@ -192,11 +218,11 @@ class _AddEditClassSheetState extends ConsumerState<_AddEditClassSheet> {
                   const SizedBox(height: 16),
                   Text(AppStrings.t('fld_teacher'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
                   const SizedBox(height: 6),
-                  AppInputField(controller: _teacherController, hintText: AppStrings.t('fld_teacher_hint')),
+                  AppInputField(controller: _teacherController, hintText: AppStrings.t('fld_teacher_hint'), maxLength: 100),
                   const SizedBox(height: 16),
                   Text(AppStrings.t('fld_room'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
                   const SizedBox(height: 6),
-                  AppInputField(controller: _roomController, hintText: AppStrings.t('fld_room_hint')),
+                  AppInputField(controller: _roomController, hintText: AppStrings.t('fld_room_hint'), maxLength: 100),
                   const SizedBox(height: 16),
                   Text(AppStrings.t('fld_day'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
                   const SizedBox(height: 8),
@@ -223,8 +249,8 @@ class _AddEditClassSheetState extends ConsumerState<_AddEditClassSheet> {
                               label,
                               style: TextStyle(
                                 fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                                color: selected ? Colors.white : AppColors.textPrimary,
+                                fontWeight: FontWeight.w700,
+                                color: selected ? AppColors.onPrimary : AppColors.textPrimary,
                               ),
                             ),
                           ),
@@ -286,9 +312,14 @@ class _AddEditClassSheetState extends ConsumerState<_AddEditClassSheet> {
                     ),
                   ],
                   const Padding(padding: EdgeInsets.symmetric(vertical: 24), child: Divider(height: 1)),
-                  ElevatedButton(
-                    onPressed: _saveClass,
-                    child: Text(existing != null ? AppStrings.t('btn_update') : AppStrings.t('btn_save')),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _saving ? null : _saveClass,
+                      child: _saving
+                          ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                          : Text(existing != null ? AppStrings.t('btn_update') : AppStrings.t('btn_save')),
+                    ),
                   ),
                 ],
               ),

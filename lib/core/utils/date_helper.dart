@@ -48,7 +48,7 @@ abstract class DateHelper {
     final firstDayOfYear = DateTime(dt.year, 1, 1);
     final daysOffset = firstDayOfYear.weekday - 1;
     final firstMonday = firstDayOfYear.subtract(Duration(days: daysOffset));
-    final diff = dt.difference(firstMonday).inDays;
+    final diff = daysBetween(dt, firstMonday);
     return (diff / 7).floor() + 1;
   }
 
@@ -62,20 +62,25 @@ abstract class DateHelper {
     return dt.year == now.year && dt.month == now.month && dt.day == now.day;
   }
 
-  static int daysUntil(DateTime dt) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final target = DateTime(dt.year, dt.month, dt.day);
-    return target.difference(today).inDays;
-  }
+  /// Whole calendar days from [b] to [a] (positive when [a] is later),
+  /// ignoring time of day. Both dates are projected onto UTC midnight first,
+  /// so a DST change between them can't make a 24h-based `inDays` come out
+  /// one day short (23h) or long (25h).
+  static int daysBetween(DateTime a, DateTime b) =>
+      DateTime.utc(a.year, a.month, a.day)
+          .difference(DateTime.utc(b.year, b.month, b.day))
+          .inDays;
+
+  static int daysUntil(DateTime dt) => daysBetween(dt, DateTime.now());
 
   static String dueDateLabel(DateTime dt) {
     final diff = daysUntil(dt);
     if (diff < 0) return AppStrings.t('due_overdue');
     if (diff == 0) return AppStrings.t('due_today');
-    if (diff == 1) return AppStrings.t('due_days_later', {'n': 1});
     if (diff < 7) return AppStrings.t('due_days_later', {'n': diff});
-    return AppStrings.t('due_week_later');
+    if (diff < 14) return AppStrings.t('due_week_later');
+    // Far-off dates show the date itself — "1 week later" would be wrong.
+    return DateFormat.MMMd(AppStrings.currentLocale).format(dt);
   }
 
   static Color dueDateColor(DateTime dt) {

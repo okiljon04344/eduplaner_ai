@@ -8,6 +8,7 @@ import '../../../shared/widgets/app_input_field.dart';
 import '../../../shared/widgets/lottie_helpers.dart';
 import '../../assignments/providers/assignments_provider.dart';
 import '../../timetable/providers/timetable_provider.dart';
+import '../../ai_chat/widgets/report_ai_content.dart';
 import '../models/quiz_question.dart';
 import '../providers/quiz_provider.dart';
 
@@ -24,7 +25,8 @@ class QuizScreen extends ConsumerStatefulWidget {
 class _QuizScreenState extends ConsumerState<QuizScreen> {
   final _subjectCtrl = TextEditingController(text: SubjectColors.all.first);
   final _topicCtrl = TextEditingController();
-  bool _useSearch = true;
+  // Off by default: each web-grounded quiz costs two AI calls.
+  bool _useSearch = false;
 
   @override
   void dispose() {
@@ -63,6 +65,18 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
         title: Text(AppStrings.t('quiz_title')),
         backgroundColor: AppColors.background,
         elevation: 0,
+        actions: [
+          if ((quizState.valueOrNull ?? const <QuizQuestion>[]).isNotEmpty)
+            IconButton(
+              tooltip: AppStrings.t('ai_report_title'),
+              icon: const Icon(Icons.outlined_flag),
+              onPressed: () => confirmAndReportAiContent(
+                context,
+                kind: 'quiz',
+                excerpt: quizState.value!.map((q) => q.question).join('\n'),
+              ),
+            ),
+        ],
       ),
       body: SafeArea(
         child: Column(
@@ -136,14 +150,15 @@ class _ConfigPanel extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Autocomplete<String>(
+            // Seeded once; fieldViewBuilder must not reassign the text
+            // or every rebuild would move the cursor to the end.
+            initialValue: TextEditingValue(text: subjectCtrl.text),
             optionsBuilder: (value) {
               if (value.text.isEmpty) return subjectSuggestions;
               return subjectSuggestions.where((s) => s.contains(value.text));
             },
             onSelected: (value) => subjectCtrl.text = value,
             fieldViewBuilder: (context, controller, focusNode, onSubmit) {
-              controller.text = subjectCtrl.text;
-              controller.selection = TextSelection.collapsed(offset: controller.text.length);
               return AppInputField(
                 controller: controller,
                 focusNode: focusNode,
@@ -192,7 +207,7 @@ class _ConfigPanel extends StatelessWidget {
             child: ElevatedButton.icon(
               onPressed: isLoading ? null : onGenerate,
               icon: isLoading
-                  ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  ? SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.textSecondary))
                   : const Icon(Icons.auto_awesome, size: 18),
               label: Text(isLoading ? AppStrings.t('quiz_generating') : AppStrings.t('quiz_generate_btn')),
             ),
@@ -365,7 +380,7 @@ class _QuizCardState extends State<_QuizCard> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(Icons.lightbulb_outline, size: 16, color: AppColors.primaryMid),
+                  Icon(Icons.lightbulb_outline, size: 16, color: AppColors.accentText),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(widget.question.explanation, style: TextStyle(fontSize: 12, height: 1.5, color: AppColors.textSecondary)),

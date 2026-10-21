@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 /// Thin animated progress bar used inside [AssignmentCard].
-/// Height 5, radius 3, width animates via [TweenAnimationBuilder] whenever
+/// Height 5, radius 3, width animates via [AnimatedFractionallySizedBox] whenever
 /// [progress] changes (e.g. after a status/progress update).
 class ProgressBarRow extends StatelessWidget {
   final double progress;
@@ -15,15 +15,13 @@ class ProgressBarRow extends StatelessWidget {
       child: Stack(
         children: [
           Container(height: 5, decoration: const BoxDecoration(color: Color(0x0FFFFFFF))),
-          TweenAnimationBuilder<double>(
-            tween: Tween(begin: 0, end: progress.clamp(0.0, 1.0)),
-            duration: const Duration(milliseconds: 500),
-            curve: Curves.easeOutExpo,
-            builder: (context, value, child) => FractionallySizedBox(
-              widthFactor: value,
-              alignment: Alignment.centerLeft,
-              child: Container(height: 5, color: color),
-            ),
+          // Implicit animation: animates only on value change, not from 0 on first build.
+          AnimatedFractionallySizedBox(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOutCubic,
+            alignment: AlignmentDirectional.centerStart,
+            widthFactor: progress.clamp(0.0, 1.0),
+            child: Container(height: 5, color: color),
           ),
         ],
       ),

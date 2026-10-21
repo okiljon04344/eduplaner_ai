@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/services/notification_service.dart';
+import '../../../core/utils/date_helper.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../models/assignment_model.dart';
 
@@ -19,7 +21,14 @@ const _kMaxAssignmentFileBytes = 10 * 1024 * 1024;
 final assignmentsStreamProvider = StreamProvider<List<AssignmentModel>>((ref) {
   final uid = ref.watch(currentUserProvider)?.uid;
   if (uid == null) return const Stream.empty();
-  return ref.watch(assignmentsRepositoryProvider).watch(uid);
+  var synced = false;
+  return ref.watch(assignmentsRepositoryProvider).watch(uid).map((assignments) {
+    if (!synced) {
+      synced = true;
+      unawaited(NotificationService.syncAllReminders(assignments: assignments));
+    }
+    return assignments;
+  });
 });
 
 /// Currently active status filter on the assignments screen.
@@ -52,12 +61,13 @@ final filteredAssignmentsProvider = Provider<List<AssignmentModel>>((ref) {
 final weeklyProgressProvider = Provider<({int completed, int total})>((ref) {
   final all = ref.watch(assignmentsStreamProvider).valueOrNull ?? [];
   final now = DateTime.now();
-  final startOfWeek = DateTime(now.year, now.month, now.day)
-      .subtract(Duration(days: now.weekday - 1));
+  // Calendar arithmetic (not Duration): Monday 00:00 .. next Monday 00:00,
+  // correct across DST changes.
+  final start = DateTime(now.year, now.month, now.day - (now.weekday - 1));
+  final end = DateTime(start.year, start.month, start.day + 7);
   final weekAssignments = all.where((a) {
     final due = a.dueDate;
-    return due.isAfter(startOfWeek.subtract(const Duration(days: 1))) &&
-        due.isBefore(startOfWeek.add(const Duration(days: 7)));
+    return !due.isBefore(start) && due.isBefore(end);
   }).toList();
   final completed =
       weekAssignments.where((a) => a.status == AssignmentStatus.completed).length;
@@ -65,24 +75,32 @@ final weeklyProgressProvider = Provider<({int completed, int total})>((ref) {
 });
 
 /// The next 3 incomplete assignments — shown on the home screen quick-view.
+///
+/// Only items due within the last 7 days or later are considered, so ancient
+/// overdue leftovers can't crowd out the real upcoming work.
 final upcomingAssignmentsProvider = Provider<List<AssignmentModel>>((ref) {
   final all = ref.watch(assignmentsStreamProvider).valueOrNull ?? [];
-  return all.where((a) => a.status != AssignmentStatus.completed).take(3).toList();
+  final now = DateTime.now();
+  final upcoming = all
+      .where((a) =>
+          a.status != AssignmentStatus.completed &&
+          DateHelper.daysBetween(a.dueDate, now) >= -7)
+      .toList()
+    ..sort((a, b) => a.dueDate.compareTo(b.dueDate));
+  return upcoming.take(3).toList();
 });
 
-/// How many incomplete assignments are due within the next 3 days.
+/// How many incomplete assignments are overdue or due within the next 3 days.
 ///
 /// Used to show an urgent badge count in the nav bar.
 final urgentAssignmentsCountProvider = Provider<int>((ref) {
   final all = ref.watch(assignmentsStreamProvider).valueOrNull ?? [];
   final now = DateTime.now();
-  final today = DateTime(now.year, now.month, now.day);
-  return all.where((a) {
-    if (a.status == AssignmentStatus.completed) return false;
-    final due = DateTime(a.dueDate.year, a.dueDate.month, a.dueDate.day);
-    final daysLeft = due.difference(today).inDays;
-    return daysLeft >= 0 && daysLeft <= 3;
-  }).length;
+  return all
+      .where((a) =>
+          a.status != AssignmentStatus.completed &&
+          DateHelper.daysBetween(a.dueDate, now) <= 3)
+      .length;
 });
 
 /// Handles all assignment write operations and AI-check integration.
@@ -101,47 +119,82 @@ class AssignmentsNotifier extends AsyncNotifier<void> {
     }
   }
 
-  /// Creates a new assignment and schedules due-date reminders.
-  Future<void> add(AssignmentModel model) async {
+  /// Runs [write], returning `null` on success or the localized generic
+  /// retry message on failure (after logging) — callers show the message in
+  /// an error toast and keep their UI open.
+  Future<String?> _guarded(Future<void> Function() write, String label) async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(
-        () => ref.read(assignmentsRepositoryProvider).add(model));
-    if (!state.hasError) {
+    state = await AsyncValue.guard(write);
+    if (state.hasError) {
+      debugPrint('$label error: ${state.error}');
+      return AppStrings.t('err_generic_retry');
+    }
+    return null;
+  }
+
+  /// Creates a new assignment and schedules due-date reminders.
+  ///
+  /// Returns `null` on success, otherwise an error message to show.
+  Future<String?> add(AssignmentModel model) async {
+    final error = await _guarded(() => ref.read(assignmentsRepositoryProvider).add(model), 'Assignment add');
+    if (error == null) {
       await _safeNotify(() => NotificationService.scheduleAssignmentReminders(model), 'Assignment reminder schedule');
     }
+    return error;
   }
 
   /// Updates an existing assignment and reschedules its reminders.
-  Future<void> updateAssignment(AssignmentModel model) async {
-    state = const AsyncLoading();
-    state = await AsyncValue.guard(
-        () => ref.read(assignmentsRepositoryProvider).update(model));
-    if (!state.hasError) {
+  ///
+  /// Returns `null` on success, otherwise an error message to show.
+  Future<String?> updateAssignment(AssignmentModel model) async {
+    final error = await _guarded(() => ref.read(assignmentsRepositoryProvider).update(model), 'Assignment update');
+    if (error == null) {
       await _safeNotify(() => NotificationService.scheduleAssignmentReminders(model), 'Assignment reminder schedule');
     }
+    return error;
   }
 
   /// Deletes an assignment and cancels its pending notifications.
-  Future<void> delete(String id) async {
-    state = const AsyncLoading();
-    state = await AsyncValue.guard(
-        () => ref.read(assignmentsRepositoryProvider).delete(id));
-    await _safeNotify(() => NotificationService.cancelAssignmentReminders(id), 'Assignment reminder cancel');
-  }
-
-  /// Updates only the status field of an assignment.
   ///
-  /// Cancels pending reminders when the assignment is marked completed.
-  Future<void> updateStatus(String id, AssignmentStatus status) async {
-    await ref.read(assignmentsRepositoryProvider).updateStatus(id, status);
-    if (status == AssignmentStatus.completed) {
+  /// Returns `null` on success, otherwise an error message to show.
+  Future<String?> delete(String id) async {
+    final error = await _guarded(() => ref.read(assignmentsRepositoryProvider).delete(id), 'Assignment delete');
+    if (error == null) {
       await _safeNotify(() => NotificationService.cancelAssignmentReminders(id), 'Assignment reminder cancel');
     }
+    return error;
   }
 
-  /// Updates only the progress percentage (0.0–1.0) of an assignment.
-  Future<void> updateProgress(String id, double progress) async {
-    await ref.read(assignmentsRepositoryProvider).updateProgress(id, progress);
+  /// Sets [status] on [model] and writes it together with the progress that
+  /// goes with it (see [AssignmentModel.withStatus]).
+  ///
+  /// Returns `null` on success, otherwise an error message to show.
+  Future<String?> updateStatus(AssignmentModel model, AssignmentStatus status) =>
+      _writeStatusProgress(model, model.withStatus(status));
+
+  /// Sets the progress (0.0–1.0) of [model] and writes it together with the
+  /// status derived from it (see [AssignmentModel.withProgress]).
+  ///
+  /// Returns `null` on success, otherwise an error message to show.
+  Future<String?> updateProgress(AssignmentModel model, double progress) =>
+      _writeStatusProgress(model, model.withProgress(progress));
+
+  /// Persists [next]'s status + progress in one Firestore update and keeps
+  /// reminders in step: cancelled when it becomes completed, rescheduled when
+  /// it leaves completed.
+  Future<String?> _writeStatusProgress(AssignmentModel previous, AssignmentModel next) async {
+    try {
+      await ref.read(assignmentsRepositoryProvider).updateStatusAndProgress(next.id, next.status, next.progress);
+    } catch (e) {
+      debugPrint('Assignment status/progress error: $e');
+      return AppStrings.t('err_generic_retry');
+    }
+    if (next.status == AssignmentStatus.completed) {
+      await _safeNotify(() => NotificationService.cancelAssignmentReminders(next.id), 'Assignment reminder cancel');
+    } else if (previous.status == AssignmentStatus.completed) {
+      await _safeNotify(() => NotificationService.scheduleAssignmentReminders(next), 'Assignment reminder schedule');
+    }
+    return null;
   }
 
   /// 課題の自動チェック — base64-encodes a file picked by the user and sends it

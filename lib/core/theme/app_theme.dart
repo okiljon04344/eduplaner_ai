@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
 
 /// EduPlanner AI dizayn tizimi (Green Neon).
@@ -28,7 +27,9 @@ class AppTheme {
     final cardBorder = isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder;
 
     final base = ThemeData(brightness: brightness);
-    final textTheme = GoogleFonts.plusJakartaSansTextTheme(base.textTheme).apply(
+    final textTheme = base.textTheme.apply(
+      fontFamily: 'Plus Jakarta Sans',
+      fontFamilyFallback: const ['NotoSansJP'],
       bodyColor: textPrimary,
       displayColor: textPrimary,
     );
@@ -61,7 +62,7 @@ class AppTheme {
         scrolledUnderElevation: 0,
         centerTitle: true,
         systemOverlayStyle: isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
-        titleTextStyle: GoogleFonts.plusJakartaSans(
+        titleTextStyle: TextStyle(fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP'], 
           fontSize: 18, fontWeight: FontWeight.w800, color: textPrimary,
         ),
         iconTheme: IconThemeData(color: textPrimary),
@@ -88,11 +89,14 @@ class AppTheme {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primaryMid,
-          foregroundColor: Colors.white,
+          foregroundColor: AppColors.onPrimary,
           elevation: 0,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          textStyle: GoogleFonts.plusJakartaSans(fontSize: 15, fontWeight: FontWeight.w700),
+          textStyle: const TextStyle(fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: ['NotoSansJP'], fontSize: 15, fontWeight: FontWeight.w700),
         ),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(foregroundColor: AppColors.onPrimary),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
@@ -104,13 +108,13 @@ class AppTheme {
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: AppColors.primaryLight,
-          textStyle: GoogleFonts.plusJakartaSans(fontSize: 13, fontWeight: FontWeight.w600),
+          foregroundColor: isDark ? AppColors.primaryLight : const Color(0xFF047857),
+          textStyle: const TextStyle(fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: ['NotoSansJP'], fontSize: 13, fontWeight: FontWeight.w600),
         ),
       ),
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
         backgroundColor: background,
-        selectedItemColor: AppColors.primaryLight,
+        selectedItemColor: isDark ? AppColors.primaryLight : const Color(0xFF047857),
         unselectedItemColor: textMuted,
         type: BottomNavigationBarType.fixed,
         elevation: 0,

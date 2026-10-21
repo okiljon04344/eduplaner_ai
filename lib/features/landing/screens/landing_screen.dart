@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/l10n/app_strings.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/language_picker_button.dart';
 
 class LandingScreen extends StatefulWidget {
@@ -21,12 +22,24 @@ class _LandingScreenState extends State<LandingScreen>
   @override
   void initState() {
     super.initState();
-    _bgCtrl = AnimationController(vsync: this, duration: const Duration(seconds: 12))
-      ..repeat();
-    _floatCtrl = AnimationController(vsync: this, duration: const Duration(seconds: 4))
-      ..repeat(reverse: true);
-    _pulseCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 1800))
-      ..repeat(reverse: true);
+    _bgCtrl = AnimationController(vsync: this, duration: const Duration(seconds: 12));
+    _floatCtrl = AnimationController(vsync: this, duration: const Duration(seconds: 4));
+    _pulseCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 1800));
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Reduce-motion: leave the controllers stopped at their resting value (0).
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _bgCtrl.stop();
+      _floatCtrl.stop();
+      _pulseCtrl.stop();
+    } else {
+      if (!_bgCtrl.isAnimating) _bgCtrl.repeat();
+      if (!_floatCtrl.isAnimating) _floatCtrl.repeat(reverse: true);
+      if (!_pulseCtrl.isAnimating) _pulseCtrl.repeat(reverse: true);
+    }
   }
 
   @override
@@ -157,25 +170,28 @@ class _NavBar extends StatelessWidget {
             ),
             child: const Icon(Icons.auto_awesome, size: 18, color: Colors.white),
           )
-              .animate(onPlay: (c) => c.repeat(reverse: true))
+              .animate(onPlay: (c) => MediaQuery.disableAnimationsOf(context) ? c.stop() : c.repeat(reverse: true))
               .shimmer(duration: 2400.ms, color: Colors.white.withValues(alpha: 0.15)),
           const SizedBox(width: 10),
           // Expanded (not Flexible+Spacer) so the wordmark claims the *entire*
-          // leftover width instead of splitting it 50/50 with a sibling
-          // Spacer — otherwise it ellipsizes on phones far before it needs to.
+          // leftover width; scaleDown (not ellipsis) keeps the brand whole when
+          // a long localized CTA (de/ru/vi) leaves less room on phones.
           const Expanded(
-            child: Text(
-              'EduPlanner AI',
-              overflow: TextOverflow.ellipsis,
-              maxLines: 1,
-              softWrap: false,
-              style: TextStyle(
-                fontSize: 16, fontWeight: FontWeight.w800, color: Colors.white,
-                fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: ['NotoSansJP'],
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: AlignmentDirectional.centerStart,
+              child: Text(
+                'EduPlanner AI',
+                maxLines: 1,
+                softWrap: false,
+                style: TextStyle(
+                  fontSize: 16, fontWeight: FontWeight.w800, color: Colors.white,
+                  fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: ['NotoSansJP'],
+                ),
               ),
             ),
           ),
-          const LanguagePickerButton(),
+          const LanguagePickerButton(color: Colors.white),
           const SizedBox(width: 12),
           // The hero section right below already repeats both the login and
           // signup CTAs prominently, so on narrow phones the nav bar only
@@ -195,10 +211,19 @@ class _NavBar extends StatelessWidget {
             ),
             const SizedBox(width: 8),
           ],
-          _GlowButton(
-            label: AppStrings.t('landing_cta_signup'),
-            small: !isDesktop,
-            onTap: () => context.push('/login'),
+          // Capped on phones so a long translation ("Commencer gratuitement")
+          // shrinks the button instead of squeezing the wordmark; dropped
+          // under 360dp, where the hero CTAs right below are enough.
+          if (isDesktop || MediaQuery.sizeOf(context).width >= 360) ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: isDesktop ? double.infinity : 140),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: _GlowButton(
+                label: AppStrings.t('landing_cta_signup'),
+                small: !isDesktop,
+                onTap: () => context.push('/login'),
+              ),
+            ),
           ),
         ],
       ),
@@ -369,11 +394,14 @@ class _HeroText extends StatelessWidget {
               child: Icon(Icons.star, size: 14, color: Color(0xFFFBBF24)),
             )),
             const SizedBox(width: 8),
-            Text(
-              AppStrings.t('social_proof'),
-              style: TextStyle(
-                fontSize: 11, color: Colors.white.withValues(alpha: 0.4),
-                fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP'],
+            // Flexible: long translations wrap instead of being clipped.
+            Flexible(
+              child: Text(
+                AppStrings.t('social_proof'),
+                style: TextStyle(
+                  fontSize: 11, color: Colors.white.withValues(alpha: 0.4),
+                  fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP'],
+                ),
               ),
             ),
           ],
@@ -395,10 +423,11 @@ class _GradientTitle extends StatelessWidget {
       ).createShader(bounds),
       child: Text(
         AppStrings.t('landing_title'),
-        style: const TextStyle(
-          fontSize: 46, fontWeight: FontWeight.w900,
+        style: TextStyle(
+          // 28 under 360dp: ja's first line (学習をスマートに、) must fit a 320dp phone.
+          fontSize: switch (MediaQuery.sizeOf(context).width) { < 360 => 28, < 600 => 34, _ => 46 }, fontWeight: FontWeight.w900,
           color: Colors.white, height: 1.15, letterSpacing: -1.2,
-          fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: ['NotoSansJP'],
+          fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP'],
         ),
       ),
     );
@@ -765,7 +794,7 @@ class _CtaSection extends StatelessWidget {
         children: [
           const Text('✦', style: TextStyle(fontSize: 28))
               .animate().fadeIn(duration: 500.ms)
-              .animate(onPlay: (c) => c.repeat(reverse: true))
+              .animate(onPlay: (c) => MediaQuery.disableAnimationsOf(context) ? c.stop() : c.repeat(reverse: true))
               .scaleXY(begin: 0.9, end: 1.1, duration: 1600.ms),
 
           const SizedBox(height: 14),
@@ -892,7 +921,7 @@ class _GlowButtonState extends State<_GlowButton> {
           child: Text(
             widget.label,
             style: TextStyle(
-              fontSize: fs, fontWeight: FontWeight.w700, color: Colors.white,
+              fontSize: fs, fontWeight: FontWeight.w700, color: AppColors.onPrimary,
               letterSpacing: 0.2,
               fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP'],
             ),

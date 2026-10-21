@@ -46,16 +46,20 @@ class GroupsNotifier extends AsyncNotifier<void> {
     return error;
   }
 
-  /// Removes the current user from [groupId].
+  /// Removes the current user from [group]: detaches their own classes, hands
+  /// ownership on if they are the owner, and deletes the group if they are the
+  /// last member (see [GroupsRepository.leaveGroup]).
   ///
   /// Done client-side: Firestore rules allow a member to remove only their
   /// own uid from `memberIds`.
-  Future<void> leaveGroup(String groupId) async {
+  /// Returns a localised error string on failure, or `null` on success.
+  Future<String?> leaveGroup(StudyGroupModel group) async {
     final uid = ref.read(currentUserProvider)?.uid;
-    if (uid == null) return;
+    if (uid == null) return AppStrings.t('err_login_required');
     state = const AsyncLoading();
     state = await AsyncValue.guard(
-        () => ref.read(groupsRepositoryProvider).leaveGroup(groupId, uid));
+        () => ref.read(groupsRepositoryProvider).leaveGroup(group, uid));
+    return state.hasError ? AppStrings.t('err_generic_retry') : null;
   }
 }
 

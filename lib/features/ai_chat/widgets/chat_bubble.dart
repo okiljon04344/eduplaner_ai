@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/l10n/app_strings.dart';
 import '../models/message_model.dart';
+import 'report_ai_content.dart';
 import 'typing_indicator.dart';
 
 const _kAiBorderColorDark = Color(0x3306D6A0); // rgba(6,214,160,.2)
@@ -14,31 +16,62 @@ class ChatBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isUser = message.role == MessageRole.user;
-    return Padding(
+    final canReport = !isUser && !message.isLoading && !message.isError;
+    final bubble = Padding(
       padding: const EdgeInsets.only(bottom: 14),
       child: Column(
         crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
-          isUser ? _buildUserBubble(context) : _buildAssistantBubble(context),
+          if (isUser)
+            _buildUserBubble(context)
+          else if (canReport)
+            GestureDetector(onLongPress: () => _report(context), child: _buildAssistantBubble(context))
+          else
+            _buildAssistantBubble(context),
           Padding(
             padding: EdgeInsets.only(top: 4, left: isUser ? 4 : 40, right: 4),
-            child: Text(
-              DateFormat('HH:mm').format(message.timestamp),
-              style: TextStyle(
-                fontFamily: 'Plus Jakarta Sans',
-                fontFamilyFallback: const ['NotoSansJP'],
-                fontSize: 10,
-                color: AppColors.textMuted,
-              ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  DateFormat('HH:mm').format(message.timestamp),
+                  style: TextStyle(
+                    fontFamily: 'Plus Jakarta Sans',
+                    fontFamilyFallback: const ['NotoSansJP'],
+                    fontSize: 10,
+                    color: AppColors.textMuted,
+                  ),
+                ),
+                if (canReport)
+                  IconButton(
+                    onPressed: () => _report(context),
+                    tooltip: AppStrings.t('ai_report_title'),
+                    icon: Icon(Icons.outlined_flag, size: 14, color: AppColors.textMuted),
+                    visualDensity: VisualDensity.compact,
+                    constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                    padding: EdgeInsets.zero,
+                  ),
+              ],
             ),
           ),
         ],
       ),
-    )
+    );
+    // Replaying the entry animation on rebuild/scroll-back causes scroll jank; animate only fresh messages.
+    if (DateTime.now().difference(message.timestamp) >= const Duration(seconds: 3)) return bubble;
+    return bubble
         .animate()
         .fadeIn(duration: 300.ms, curve: Curves.easeOutExpo)
         .slideY(begin: 0.12, end: 0, duration: 300.ms, curve: Curves.easeOutExpo);
   }
+
+  void _report(BuildContext context) => confirmAndReportAiContent(
+        context,
+        kind: 'chat',
+        botId: message.botId,
+        refId: message.id,
+        excerpt: message.content,
+      );
 
   Widget _buildUserBubble(BuildContext context) {
     return Align(
@@ -121,6 +154,21 @@ class ChatBubble extends StatelessWidget {
                       )
                     : SelectableText(
                         message.content,
+                        // SelectableText owns long-press (text selection), so the
+                        // report action is also offered in its context menu.
+                        contextMenuBuilder: (ctx, state) => AdaptiveTextSelectionToolbar.buttonItems(
+                          anchors: state.contextMenuAnchors,
+                          buttonItems: [
+                            ...state.contextMenuButtonItems,
+                            ContextMenuButtonItem(
+                              label: AppStrings.t('ai_report_title'),
+                              onPressed: () {
+                                state.hideToolbar();
+                                _report(context);
+                              },
+                            ),
+                          ],
+                        ),
                         style: TextStyle(
                           fontFamily: 'Plus Jakarta Sans',
                           fontFamilyFallback: const ['NotoSansJP'],

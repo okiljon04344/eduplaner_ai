@@ -4,7 +4,7 @@ import '../../../core/constants/subject_colors.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../models/assignment_model.dart';
-import '../providers/assignments_provider.dart';
+import 'assignment_actions.dart';
 import 'assignment_detail_sheet.dart';
 import 'progress_bar_row.dart';
 
@@ -12,27 +12,13 @@ class AssignmentCard extends ConsumerWidget {
   final AssignmentModel assignment;
   const AssignmentCard({super.key, required this.assignment});
 
-  void _toggleDone(WidgetRef ref) {
-    final next = assignment.status == AssignmentStatus.completed
-        ? AssignmentStatus.notStarted
-        : AssignmentStatus.completed;
-    ref.read(assignmentsNotifierProvider.notifier).updateStatus(assignment.id, next);
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isCompleted = assignment.status == AssignmentStatus.completed;
     final subjectStyle = SubjectColors.of(assignment.subject);
 
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0, end: 1),
-      duration: const Duration(milliseconds: 350),
-      curve: Curves.easeOutCubic,
-      builder: (context, value, child) => Opacity(
-        opacity: value,
-        child: Transform.translate(offset: Offset(0, (1 - value) * 14), child: child),
-      ),
-      child: GestureDetector(
+    // Entry tween removed: it replayed on every rebuild while scrolling (scroll jank).
+    return RepaintBoundary(child: GestureDetector(
         onTap: () => showAssignmentDetailSheet(context, ref, assignment),
         child: Container(
           clipBehavior: Clip.hardEdge,
@@ -66,7 +52,7 @@ class AssignmentCard extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     GestureDetector(
-                      onTap: () => _toggleDone(ref),
+                      onTap: () => toggleAssignmentDone(context, ref, assignment),
                       child: Container(
                         width: 28,
                         height: 28,
@@ -84,10 +70,10 @@ class AssignmentCard extends ConsumerWidget {
                           ),
                           gradient: isCompleted ? AppColors.gradientPrimary : null,
                           boxShadow: isCompleted && AppColors.isDark
-                              ? const [BoxShadow(color: Color(0x99A855F7), blurRadius: 12)]
+                              ? [BoxShadow(color: AppColors.primaryMid.withValues(alpha: 0.6), blurRadius: 12)]
                               : null,
                         ),
-                        child: isCompleted ? const Icon(Icons.check, size: 14, color: Colors.white) : null,
+                        child: isCompleted ? const Icon(Icons.check, size: 14, color: AppColors.onPrimary) : null,
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -161,7 +147,6 @@ class AssignmentCard extends ConsumerWidget {
             ],
           ),
         ),
-      ),
-    );
+      ));
   }
 }

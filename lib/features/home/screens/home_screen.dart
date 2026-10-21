@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/providers/locale_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/ambient_grid_background.dart';
 import '../providers/home_provider.dart';
@@ -25,51 +26,17 @@ class HomeScreen extends ConsumerWidget {
           SafeArea(
         bottom: false,
         child: RefreshIndicator(
-          color: AppColors.primaryLight,
+          color: AppColors.accentText,
           backgroundColor: AppColors.bgLayer,
           onRefresh: () async {
+            // Explicit user refresh: drop today's cached AI results so the
+            // providers below actually fetch instead of re-serving the cache.
+            await clearTodaysAiCache(ref.read(localeProvider));
             ref.invalidate(aiStudyTipProvider);
             ref.invalidate(weakAreaProvider);
           },
           child: CustomScrollView(
             slivers: [
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-                  child: Material(
-                    color: Colors.transparent,
-                    borderRadius: BorderRadius.circular(12),
-                    clipBehavior: Clip.antiAlias,
-                    child: Ink(
-                      decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [Color(0xFF059669), Color(0xFF06D6A0)],
-                        ),
-                      ),
-                      child: InkWell(
-                        onTap: () => context.push('/landing-preview'),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.play_circle_outline, size: 16, color: AppColors.textOnHero),
-                              const SizedBox(width: 8),
-                              Text(
-                                AppStrings.t('home_landing_banner'),
-                                style: TextStyle(
-                                  fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textOnHero,
-                                  fontFamily: 'Plus Jakarta Sans',
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
               SliverToBoxAdapter(child: KeyedSubtree(key: ValueKey(AppColors.brightness), child: const _HeroHeader())),
               SliverToBoxAdapter(
                 child: Padding(

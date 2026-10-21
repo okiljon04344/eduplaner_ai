@@ -8,9 +8,13 @@ import 'timeline_class_card.dart';
 
 /// Vertical timeline of classes for the currently selected day, with a
 /// fade+slide entrance whenever the day changes and a friendly empty state.
+///
+/// [weekStart] is the Monday of the displayed week; together with
+/// [selectedDay] it gives each card the exact date it is shown for.
 class ScheduleTimeline extends ConsumerWidget {
   final int selectedDay;
-  const ScheduleTimeline({super.key, required this.selectedDay});
+  final DateTime weekStart;
+  const ScheduleTimeline({super.key, required this.selectedDay, required this.weekStart});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -19,6 +23,7 @@ class ScheduleTimeline extends ConsumerWidget {
     // localized display label from DayTabRow.days — those diverge for any
     // non-Japanese locale and previously made every day render empty.
     final day = kWeekdayKanji[selectedDay];
+    final date = DateTime(weekStart.year, weekStart.month, weekStart.day + selectedDay);
     final dayClasses = classes.where((c) => c.dayOfWeek == day).toList()
       ..sort((a, b) => a.period.compareTo(b.period));
 
@@ -39,7 +44,7 @@ class ScheduleTimeline extends ConsumerWidget {
               key: ValueKey('list-$selectedDay'),
               padding: const EdgeInsets.fromLTRB(16, 14, 16, 24),
               itemCount: dayClasses.length,
-              itemBuilder: (context, index) => TimelineClassCard(classModel: dayClasses[index]),
+              itemBuilder: (context, index) => TimelineClassCard(classModel: dayClasses[index], date: date),
             ),
     );
   }

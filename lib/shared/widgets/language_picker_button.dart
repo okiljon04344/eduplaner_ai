@@ -28,14 +28,14 @@ class LanguagePickerButton extends ConsumerWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: () => _showLanguagePicker(context, ref, currentLocale),
+        onTap: () => showLanguagePicker(context, ref, currentLocale),
         borderRadius: BorderRadius.circular(20),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           decoration: BoxDecoration(
-            color: (color ?? Colors.white).withValues(alpha: 0.1),
+            color: (color ?? AppColors.textPrimary).withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: (color ?? Colors.white).withValues(alpha: 0.15)),
+            border: Border.all(color: (color ?? AppColors.textPrimary).withValues(alpha: 0.15)),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -48,7 +48,7 @@ class LanguagePickerButton extends ConsumerWidget {
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: color ?? Colors.white,
+                    color: color ?? AppColors.textPrimary,
                     fontFamily: 'Plus Jakarta Sans',
                   ),
                 ),
@@ -59,62 +59,65 @@ class LanguagePickerButton extends ConsumerWidget {
       ),
     );
   }
+}
 
-  void _showLanguagePicker(BuildContext context, WidgetRef ref, String currentLocale) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+/// Language picker sheet — shared by [LanguagePickerButton] and Settings.
+void showLanguagePicker(BuildContext context, WidgetRef ref, String currentLocale) {
+  showModalBottomSheet(
+    context: context,
+    backgroundColor: AppColors.surface,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+    ),
+    isScrollControlled: true,
+    builder: (ctx) => DraggableScrollableSheet(
+      // Opens at max size: on web a mouse wheel scrolls the list but never
+      // grows the sheet, which left the last languages out of reach at 0.7.
+      initialChildSize: 0.9,
+      minChildSize: 0.4,
+      maxChildSize: 0.9,
+      expand: false,
+      builder: (_, sc) => Column(
+        children: [
+          const SizedBox(height: 12),
+          Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: AppColors.border,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            AppStrings.t('settings_language'),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+          ),
+          const SizedBox(height: 8),
+          Expanded(
+            child: ListView.builder(
+              controller: sc,
+              itemCount: AppStrings.locales.length,
+              itemBuilder: (_, i) {
+                final (code, name, flag) = AppStrings.locales[i];
+                final isSelected = code == currentLocale;
+                return ListTile(
+                  leading: Text(flag, style: const TextStyle(fontSize: 24)),
+                  title: Text(name, style: TextStyle(
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
+                    color: isSelected ? AppColors.accentText : AppColors.textPrimary,
+                  )),
+                  trailing: isSelected ? Icon(Icons.check_rounded, color: AppColors.accentText) : null,
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    ref.read(localeProvider.notifier).setLocale(code);
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
-      isScrollControlled: true,
-      builder: (ctx) => DraggableScrollableSheet(
-        initialChildSize: 0.7,
-        minChildSize: 0.4,
-        maxChildSize: 0.9,
-        expand: false,
-        builder: (_, sc) => Column(
-          children: [
-            const SizedBox(height: 12),
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.border,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              AppStrings.t('settings_language'),
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
-            ),
-            const SizedBox(height: 8),
-            Expanded(
-              child: ListView.builder(
-                controller: sc,
-                itemCount: AppStrings.locales.length,
-                itemBuilder: (_, i) {
-                  final (code, name, flag) = AppStrings.locales[i];
-                  final isSelected = code == currentLocale;
-                  return ListTile(
-                    leading: Text(flag, style: const TextStyle(fontSize: 24)),
-                    title: Text(name, style: TextStyle(
-                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
-                      color: isSelected ? AppColors.primary : AppColors.textPrimary,
-                    )),
-                    trailing: isSelected ? const Icon(Icons.check_rounded, color: AppColors.primary) : null,
-                    onTap: () {
-                      Navigator.pop(ctx);
-                      ref.read(localeProvider.notifier).setLocale(code);
-                    },
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+    ),
+  );
 }

@@ -5,6 +5,7 @@ import 'package:toastification/toastification.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/confirm_dialog.dart';
+import '../../groups/models/study_group_model.dart';
 import '../../groups/providers/groups_provider.dart';
 
 /// "クラス全体での共有" — lets a student create or join a class-wide study
@@ -29,12 +30,12 @@ class GroupShareSection extends ConsumerWidget {
     _showToast(context, error ?? AppStrings.t('grp_joined'), isError: error != null);
   }
 
-  Future<void> _leaveGroup(BuildContext context, WidgetRef ref, String groupId) async {
+  Future<void> _leaveGroup(BuildContext context, WidgetRef ref, StudyGroupModel group) async {
     final ok = await showConfirmDialog(context, title: AppStrings.t('grp_leave'), message: AppStrings.t('grp_leave_msg'), confirmLabel: AppStrings.t('grp_leave_btn'));
     if (!ok) return;
-    await ref.read(groupsNotifierProvider.notifier).leaveGroup(groupId);
+    final error = await ref.read(groupsNotifierProvider.notifier).leaveGroup(group);
     if (!context.mounted) return;
-    _showToast(context, AppStrings.t('grp_left'));
+    _showToast(context, error ?? AppStrings.t('grp_left'), isError: error != null);
   }
 
   void _showToast(BuildContext context, String message, {bool isError = false}) {
@@ -107,7 +108,7 @@ class GroupShareSection extends ConsumerWidget {
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.groups_outlined, size: 18, color: AppColors.primary),
+                    Icon(Icons.groups_outlined, size: 18, color: AppColors.accentText),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(group.name, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
@@ -127,11 +128,11 @@ class GroupShareSection extends ConsumerWidget {
                     ),
                     child: Row(
                       children: [
-                        Text(group.code, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, letterSpacing: 2, color: AppColors.primary)),
+                        Text(group.code, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, letterSpacing: 2, color: AppColors.accentText)),
                         const Spacer(),
-                        const Icon(Icons.copy_rounded, size: 15, color: AppColors.primary),
+                        Icon(Icons.copy_rounded, size: 15, color: AppColors.accentText),
                         const SizedBox(width: 4),
-                        Text(AppStrings.t('common_copy'), style: const TextStyle(fontSize: 11, color: AppColors.primary)),
+                        Text(AppStrings.t('common_copy'), style: TextStyle(fontSize: 11, color: AppColors.accentText)),
                       ],
                     ),
                   ),
@@ -140,7 +141,7 @@ class GroupShareSection extends ConsumerWidget {
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
-                    onPressed: () => _leaveGroup(context, ref, group.id),
+                    onPressed: () => _leaveGroup(context, ref, group),
                     child: Text(AppStrings.t('grp_leave'), style: const TextStyle(color: AppColors.danger, fontSize: 12)),
                   ),
                 ),

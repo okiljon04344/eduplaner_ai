@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
@@ -65,6 +66,8 @@ class _ChatInputBarState extends ConsumerState<ChatInputBar> {
                 focusNode: _focusNode,
                 minLines: 1,
                 maxLines: 4,
+                // Matches the server-side cap in `chatWithTutor`.
+                inputFormatters: [LengthLimitingTextInputFormatter(4000)],
                 onChanged: (v) => setState(() => _hasText = v.trim().isNotEmpty),
                 onSubmitted: (_) => _send(),
                 textInputAction: TextInputAction.send,
@@ -110,7 +113,7 @@ class _ChatInputBarState extends ConsumerState<ChatInputBar> {
                     BoxShadow(color: AppColors.primaryMid.withValues(alpha: 0.6), blurRadius: 20),
                   ],
                 ),
-                child: const Icon(Icons.send_rounded, size: 18, color: Colors.white),
+                child: const Icon(Icons.send_rounded, size: 18, color: AppColors.onPrimary),
               ),
             ),
           ),

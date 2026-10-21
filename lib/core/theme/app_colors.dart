@@ -112,7 +112,7 @@ abstract class AppColors {
   static const darkBgLayer = Color(0xFF241C10);
   static const darkTextPrimary = Color(0xFFFFF3E8);
   static const darkTextSecondary = Color(0x80D1FAE5);
-  static const darkTextMuted = Color(0x40D1FAE5);
+  static const darkTextMuted = Color(0x6ED1FAE5);
   static const darkBorder = Color(0x12FFFFFF);
   static const darkBorderLight = Color(0x0CFFFFFF);
   static const darkCardBg = Color(0x0AFFFFFF);
@@ -165,8 +165,8 @@ abstract class AppColors {
   static const lightBgInput = Color(0xFFFFFFFF);
   static const lightBgLayer = Color(0xFFF0FDF9);
   static const lightTextPrimary = Color(0xFF1C1917);
-  static const lightTextSecondary = Color(0xFF9CA3AF);
-  static const lightTextMuted = Color(0xFFB0B7C3);
+  static const lightTextSecondary = Color(0xFF6B7280);
+  static const lightTextMuted = Color(0xFF7A818D);
   static const lightBorder = Color(0xFFE5E7EB);
   static const lightBorderLight = Color(0xFFF3F4F6);
   static const lightCardBg = Color(0xFFFFFFFF);
@@ -215,6 +215,10 @@ abstract class AppColors {
 
   // ==================== Brand/accent (shared) ====================
   static const primary = Color(0xFF06D6A0);
+
+  /// Label/icon color for content drawn ON primary/gradientPrimary fills —
+  /// white on #06D6A0 is only 1.89:1.
+  static const onPrimary = Color(0xFF04291F);
   static const primaryMid = Color(0xFF34D399);
   static const primaryLight = Color(0xFF5EEAD4);
   static const primaryDark = Color(0xFF059669);
@@ -315,7 +319,7 @@ abstract class AppColors {
   static Color get aiGrad2 => isDark ? const Color(0xFF2A1B0C) : const Color(0xFFD1FAE5);
 
   /// Small accent links/timestamps needing extra pop (`accent-text` token).
-  static Color get accentText => isDark ? const Color(0xFF06D6A0) : const Color(0xFF059669);
+  static Color get accentText => isDark ? const Color(0xFF06D6A0) : const Color(0xFF047857);
 
   /// Vibrant green-toned brand panel background (login/onboarding hero
   /// panels) — deliberately distinct from [aiBannerGradient]/[gradientDark],

@@ -60,11 +60,33 @@ class ChatRepository {
       if (e.code == 'unauthenticated') {
         throw Exception(AppStrings.t('err_login_required'));
       }
-      if (e.code == 'deadline-exceeded' || e.code == 'unavailable') {
+      if (e.code == 'deadline-exceeded' || e.code == 'unavailable' || e.code == 'resource-exhausted') {
         throw Exception(FunctionsService.describeError(e));
       }
       throw Exception(AppStrings.t('err_ai_connection_failed'));
     }
+  }
+
+  /// Files a report of AI-generated content in `ai_reports` (write-only from
+  /// the client; reviewed in the Firebase console). [excerpt] is trimmed to
+  /// 1000 chars to match the Firestore rule. Throws on failure so the caller
+  /// can tell the user.
+  Future<void> reportAiContent({
+    required String userId,
+    required String kind,
+    String? botId,
+    String? refId,
+    required String excerpt,
+  }) {
+    final text = excerpt.length > 1000 ? excerpt.substring(0, 1000) : excerpt;
+    return _db.collection('ai_reports').add({
+      'userId': userId,
+      'kind': kind,
+      'botId': botId,
+      'refId': refId,
+      'excerpt': text,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
   }
 
   /// Writes a single [MessageModel] to Firestore.

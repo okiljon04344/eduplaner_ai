@@ -43,7 +43,7 @@
               "client_id": "351731284172-2gu8a8lmf6gadhmhoon4b4p01i06e4do.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.example.eduplannerAi"
+                "bundle_id": "com.eduplanner.app"
               }
             }
           ]
@@ -87,7 +87,7 @@
               "client_id": "351731284172-2gu8a8lmf6gadhmhoon4b4p01i06e4do.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.example.eduplannerAi"
+                "bundle_id": "com.eduplanner.app"
               }
             }
           ]

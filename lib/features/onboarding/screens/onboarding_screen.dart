@@ -172,13 +172,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         child: Center(
                           child: Text(
                             _page < _pages.length - 1 ? AppStrings.t('onboard_next') : AppStrings.t('onboard_start'),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
-                              color: Colors.white,
+                              color: _onColor(_pages[_page].accentColor),
                               letterSpacing: 0.3,
                               fontFamily: 'Plus Jakarta Sans',
-                              fontFamilyFallback: ['NotoSansJP'],
+                              fontFamilyFallback: const ['NotoSansJP'],
                             ),
                           ),
                         ),
@@ -283,7 +283,7 @@ class _PageContent extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: Icon(data.icon, size: 42, color: Colors.white),
+                child: Icon(data.icon, size: 42, color: _onColor(data.accentColor)),
               ),
             ],
           )
@@ -350,3 +350,9 @@ class _PageContent extends StatelessWidget {
     );
   }
 }
+
+/// Label/icon color for content on a page's accent fill: each onboarding page
+/// has its own hue (blue, cyan, green, amber), so pick white or dark ink by the
+/// fill's luminance instead of assuming the green brand fill.
+Color _onColor(Color fill) =>
+    ThemeData.estimateBrightnessForColor(fill) == Brightness.dark ? Colors.white : AppColors.onPrimary;

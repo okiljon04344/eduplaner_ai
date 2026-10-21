@@ -25,8 +25,8 @@ void main() {
 
       // Text family
       expect(AppColors.textPrimary, const Color(0xFF1C1917));
-      expect(AppColors.textSecondary, const Color(0xFF9CA3AF));
-      expect(AppColors.textMuted, const Color(0xFFB0B7C3));
+      expect(AppColors.textSecondary, const Color(0xFF6B7280));
+      expect(AppColors.textMuted, const Color(0xFF7A818D));
 
       // Borders / dividers
       expect(AppColors.border, const Color(0xFFE5E7EB));
@@ -39,7 +39,8 @@ void main() {
       expect(AppColors.progDot, const Color(0xFF6C5CE7));
     });
 
-    test('flips back to dark-mode values when brightness is Brightness.dark', () {
+    test('flips back to dark-mode values when brightness is Brightness.dark',
+        () {
       AppColors.applyBrightness(Brightness.light);
       AppColors.applyBrightness(Brightness.dark);
 
@@ -79,7 +80,9 @@ void main() {
   });
 
   group('SubjectColors.of', () {
-    test('returns the correct fill/text/dot triple for each of the six subjects', () {
+    test(
+        'returns the correct fill/text/dot triple for each of the six subjects',
+        () {
       // Dark palette (default), one representative expectation per subject.
       AppColors.applyBrightness(Brightness.dark);
 
@@ -114,7 +117,9 @@ void main() {
       expect(hist.dot, AppColors.histDot);
     });
 
-    test('subject text/dot re-read [AppColors] after applyBrightness (not baked at first access)', () {
+    test(
+        'subject text/dot re-read [AppColors] after applyBrightness (not baked at first access)',
+        () {
       // Warm-up in dark mode.
       AppColors.applyBrightness(Brightness.dark);
       final darkMathText = SubjectColors.of('数学').text;

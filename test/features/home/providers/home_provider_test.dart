@@ -63,10 +63,9 @@ void main() {
   });
 
   group('urgentAssignmentsCountProvider', () {
-    // Actual implementation flags anything not-completed with 0 <= daysLeft <= 3
-    // (i.e. due today through 3 days out — overdue is *excluded*). Tests below
-    // pin that behaviour so a future change is intentional, not accidental.
-    test('includes items due today, tomorrow, and up to 3 days out; excludes overdue and completed', () async {
+    // Anything not-completed due in <= 3 days counts, overdue included (no
+    // lower bound). More cases live in test/features/assignments/urgent_upcoming_test.dart.
+    test('includes overdue and items due within 3 days; excludes later and completed', () async {
       final today = _atNoon(DateTime.now());
       final container = await _hydrated([
         buildAssignment(id: 'today', dueDate: today),
@@ -81,7 +80,7 @@ void main() {
         ),
       ]);
 
-      expect(container.read(urgentAssignmentsCountProvider), 3);
+      expect(container.read(urgentAssignmentsCountProvider), 4);
     });
 
     test('returns 0 for an empty list', () async {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/providers/clock_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../timetable/providers/timetable_provider.dart';
 import 'home_class_card.dart';
@@ -14,7 +15,7 @@ class TodayClassesRow extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final classes = ref.watch(todayClassesProvider);
     if (classes.isEmpty) {
-      final isWeekend = DateTime.now().weekday > 5;
+      final isWeekend = (ref.watch(todayProvider).valueOrNull ?? DateTime.now()).weekday > 5;
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
         child: Text(

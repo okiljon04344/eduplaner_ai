@@ -64,7 +64,7 @@ class _DirectionalTabState extends ConsumerState<_DirectionalTab> {
     final index = ref.watch(shellTabIndexProvider);
 
     return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 220),
       transitionBuilder: (child, animation) {
         final dx = _goingRight ? 0.05 : -0.05;
         final curved = CurvedAnimation(parent: animation, curve: Curves.easeOutCubic);

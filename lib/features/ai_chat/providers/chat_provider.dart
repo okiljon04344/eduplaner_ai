@@ -16,8 +16,13 @@ import '../repositories/chat_repository.dart';
 /// once the result arrives.  This ensures the UI never shows an empty gap
 /// between the user's message and the bot's reply.
 class ChatNotifier extends Notifier<List<MessageModel>> {
+  /// Watches the signed-in uid so the in-memory conversation is reset (and
+  /// can never leak) when a different account signs in on this device.
   @override
-  List<MessageModel> build() => [];
+  List<MessageModel> build() {
+    ref.watch(currentUserProvider.select((u) => u?.uid));
+    return [];
+  }
 
   String get _uid => ref.read(currentUserProvider)?.uid ?? '';
   ChatRepository get _repo => ref.read(chatRepositoryProvider);
@@ -38,13 +43,26 @@ class ChatNotifier extends Notifier<List<MessageModel>> {
     }
   }
 
-  /// Loads the last 50 messages from Firestore and replaces the current state.
+  /// Loads the last 50 messages from Firestore and merges them into the
+  /// current state.
   ///
-  /// Called once when the chat screen mounts.  No-op when not signed in.
+  /// Called whenever the chat screen mounts.  Local messages that aren't in
+  /// the loaded history (an in-flight loading placeholder, unsaved or error
+  /// messages) are kept, so remounting mid-reply doesn't drop the answer.
+  /// No-op when not signed in.
   Future<void> loadHistory() async {
-    if (_uid.isEmpty) return;
-    final history = await _repo.loadHistory(_uid);
-    state = history;
+    final uid = _uid;
+    if (uid.isEmpty) return;
+    final history = await _repo.loadHistory(uid);
+    if (_uid != uid) return; // account switched while loading
+    final historyIds = {for (final m in history) m.id};
+    final merged = [...history, ...state.where((m) => !historyIds.contains(m.id))]
+      ..sort((a, b) {
+        final byTime = a.timestamp.compareTo(b.timestamp);
+        // Coarse clocks can tie a user message and its placeholder: user first.
+        return byTime != 0 ? byTime : a.role.index.compareTo(b.role.index);
+      });
+    state = merged;
   }
 
   /// Appends [content] as a user message, then sends it to the AI.
@@ -57,6 +75,9 @@ class ChatNotifier extends Notifier<List<MessageModel>> {
   Future<void> sendMessage(String content, {required String botId}) async {
     final trimmed = content.trim();
     if (trimmed.isEmpty) return;
+    // Captured once: both saves below must go to the account that sent the
+    // message, even if another account signs in while the reply is in flight.
+    final uid = _uid;
     final userMsg = MessageModel(
       id: const Uuid().v4(),
       content: trimmed,
@@ -76,7 +97,7 @@ class ChatNotifier extends Notifier<List<MessageModel>> {
     // saveMessage swallows its own errors (see ChatRepository), so the user
     // message write can safely run concurrently with the AI round-trip
     // instead of delaying it by one Firestore write.
-    final userMsgSave = _uid.isNotEmpty ? _repo.saveMessage(_uid, userMsg) : Future<void>.value();
+    final userMsgSave = uid.isNotEmpty ? _repo.saveMessage(uid, userMsg) : Future<void>.value();
     try {
       final (classes, assignments) = await (
         _contextOf(ref.read(timetableStreamProvider), ref.read(timetableStreamProvider.future)),
@@ -91,7 +112,7 @@ class ChatNotifier extends Notifier<List<MessageModel>> {
       final assistantMsg = loadingMsg.copyWith(content: response, isLoading: false);
       state = state.map((m) => m.id == loadingMsg.id ? assistantMsg : m).toList();
       await userMsgSave;
-      if (_uid.isNotEmpty) await _repo.saveMessage(_uid, assistantMsg);
+      if (uid.isNotEmpty) await _repo.saveMessage(uid, assistantMsg);
     } catch (e) {
       final errMsg = loadingMsg.copyWith(
         content: AppStrings.t('err_prefix', {'message': e.toString().replaceAll('Exception: ', '')}),

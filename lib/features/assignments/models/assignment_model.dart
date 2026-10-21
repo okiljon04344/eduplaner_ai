@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:intl/intl.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/date_helper.dart';
@@ -139,11 +140,49 @@ class AssignmentModel with _$AssignmentModel {
         'aiAnalyzedAt': aiAnalyzedAt == null ? null : Timestamp.fromDate(aiAnalyzedAt!),
       };
 
+  /// The single status ⇄ progress rule, applied wherever either changes.
+  ///
+  /// Progress that goes with [status]: completed → 1.0, notStarted → 0.0,
+  /// inProgress keeps [progress] but clamped into (0, 1) exclusive (0 → 0.1,
+  /// 1.0 → 0.9) so an in-progress item never reads as 0% or 100%.
+  static double progressForStatus(AssignmentStatus status, double progress) {
+    switch (status) {
+      case AssignmentStatus.completed:
+        return 1.0;
+      case AssignmentStatus.notStarted:
+        return 0.0;
+      case AssignmentStatus.inProgress:
+        if (progress <= 0) return 0.1;
+        if (progress >= 1) return 0.9;
+        return progress;
+    }
+  }
+
+  /// Status implied by [progress]: 0 → notStarted, >= 1 → completed, else inProgress.
+  static AssignmentStatus statusForProgress(double progress) {
+    if (progress <= 0) return AssignmentStatus.notStarted;
+    if (progress >= 1) return AssignmentStatus.completed;
+    return AssignmentStatus.inProgress;
+  }
+
+  /// Copy with [status] applied and [progress] adjusted to match.
+  AssignmentModel withStatus(AssignmentStatus status) =>
+      copyWith(status: status, progress: progressForStatus(status, progress));
+
+  /// Copy with [progress] applied and the status derived from it.
+  AssignmentModel withProgress(double progress) =>
+      copyWith(progress: progress, status: statusForProgress(progress));
+
   bool get hasAiAnalysis => aiAnalyzedAt != null;
 
-  String get dueDateLabel => DateHelper.dueDateLabel(dueDate);
+  // Finished work is never "overdue" / "due today": show the plain date, muted.
+  bool get _isDone => status == AssignmentStatus.completed;
 
-  Color get dueDateColor => DateHelper.dueDateColor(dueDate);
+  String get dueDateLabel =>
+      _isDone ? DateFormat.MMMd(AppStrings.currentLocale).format(dueDate) : DateHelper.dueDateLabel(dueDate);
 
-  Color get dueDateBgColor => DateHelper.dueDateBgColor(dueDate);
+  Color get dueDateColor => _isDone ? AppColors.textMuted : DateHelper.dueDateColor(dueDate);
+
+  Color get dueDateBgColor =>
+      _isDone ? AppColors.textMuted.withValues(alpha: 0.12) : DateHelper.dueDateBgColor(dueDate);
 }

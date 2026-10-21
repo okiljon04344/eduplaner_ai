@@ -32,10 +32,15 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
     final progressPct = all.isEmpty ? 0.0 : doneCount / all.length;
     final weekly = ref.watch(weeklyProgressProvider);
 
-    // In calendar mode with a selected day: show only that day's assignments
-    final displayAssignments = (_calendarMode && _selectedDay != null)
-        ? all.where((a) => _sameDay(a.dueDate, _selectedDay!)).toList()
-        : ref.watch(filteredAssignmentsProvider);
+    final filtered = ref.watch(filteredAssignmentsProvider);
+
+    // Calendar mode hides the filter chips, so it ignores the status filter
+    // (all assignments); with a selected day it shows only that day's.
+    final displayAssignments = !_calendarMode
+        ? filtered
+        : (_selectedDay != null
+            ? all.where((a) => _sameDay(a.dueDate, _selectedDay!)).toList()
+            : all);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -264,6 +269,8 @@ class _TasksHeader extends StatelessWidget {
 
               // Total progress bar
               Container(
+                // Full width, or the track shrink-wraps the fill and is never visible.
+                width: double.infinity,
                 height: 8,
                 decoration: BoxDecoration(
                   color: isDark ? const Color(0x12FFFFFF) : AppColors.primary.withValues(alpha: 0.1),
@@ -275,19 +282,15 @@ class _TasksHeader extends StatelessWidget {
                 // radial-gradient background so the whole header doesn't
                 // repaint 60x/s while the bar animates.
                 child: RepaintBoundary(
-                  child: TweenAnimationBuilder<double>(
-                    tween: Tween(begin: 0, end: progressPct.clamp(0.0, 1.0)),
-                    duration: const Duration(milliseconds: 600),
-                    curve: Curves.easeOutExpo,
-                    builder: (context, value, _) => FractionallySizedBox(
-                      widthFactor: value,
-                      alignment: Alignment.centerLeft,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: AppColors.gradientPrimary,
-                          borderRadius: BorderRadius.circular(4),
-                          boxShadow: [BoxShadow(color: AppColors.primaryMid.withValues(alpha: 0.6), blurRadius: 14)],
-                        ),
+                  child: AnimatedFractionallySizedBox(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeOutCubic,
+                    alignment: AlignmentDirectional.centerStart,
+                    widthFactor: progressPct.clamp(0.0, 1.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: AppColors.gradientPrimary,
+                        borderRadius: BorderRadius.circular(4),
                       ),
                     ),
                   ),
@@ -369,27 +372,24 @@ class _WeeklyProgressBar extends StatelessWidget {
           ClipRRect(
             borderRadius: BorderRadius.circular(4),
             child: Container(
+              width: double.infinity,
               height: 6,
               color: AppColors.primaryMid.withValues(alpha: isDark ? 0.15 : 0.12),
               // Isolate the tween from the header's radial-gradient decoration
               // so it repaints in its own layer during the 700ms animation.
               child: RepaintBoundary(
-                child: TweenAnimationBuilder<double>(
-                  tween: Tween(begin: 0, end: pct.clamp(0.0, 1.0)),
-                  duration: const Duration(milliseconds: 700),
-                  curve: Curves.easeOutExpo,
-                  builder: (context, value, _) => FractionallySizedBox(
-                    widthFactor: value,
-                    alignment: Alignment.centerLeft,
+                child: AnimatedFractionallySizedBox(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeOutCubic,
+                    alignment: AlignmentDirectional.centerStart,
+                    widthFactor: pct.clamp(0.0, 1.0),
                     child: Container(
                       decoration: BoxDecoration(
                         gradient: AppColors.gradientPrimary,
                         borderRadius: BorderRadius.circular(4),
-                        boxShadow: [BoxShadow(color: AppColors.primaryMid.withValues(alpha: 0.6), blurRadius: 8)],
                       ),
                     ),
                   ),
-                ),
               ),
             ),
           ),
@@ -438,9 +438,9 @@ class _AssignmentCalendar extends StatelessWidget {
         border: Border.all(color: AppColors.border),
       ),
       child: TableCalendar<AssignmentModel>(
-        locale: 'ja_JP',
+        locale: AppStrings.currentLocale,
         firstDay: DateTime.now().subtract(const Duration(days: 365)),
-        lastDay: DateTime.now().add(const Duration(days: 365)),
+        lastDay: DateTime.now().add(const Duration(days: 365 * 2)),
         focusedDay: focusedDay,
         selectedDayPredicate: (day) =>
             selectedDay != null && isSameDay(day, selectedDay!),
@@ -471,8 +471,8 @@ class _AssignmentCalendar extends StatelessWidget {
             color: AppColors.primaryMid.withValues(alpha: 0.3),
             shape: BoxShape.circle,
           ),
-          todayTextStyle: const TextStyle(
-            color: AppColors.primaryLight,
+          todayTextStyle: TextStyle(
+            color: AppColors.accentText,
             fontFamily: 'Plus Jakarta Sans',
             fontSize: 13,
             fontWeight: FontWeight.w700,
@@ -482,7 +482,7 @@ class _AssignmentCalendar extends StatelessWidget {
             shape: BoxShape.circle,
           ),
           selectedTextStyle: const TextStyle(
-            color: Colors.white,
+            color: AppColors.onPrimary,
             fontFamily: 'Plus Jakarta Sans',
             fontSize: 13,
             fontWeight: FontWeight.w700,
@@ -543,38 +543,41 @@ class _AddTaskButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = AppColors.isDark;
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          gradient: isDark
-              ? LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [AppColors.primary.withValues(alpha: 0.2), AppColors.primaryDark.withValues(alpha: 0.1)],
-                )
-              : AppColors.gradientAddTaskLight,
-          borderRadius: BorderRadius.circular(isDark ? 20 : 18),
-          border: isDark ? Border.all(color: AppColors.primary.withValues(alpha: 0.3)) : null,
-          boxShadow: [
-            BoxShadow(
-              color: isDark ? AppColors.primary.withValues(alpha: 0.15) : const Color(0x5900B894),
-              blurRadius: isDark ? 20 : 24,
-              offset: isDark ? Offset.zero : const Offset(0, 6),
+    return Semantics(
+      button: true,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            gradient: isDark
+                ? LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [AppColors.primary.withValues(alpha: 0.2), AppColors.primaryDark.withValues(alpha: 0.1)],
+                  )
+                : AppColors.gradientAddTaskLight,
+            borderRadius: BorderRadius.circular(isDark ? 20 : 18),
+            border: isDark ? Border.all(color: AppColors.primary.withValues(alpha: 0.3)) : null,
+            boxShadow: [
+              BoxShadow(
+                color: isDark ? AppColors.primary.withValues(alpha: 0.15) : const Color(0x5900B894),
+                blurRadius: isDark ? 20 : 24,
+                offset: isDark ? Offset.zero : const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Text(
+            '＋ ${AppStrings.t('as_add_new')}',
+            style: TextStyle(
+              fontFamily: 'Plus Jakarta Sans',
+              fontFamilyFallback: const ['NotoSansJP'],
+              fontSize: 15,
+              fontWeight: FontWeight.w800,
+              color: isDark ? AppColors.accentText : AppColors.onPrimary,
             ),
-          ],
-        ),
-        child: Text(
-          '＋ ${AppStrings.t('as_add_new')}',
-          style: TextStyle(
-            fontFamily: 'Plus Jakarta Sans',
-            fontFamilyFallback: const ['NotoSansJP'],
-            fontSize: 15,
-            fontWeight: FontWeight.w800,
-            color: isDark ? AppColors.accentText : Colors.white,
           ),
         ),
       ),

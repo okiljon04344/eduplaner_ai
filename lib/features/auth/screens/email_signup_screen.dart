@@ -133,7 +133,7 @@ class _EmailSignupScreenState extends ConsumerState<EmailSignupScreen> {
                   ElevatedButton(
                     onPressed: loading ? null : _submit,
                     child: loading
-                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white))
+                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2.5, color: AppColors.onPrimary))
                         : Text(AppStrings.t('login_signup_btn')),
                   ),
                   const SizedBox(height: 16),

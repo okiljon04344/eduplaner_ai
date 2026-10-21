@@ -1,36 +1,33 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:toastification/toastification.dart';
+import '../../../core/constants/periods.dart';
 import '../../../core/constants/subject_colors.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/confirm_dialog.dart';
+import '../../auth/providers/auth_provider.dart';
 import '../models/class_model.dart';
 import '../providers/timetable_provider.dart';
 import 'add_edit_class_sheet.dart';
 import 'class_detail_sheet.dart';
 
-/// Display-only clock times per period. [ClassModel] only stores a period
-/// index (1-6); the design shows real start/end times, so this is a local
-/// lookup table of standard 90-minute class blocks — presentation only.
-const Map<int, (String start, String end)> kPeriodTimes = {
-  1: ('09:00', '10:30'),
-  2: ('10:40', '12:10'),
-  3: ('13:00', '14:30'),
-  4: ('14:40', '16:10'),
-  5: ('16:20', '17:50'),
-  6: ('18:00', '19:30'),
-};
-
 /// One row of the schedule timeline: a time column (start time, gradient
 /// connector line, end time) beside a glass class card with a colored left
 /// border, subject name, room · teacher line, and a period tag pill.
+///
+/// [date] is the calendar day this card is displayed for; the 休講/変更 badge
+/// shows only when the class's status applies to that date.
 class TimelineClassCard extends ConsumerWidget {
   final ClassModel classModel;
-  const TimelineClassCard({super.key, required this.classModel});
+  final DateTime date;
+  const TimelineClassCard({super.key, required this.classModel, required this.date});
 
   Future<void> _onLongPress(
       BuildContext context, WidgetRef ref, Offset globalPosition) async {
+    // Only the creator may edit/delete a row (Firestore rules enforce it too).
+    if (classModel.userId != ref.read(currentUserProvider)?.uid) return;
     final overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
     final selected = await showMenu<String>(
       context: context,
@@ -53,9 +50,18 @@ class TimelineClassCard extends ConsumerWidget {
           title: AppStrings.t('tt_delete_class'),
           message: AppStrings.t('tt_delete_confirm').replaceAll('{subject}', classModel.subject));
       if (ok) {
-        await ref
+        final error = await ref
             .read(timetableNotifierProvider.notifier)
             .deleteClass(classModel.id);
+        if (error != null && context.mounted) {
+          toastification.show(
+            context: context,
+            type: ToastificationType.error,
+            style: ToastificationStyle.flat,
+            title: Text(error),
+            autoCloseDuration: const Duration(seconds: 2),
+          );
+        }
       }
     }
   }
@@ -63,9 +69,10 @@ class TimelineClassCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final style = SubjectColors.of(classModel.subject);
-    final times = kPeriodTimes[classModel.period] ?? ('--:--', '--:--');
+    final times = periodTimeLabels(classModel.period);
+    final statusAlert = classModel.statusAppliesTo(date);
 
-    return Padding(
+    return RepaintBoundary(child: Padding(
       padding: const EdgeInsets.only(bottom: 14),
       child: GestureDetector(
         onTap: () => showClassDetailSheet(context, ref, classModel),
@@ -82,7 +89,7 @@ class TimelineClassCard extends ConsumerWidget {
                   child: Column(
                     children: [
                       Text(
-                        times.$1,
+                        times.start,
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
@@ -110,7 +117,7 @@ class TimelineClassCard extends ConsumerWidget {
                         ),
                       ),
                       Text(
-                        times.$2,
+                        times.end,
                         style: TextStyle(
                             fontSize: 10,
                             color: AppColors.primaryMid.withValues(alpha: 0.3)),
@@ -191,7 +198,7 @@ class TimelineClassCard extends ConsumerWidget {
                                             color: AppColors.textPrimary),
                                       ),
                                     ),
-                                    if (classModel.hasStatusAlertToday) ...[
+                                    if (statusAlert) ...[
                                       const SizedBox(width: 6),
                                       _StatusDot(
                                           cancelled: classModel.status ==
@@ -230,7 +237,7 @@ class TimelineClassCard extends ConsumerWidget {
                                             color: style.text),
                                       ),
                                     ),
-                                    if (classModel.hasStatusAlertToday) ...[
+                                    if (statusAlert) ...[
                                       const SizedBox(width: 6),
                                       Container(
                                         padding: const EdgeInsets.symmetric(
@@ -272,7 +279,7 @@ class TimelineClassCard extends ConsumerWidget {
           ),
         ),
       ),
-    );
+    ));
   }
 }
 
