@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,12 +8,15 @@ import 'package:toastification/toastification.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/services/functions_service.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/date_helper.dart';
 import '../../../shared/widgets/confirm_dialog.dart';
 import '../../../shared/widgets/donut_chart.dart';
+import '../../../shared/widgets/star_rating.dart';
 import '../../../shared/widgets/subject_pill.dart';
 import '../models/assignment_model.dart';
 import '../providers/assignments_provider.dart';
 import 'add_edit_assignment_sheet.dart';
+import 'assignment_actions.dart';
 
 const _kSupportedSubmissionExtensions = ['jpg', 'jpeg', 'png', 'pdf', 'docx', 'txt'];
 const _kMaxSubmissionBytes = 10 * 1024 * 1024;
@@ -54,8 +58,12 @@ class _AssignmentDetailSheet extends ConsumerStatefulWidget {
 }
 
 class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> {
+  /// Live slider/chip values — may run ahead of [_current] while a write is
+  /// in flight, and are reverted to it if the write fails.
   late double _progress;
   late AssignmentStatus _status;
+
+  /// Last persisted state of the assignment (including AI-check results).
   late AssignmentModel _current;
   bool _aiLoading = false;
   bool _aiCheckLoading = false;
@@ -78,7 +86,7 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
         'message': AppStrings.t('ai_plan_prompt', {
               'title': a.title,
               'subject': a.subject,
-              'due': a.dueDateLabel,
+              'due': '${DateHelper.formatJapaneseDate(a.dueDate)} (${a.dueDateLabel})',
               'difficulty': a.difficulty,
             }) +
             (a.description?.isNotEmpty == true ? AppStrings.t('ai_plan_prompt_detail', {'description': a.description ?? ''}) : ''),
@@ -100,6 +108,12 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
           actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: Text(AppStrings.t('common_close')))],
         ),
       );
+    } on FirebaseFunctionsException catch (e) {
+      if (!mounted) return;
+      setState(() => _aiLoading = false);
+      // Quota/login problems are actionable — show them instead of the generic failure.
+      final actionable = e.code == 'resource-exhausted' || e.code == 'unauthenticated';
+      _showAiError(actionable ? FunctionsService.describeError(e) : AppStrings.t('ai_plan_failed'));
     } catch (e) {
       if (!mounted) return;
       setState(() => _aiLoading = false);
@@ -107,15 +121,7 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
     }
   }
 
-  void _showAiError(String message) {
-    toastification.show(
-      context: context,
-      type: ToastificationType.error,
-      style: ToastificationStyle.flat,
-      title: Text(message),
-      autoCloseDuration: const Duration(seconds: 3),
-    );
-  }
+  void _showAiError(String message) => showAssignmentErrorToast(context, message);
 
   /// 課題の自動チェック — picks an image/PDF/Word/text file and reads its
   /// bytes via `PlatformFile.readAsBytes()` (file_picker 12's API — the
@@ -157,34 +163,78 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
       _showAiError(outcome.error ?? AppStrings.t('err_assignment_check_failed'));
       return;
     }
-    setState(() => _current = outcome.model!);
+    // Merge only the AI fields: progress/status may have changed while the
+    // check was running, and a whole-model replace would roll them back.
+    final checked = outcome.model!;
+    setState(() => _current = _current.copyWith(
+          aiCompletionPercent: checked.aiCompletionPercent,
+          aiMissingParts: checked.aiMissingParts,
+          aiAdvice: checked.aiAdvice,
+          aiAnalyzedAt: checked.aiAnalyzedAt,
+        ));
+  }
+
+  /// Puts the live slider/chip values back to the last persisted state.
+  void _revertToCurrent() {
+    _progress = _current.progress;
+    _status = _current.status;
   }
 
   void _onProgressChanged(double value) {
-    setState(() => _progress = value);
+    setState(() {
+      _progress = value;
+      _status = AssignmentModel.statusForProgress(value);
+    });
   }
 
   // Committing on drag-end (not every `onChanged` tick) avoids firing a
   // Firestore write per pixel of drag while the slider is being dragged.
-  void _onProgressChangeEnd(double value) {
-    ref.read(assignmentsNotifierProvider.notifier).updateProgress(widget.assignment.id, value);
+  Future<void> _onProgressChangeEnd(double value) async {
+    if (value == _current.progress) return;
+    final error = await ref.read(assignmentsNotifierProvider.notifier).updateProgress(_current, value);
+    if (!mounted) return;
+    if (error != null) {
+      setState(_revertToCurrent);
+      showAssignmentErrorToast(context, error);
+      return;
+    }
+    setState(() => _current = _current.withProgress(value));
   }
 
-  void _onStatusChanged(AssignmentStatus status) {
-    setState(() => _status = status);
-    ref.read(assignmentsNotifierProvider.notifier).updateStatus(widget.assignment.id, status);
+  Future<void> _onStatusChanged(AssignmentStatus status) async {
+    if (status == _status) return;
+    final next = _current.withStatus(status);
+    setState(() {
+      _status = next.status;
+      _progress = next.progress;
+    });
+    final error = await ref.read(assignmentsNotifierProvider.notifier).updateStatus(_current, status);
+    if (!mounted) return;
+    if (error != null) {
+      setState(_revertToCurrent);
+      showAssignmentErrorToast(context, error);
+      return;
+    }
+    setState(() => _current = next);
   }
 
   Future<void> _edit() async {
+    // Hand the edit sheet the current state (not the sheet's initial snapshot)
+    // so progress/status changed here aren't overwritten on save.
+    final existing = _current.copyWith(progress: _progress, status: _status);
     Navigator.pop(context);
-    await showAddEditAssignmentSheet(context, ref, existing: widget.assignment);
+    await showAddEditAssignmentSheet(context, ref, existing: existing);
   }
 
   Future<void> _delete() async {
     final ok = await showConfirmDialog(context, title: AppStrings.t('as_delete_title'), message: AppStrings.t('as_delete_confirm', {'title': widget.assignment.title}));
     if (!ok) return;
-    await ref.read(assignmentsNotifierProvider.notifier).delete(widget.assignment.id);
+    final error = await ref.read(assignmentsNotifierProvider.notifier).delete(widget.assignment.id);
     if (!mounted) return;
+    if (error != null) {
+      showAssignmentErrorToast(context, error);
+      return;
+    }
     Navigator.pop(context);
     toastification.show(
       context: context,
@@ -237,15 +287,30 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
                 const SizedBox(height: 12),
                 Text(assignment.title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
                 const SizedBox(height: 8),
-                Row(
+                // Wrap so a long localized date can push the badge to the next line.
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
-                    Text(AppStrings.t('as_due_prefix', {'date': assignment.dueDateLabel}), style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
-                    const SizedBox(width: 8),
-                    Container(
+                    Text(
+                      AppStrings.t('as_due_prefix', {'date': DateHelper.formatJapaneseDate(assignment.dueDate)}),
+                      style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                    ),
+                    // The full date is already in the prefix; a finished task needs no countdown badge.
+                    if (_status != AssignmentStatus.completed) Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                       decoration: BoxDecoration(color: assignment.dueDateBgColor, borderRadius: BorderRadius.circular(20)),
                       child: Text(assignment.dueDateLabel, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: assignment.dueDateColor)),
                     ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(AppStrings.t('fld_difficulty'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                    StarRating(initialRating: assignment.difficulty, readOnly: true),
                   ],
                 ),
                 if (assignment.description != null && assignment.description!.isNotEmpty) ...[
@@ -257,7 +322,7 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(AppStrings.t('fld_progress'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-                    Text('${(_progress * 100).round()}%', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.primary)),
+                    Text('${(_progress * 100).round()}%', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.accentText)),
                   ],
                 ),
                 Slider(value: _progress, min: 0, max: 1, divisions: 10, activeColor: AppColors.primary, onChanged: _onProgressChanged, onChangeEnd: _onProgressChangeEnd),
@@ -274,7 +339,8 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
                       selected: selected,
                       onSelected: (_) => _onStatusChanged(s),
                       selectedColor: AppColors.primary,
-                      labelStyle: TextStyle(color: selected ? Colors.white : AppColors.textPrimary, fontWeight: FontWeight.w500),
+                      checkmarkColor: AppColors.onPrimary,
+                      labelStyle: TextStyle(color: selected ? AppColors.onPrimary : AppColors.textPrimary, fontWeight: FontWeight.w500),
                     );
                   }).toList(),
                 ),
@@ -285,7 +351,7 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
                     onPressed: _aiLoading ? null : _askAiToPlan,
                     style: FilledButton.styleFrom(backgroundColor: AppColors.primary),
                     icon: _aiLoading
-                        ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                        ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.onPrimary))
                         : const Text('🎯'),
                     label: Text(_aiLoading ? AppStrings.t('ai_thinking') : AppStrings.t('ai_plan_btn')),
                   ),

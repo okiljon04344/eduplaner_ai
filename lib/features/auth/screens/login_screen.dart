@@ -11,7 +11,6 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../shared/widgets/language_picker_button.dart';
 import '../../../shared/widgets/lottie_helpers.dart';
-import '../../timetable/providers/timetable_provider.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/google_signin_button.dart';
 
@@ -124,8 +123,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 ),
                                 child: const Icon(Icons.auto_awesome, size: 28, color: Colors.white),
                               )
-                                  .animate(onPlay: (c) => c.repeat(reverse: true))
-                                  .moveY(begin: 0, end: -8, duration: 2000.ms, curve: Curves.easeInOut),
+                                  .animate()
+                                  .moveY(begin: 8, end: 0, duration: 800.ms, curve: Curves.easeOut),
                               const SizedBox(height: 14),
                               Text(
                                 'EduPlanner AI',
@@ -171,9 +170,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                     const SizedBox(width: 6),
                                     Text(
                                       AppStrings.t('login_ai_online'),
-                                      style: const TextStyle(
-                                        fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.primaryLight,
-                                        fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: ['NotoSansJP'],
+                                      style: TextStyle(
+                                        fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.accentText,
+                                        fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP'],
                                       ),
                                     ),
                                   ],
@@ -183,18 +182,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ),
                         ),
                       ),
-                      Positioned(
-                        bottom: -20,
-                        left: 0,
-                        right: 0,
-                        child: Center(child: _TodayClassesPill()),
-                      ),
                     ],
                   ),
                 ),
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.only(top: 44, left: 24, right: 24, bottom: 32),
+                    padding: const EdgeInsets.only(top: 28, left: 24, right: 24, bottom: 32),
                     child: Column(
                       children: [
                         Text(
@@ -267,11 +260,13 @@ class _DesktopLoginLayout extends StatelessWidget {
             flex: 5,
             child: Container(
               decoration: BoxDecoration(gradient: AppColors.brandPanelGradient),
-              padding: const EdgeInsets.symmetric(horizontal: 56, vertical: 48),
+              clipBehavior: Clip.hardEdge,
               child: Stack(
                 children: [
                   const Positioned.fill(child: _FloatingOrbs()),
-                  Column(
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 56, vertical: 48),
+                    child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -284,8 +279,8 @@ class _DesktopLoginLayout extends StatelessWidget {
                     ),
                     child: const Icon(Icons.auto_awesome, size: 28, color: Colors.white),
                   )
-                      .animate(onPlay: (c) => c.repeat(reverse: true))
-                      .moveY(begin: 0, end: -8, duration: 2000.ms, curve: Curves.easeInOut),
+                      .animate()
+                      .moveY(begin: 8, end: 0, duration: 800.ms, curve: Curves.easeOut),
                   const SizedBox(height: 24),
                   Text(
                     'EduPlanner AI',
@@ -337,6 +332,7 @@ class _DesktopLoginLayout extends StatelessWidget {
                   )),
                 ],
               ),
+                  ),
                 ],
               ),
             ),
@@ -354,11 +350,10 @@ class _DesktopLoginLayout extends StatelessWidget {
                   child: Stack(
                     clipBehavior: Clip.none,
                     children: [
-                      Positioned(
-                        top: -80,
-                        right: 0,
-                        child: LanguagePickerButton(color: AppColors.textPrimary),
-                      ),
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
                       Container(
                         padding: const EdgeInsets.all(32),
                         decoration: BoxDecoration(
@@ -424,6 +419,13 @@ class _DesktopLoginLayout extends StatelessWidget {
                           ),
                         ),
                       ),
+                        ],
+                      ),
+                      Positioned(
+                        top: -80,
+                        right: 0,
+                        child: LanguagePickerButton(color: AppColors.textPrimary),
+                      ),
                       if (loading)
                         Positioned.fill(
                           child: Container(
@@ -452,36 +454,6 @@ List<(String, IconData, Color, String)> get _desktopFeatures => [
   (AppStrings.t('feat_ai_chat'), Icons.smart_toy_outlined, const Color(0xFFA855F7), AppStrings.t('feat_ai_chat_desc')),
   (AppStrings.t('feat_quiz'), Icons.quiz_outlined, const Color(0xFFF59E0B), AppStrings.t('feat_quiz_desc')),
 ];
-
-class _TodayClassesPill extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final count = ref.watch(todayClassesProvider).length;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      decoration: BoxDecoration(
-        color: AppColors.bgLayer,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.borderPrimary),
-        boxShadow: [BoxShadow(color: AppColors.primaryMid.withValues(alpha: 0.35), blurRadius: 16, offset: const Offset(0, 4))],
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.calendar_today_outlined, size: 16, color: AppColors.primaryLight),
-          const SizedBox(width: 6),
-          Text(
-            AppStrings.t('login_today_classes', {'n': count}),
-            style: const TextStyle(
-              fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.primaryLight,
-              fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: ['NotoSansJP'],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 /// Google sign-in entry point, shared by the mobile and desktop layouts.
 ///
@@ -559,11 +531,11 @@ class _FloatingOrbs extends StatelessWidget {
             height: size,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              gradient: RadialGradient(colors: [color.withValues(alpha: 0.32), Colors.transparent]),
+              gradient: RadialGradient(colors: [color.withValues(alpha: 0.32), color.withValues(alpha: 0)]),
             ),
           )
-              .animate(onPlay: (c) => c.repeat(reverse: true), delay: delayMs.ms)
-              .scale(begin: const Offset(1, 1), end: const Offset(1.15, 1.15), duration: 3200.ms, curve: Curves.easeInOut)
+              .animate(delay: delayMs.ms)
+              .scale(begin: const Offset(0.9, 0.9), end: const Offset(1, 1), duration: 1600.ms, curve: Curves.easeOut)
               .fadeIn(duration: 1000.ms),
         ),
       );

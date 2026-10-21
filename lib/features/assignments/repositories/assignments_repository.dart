@@ -17,13 +17,18 @@ class AssignmentsRepository {
 
   Future<void> add(AssignmentModel model) async =>
       _col.doc(model.id).set(model.toFirestore());
+
+  /// Writes every editable field but never the `ai*` result fields — those
+  /// are owned by [saveAiAnalysis], so a stale model passed here can't erase
+  /// a fresher AI check.
   Future<void> update(AssignmentModel model) async =>
-      _col.doc(model.id).update(model.toFirestore());
+      _col.doc(model.id).update(model.toFirestore()..removeWhere((k, _) => k.startsWith('ai')));
   Future<void> delete(String id) async => _col.doc(id).delete();
-  Future<void> updateStatus(String id, AssignmentStatus status) async =>
-      _col.doc(id).update({'status': status.firestoreValue});
-  Future<void> updateProgress(String id, double progress) async =>
-      _col.doc(id).update({'progress': progress});
+
+  /// Writes status and progress together in one update so the two fields
+  /// can never be observed out of sync.
+  Future<void> updateStatusAndProgress(String id, AssignmentStatus status, double progress) async =>
+      _col.doc(id).update({'status': status.firestoreValue, 'progress': progress});
 
   /// 課題の自動チェック — sends the submitted file (never stored, only
   /// forwarded) to `analyzeAssignmentSubmission` for a Gemini-based review.
@@ -42,11 +47,12 @@ class AssignmentsRepository {
         'description': description ?? '',
         'fileBase64': fileBase64,
         'mimeType': mimeType,
+        'language': AppStrings.currentLocale,
       });
       return Map<String, dynamic>.from(result.data);
     } on FirebaseFunctionsException catch (e) {
       if (e.code == 'invalid-argument') throw Exception(e.message ?? AppStrings.t('err_invalid_file'));
-      if (e.code == 'unauthenticated' || e.code == 'deadline-exceeded' || e.code == 'unavailable') {
+      if (e.code == 'unauthenticated' || e.code == 'deadline-exceeded' || e.code == 'unavailable' || e.code == 'resource-exhausted') {
         throw Exception(FunctionsService.describeError(e));
       }
       throw Exception(AppStrings.t('err_assignment_check_failed'));

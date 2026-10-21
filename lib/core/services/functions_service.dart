@@ -9,7 +9,13 @@ import '../l10n/app_strings.dart';
 /// so the whole surface uses the same generous budget rather than tuning
 /// each call site separately).
 abstract class FunctionsService {
-  static final FirebaseFunctions _instance = FirebaseFunctions.instanceFor(region: 'asia-northeast1');
+  static final FirebaseFunctions _instance = () {
+    final f = FirebaseFunctions.instanceFor(region: 'asia-northeast1');
+    // Emulator-auth tokens are rejected by production functions anyway;
+    // route to a (possibly absent) local functions emulator instead.
+    if (const bool.fromEnvironment('USE_EMULATOR')) f.useFunctionsEmulator('localhost', 5001);
+    return f;
+  }();
   static const Duration timeout = Duration(seconds: 120);
 
   static HttpsCallable callable(String name) =>
@@ -24,6 +30,8 @@ abstract class FunctionsService {
         return AppStrings.t('err_login_required');
       case 'deadline-exceeded':
         return AppStrings.t('err_timeout');
+      case 'resource-exhausted':
+        return AppStrings.t('err_ai_limit_reached');
       case 'unavailable':
         return AppStrings.t('err_network');
       default:

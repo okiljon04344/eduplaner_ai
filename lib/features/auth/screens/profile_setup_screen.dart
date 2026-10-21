@@ -4,16 +4,14 @@ import 'package:go_router/go_router.dart';
 import 'package:toastification/toastification.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/utils/responsive.dart';
 import '../../../core/utils/validators.dart';
 import '../../../shared/widgets/app_input_field.dart';
 import '../models/school_type.dart';
 import '../providers/auth_provider.dart';
 
-/// Mandatory school-profile step: school type, name, grade, and (depending
-/// on type) faculty/department/course, matching how Japanese educational
-/// institutions are actually structured (高校/専門学校 have 学科 directly,
-/// 大学/大学院 have 学部 above 学科).
+/// Mandatory school-profile step: school type first, then only the fields
+/// that type has in the Japanese system — 課程 (高校/大学院), 学年 chips,
+/// 学部/研究科, 学科/専攻 and コース (see [SchoolType]).
 ///
 /// Reached two ways:
 ///  - Router redirect right after sign-up/onboarding, while
@@ -35,13 +33,14 @@ class ProfileSetupScreen extends ConsumerStatefulWidget {
 class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   final _formKey = GlobalKey<FormState>();
   final _schoolNameCtrl = TextEditingController();
-  final _gradeCtrl = TextEditingController();
   final _facultyCtrl = TextEditingController();
   final _departmentCtrl = TextEditingController();
   final _courseCtrl = TextEditingController();
 
   late final bool _isEditing;
   SchoolType? _selectedType;
+  String? _program;
+  int? _grade;
 
   @override
   void initState() {
@@ -50,7 +49,12 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
     _isEditing = user?.profileComplete ?? false;
     _selectedType = SchoolType.fromKey(user?.schoolType);
     _schoolNameCtrl.text = user?.school ?? '';
-    _gradeCtrl.text = user?.grade ?? '';
+    final type = _selectedType;
+    if (type != null) {
+      _program = type.programs.contains(user?.program) ? user!.program : type.defaultProgram;
+      final grade = SchoolType.parseGrade(user?.grade);
+      _grade = (grade != null && grade >= 1 && grade <= type.maxGrade(_program)) ? grade : null;
+    }
     _facultyCtrl.text = user?.faculty ?? '';
     _departmentCtrl.text = user?.department ?? '';
     _courseCtrl.text = user?.course ?? '';
@@ -59,33 +63,59 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   @override
   void dispose() {
     _schoolNameCtrl.dispose();
-    _gradeCtrl.dispose();
     _facultyCtrl.dispose();
     _departmentCtrl.dispose();
     _courseCtrl.dispose();
     super.dispose();
   }
 
-  Future<void> _submit() async {
-    if (_selectedType == null) {
-      toastification.show(
-        context: context,
-        type: ToastificationType.error,
-        style: ToastificationStyle.flat,
-        title: Text(AppStrings.t('school_type_required')),
-        autoCloseDuration: const Duration(seconds: 3),
+  void _selectType(SchoolType t) {
+    // Keep the current 課程 when it is also valid for the new type.
+    _program = t.programs.contains(_program) ? _program : t.defaultProgram;
+    _selectedType = t;
+    _clampGrade();
+  }
+
+  void _clampGrade() {
+    if (_grade != null && _grade! > _selectedType!.maxGrade(_program)) _grade = null;
+  }
+
+  Widget _label(String key) => Text(
+        AppStrings.t(key),
+        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textSecondary),
       );
-      return;
-    }
+
+  Widget _chip(String label, bool selected, VoidCallback onTap) => ChoiceChip(
+        label: Text(label),
+        selected: selected,
+        onSelected: (_) => setState(onTap),
+        selectedColor: AppColors.primary,
+        checkmarkColor: AppColors.onPrimary,
+        labelStyle: TextStyle(color: selected ? AppColors.onPrimary : AppColors.textPrimary, fontWeight: FontWeight.w500),
+      );
+
+  Future<void> _submit() async {
+    void errorToast(String key) => toastification.show(
+          context: context,
+          type: ToastificationType.error,
+          style: ToastificationStyle.flat,
+          title: Text(AppStrings.t(key)),
+          autoCloseDuration: const Duration(seconds: 3),
+        );
+    final type = _selectedType;
+    if (type == null) return errorToast('school_type_required');
+    if (type.maxGrade(_program) > 0 && _grade == null) return errorToast('school_grade_required');
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
     await ref.read(authNotifierProvider.notifier).saveSchoolProfile(
-          schoolType: _selectedType!.key,
+          schoolType: type.key,
           schoolName: _schoolNameCtrl.text,
-          grade: _gradeCtrl.text,
-          faculty: _selectedType!.hasFaculty ? _facultyCtrl.text : null,
-          department: _departmentCtrl.text,
-          course: _courseCtrl.text,
+          // Hidden fields are saved as null so they never keep stale values.
+          grade: _grade == null ? null : '$_grade',
+          program: type.programs.isEmpty ? null : _program,
+          faculty: type.hasFaculty ? _facultyCtrl.text : null,
+          department: type.hasDepartment ? _departmentCtrl.text : null,
+          course: type.hasCourse ? _courseCtrl.text : null,
         );
 
     final state = ref.read(authNotifierProvider);
@@ -101,12 +131,18 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
       );
       return;
     }
-    if (_isEditing && mounted) context.pop();
+    if (!mounted) return;
+    // First-time setup leaves explicitly: the router is long-lived, so it no
+    // longer re-runs from '/home' on auth changes to carry us there.
+    // canPop: a web reload on /profile-setup leaves nothing to pop back to.
+    _isEditing && context.canPop() ? context.pop() : context.go('/home');
   }
 
   @override
   Widget build(BuildContext context) {
     final loading = ref.watch(authNotifierProvider).isLoading;
+    final type = _selectedType;
+    final maxGrade = type?.maxGrade(_program) ?? 0;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -120,8 +156,11 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
         ),
       ),
       body: SafeArea(
-        child: ResponsiveBody(
-          maxWidth: 480,
+        // Top-aligned (not centered) so toggling the 学部 field never shifts the form.
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 480),
           child: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
             child: Form(
@@ -136,94 +175,97 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                     ),
                     const SizedBox(height: 24),
                   ],
-                  Text(
-                    AppStrings.t('school_type_label'),
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textSecondary),
-                  ),
+                  _label('school_type_label'),
                   const SizedBox(height: 8),
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
-                    children: SchoolType.values.map((t) {
-                      final selected = t == _selectedType;
-                      return ChoiceChip(
-                        label: Text(t.label),
-                        selected: selected,
-                        onSelected: (_) => setState(() => _selectedType = t),
-                        selectedColor: AppColors.primary,
-                        labelStyle: TextStyle(color: selected ? Colors.white : AppColors.textPrimary, fontWeight: FontWeight.w500),
-                      );
-                    }).toList(),
+                    children: SchoolType.values.map((t) => _chip(t.label, t == type, () => _selectType(t))).toList(),
                   ),
                   const SizedBox(height: 20),
-                  Text(
-                    AppStrings.t('school_name_label'),
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textSecondary),
-                  ),
+                  _label('school_name_label'),
                   const SizedBox(height: 8),
                   AppInputField(
                     controller: _schoolNameCtrl,
                     hintText: AppStrings.t('school_name_hint'),
                     textInputAction: TextInputAction.next,
                     validator: Validators.required,
+                    maxLength: 100,
                   ),
-                  const SizedBox(height: 16),
-                  Text(
-                    AppStrings.t('school_grade_label'),
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textSecondary),
-                  ),
-                  const SizedBox(height: 8),
-                  AppInputField(
-                    controller: _gradeCtrl,
-                    hintText: AppStrings.t('school_grade_hint'),
-                    textInputAction: TextInputAction.next,
-                  ),
-                  if (_selectedType?.hasFaculty ?? false) ...[
+                  if (type != null && type.programs.isNotEmpty) ...[
                     const SizedBox(height: 16),
-                    Text(
-                      AppStrings.t('school_faculty_label'),
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textSecondary),
+                    _label('school_program_label'),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: type.programs
+                          .map((p) => _chip(AppStrings.t('program_$p'), p == _program, () {
+                                _program = p;
+                                _clampGrade();
+                              }))
+                          .toList(),
                     ),
+                  ],
+                  if (maxGrade > 0) ...[
+                    const SizedBox(height: 16),
+                    _label('school_grade_label'),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        for (var i = 1; i <= maxGrade; i++)
+                          _chip(AppStrings.t('school_grade_n', {'n': i}), i == _grade, () => _grade = i),
+                      ],
+                    ),
+                  ],
+                  if (type != null && type.hasFaculty) ...[
+                    const SizedBox(height: 16),
+                    _label(type.facultyLabelKey),
                     const SizedBox(height: 8),
                     AppInputField(
                       controller: _facultyCtrl,
-                      hintText: AppStrings.t('school_faculty_hint'),
+                      hintText: AppStrings.t(type.facultyHintKey),
                       textInputAction: TextInputAction.next,
+                      maxLength: 100,
                     ),
                   ],
-                  const SizedBox(height: 16),
-                  Text(
-                    AppStrings.t('school_department_label'),
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textSecondary),
-                  ),
-                  const SizedBox(height: 8),
-                  AppInputField(
-                    controller: _departmentCtrl,
-                    hintText: AppStrings.t('school_department_hint'),
-                    textInputAction: TextInputAction.next,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    AppStrings.t('school_course_label'),
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textSecondary),
-                  ),
-                  const SizedBox(height: 8),
-                  AppInputField(
-                    controller: _courseCtrl,
-                    hintText: AppStrings.t('school_course_hint'),
-                    textInputAction: TextInputAction.done,
-                    onSubmitted: (_) => loading ? null : _submit(),
-                  ),
+                  if (type != null && type.hasDepartment) ...[
+                    const SizedBox(height: 16),
+                    _label(type.departmentLabelKey),
+                    const SizedBox(height: 8),
+                    AppInputField(
+                      controller: _departmentCtrl,
+                      hintText: AppStrings.t(type.departmentHintKey),
+                      textInputAction: type.hasCourse ? TextInputAction.next : TextInputAction.done,
+                      onSubmitted: type.hasCourse ? null : (_) => loading ? null : _submit(),
+                      maxLength: 100,
+                    ),
+                  ],
+                  if (type != null && type.hasCourse) ...[
+                    const SizedBox(height: 16),
+                    _label('school_course_label'),
+                    const SizedBox(height: 8),
+                    AppInputField(
+                      controller: _courseCtrl,
+                      hintText: AppStrings.t('school_course_hint'),
+                      textInputAction: TextInputAction.done,
+                      onSubmitted: (_) => loading ? null : _submit(),
+                      maxLength: 100,
+                    ),
+                  ],
                   const SizedBox(height: 28),
                   ElevatedButton(
                     onPressed: loading ? null : _submit,
                     child: loading
-                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white))
+                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2.5, color: AppColors.onPrimary))
                         : Text(_isEditing ? AppStrings.t('btn_save') : AppStrings.t('school_setup_save_btn')),
                   ),
                 ],
               ),
             ),
+          ),
           ),
         ),
       ),

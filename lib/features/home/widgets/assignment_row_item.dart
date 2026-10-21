@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../assignments/models/assignment_model.dart';
-import '../../assignments/providers/assignments_provider.dart';
+import '../../assignments/widgets/assignment_actions.dart';
 import '../../assignments/widgets/assignment_detail_sheet.dart';
 
 /// One row in [UpcomingAssignmentsList]: a circular checkbox (tap toggles
@@ -12,15 +12,10 @@ class AssignmentRowItem extends ConsumerWidget {
   final bool showDivider;
   const AssignmentRowItem({super.key, required this.assignment, this.showDivider = true});
 
-  void _toggleDone(WidgetRef ref) {
-    final next = assignment.status == AssignmentStatus.completed ? AssignmentStatus.notStarted : AssignmentStatus.completed;
-    ref.read(assignmentsNotifierProvider.notifier).updateStatus(assignment.id, next);
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDone = assignment.status == AssignmentStatus.completed;
-    return Column(
+    return RepaintBoundary(child: Column(
       children: [
         GestureDetector(
           onTap: () => showAssignmentDetailSheet(context, ref, assignment),
@@ -29,7 +24,7 @@ class AssignmentRowItem extends ConsumerWidget {
             child: Row(
               children: [
                 GestureDetector(
-                  onTap: () => _toggleDone(ref),
+                  onTap: () => toggleAssignmentDone(context, ref, assignment),
                   child: Container(
                     width: 26,
                     height: 26,
@@ -43,7 +38,7 @@ class AssignmentRowItem extends ConsumerWidget {
                       ),
                       boxShadow: isDone ? [BoxShadow(color: AppColors.primaryMid.withValues(alpha: 0.6), blurRadius: 12)] : null,
                     ),
-                    child: isDone ? const Icon(Icons.check, size: 12, color: Colors.white) : null,
+                    child: isDone ? const Icon(Icons.check, size: 12, color: AppColors.onPrimary) : null,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -82,6 +77,6 @@ class AssignmentRowItem extends ConsumerWidget {
         ),
         if (showDivider) Divider(height: 1, color: AppColors.dividerSubtle),
       ],
-    );
+    ));
   }
 }

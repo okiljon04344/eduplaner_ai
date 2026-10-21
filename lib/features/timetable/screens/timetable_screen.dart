@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/l10n/app_strings.dart';
+import '../../../core/providers/clock_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../providers/timetable_provider.dart';
@@ -17,7 +18,9 @@ class TimetableScreen extends ConsumerStatefulWidget {
   ConsumerState<TimetableScreen> createState() => _TimetableScreenState();
 }
 
-DateTime _mondayOf(DateTime d) => DateTime(d.year, d.month, d.day).subtract(Duration(days: d.weekday - 1));
+/// Local-midnight Monday of [d]'s week (calendar arithmetic, so a DST change
+/// can't push the result onto the neighbouring day).
+DateTime _mondayOf(DateTime d) => DateTime(d.year, d.month, d.day - (d.weekday - 1));
 
 class _TimetableScreenState extends ConsumerState<TimetableScreen> {
   late int _selectedDay;
@@ -33,7 +36,10 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
   @override
   Widget build(BuildContext context) {
     final classCount = ref.watch(timetableStreamProvider).valueOrNull?.length ?? 0;
-    final weekStart = _mondayOf(DateTime.now()).add(Duration(days: 7 * _weekOffset));
+    // Watching the clock re-derives the displayed week after midnight.
+    final today = ref.watch(todayProvider).valueOrNull ?? DateTime.now();
+    final monday = _mondayOf(today);
+    final weekStart = DateTime(monday.year, monday.month, monday.day + 7 * _weekOffset);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -53,7 +59,7 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
               weekStart: weekStart,
               onSelect: (index) => setState(() => _selectedDay = index),
             ),
-            Expanded(child: ScheduleTimeline(selectedDay: _selectedDay)),
+            Expanded(child: ScheduleTimeline(selectedDay: _selectedDay, weekStart: weekStart)),
           ],
         ),
       ),
@@ -210,7 +216,7 @@ class _Header extends ConsumerWidget {
                       gradient: AppColors.gradientPrimary,
                       boxShadow: [BoxShadow(color: AppColors.primaryMid.withValues(alpha: 0.5), blurRadius: 20)],
                     ),
-                    child: const Icon(Icons.add, color: Colors.white, size: 22),
+                    child: const Icon(Icons.add, color: AppColors.onPrimary, size: 22),
                   ),
                 ),
               ],

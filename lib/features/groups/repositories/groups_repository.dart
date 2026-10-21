@@ -54,9 +54,38 @@ class GroupsRepository {
     }
   }
 
-  Future<void> leaveGroup(String groupId, String uid) async {
-    await _col.doc(groupId).update({
+  /// Removes [uid] from the group.
+  ///
+  /// The leaver's own classes are detached from the group first (while they
+  /// are still a member), so they stay in their personal timetable instead of
+  /// pointing at a group they can no longer read. Then:
+  ///  * sole member → the group document is deleted (rules forbid emptying
+  ///    `memberIds`, but allow a sole member to delete);
+  ///  * owner with others remaining → ownership moves to the longest-standing
+  ///    remaining member in the same write, so the group is never ownerless;
+  ///  * anyone else → just removed from `memberIds`.
+  Future<void> leaveGroup(StudyGroupModel group, String uid) async {
+    final mine = await _db
+        .collection('timetables')
+        .where('userId', isEqualTo: uid)
+        .where('groupId', isEqualTo: group.id)
+        .get();
+    if (mine.docs.isNotEmpty) {
+      final batch = _db.batch();
+      for (final doc in mine.docs) {
+        batch.update(doc.reference, {'groupId': null});
+      }
+      await batch.commit();
+    }
+
+    final others = group.memberIds.where((id) => id != uid).toList();
+    if (others.isEmpty) {
+      await _col.doc(group.id).delete();
+      return;
+    }
+    await _col.doc(group.id).update({
       'memberIds': FieldValue.arrayRemove([uid]),
+      if (group.ownerId == uid) 'ownerId': others.first,
     });
   }
 }

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../shared/widgets/confirm_dialog.dart';
+import '../../auth/providers/auth_provider.dart';
 import '../models/ai_bot.dart';
 import '../providers/chat_provider.dart';
 import '../widgets/chat_bubble.dart';
@@ -42,6 +43,11 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
   @override
   Widget build(BuildContext context) {
     final messages = ref.watch(chatProvider);
+    // The chat state resets when the signed-in account changes; reload the
+    // new account's history even though this screen stays mounted.
+    ref.listen(currentUserProvider.select((u) => u?.uid), (prev, next) {
+      if (next != null && next != prev) ref.read(chatProvider.notifier).loadHistory();
+    });
 
     final selectedBot = botById(ref.watch(selectedBotIdProvider));
 
@@ -55,15 +61,87 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
             Expanded(
               child: ColoredBox(
                 color: AppColors.background,
-                child: ListView.builder(
-                  reverse: true,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                  itemCount: messages.length,
-                  itemBuilder: (context, i) => ChatBubble(message: messages[messages.length - 1 - i]),
-                ),
+                child: messages.isEmpty
+                    ? _ChatEmptyState(
+                        bot: selectedBot,
+                        onPick: (text) => ref
+                            .read(chatProvider.notifier)
+                            .sendMessage(text, botId: selectedBot.id),
+                      )
+                    : ListView.builder(
+                        reverse: true,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 14),
+                        itemCount: messages.length,
+                        itemBuilder: (context, i) => ChatBubble(
+                            message: messages[messages.length - 1 - i]),
+                      ),
               ),
             ),
             const ChatInputBar(),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Shown while the conversation is empty: bot identity, a one-line prompt and
+/// three tappable example questions that go through the normal send path.
+class _ChatEmptyState extends StatelessWidget {
+  final AiBot bot;
+  final ValueChanged<String> onPick;
+  const _ChatEmptyState({required this.bot, required this.onPick});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(bot.emoji, style: const TextStyle(fontSize: 48)),
+            const SizedBox(height: 8),
+            Text(bot.label,
+                style: AppTextStyles.headLG, textAlign: TextAlign.center),
+            const SizedBox(height: 4),
+            Text(
+              AppStrings.t('chat_empty_title'),
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: 'Plus Jakarta Sans',
+                fontFamilyFallback: const ['NotoSansJP'],
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 20),
+            for (final key in const [
+              'chat_example_1',
+              'chat_example_2',
+              'chat_example_3'
+            ])
+              Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: ActionChip(
+                  onPressed: () => onPick(AppStrings.t(key)),
+                  backgroundColor: AppColors.bgLayer,
+                  side: BorderSide(
+                      color: AppColors.primaryMid.withValues(alpha: 0.3)),
+                  label: Text(
+                    AppStrings.t(key),
+                    style: TextStyle(
+                      fontFamily: 'Plus Jakarta Sans',
+                      fontFamilyFallback: const ['NotoSansJP'],
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
       ),
@@ -82,7 +160,9 @@ class _AiChatHeader extends StatelessWidget {
       clipBehavior: Clip.hardEdge,
       decoration: BoxDecoration(
         gradient: AppColors.aiBannerGradient,
-        border: Border(bottom: BorderSide(color: AppColors.primaryMid.withValues(alpha: 0.2), width: 1)),
+        border: Border(
+            bottom: BorderSide(
+                color: AppColors.primaryMid.withValues(alpha: 0.2), width: 1)),
       ),
       child: Stack(
         children: [
@@ -95,7 +175,10 @@ class _AiChatHeader extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
-                  colors: [AppColors.primaryMid.withValues(alpha: 0.25), Colors.transparent],
+                  colors: [
+                    AppColors.primaryMid.withValues(alpha: 0.25),
+                    Colors.transparent
+                  ],
                 ),
               ),
             ),
@@ -120,7 +203,8 @@ class _AiChatHeader extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 6),
-                      Text('${bot.emoji} ${bot.label}', style: AppTextStyles.headLG),
+                      Text('${bot.emoji} ${bot.label}',
+                          style: AppTextStyles.headLG),
                       const SizedBox(height: 4),
                       Text(
                         AppStrings.t('ai_subtitle'),
@@ -163,20 +247,21 @@ class _QuizButton extends StatelessWidget {
           decoration: BoxDecoration(
             color: AppColors.primaryMid.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppColors.primaryMid.withValues(alpha: 0.22), width: 1),
+            border: Border.all(
+                color: AppColors.primaryMid.withValues(alpha: 0.22), width: 1),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.quiz_outlined, size: 14, color: AppColors.primaryLight),
+              Icon(Icons.quiz_outlined, size: 14, color: AppColors.accentText),
               const SizedBox(width: 4),
               Text(
                 AppStrings.t('ai_quiz_btn'),
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: 'Plus Jakarta Sans',
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.primaryLight,
+                  color: AppColors.accentText,
                 ),
               ),
             ],
@@ -203,20 +288,22 @@ class _ClearButton extends StatelessWidget {
           decoration: BoxDecoration(
             color: AppColors.primaryMid.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppColors.primaryMid.withValues(alpha: 0.22), width: 1),
+            border: Border.all(
+                color: AppColors.primaryMid.withValues(alpha: 0.22), width: 1),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.refresh_rounded, size: 14, color: AppColors.primaryLight),
+              Icon(Icons.refresh_rounded,
+                  size: 14, color: AppColors.accentText),
               const SizedBox(width: 4),
               Text(
                 AppStrings.t('ai_clear_btn'),
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: 'Plus Jakarta Sans',
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.primaryLight,
+                  color: AppColors.accentText,
                 ),
               ),
             ],

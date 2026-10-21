@@ -101,7 +101,7 @@ class _RailItem extends ConsumerWidget {
                 fontSize: 10,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 0.3,
-                color: active ? AppColors.primaryLight : AppColors.textMuted,
+                color: active ? AppColors.accentText : AppColors.textMuted,
               ),
             ),
           ],

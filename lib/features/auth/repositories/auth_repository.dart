@@ -3,7 +3,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/l10n/app_strings.dart';
+import '../../../core/services/notification_service.dart';
 import '../models/user_model.dart';
 
 class AuthRepository {
@@ -36,8 +38,21 @@ class AuthRepository {
         yield _cachedUser;
         continue;
       }
-      final doc = await _db.collection('users').doc(user.uid).get();
-      final model = doc.exists
+      DocumentSnapshot<Map<String, dynamic>>? doc;
+      try {
+        doc = await _db.collection('users').doc(user.uid).get();
+      } catch (e) {
+        // A failed read must never end this stream: the router would treat
+        // the user as signed out until restart.
+        debugPrint('User doc read error: $e');
+        if (user.uid == _cachedUid && _cachedUser != null) {
+          yield _cachedUser;
+          continue;
+        }
+        doc = await _retryUserDocRead(user.uid);
+      }
+      final exists = doc?.exists ?? false;
+      final model = doc != null && exists
           ? UserModel.fromFirestore(doc)
           // User is authenticated but Firestore doc not yet written.
           // This happens during the brief window between Firebase Auth completing
@@ -45,16 +60,31 @@ class AuthRepository {
           // Return a minimal UserModel so the router doesn't redirect back to /login.
           : UserModel(
               uid: user.uid,
-              name: user.displayName ?? 'ユーザー',
+              name: user.displayName ?? '',
               email: user.email ?? '',
               photoUrl: user.photoURL,
               createdAt: DateTime.now(),
             );
       _cachedUser = model;
       _cachedUid = user.uid;
-      _cachedFromDoc = doc.exists;
+      _cachedFromDoc = exists;
       yield model;
     }
+  }
+
+  /// Re-reads `users/{uid}` up to 3 more times, 2s apart, after the first
+  /// read failed. Returns `null` if every attempt fails so the caller can
+  /// fall back to the minimal [UserModel].
+  Future<DocumentSnapshot<Map<String, dynamic>>?> _retryUserDocRead(String uid) async {
+    for (var attempt = 0; attempt < 3; attempt++) {
+      await Future<void>.delayed(const Duration(seconds: 2));
+      try {
+        return await _db.collection('users').doc(uid).get();
+      } catch (e) {
+        debugPrint('User doc retry ${attempt + 1} error: $e');
+      }
+    }
+    return null;
   }
 
   /// google_sign_in 7.x requires `initialize()` to be called exactly once
@@ -139,7 +169,7 @@ class AuthRepository {
     if (doc.exists) return UserModel.fromFirestore(doc);
     final newUser = UserModel(
       uid: user.uid,
-      name: user.displayName ?? 'ユーザー',
+      name: user.displayName ?? '',
       email: user.email ?? fallbackEmail ?? '',
       photoUrl: user.photoURL,
       createdAt: DateTime.now(),
@@ -244,20 +274,48 @@ class AuthRepository {
     }
   }
 
+  /// Signs out after best-effort cleanup of device-local, per-user state
+  /// (push token, pending reminders, cached AI results) so the next account
+  /// on this device doesn't inherit it. Cleanup failures never block sign-out.
   Future<void> signOut() async {
+    final uid = _auth.currentUser?.uid;
+    if (uid != null) {
+      try {
+        await NotificationService.unregisterPushToken(uid);
+      } catch (e) {
+        debugPrint('Push token unregister error: $e');
+      }
+    }
+    try {
+      await NotificationService.cancelAll();
+    } catch (e) {
+      debugPrint('Cancel reminders error: $e');
+    }
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      for (final key in prefs.getKeys().toList()) {
+        // `streak_*` is deliberately kept: the streak is per-device, not per-account.
+        if (key.startsWith('study_tip_') || key.startsWith('weak_area_')) {
+          await prefs.remove(key);
+        }
+      }
+    } catch (e) {
+      debugPrint('Clear cached data error: $e');
+    }
     await Future.wait([_auth.signOut(), _googleSignIn.signOut()]);
   }
 
   String? get currentUid => _auth.currentUser?.uid;
 
   /// Merges the mandatory school-profile fields into the current user's
-  /// Firestore doc. [grade]/[faculty]/[department]/[course] are optional —
+  /// Firestore doc. [grade]/[program]/[faculty]/[department]/[course] are optional —
   /// blank strings are written as `null` so they render as "not set" rather
   /// than an empty label.
   Future<void> saveSchoolProfile({
     required String schoolType,
     required String schoolName,
     String? grade,
+    String? program,
     String? faculty,
     String? department,
     String? course,
@@ -269,6 +327,7 @@ class AuthRepository {
       'schoolType': schoolType,
       'school': schoolName.trim(),
       'grade': blankToNull(grade),
+      'program': blankToNull(program),
       'faculty': blankToNull(faculty),
       'department': blankToNull(department),
       'course': blankToNull(course),

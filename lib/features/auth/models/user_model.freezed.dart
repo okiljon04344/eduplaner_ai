@@ -28,6 +28,7 @@ mixin _$UserModel {
   String? get school => throw _privateConstructorUsedError;
   String? get schoolType => throw _privateConstructorUsedError;
   String? get grade => throw _privateConstructorUsedError;
+  String? get program => throw _privateConstructorUsedError;
   String? get faculty => throw _privateConstructorUsedError;
   String? get department => throw _privateConstructorUsedError;
   String? get course => throw _privateConstructorUsedError;
@@ -57,6 +58,7 @@ abstract class $UserModelCopyWith<$Res> {
       String? school,
       String? schoolType,
       String? grade,
+      String? program,
       String? faculty,
       String? department,
       String? course,
@@ -86,6 +88,7 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
     Object? school = freezed,
     Object? schoolType = freezed,
     Object? grade = freezed,
+    Object? program = freezed,
     Object? faculty = freezed,
     Object? department = freezed,
     Object? course = freezed,
@@ -124,6 +127,10 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
           ? _value.grade
           : grade // ignore: cast_nullable_to_non_nullable
               as String?,
+      program: freezed == program
+          ? _value.program
+          : program // ignore: cast_nullable_to_non_nullable
+              as String?,
       faculty: freezed == faculty
           ? _value.faculty
           : faculty // ignore: cast_nullable_to_non_nullable
@@ -161,6 +168,7 @@ abstract class _$$UserModelImplCopyWith<$Res>
       String? school,
       String? schoolType,
       String? grade,
+      String? program,
       String? faculty,
       String? department,
       String? course,
@@ -188,6 +196,7 @@ class __$$UserModelImplCopyWithImpl<$Res>
     Object? school = freezed,
     Object? schoolType = freezed,
     Object? grade = freezed,
+    Object? program = freezed,
     Object? faculty = freezed,
     Object? department = freezed,
     Object? course = freezed,
@@ -226,6 +235,10 @@ class __$$UserModelImplCopyWithImpl<$Res>
           ? _value.grade
           : grade // ignore: cast_nullable_to_non_nullable
               as String?,
+      program: freezed == program
+          ? _value.program
+          : program // ignore: cast_nullable_to_non_nullable
+              as String?,
       faculty: freezed == faculty
           ? _value.faculty
           : faculty // ignore: cast_nullable_to_non_nullable
@@ -258,6 +271,7 @@ class _$UserModelImpl extends _UserModel {
       this.school,
       this.schoolType,
       this.grade,
+      this.program,
       this.faculty,
       this.department,
       this.course,
@@ -284,6 +298,8 @@ class _$UserModelImpl extends _UserModel {
   @override
   final String? grade;
   @override
+  final String? program;
+  @override
   final String? faculty;
   @override
   final String? department;
@@ -294,7 +310,7 @@ class _$UserModelImpl extends _UserModel {
 
   @override
   String toString() {
-    return 'UserModel(uid: $uid, name: $name, email: $email, photoUrl: $photoUrl, classId: $classId, school: $school, schoolType: $schoolType, grade: $grade, faculty: $faculty, department: $department, course: $course, createdAt: $createdAt)';
+    return 'UserModel(uid: $uid, name: $name, email: $email, photoUrl: $photoUrl, classId: $classId, school: $school, schoolType: $schoolType, grade: $grade, program: $program, faculty: $faculty, department: $department, course: $course, createdAt: $createdAt)';
   }
 
   @override
@@ -312,6 +328,7 @@ class _$UserModelImpl extends _UserModel {
             (identical(other.schoolType, schoolType) ||
                 other.schoolType == schoolType) &&
             (identical(other.grade, grade) || other.grade == grade) &&
+            (identical(other.program, program) || other.program == program) &&
             (identical(other.faculty, faculty) || other.faculty == faculty) &&
             (identical(other.department, department) ||
                 other.department == department) &&
@@ -332,6 +349,7 @@ class _$UserModelImpl extends _UserModel {
       school,
       schoolType,
       grade,
+      program,
       faculty,
       department,
       course,
@@ -363,6 +381,7 @@ abstract class _UserModel extends UserModel {
       final String? school,
       final String? schoolType,
       final String? grade,
+      final String? program,
       final String? faculty,
       final String? department,
       final String? course,
@@ -388,6 +407,8 @@ abstract class _UserModel extends UserModel {
   String? get schoolType;
   @override
   String? get grade;
+  @override
+  String? get program;
   @override
   String? get faculty;
   @override

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../core/theme/app_colors.dart';
 
 class AppInputField extends StatelessWidget {
@@ -16,6 +17,9 @@ class AppInputField extends StatelessWidget {
   final FocusNode? focusNode;
   final bool expands;
 
+  /// Hard cap on typed/pasted characters (no visible counter). Null = unlimited.
+  final int? maxLength;
+
   const AppInputField({
     super.key,
     required this.controller,
@@ -31,6 +35,7 @@ class AppInputField extends StatelessWidget {
     this.textInputAction,
     this.focusNode,
     this.expands = false,
+    this.maxLength,
   });
 
   @override
@@ -46,6 +51,7 @@ class AppInputField extends StatelessWidget {
       onFieldSubmitted: onSubmitted,
       obscureText: obscureText,
       textInputAction: textInputAction,
+      inputFormatters: maxLength == null ? null : [LengthLimitingTextInputFormatter(maxLength)],
       style: TextStyle(
         fontSize: 15,
         color: AppColors.textPrimary,

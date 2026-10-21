@@ -155,7 +155,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
           ElevatedButton(
             onPressed: _loading ? null : _verifyCode,
             child: _loading
-                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white))
+                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2.5, color: AppColors.onPrimary))
                 : Text(AppStrings.t('reset_code_verify_btn')),
           ),
         ],
@@ -202,7 +202,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
           ElevatedButton(
             onPressed: _loading ? null : _submitNewPassword,
             child: _loading
-                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white))
+                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2.5, color: AppColors.onPrimary))
                 : Text(AppStrings.t('reset_code_submit_btn')),
           ),
         ],

@@ -7,6 +7,8 @@ import 'core/providers/theme_provider.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_colors.dart';
 import 'core/theme/app_theme.dart';
+import 'features/auth/providers/auth_provider.dart';
+import 'features/onboarding/providers/onboarding_provider.dart';
 
 /// Root widget for EduPlanner AI.
 ///
@@ -26,8 +28,6 @@ class EduPlannerApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeProvider);
     final locale = ref.watch(localeProvider);
-    final router = ref.watch(routerProvider);
-
     final resolvedBrightness = switch (themeMode) {
       ThemeMode.light => Brightness.light,
       ThemeMode.dark => Brightness.dark,
@@ -41,6 +41,17 @@ class EduPlannerApp extends ConsumerWidget {
     // separately so we can serve the correct JSON translation file.
     final flutterLocale = Locale(locale.split('_').first);
 
+    // Until auth/onboarding are known, paint a splash over the router instead
+    // of the routed page: no flash of Home (and no unauthenticated AI calls
+    // from it). The router itself must exist from the first frame — swapping
+    // in a plain MaterialApp first resets the browser URL to '/', which loses
+    // web deep links such as /login/reset?oobCode=...
+    final authState = ref.watch(authStateProvider);
+    final onboardingState = ref.watch(onboardingProvider);
+    final booting = (authState.isLoading && !authState.hasValue) ||
+        (onboardingState.isLoading && !onboardingState.hasValue);
+    final router = ref.watch(routerProvider);
+
     return ToastificationWrapper(
       child: MaterialApp.router(
         key: ValueKey('${resolvedBrightness}_$locale'),
@@ -49,6 +60,7 @@ class EduPlannerApp extends ConsumerWidget {
         darkTheme: AppTheme.dark,
         themeMode: themeMode,
         routerConfig: router,
+        builder: (context, child) => booting ? const _SplashScreen() : child!,
         debugShowCheckedModeBanner: false,
         locale: flutterLocale,
         supportedLocales: const [
@@ -63,6 +75,35 @@ class EduPlannerApp extends ConsumerWidget {
           GlobalWidgetsLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,
         ],
+      ),
+    );
+  }
+}
+
+/// Shown while auth/onboarding state is still loading.
+class _SplashScreen extends StatelessWidget {
+  const _SplashScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(18),
+              child: Image.asset('assets/images/app_icon.png', width: 72, height: 72),
+            ),
+            const SizedBox(height: 24),
+            const SizedBox(
+              width: 28,
+              height: 28,
+              child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 2.5),
+            ),
+          ],
+        ),
       ),
     );
   }

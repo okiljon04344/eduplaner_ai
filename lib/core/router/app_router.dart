@@ -22,9 +22,9 @@ import '../../shared/widgets/app_shell.dart';
 
 /// Provides the singleton [GoRouter] instance.
 ///
-/// The router is created inside a Riverpod [Provider] so it can watch
-/// [authStateProvider] and [onboardingProvider] and automatically redirect
-/// when auth state changes (e.g. sign-out from any screen).
+/// The router is created once inside a Riverpod [Provider]; its redirect reads
+/// [authStateProvider] and [onboardingProvider] and is re-run by
+/// `_RouterRefreshNotifier` when auth state changes (e.g. sign-out from any screen).
 ///
 /// Redirect logic (evaluated on every navigation and on auth/onboarding state changes):
 ///   - While either provider is loading → no redirect (avoid flicker).
@@ -36,13 +36,14 @@ import '../../shared/widgets/app_shell.dart';
 ///     This also catches pre-existing accounts from before this field
 ///     existed — they're prompted once, same as a brand-new sign-up.
 final routerProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authStateProvider);
-  final onboardingState = ref.watch(onboardingProvider);
-
   return GoRouter(
     initialLocation: '/home',
     refreshListenable: _RouterRefreshNotifier(ref),
     redirect: (context, state) {
+      // read (not watch): the notifier below re-runs redirect, and watching
+      // would recreate the GoRouter on every auth change.
+      final authState = ref.read(authStateProvider);
+      final onboardingState = ref.read(onboardingProvider);
       final currentUser = authState.valueOrNull;
       final isLoggedIn = currentUser != null;
       final isAuthLoading = authState.isLoading;
@@ -51,7 +52,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       final needsProfileSetup = isLoggedIn && !currentUser.profileComplete;
 
       final isOnLogin = state.matchedLocation.startsWith('/login');
-      final isOnLanding = state.matchedLocation == '/' || state.matchedLocation == '/landing-preview';
+      final isOnLanding = state.matchedLocation == '/';
       final isOnOnboarding = state.matchedLocation == '/onboarding';
       final isOnProfileSetup = state.matchedLocation == '/profile-setup';
 
@@ -62,11 +63,16 @@ final routerProvider = Provider<GoRouter>((ref) {
       if (!isLoggedIn && !isOnLogin && !isOnLanding) return '/';
 
       // Logged in but on login → redirect to appropriate screen
-      // '/landing-preview' is exempt — allows logged-in users to preview the page
       if (isLoggedIn && (isOnLogin || state.matchedLocation == '/')) {
         if (!onboardingDone) return '/onboarding';
         if (needsProfileSetup) return '/profile-setup';
         return '/home';
+      }
+
+      // Onboarding just finished → move on (the router is long-lived, so
+      // nothing else navigates away from /onboarding).
+      if (isLoggedIn && isOnOnboarding && onboardingDone) {
+        return needsProfileSetup ? '/profile-setup' : '/home';
       }
 
       // Logged in but hasn't seen onboarding → show onboarding
@@ -84,7 +90,6 @@ final routerProvider = Provider<GoRouter>((ref) {
     },
     routes: [
       GoRoute(path: '/', pageBuilder: (_, s) => _fade(s, const LandingScreen())),
-      GoRoute(path: '/landing-preview', pageBuilder: (_, s) => _slideUp(s, const LandingScreen())),
       GoRoute(path: '/login', pageBuilder: (_, s) => _fade(s, const LoginScreen())),
       GoRoute(path: '/login/signup', pageBuilder: (_, s) => _slideUp(s, const EmailSignupScreen())),
       GoRoute(path: '/login/email', pageBuilder: (_, s) => _slideUp(s, const EmailLoginScreen())),
@@ -122,7 +127,8 @@ CustomTransitionPage<void> _fade(GoRouterState s, Widget child) =>
     CustomTransitionPage<void>(
       key: s.pageKey,
       child: child,
-      transitionDuration: const Duration(milliseconds: 280),
+      transitionDuration: const Duration(milliseconds: 220),
+      reverseTransitionDuration: const Duration(milliseconds: 220),
       transitionsBuilder: (_, anim, __, c) =>
           FadeTransition(opacity: anim, child: c),
     );
@@ -132,7 +138,8 @@ CustomTransitionPage<void> _slideUp(GoRouterState s, Widget child) =>
     CustomTransitionPage<void>(
       key: s.pageKey,
       child: child,
-      transitionDuration: const Duration(milliseconds: 340),
+      transitionDuration: const Duration(milliseconds: 260),
+      reverseTransitionDuration: const Duration(milliseconds: 260),
       transitionsBuilder: (_, anim, __, c) {
         final curved = CurvedAnimation(parent: anim, curve: Curves.easeOutCubic);
         return SlideTransition(
@@ -147,7 +154,8 @@ CustomTransitionPage<void> _slideRight(GoRouterState s, Widget child) =>
     CustomTransitionPage<void>(
       key: s.pageKey,
       child: child,
-      transitionDuration: const Duration(milliseconds: 300),
+      transitionDuration: const Duration(milliseconds: 240),
+      reverseTransitionDuration: const Duration(milliseconds: 240),
       transitionsBuilder: (_, anim, __, c) {
         final curved = CurvedAnimation(parent: anim, curve: Curves.easeOutCubic);
         return SlideTransition(

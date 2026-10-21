@@ -5,6 +5,7 @@ import 'package:edu_planner_ai/features/assignments/widgets/assignment_card.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 import '../../support/fakes.dart';
 
@@ -29,6 +30,9 @@ TextStyle? _styleForText(WidgetTester tester, String title) {
 }
 
 void main() {
+  // The app runs this in main(); completed cards format their due date.
+  setUpAll(() => initializeDateFormatting(null));
+
   setUp(() => AppColors.applyBrightness(Brightness.dark));
   tearDown(() => AppColors.applyBrightness(Brightness.dark));
 
@@ -116,10 +120,11 @@ void main() {
     await tester.tap(detectors.at(1), warnIfMissed: false);
     await tester.pumpAndSettle();
 
-    expect(repo.statusCalls, hasLength(1));
-    expect(repo.statusCalls.single.id, 'a4');
-    expect(repo.statusCalls.single.status, AssignmentStatus.completed,
+    expect(repo.statusProgressCalls, hasLength(1));
+    expect(repo.statusProgressCalls.single.id, 'a4');
+    expect(repo.statusProgressCalls.single.status, AssignmentStatus.completed,
         reason: 'notStarted → completed on tap');
+    expect(repo.statusProgressCalls.single.progress, 1.0, reason: 'completed ⇒ progress 1.0');
   });
 
   testWidgets('tapping the checkbox on a completed assignment toggles back to notStarted', (tester) async {
@@ -139,6 +144,7 @@ void main() {
     await tester.tap(find.byType(GestureDetector).at(1), warnIfMissed: false);
     await tester.pumpAndSettle();
 
-    expect(repo.statusCalls.single.status, AssignmentStatus.notStarted);
+    expect(repo.statusProgressCalls.single.status, AssignmentStatus.notStarted);
+    expect(repo.statusProgressCalls.single.progress, 0.0, reason: 'unticking resets progress');
   });
 }

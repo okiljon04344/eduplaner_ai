@@ -1,18 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/constants/periods.dart';
 import '../../../core/l10n/app_strings.dart';
+import '../../../core/providers/clock_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../timetable/models/class_model.dart';
 import '../../timetable/widgets/class_detail_sheet.dart';
-
-const Map<int, (String start, String end)> _periodTimes = {
-  1: ('09:00', '10:30'),
-  2: ('10:40', '12:10'),
-  3: ('13:00', '14:30'),
-  4: ('14:40', '16:10'),
-  5: ('16:20', '17:50'),
-  6: ('18:00', '19:30'),
-};
 
 enum _ClassStatus { live, soon, later }
 
@@ -20,21 +13,17 @@ class HomeClassCard extends ConsumerWidget {
   final ClassModel classModel;
   const HomeClassCard({super.key, required this.classModel});
 
-  ({_ClassStatus status, String label}) _computeStatus() {
-    final times = _periodTimes[classModel.period];
-    if (times == null) return (status: _ClassStatus.later, label: '');
-    final now = DateTime.now();
-    DateTime parse(String t) {
-      final parts = t.split(':');
-      return DateTime(now.year, now.month, now.day, int.parse(parts[0]), int.parse(parts[1]));
-    }
-
-    final start = parse(times.$1);
-    final end = parse(times.$2);
-    if (now.isAfter(start) && now.isBefore(end)) return (status: _ClassStatus.live, label: AppStrings.t('class_live'));
+  /// Live / soon / later / ended label for the class as of [now].
+  ({_ClassStatus status, String label}) _computeStatus(DateTime now) {
+    final start = periodStartOn(now, classModel.period);
+    final end = periodEndOn(now, classModel.period);
+    if (start == null || end == null) return (status: _ClassStatus.later, label: '');
+    if (!now.isBefore(start) && now.isBefore(end)) return (status: _ClassStatus.live, label: AppStrings.t('class_live'));
     if (now.isBefore(start)) {
       final diff = start.difference(now);
-      if (diff.inHours < 1) return (status: _ClassStatus.soon, label: AppStrings.t('class_min_later').replaceAll('{n}', '${diff.inMinutes}'));
+      // Round up so the last partial minute reads "1 min", never "0 min".
+      final minutes = (diff.inMicroseconds / Duration.microsecondsPerMinute).ceil();
+      if (minutes <= 60) return (status: _ClassStatus.soon, label: AppStrings.t('class_min_later').replaceAll('{n}', '$minutes'));
       return (status: _ClassStatus.later, label: AppStrings.t('class_hour_later').replaceAll('{n}', '${diff.inHours}'));
     }
     return (status: _ClassStatus.later, label: AppStrings.t('class_ended'));
@@ -42,11 +31,13 @@ class HomeClassCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final times = _periodTimes[classModel.period] ?? ('--:--', '--:--');
-    final result = _computeStatus();
+    // Re-evaluated every minute so live / "in N min" / ended stay current.
+    final now = ref.watch(minuteTickProvider).valueOrNull ?? DateTime.now();
+    final times = periodTimeLabels(classModel.period);
+    final result = _computeStatus(now);
     final isLive = result.status == _ClassStatus.live;
 
-    return GestureDetector(
+    return RepaintBoundary(child: GestureDetector(
       onTap: () => showClassDetailSheet(context, ref, classModel),
       child: Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -112,7 +103,7 @@ class HomeClassCard extends ConsumerWidget {
                 ),
                 const SizedBox(height: 3),
                 Text(
-                  '${times.$1} – ${times.$2} · ${classModel.room}',
+                  '${times.start} – ${times.end} · ${classModel.room}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
@@ -127,11 +118,14 @@ class HomeClassCard extends ConsumerWidget {
             ),
           ),
           const SizedBox(width: 8),
-          _StatusBadge(status: result.status, label: result.label),
+          if (classModel.statusAppliesTo(now))
+            _AlertBadge(cancelled: classModel.status == ClassStatus.cancelled, label: classModel.status.label)
+          else
+            _StatusBadge(status: result.status, label: result.label),
         ],
       ),
       ),
-    );
+    ));
   }
 
   String _subjectEmoji(String subject) {
@@ -184,6 +178,28 @@ class _StatusBadge extends StatelessWidget {
         status == _ClassStatus.live ? '● $label' : label,
         style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: fg, letterSpacing: 0.3),
       ),
+    );
+  }
+}
+
+/// Today's cancellation/change badge (same colors as the timetable's status
+/// banner); replaces the time-state badge when an alert is active.
+class _AlertBadge extends StatelessWidget {
+  final bool cancelled;
+  final String label;
+  const _AlertBadge({required this.cancelled, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = cancelled ? AppColors.danger : AppColors.warning;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Text(label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: color, letterSpacing: 0.3)),
     );
   }
 }

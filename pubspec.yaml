@@ -30,7 +30,6 @@ dependencies:
   flutter_animate: ^4.5.0
   table_calendar: ^3.1.2
   intl: ^0.20.2
-  google_fonts: ^6.2.1
 
   flutter_local_notifications: ^17.2.3
   timezone: ^0.9.4
@@ -67,17 +66,27 @@ flutter:
     - assets/images/
     - assets/animations/
     - assets/l10n/
+    - assets/fonts/OFL-PlusJakartaSans.txt
+    - assets/fonts/OFL-NotoSansCJK.txt
   fonts:
     - family: NotoSansJP
       fonts:
         - asset: assets/fonts/NotoSansJP-Regular.ttf
           weight: 400
-        - asset: assets/fonts/NotoSansJP-Medium.ttf
-          weight: 500
-        - asset: assets/fonts/NotoSansJP-SemiBold.ttf
-          weight: 600
         - asset: assets/fonts/NotoSansJP-Bold.ttf
           weight: 700
+    - family: Plus Jakarta Sans
+      fonts:
+        - asset: assets/fonts/PlusJakartaSans-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/PlusJakartaSans-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/PlusJakartaSans-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/PlusJakartaSans-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/PlusJakartaSans-ExtraBold.ttf
+          weight: 800
 
 flutter_launcher_icons:
   android: "launcher_icon"

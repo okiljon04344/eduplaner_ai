@@ -20,8 +20,17 @@ class LocaleNotifier extends Notifier<String> {
   /// Loads the translation JSON for [locale], persists the choice, then
   /// updates [state].  State changes only once — after the load completes —
   /// so the widget tree rebuilds exactly once with the new strings in place.
+  ///
+  /// If the load fell back to another locale (unsupported code or an
+  /// unreadable asset), nothing is persisted or changed and the previous
+  /// locale's strings are restored, so state and loaded strings never diverge.
   Future<void> setLocale(String locale) async {
+    final previous = state;
     await AppStrings.load(locale);
+    if (AppStrings.currentLocale != locale) {
+      await AppStrings.load(previous);
+      return;
+    }
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_key, locale);
     state = locale;

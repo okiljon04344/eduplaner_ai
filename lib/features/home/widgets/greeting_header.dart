@@ -59,16 +59,21 @@ class GreetingHeader extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 10),
-              Text(
-                AppStrings.t('home_greeting').replaceAll('{name}', (user?.name.isNotEmpty ?? false) ? user!.name : AppStrings.t('home_guest')),
-                style: TextStyle(
-                  fontSize: 25,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -0.5,
-                  height: 1.1,
-                  color: onHero,
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontFamilyFallback: const ['NotoSansJP'],
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: AlignmentDirectional.centerStart,
+                child: Text(
+                  AppStrings.t('home_greeting').replaceAll('{name}', (user?.name.isNotEmpty ?? false) ? user!.name : AppStrings.t('home_guest')),
+                  maxLines: 1,
+                  style: TextStyle(
+                    fontSize: 25,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.5,
+                    height: 1.1,
+                    color: onHero,
+                    fontFamily: 'Plus Jakarta Sans',
+                    fontFamilyFallback: const ['NotoSansJP'],
+                  ),
                 ),
               ),
               const SizedBox(height: 5),

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -9,11 +10,15 @@ import '../../../core/l10n/app_strings.dart';
 import '../../../core/providers/locale_provider.dart';
 import '../../../core/providers/theme_provider.dart';
 import '../../../core/services/functions_service.dart';
+import '../../../core/services/notification_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../shared/widgets/confirm_dialog.dart';
+import '../../../shared/widgets/language_picker_button.dart';
+import '../../assignments/providers/assignments_provider.dart';
 import '../../auth/models/school_type.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../timetable/providers/timetable_provider.dart';
 import '../widgets/group_share_section.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -40,17 +45,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _toggleNotifications(bool enabled) async {
-    final prefs = await SharedPreferences.getInstance();
-    if (enabled) {
+    final uid = ref.read(currentUserProvider)?.uid;
+    final supportsPermissionHandler = !kIsWeb &&
+        (defaultTargetPlatform == TargetPlatform.android ||
+            defaultTargetPlatform == TargetPlatform.iOS);
+    if (enabled && supportsPermissionHandler) {
       final status = await Permission.notification.request();
       if (!status.isGranted) {
-        await prefs.setBool('notifications_enabled', false);
+        await NotificationService.setEnabled(false, uid: uid);
         if (!mounted) return;
         setState(() => _notificationsEnabled = false);
         return;
       }
     }
-    await prefs.setBool('notifications_enabled', enabled);
+    await NotificationService.setEnabled(
+      enabled,
+      uid: uid,
+      classes: ref.read(timetableStreamProvider).valueOrNull ?? const [],
+      assignments: ref.read(assignmentsStreamProvider).valueOrNull ?? const [],
+    );
     if (!mounted) return;
     setState(() => _notificationsEnabled = enabled);
   }
@@ -139,7 +152,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          user?.name ?? AppStrings.t('set_user_fallback'),
+                          (user?.name.isNotEmpty ?? false) ? user!.name : AppStrings.t('set_user_fallback'),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.textPrimary, fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP']),
@@ -162,9 +175,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               children: [
                 _SettingsRow(
                   icon: Icons.school_outlined,
-                  iconColor: AppColors.primaryMid,
+                  iconColor: AppColors.accentText,
                   title: (user?.school?.isNotEmpty ?? false) ? user!.school! : AppStrings.t('school_setup_title'),
-                  subtitle: SchoolType.fromKey(user?.schoolType)?.label,
+                  subtitle: schoolSummary(user),
                   trailing: Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
                   onTap: () => context.push('/profile-setup'),
                 ),
@@ -175,7 +188,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               children: [
                 _SettingsRow(
                   icon: Icons.smart_toy_outlined,
-                  iconColor: AppColors.primary,
+                  iconColor: AppColors.accentText,
                   title: AppStrings.t('set_ai_assistant'),
                   subtitle: AppStrings.t('set_ai_enabled_sub'),
                   subtitleColor: AppColors.accentText,
@@ -183,13 +196,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ],
             ),
             _SectionTitle(AppStrings.t('set_class_share')),
+            // Deliberately non-const: identical-widget tree reuse freezes buttons across theme switches (CLAUDE.md 2026-08-27)
+            // ignore: prefer_const_constructors, prefer_const_literals_to_create_immutables
             _SettingsCard(children: [GroupShareSection()]),
             _SectionTitle(AppStrings.t('settings_section_notifications')),
             _SettingsCard(
               children: [
                 _SettingsRow(
                   icon: Icons.notifications_outlined,
-                  iconColor: AppColors.primaryMid,
+                  iconColor: AppColors.accentText,
                   title: AppStrings.t('settings_notifications'),
                   trailing: Switch(
                     value: _notificationsEnabled,
@@ -206,7 +221,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 Divider(height: 1, color: AppColors.dividerSubtle),
                 _SettingsRow(
                   icon: Icons.palette_outlined,
-                  iconColor: AppColors.primaryMid,
+                  iconColor: AppColors.accentText,
                   title: AppStrings.t('settings_theme'),
                   trailing: SegmentedButton<ThemeMode>(
                     showSelectedIcon: false,
@@ -397,68 +412,10 @@ class _LanguageTile extends ConsumerWidget {
 
     return _SettingsRow(
       icon: Icons.language_outlined,
-      iconColor: AppColors.primaryMid,
+      iconColor: AppColors.accentText,
       title: AppStrings.t('settings_language'),
       trailing: Text(currentLabel, style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
-      onTap: () => _showLanguagePicker(context, ref, currentLocale),
-    );
-  }
-
-  void _showLanguagePicker(BuildContext context, WidgetRef ref, String currentLocale) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      isScrollControlled: true,
-      builder: (ctx) => DraggableScrollableSheet(
-        initialChildSize: 0.7,
-        minChildSize: 0.4,
-        maxChildSize: 0.9,
-        expand: false,
-        builder: (_, sc) => Column(
-          children: [
-            const SizedBox(height: 12),
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.border,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              AppStrings.t('settings_language'),
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
-            ),
-            const SizedBox(height: 8),
-            Expanded(
-              child: ListView.builder(
-                controller: sc,
-                itemCount: AppStrings.locales.length,
-                itemBuilder: (_, i) {
-                  final (code, name, flag) = AppStrings.locales[i];
-                  final isSelected = code == currentLocale;
-                  return ListTile(
-                    leading: Text(flag, style: const TextStyle(fontSize: 24)),
-                    title: Text(name, style: TextStyle(
-                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
-                      color: isSelected ? AppColors.primary : AppColors.textPrimary,
-                    )),
-                    trailing: isSelected ? const Icon(Icons.check_rounded, color: AppColors.primary) : null,
-                    onTap: () {
-                      Navigator.pop(ctx);
-                      ref.read(localeProvider.notifier).setLocale(code);
-                    },
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
+      onTap: () => showLanguagePicker(context, ref, currentLocale),
     );
   }
 }

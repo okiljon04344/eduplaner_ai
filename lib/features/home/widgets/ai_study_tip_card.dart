@@ -21,7 +21,19 @@ class _AiStudyTipCardState extends ConsumerState<AiStudyTipCard> with SingleTick
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(seconds: 3))..repeat(reverse: true);
+    _controller = AnimationController(vsync: this, duration: const Duration(seconds: 3));
+  }
+
+  bool _started = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Two back-and-forth cycles, then rest at the start value (battery).
+    if (!_started && !MediaQuery.disableAnimationsOf(context)) {
+      _started = true;
+      _controller.repeat(reverse: true, count: 4);
+    }
   }
 
   @override
@@ -128,7 +140,7 @@ class _AiStudyTipCardState extends ConsumerState<AiStudyTipCard> with SingleTick
                 shape: BoxShape.circle,
                 border: Border.all(color: AppColors.primaryMid.withValues(alpha: 0.4)),
               ),
-              child: const Icon(Icons.arrow_forward, size: 15, color: AppColors.primaryLight),
+              child: Icon(Icons.arrow_forward, size: 15, color: AppColors.accentText),
             ),
           ],
         ),

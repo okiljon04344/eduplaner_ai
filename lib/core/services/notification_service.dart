@@ -1,28 +1,48 @@
+import 'dart:async';
+import 'dart:ui' show Color;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/timezone.dart' as tz;
+import '../../core/constants/periods.dart';
 import '../../core/l10n/app_strings.dart';
 import '../../features/assignments/models/assignment_model.dart';
 import '../../features/timetable/models/class_model.dart';
 
 abstract class NotificationService {
   static final FlutterLocalNotificationsPlugin _plugin = FlutterLocalNotificationsPlugin();
+  static bool _initialized = false;
+  static bool _enabled = true;
+
+  static bool get isEnabled => _enabled;
+
+  // Must match default_notification_channel_id in AndroidManifest.xml and the
+  // channelId in functions/index.js.
+  static const _channelId = 'eduplanner_reminders';
 
   static AndroidNotificationDetails get _androidDetails => AndroidNotificationDetails(
-    'eduplanner_reminders',
+    _channelId,
     AppStrings.t('notif_channel_name'),
     channelDescription: AppStrings.t('notif_channel_desc'),
     importance: Importance.high,
     priority: Priority.high,
+    icon: 'ic_stat_notify',
+    color: const Color(0xFF059669),
   );
 
   static NotificationDetails get _details => NotificationDetails(android: _androidDetails, iOS: const DarwinNotificationDetails());
 
   static Future<void> initialize() async {
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      _enabled = prefs.getBool('notifications_enabled') ?? true;
+    } catch (e) {
+      debugPrint('Notification pref read error: $e');
+    }
+    const androidSettings = AndroidInitializationSettings('ic_stat_notify');
     const iosSettings = DarwinInitializationSettings(
       requestAlertPermission: true,
       requestBadgePermission: true,
@@ -32,6 +52,17 @@ abstract class NotificationService {
       const InitializationSettings(android: androidSettings, iOS: iosSettings),
       onDidReceiveNotificationResponse: _onNotificationTap,
     );
+    _initialized = true;
+    // FCM pushes name this channel; it must exist before the first one lands
+    // or Android files them under its fallback "Miscellaneous" channel.
+    await _plugin
+        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(AndroidNotificationChannel(
+          _channelId,
+          AppStrings.t('notif_channel_name'),
+          description: AppStrings.t('notif_channel_desc'),
+          importance: Importance.high,
+        ));
 
     // Web push requires a `firebase-messaging-sw.js` service worker file at
     // the site root (VAPID key setup, HTTPS-only registration, etc.) that
@@ -40,32 +71,46 @@ abstract class NotificationService {
     // web rather than leave the browser with a permanently-stuck SW
     // registration; class/assignment reminders still work via the local
     // notifications plugin above on every platform.
-    if (kIsWeb) return;
-
-    // FCM push tokens aren't wired up to any desktop notification channel,
-    // and `requestPermission()`/`getToken()` can hang indefinitely on
-    // Windows/Linux (no native push transport there). Skip FCM entirely on
-    // desktop, same as the web skip above — local reminders below (used on
-    // every platform) don't depend on this and are unaffected.
-    if (defaultTargetPlatform == TargetPlatform.windows ||
-        defaultTargetPlatform == TargetPlatform.linux) {
-      return;
-    }
+    if (!_pushSupported) return;
 
     try {
       await FirebaseMessaging.instance.requestPermission();
       FirebaseMessaging.onMessage.listen(_onForegroundMessage);
       FirebaseMessaging.onMessageOpenedApp.listen(_onMessageOpenedApp);
-      final token = await FirebaseMessaging.instance.getToken();
-      final uid = FirebaseAuth.instance.currentUser?.uid;
-      if (token != null && uid != null) {
-        await FirebaseFirestore.instance.collection('users').doc(uid).set(
-          {'fcmToken': token},
-          SetOptions(merge: true),
-        );
-      }
+      // Store the token for whoever is signed in *now or later*: at app
+      // start on a fresh install nobody is signed in yet, so a one-shot
+      // write here would never happen. Also re-store on token rotation.
+      FirebaseAuth.instance.authStateChanges().listen((user) {
+        if (user != null && _enabled) unawaited(_storeToken(user.uid));
+      });
+      FirebaseMessaging.instance.onTokenRefresh.listen((token) {
+        final uid = FirebaseAuth.instance.currentUser?.uid;
+        if (uid != null && _enabled) unawaited(_storeToken(uid, token));
+      });
     } catch (e) {
       debugPrint('Firebase messaging init error: $e');
+    }
+  }
+
+  /// Web needs a `firebase-messaging-sw.js` service worker this project
+  /// doesn't ship (`getToken()` hangs forever without it), and
+  /// Windows/Linux have no native push transport (`requestPermission()`/
+  /// `getToken()` can hang there too). Local reminders don't depend on this.
+  static bool get _pushSupported =>
+      !kIsWeb &&
+      defaultTargetPlatform != TargetPlatform.windows &&
+      defaultTargetPlatform != TargetPlatform.linux;
+
+  static Future<void> _storeToken(String uid, [String? token]) async {
+    try {
+      token ??= await FirebaseMessaging.instance.getToken();
+      if (token == null) return;
+      await FirebaseFirestore.instance.collection('users').doc(uid).set(
+        {'fcmToken': token},
+        SetOptions(merge: true),
+      );
+    } catch (e) {
+      debugPrint('FCM token store error: $e');
     }
   }
 
@@ -75,47 +120,101 @@ abstract class NotificationService {
 
   static void _onForegroundMessage(RemoteMessage message) {
     debugPrint('Foreground message received: ${message.messageId}');
+    if (!_enabled) return;
+    final n = message.notification;
+    if (n == null) return;
+    unawaited(_plugin.show(
+      message.messageId?.hashCode ?? DateTime.now().millisecondsSinceEpoch.toSigned(32),
+      n.title,
+      n.body,
+      _details,
+    ));
   }
 
   static void _onMessageOpenedApp(RemoteMessage message) {
     debugPrint('Message opened app: ${message.messageId}');
   }
 
-  static (int, int)? _periodStart(int period) {
-    switch (period) {
-      case 1:
-        return (9, 0);
-      case 2:
-        return (10, 50);
-      case 3:
-        return (13, 0);
-      case 4:
-        return (14, 50);
-      case 5:
-        return (16, 40);
-      case 6:
-        return (18, 30);
-      default:
-        return null;
+  /// Updates the user's notification preference, persists it to
+  /// [SharedPreferences], and either clears all active reminders + unlinks FCM
+  /// (when disabled) or re-registers FCM + reschedules reminders (when enabled).
+  static Future<void> setEnabled(
+    bool enabled, {
+    String? uid,
+    Iterable<ClassModel> classes = const [],
+    Iterable<AssignmentModel> assignments = const [],
+  }) async {
+    _enabled = enabled;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('notifications_enabled', enabled);
+    } catch (e) {
+      debugPrint('Notification pref write error: $e');
+    }
+    if (!enabled) {
+      try {
+        await cancelAll();
+      } catch (e) {
+        debugPrint('Cancel reminders error: $e');
+      }
+      if (uid != null && uid.isNotEmpty) {
+        try {
+          await unregisterPushToken(uid);
+        } catch (e) {
+          debugPrint('Unregister push token error: $e');
+        }
+      }
+      return;
+    }
+    if (uid != null && uid.isNotEmpty && _pushSupported) {
+      unawaited(_storeToken(uid));
+    }
+    await syncAllReminders(classes: classes, assignments: assignments);
+  }
+
+  /// Schedules local reminders for [classes] and incomplete [assignments]
+  /// when notifications are initialized and enabled. Safe no-op in unit tests
+  /// (where [initialize] is not called) or when notifications are disabled.
+  static Future<void> syncAllReminders({
+    Iterable<ClassModel> classes = const [],
+    Iterable<AssignmentModel> assignments = const [],
+  }) async {
+    if (!_initialized || !_enabled) return;
+    for (final c in classes) {
+      try {
+        await scheduleClassReminder(c);
+      } catch (e) {
+        debugPrint('Class reminder sync error: $e');
+      }
+    }
+    for (final a in assignments) {
+      if (a.status == AssignmentStatus.completed) continue;
+      try {
+        await scheduleAssignmentReminders(a);
+      } catch (e) {
+        debugPrint('Assignment reminder sync error: $e');
+      }
     }
   }
 
-  static int? _weekday(String day) {
-    switch (day) {
-      case '月':
-        return DateTime.monday;
-      case '火':
-        return DateTime.tuesday;
-      case '水':
-        return DateTime.wednesday;
-      case '木':
-        return DateTime.thursday;
-      case '金':
-        return DateTime.friday;
-      default:
-        return null;
-    }
+  /// Class reminder body for [key]; drops the " ({room})" part when the
+  /// (optional) room is blank so it never reads "Math ()".
+  @visibleForTesting
+  static String classReminderText(String key, ClassModel c) {
+    final start = periodStart(c.period);
+    final text = AppStrings.t(key, {
+      'n': c.period,
+      'subject': c.subject,
+      'room': c.room.trim(),
+      'time': start == null ? '' : formatHm(start),
+    });
+    // ponytail: heuristic strip; a subject that itself ends in "()" would lose it.
+    return c.room.trim().isEmpty ? text.replaceAll(' ()', '').replaceAll('()', '') : text;
   }
+
+  /// Start time of [period] — the same table the timetable/home cards show.
+  @visibleForTesting
+  static Hm? periodStart(int period) => kPeriodTimes[period]?.start;
 
   static tz.TZDateTime _nextWeekdayTime({required int weekday, required int hour, required int minute}) {
     final now = tz.TZDateTime.now(tz.local);
@@ -147,41 +246,75 @@ abstract class NotificationService {
   }
 
   static Future<void> scheduleClassReminder(ClassModel c) async {
-    final weekday = _weekday(c.dayOfWeek);
-    final start = _periodStart(c.period);
+    final weekday = weekdayFromKanji(c.dayOfWeek);
+    final start = periodStart(c.period);
     if (weekday == null || start == null) return;
+
+    // Clear the previous schedule first: an edit may move the class to a
+    // different day/period, and the old weekly reminder must not survive.
+    await cancelClassReminders(c.id);
+    if (!_enabled) return;
 
     final classStart = _nextWeekdayTime(weekday: weekday, hour: start.$1, minute: start.$2);
     final morning = _nextWeekdayTime(weekday: weekday, hour: 7, minute: 0);
-    final beforeClass = classStart.subtract(const Duration(minutes: 30));
-    final args = {'n': c.period, 'subject': c.subject, 'room': c.room};
+    var beforeClass = classStart.subtract(const Duration(minutes: 30));
+    // Added less than 30 min before the class: start the weekly repeat next
+    // week instead of never scheduling it at all.
+    if (!beforeClass.isAfter(tz.TZDateTime.now(tz.local))) {
+      beforeClass = beforeClass.add(const Duration(days: 7));
+    }
 
     // The morning notice and the pre-class notice are independent
     // notifications (different ids/times) — schedule them concurrently.
-    final futures = <Future<void>>[
+    // Ids derive from the document id (stable across edits), never from
+    // `c.hashCode`, which changes whenever any field changes.
+    await Future.wait([
       _schedule(
-        c.hashCode,
+        c.id.hashCode,
         AppStrings.t('notif_class_rem_title'),
-        AppStrings.t('notif_class_rem_today', args),
+        classReminderText('notif_class_rem_today', c),
         morning,
         matchComponents: DateTimeComponents.dayOfWeekAndTime,
       ),
-    ];
-    if (beforeClass.isAfter(tz.TZDateTime.now(tz.local))) {
-      futures.add(_schedule(
-        c.hashCode + 1,
+      _schedule(
+        c.id.hashCode + 1,
         AppStrings.t('notif_class_rem_title'),
-        AppStrings.t('notif_class_rem_soon', args),
+        classReminderText('notif_class_rem_soon', c),
         beforeClass,
         matchComponents: DateTimeComponents.dayOfWeekAndTime,
-      ));
+      ),
+    ]);
+  }
+
+  static Future<void> cancelClassReminders(String id) {
+    return Future.wait([
+      _plugin.cancel(id.hashCode),
+      _plugin.cancel(id.hashCode + 1),
+    ]);
+  }
+
+  /// Drops every pending local reminder — used on sign-out so the next
+  /// account on this device doesn't inherit the previous user's schedule.
+  static Future<void> cancelAll() => _plugin.cancelAll();
+
+  /// Unlinks this device from [uid]'s push notifications (sign-out): clears
+  /// the stored token so `onClassStatusChanged` stops targeting it, then
+  /// invalidates the token itself.
+  static Future<void> unregisterPushToken(String uid) async {
+    if (!_pushSupported) return;
+    // `update`, not `set(merge)`: right after deleteAccount the doc is gone,
+    // and a merge-set would recreate it as an empty orphan.
+    try {
+      await FirebaseFirestore.instance.collection('users').doc(uid).update({'fcmToken': FieldValue.delete()});
+    } catch (e) {
+      debugPrint('FCM token unlink skipped: $e');
     }
-    await Future.wait(futures);
+    await FirebaseMessaging.instance.deleteToken();
   }
 
   static Future<void> scheduleAssignmentReminders(AssignmentModel a) async {
     await cancelAssignmentReminders(a.id);
-    if (a.status == AssignmentStatus.completed) return;
+    if (!_enabled || a.status == AssignmentStatus.completed) return;
 
     final dueDay = DateTime(a.dueDate.year, a.dueDate.month, a.dueDate.day);
     final now = tz.TZDateTime.now(tz.local);

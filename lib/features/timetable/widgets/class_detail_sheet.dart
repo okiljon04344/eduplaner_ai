@@ -6,6 +6,7 @@ import '../../../core/l10n/app_strings.dart';
 import '../../../core/utils/date_helper.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/confirm_dialog.dart';
+import '../../auth/providers/auth_provider.dart';
 import '../models/class_model.dart';
 import '../providers/timetable_provider.dart';
 import 'add_edit_class_sheet.dart';
@@ -28,11 +29,25 @@ class _ClassDetailSheet extends ConsumerWidget {
     await showAddEditClassSheet(context, ref, existing: classModel);
   }
 
+  void _showError(BuildContext context, String message) {
+    toastification.show(
+      context: context,
+      type: ToastificationType.error,
+      style: ToastificationStyle.flat,
+      title: Text(message),
+      autoCloseDuration: const Duration(seconds: 2),
+    );
+  }
+
   Future<void> _delete(BuildContext context, WidgetRef ref) async {
     final ok = await showConfirmDialog(context, title: AppStrings.t('tt_delete_class'), message: AppStrings.t('tt_delete_confirm', {'subject': classModel.subject}));
     if (!ok) return;
-    await ref.read(timetableNotifierProvider.notifier).deleteClass(classModel.id);
+    final error = await ref.read(timetableNotifierProvider.notifier).deleteClass(classModel.id);
     if (!context.mounted) return;
+    if (error != null) {
+      _showError(context, error);
+      return;
+    }
     Navigator.pop(context);
     toastification.show(
       context: context,
@@ -58,13 +73,7 @@ class _ClassDetailSheet extends ConsumerWidget {
         );
     if (!context.mounted) return;
     if (error != null) {
-      toastification.show(
-        context: context,
-        type: ToastificationType.error,
-        style: ToastificationStyle.flat,
-        title: Text(error),
-        autoCloseDuration: const Duration(seconds: 2),
-      );
+      _showError(context, error);
       return;
     }
     Navigator.pop(context);
@@ -78,14 +87,21 @@ class _ClassDetailSheet extends ConsumerWidget {
   }
 
   Future<void> _clearStatus(BuildContext context, WidgetRef ref) async {
-    await ref.read(timetableNotifierProvider.notifier).setStatus(classModel, status: ClassStatus.normal);
+    final error = await ref.read(timetableNotifierProvider.notifier).setStatus(classModel, status: ClassStatus.normal);
     if (!context.mounted) return;
+    if (error != null) {
+      _showError(context, error);
+      return;
+    }
     Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final style = SubjectColors.of(classModel.subject);
+    // Members of a shared timetable see each other's rows, but only the
+    // creator may edit or delete one (Firestore rules enforce the same).
+    final isMine = classModel.userId == ref.watch(currentUserProvider)?.uid;
     return SafeArea(
       top: false,
       child: Column(
@@ -112,7 +128,7 @@ class _ClassDetailSheet extends ConsumerWidget {
             padding: const EdgeInsets.all(20),
             child: Column(
               children: [
-                if (classModel.hasStatusAlertToday) ...[
+                if (classModel.hasStatusAlertUpcoming) ...[
                   _StatusBanner(classModel: classModel, onClear: () => _clearStatus(context, ref)),
                   const SizedBox(height: 16),
                 ],
@@ -122,22 +138,24 @@ class _ClassDetailSheet extends ConsumerWidget {
                 const SizedBox(height: 10),
                 _InfoRow(icon: Icons.location_on_outlined, label: classModel.room),
                 const SizedBox(height: 20),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(onPressed: () => _edit(context, ref), child: Text(AppStrings.t('common_edit'))),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => _delete(context, ref),
-                        style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.danger), foregroundColor: AppColors.danger),
-                        child: Text(AppStrings.t('common_delete')),
+                if (isMine) ...[
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(onPressed: () => _edit(context, ref), child: Text(AppStrings.t('common_edit'))),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => _delete(context, ref),
+                          style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.danger), foregroundColor: AppColors.danger),
+                          child: Text(AppStrings.t('common_delete')),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                ],
                 SizedBox(
                   width: double.infinity,
                   child: TextButton.icon(
@@ -164,6 +182,11 @@ class _StatusBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final cancelled = classModel.status == ClassStatus.cancelled;
     final color = cancelled ? AppColors.danger : AppColors.warning;
+    final date = classModel.statusDate;
+    // "Today: …" only when the status really is for today; otherwise name the date.
+    final title = classModel.hasStatusAlertToday || date == null
+        ? AppStrings.t('cls_today_status', {'status': classModel.status.label})
+        : '${date.month}/${date.day} ${classModel.status.label}';
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),
@@ -181,7 +204,7 @@ class _StatusBanner extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(AppStrings.t('cls_today_status', {'status': classModel.status.label}), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: color)),
+                Text(title, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: color)),
                 if (classModel.statusNote != null && classModel.statusNote!.isNotEmpty) ...[
                   const SizedBox(height: 2),
                   Text(classModel.statusNote!, style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
@@ -223,6 +246,13 @@ class _StatusReportSheetState extends State<_StatusReportSheet> {
     super.dispose();
   }
 
+  /// M/D of the occurrence the report applies to (see [nextClassDate]).
+  String get _dateLabel {
+    final c = widget.classModel;
+    final d = nextClassDate(dayOfWeek: c.dayOfWeek, period: c.period);
+    return d == null ? '' : '${d.month}/${d.day}';
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -233,7 +263,7 @@ class _StatusReportSheetState extends State<_StatusReportSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(AppStrings.t('cls_report_title', {'subject': widget.classModel.subject}), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+            Text(AppStrings.t('cls_report_title', {'subject': widget.classModel.subject, 'date': _dateLabel}), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
             const SizedBox(height: 16),
             Row(
               children: [
@@ -260,6 +290,7 @@ class _StatusReportSheetState extends State<_StatusReportSheet> {
             TextField(
               controller: _noteController,
               maxLines: 2,
+              maxLength: 200, // firestore.rules statusNoteOk
               style: TextStyle(color: AppColors.textPrimary),
               decoration: InputDecoration(hintText: AppStrings.t('cls_note_hint'), border: const OutlineInputBorder()),
             ),
