@@ -1,5 +1,0 @@
-- [x] `AppColors` klassini har bir rejim uchun alohida rang qaytaradigan qilib yangilash
-- [x] `AppTheme` ni statik o'zgaruvchilarga bog'lanmagan holda mustaqil qurish
-- [x] `GreetingHeader` va `HomeScreen` dagi vizual xatoliklarni (ranglar va burchaklar) to'g'irlash
-- [x] `main.dart` dagi qattiq kodlangan tizim ranglarini olib tashlash
-- [x] Barcha o'zgarishlarni Light va Dark mode'da tekshirish

@@ -1,180 +1,120 @@
 # EduPlanner AI
 
-EduPlanner AI - yapon kasb-hunar maktabi talabasi uchun Flutter asosida yozilgan o'quv rejalashtirish ilovasi. Ilova dars jadvali, topshiriqlar, haftalik progress, Google login, Firebase Firestore saqlash, push notification va Gemini API orqali AI yordamchini birlashtiradi.
+> 専門学校生のための AI 学習管理アプリ（卒業研究）
+> AI-powered study planner for vocational school students — graduation research project.
 
-## Texnologiyalar
+![Flutter](https://img.shields.io/badge/Flutter-02569B?logo=flutter&logoColor=white)
+![Dart](https://img.shields.io/badge/Dart-0175C2?logo=dart&logoColor=white)
+![Firebase](https://img.shields.io/badge/Firebase-FFCA28?logo=firebase&logoColor=black)
+![Gemini](https://img.shields.io/badge/Gemini_API-8E75B2?logo=googlegemini&logoColor=white)
+![Tests](https://img.shields.io/badge/tests-118_passed-brightgreen)
 
-- Flutter SDK `>=3.3.0`
-- State management: `flutter_riverpod`
-- Routing: `go_router`
-- Backend: Firebase Core, Auth, Firestore, Messaging
-- AI: Gemini API (`google_generative_ai`, model: `gemini-1.5-flash`)
-- UI: Material 3, NotoSansJP, `hugeicons`, `fl_chart`, `flutter_animate`, `table_calendar`
-- Storage: `shared_preferences`, `flutter_secure_storage`
-- Code generation: `freezed`, `json_serializable`, `build_runner`
+[日本語](#日本語) ・ [English](#english) ・ [O'zbekcha](#ozbekcha)
 
-## Asosiy Papkalar
+---
 
-- `lib/main.dart` - Flutter, Firebase, notification va app bootstrap.
-- `lib/app.dart` - `MaterialApp.router`, theme va lokalizatsiya.
-- `lib/core/` - theme, router, constants, provider, utility va notification service.
-- `lib/shared/` - umumiy UI widgetlar.
-- `lib/features/auth/` - Google login va user modeli.
-- `lib/features/home/` - bosh sahifa, progress va AI maslahat.
-- `lib/features/timetable/` - dars jadvali CRUD.
-- `lib/features/assignments/` - topshiriqlar CRUD va filterlar.
-- `lib/features/ai_chat/` - Gemini API bilan chat.
-- `lib/features/settings/` - sozlamalar, theme, logout va Gemini API key saqlash.
-- `firestore.rules` - Firestore xavfsizlik qoidalari.
+## 日本語
 
-## Kerakli Dasturlar
+### 概要
+時間割・課題・勉強のモチベーションを 1 つのアプリで管理できる学習プランナーです。
+生成 AI（Gemini API）を **Cloud Functions 経由** で呼び出し、API キーをアプリに埋め込まない安全な構成にしています。
 
-```bash
-flutter --version
-flutter doctor
-dart --version
+### 主な機能
+| 機能 | 内容 |
+|---|---|
+| 時間割 | 曜日ごとの授業 CRUD、週切り替え、休講などのステータス変更通知 |
+| 課題管理 | 締切・優先度・フィルター、期限が近い課題のバッジ表示 |
+| ホーム | 週ごとの進捗グラフ（`fl_chart`）、AI からのひとことアドバイス |
+| AI チューター | Gemini と学習相談チャット（`chatWithTutor`） |
+| テスト問題生成 | 科目・範囲からクイズを自動生成（`generateQuiz`）、苦手分野の分析（`analyzeWeakArea`） |
+| 課題の AI フィードバック | 提出物を AI が分析（`analyzeAssignmentSubmission`） |
+| グループ | 招待コードでクラスに参加（`joinGroupByCode`） |
+| 通知 | FCM プッシュ通知 + ローカルリマインダー |
+| 多言語 | 日本語・英語・ウズベク語など **21 言語** |
+| アカウント | Google ログイン、アカウント削除（`deleteAccount`） |
+
+### 技術スタック
+- **アプリ:** Flutter / Dart, Riverpod（`riverpod_annotation`）, go_router, Material 3
+- **バックエンド:** Firebase Auth, Cloud Firestore, Cloud Functions (v2), Firebase Cloud Messaging, Analytics
+- **AI:** Gemini API（`gemini-flash-latest`）— キーは Cloud Functions の Secret（`GEMINI_API_KEY`）で管理
+- **コード生成:** freezed, json_serializable, build_runner
+- **品質:** `flutter analyze` 警告 0 件、ウィジェット / ユニットテスト 118 件
+
+### アーキテクチャ
+```mermaid
+flowchart LR
+  App["Flutter アプリ<br/>Riverpod + go_router"] -->|Auth| FA[Firebase Auth]
+  App -->|読み書き| FS[(Cloud Firestore)]
+  App -->|httpsCallable| CF[Cloud Functions]
+  CF -->|Secret: GEMINI_API_KEY| G[Gemini API]
+  CF --> FS
+  FS -->|onDocumentUpdated| CF
+  CF -->|FCM| App
 ```
 
-Android telefon orqali ishga tushirish uchun:
-
-```bash
-adb devices -l
-flutter devices
+### フォルダ構成
+```
+lib/
+  core/       テーマ・ルーター・定数・通知サービス
+  shared/     共通ウィジェット
+  features/   auth, onboarding, landing, home, timetable, assignments,
+              ai_chat, quiz, groups, settings
+functions/    Cloud Functions（Node.js）
+firestore.rules  セキュリティルール
 ```
 
-## O'rnatish
-
-Project root:
-
+### セットアップ
 ```bash
-cd /home/yashiloyceo/Desktop/eduplanner_ai
 flutter pub get
+dart run build_runner build --delete-conflicting-outputs
+
+# Firebase（自分のプロジェクトで）
+flutterfire configure
+
+# Cloud Functions
+cd functions && npm install
+firebase functions:secrets:set GEMINI_API_KEY
+firebase deploy --only functions,firestore:rules
 ```
 
-Code generation:
-
+### 実行・テスト
 ```bash
-flutter pub run build_runner build --delete-conflicting-outputs
-```
-
-## Firebase Sozlash
-
-Loyiha quyidagi Firebase account/projectga ulangan:
-
-```text
-Firebase account: okiljonnabev@gmail.com
-Firebase project name: EduPlannerAI
-Firebase project id: eduplannerai-97365
-Firebase project number: 351731284172
-```
-
-`lib/firebase_options.dart` FlutterFire CLI orqali real Android/iOS/Web app konfiguratsiyalari bilan generatsiya qilingan. Konfiguratsiyani qayta yaratish kerak bo'lsa:
-
-```bash
-flutterfire configure --project=eduplannerai-97365 --platforms=android,ios,web --android-package-name=com.example.eduplanner_ai --ios-bundle-id=com.example.eduplannerAi --yes
-```
-
-Firebase Console ichida quyidagilar yoqilgan bo'lishi kerak:
-
-- Authentication: Google Sign-In
-- Cloud Firestore
-- Firebase Cloud Messaging
-- iOS/Android app konfiguratsiyalari
-
-Firestore rules deploy:
-
-```bash
-firebase deploy --only firestore:rules
-```
-
-Firestore API va default database yaratildi, `firestore.rules` deploy qilindi.
-
-## Gemini API Key
-
-Gemini API key kod ichida hardcode qilinmaydi. Ilova ishga tushgach:
-
-1. Home sahifadan Settings ekraniga o'ting.
-2. `Gemini API キー` bo'limini oching.
-3. O'zingizning Anthropic API key qiymatingizni kiriting.
-
-Key `flutter_secure_storage` ichida `gemini_api_key` nomi bilan saqlanadi.
-
-## Ishga Tushirish
-
-Chrome:
-
-```bash
-flutter run -d chrome
-```
-
-Gemini API key bilan lokal ishga tushirish:
-
-```bash
-flutter run -d chrome --dart-define-from-file=.env.local.json
-```
-
-Wi-Fi ADB orqali ulangan Android qurilma:
-
-```bash
-flutter run -d adb-Y5RGCMFMYDWGONZL-w7mdQ4._adb-tls-connect._tcp --dart-define-from-file=.env.local.json
-```
-
-Device id o'zgarsa, `flutter devices` dan yangi id ni oling.
-
-## Tekshirish
-
-Static analysis:
-
-```bash
+flutter run            # 接続中のデバイスで起動
+flutter run -d chrome  # Web
 flutter analyze
-```
-
-Testlar:
-
-```bash
 flutter test
 ```
 
-Web build:
+---
 
-```bash
-flutter build web
-```
+## English
 
-Android debug APK:
+**EduPlanner AI** is a Flutter study planner built as a graduation research project at a Japanese IT vocational school.
+It combines a timetable, assignment tracker, weekly progress charts and an AI tutor.
+All Gemini calls go through **Firebase Cloud Functions**, so the API key never ships inside the app.
 
-```bash
-flutter build apk --debug
-```
+**Highlights**
+- Timetable & assignment CRUD with deadline badges and reminders
+- AI tutor chat, quiz generation, weak-area analysis and AI feedback on submissions
+- Class groups via invite codes, FCM push notifications
+- 21 UI languages
+- Riverpod + go_router architecture, 118 automated tests, zero analyzer warnings
 
-APK manzili:
+**Quick start:** see the *セットアップ* section above (same commands).
 
-```text
-build/app/outputs/flutter-apk/app-debug.apk
-```
+---
 
-## Common Errors
+## O'zbekcha
 
-`intl` dependency conflict:
+**EduPlanner AI** — yapon IT kasb-hunar maktabi talabalari uchun Flutter'da yozilgan o'quv rejalashtiruvchi ilova (bitiruv ishi).
 
-Current Flutter SDK `flutter_localizations` orqali `intl 0.20.2` ni pin qiladi. Shu sabab `pubspec.yaml` da `intl: ^0.20.2` ishlatilgan.
+- Dars jadvali, topshiriqlar, haftalik progress grafigi
+- Gemini AI yordamchi: chat, test savollari generatsiyasi, zaif mavzularni tahlil qilish
+- Gemini API key ilova ichida **saqlanmaydi**: so'rovlar Cloud Functions orqali yuboriladi, key esa `GEMINI_API_KEY` Secret sifatida server'da turadi
+- 21 ta til, Google login, push bildirishnomalar
 
-`FirebaseOptions` placeholder bilan login yoki Firestore ishlamayapti:
+O'rnatish buyruqlari yuqoridagi *セットアップ* bo'limida.
 
-`flutterfire configure` bajaring va Firebase Console da Auth/Firestore yoqilganini tekshiring.
+---
 
-Gemini javob bermayapti:
-
-Settings ekranida Gemini API key kiritilganini va key faol ekanini tekshiring.
-
-Android qurilma ko'rinmayapti:
-
-Telefon va laptop bir Wi-Fi tarmog'ida ekanini, Wireless debugging ulanganini va `adb devices -l` qurilmani ko'rsatayotganini tekshiring.
-
-## Final Start Command
-
-Hozir ulangan Wi-Fi ADB telefon uchun:
-
-```bash
-flutter run -d adb-Y5RGCMFMYDWGONZL-w7mdQ4._adb-tls-connect._tcp
-```
+© 2026 Okiljon Nabev — [Portfolio](https://okiljon04344.github.io) ・ [GitHub](https://github.com/okiljon04344)

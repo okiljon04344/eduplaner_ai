@@ -83,3 +83,6 @@ ios/Flutter/App.framework.dSYM
 
 graphify-out/
 docs/hearing/
+
+# AI agent artifacts
+.artifacts/
