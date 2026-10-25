@@ -321,7 +321,7 @@ class _WeeklyProgressBar extends StatelessWidget {
     final pct = total == 0 ? 0.0 : completed / total;
     final pctText = '${(pct * 100).round()}%';
     final isDark = AppColors.isDark;
-    final labelColor = AppColors.isDark ? AppColors.primaryLight : AppColors.primaryIndigo;
+    final labelColor = AppColors.isDark ? AppColors.primaryLight : AppColors.primaryDark;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),

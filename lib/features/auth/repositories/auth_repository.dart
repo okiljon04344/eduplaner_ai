@@ -305,8 +305,6 @@ class AuthRepository {
     await Future.wait([_auth.signOut(), _googleSignIn.signOut()]);
   }
 
-  String? get currentUid => _auth.currentUser?.uid;
-
   /// Merges the mandatory school-profile fields into the current user's
   /// Firestore doc. [grade]/[program]/[faculty]/[department]/[course] are optional —
   /// blank strings are written as `null` so they render as "not set" rather

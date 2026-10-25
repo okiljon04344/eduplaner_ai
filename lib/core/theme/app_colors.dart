@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 
-/// EduPlanner AI dizayn tokenlari — Green Neon.
-/// Tema o'zgarganda [applyBrightness] orqali statik ranglar yangilanadi.
+/// Color tokens. The mutable statics below are swapped by [applyBrightness]
+/// when the theme changes.
 abstract class AppColors {
-  // ==================== Tema holatiga bog'liq ranglar (Mutable) ====================
   static Color bgDeep = darkBgDeep;
   static Color background = darkBackground;
   static Color surface = darkSurface;
@@ -15,8 +14,7 @@ abstract class AppColors {
   static Color textSecondary = darkTextSecondary;
   static Color textMuted = darkTextMuted;
 
-  /// Hero panellardagi matn rangi. 
-  /// Darkda oq, Lightda textPrimary (qora) bo'lishi shart.
+  /// Text on hero panels: white in dark mode, [textPrimary] in light mode.
   static Color textOnHero = Colors.white;
 
   static Color border = darkBorder;
@@ -32,7 +30,7 @@ abstract class AppColors {
   static Color checkboxUnchecked = darkCheckboxUnchecked;
   static Color iconButtonBg = darkIconButtonBg;
 
-  // Subject colors (Mutable statics for theme-aware coloring)
+  // Subject colors; mutable so they follow the theme.
   static Color progText = darkProgText;
   static Color progDot = darkProgDot;
   static Color mathText = darkMathText;
@@ -103,7 +101,7 @@ abstract class AppColors {
     histDot = isDarkMode ? darkHistDot : lightHistDot;
   }
 
-  // ---- Dark Mode Constants ----
+  // Dark palette.
   static const darkBgDeep = Color(0xFF0C0A08);
   static const darkBackground = Color(0xFF100C08);
   static const darkSurface = Color(0xFF17120A);
@@ -157,7 +155,7 @@ abstract class AppColors {
     BoxShadow(color: Color(0x4006D6A0), blurRadius: 20, offset: Offset(0, 4)),
   ];
 
-  // ---- Light Mode Constants ----
+  // Light palette.
   static const lightBgDeep = Color(0xFFF7F6F3);
   static const lightBackground = Color(0xFFFFFFFF);
   static const lightSurface = Color(0xFFFFFFFF);
@@ -213,19 +211,16 @@ abstract class AppColors {
     BoxShadow(color: Color(0x1A06D6A0), blurRadius: 24, offset: Offset(0, 4)),
   ];
 
-  // ==================== Brand/accent (shared) ====================
+  // Brand and accent colors (same in both themes).
   static const primary = Color(0xFF06D6A0);
 
-  /// Label/icon color for content drawn ON primary/gradientPrimary fills —
-  /// white on #06D6A0 is only 1.89:1.
+  /// Label/icon color on primary fills; white on #06D6A0 is only 1.89:1 contrast.
   static const onPrimary = Color(0xFF04291F);
   static const primaryMid = Color(0xFF34D399);
   static const primaryLight = Color(0xFF5EEAD4);
   static const primaryDark = Color(0xFF059669);
-  static const primaryIndigo = Color(0xFF059669);
 
   static const cyan = Color(0xFF22D3EE);
-  static const cyanDeep = Color(0xFF06B6D4);
   static const amber = Color(0xFFFBBF24);
   static const amberDeep = Color(0xFFF59E0B);
   static const pink = Color(0xFFF472B6);
@@ -233,7 +228,6 @@ abstract class AppColors {
 
   static const success = Color(0xFF34D399);
   static const successLight = Color(0x2634D399);
-  static const successGreen = Color(0xFF00B894);
   static const warning = Color(0xFFFBBF24);
   static const warningLight = Color(0x1FFBBF24);
   static const danger = Color(0xFFF87171);
@@ -253,12 +247,6 @@ abstract class AppColors {
     end: Alignment.bottomRight,
     colors: [Color(0xFF059669), Color(0xFF06D6A0), Color(0xFF5EEAD4)],
   );
-  static const gradientCyan = LinearGradient(
-    begin: Alignment.centerLeft,
-    end: Alignment.centerRight,
-    colors: [Color(0xFF059669), Color(0xFF34D399), Color(0xFF5EEAD4)],
-  );
-  static const gradientAmber = LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFFBBF24)]);
   static const gradientAvatar = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
@@ -295,7 +283,6 @@ abstract class AppColors {
   static const subjectEnglish = Color(0xFFF472B6);
   static const subjectPhysics = Color(0xFF60A5FA);
   static const subjectHistory = Color(0xFFF87171);
-  static const subjectPE = Color(0xFF34D399);
 
   static LinearGradient get userBubbleGradient =>
       isDark ? gradientUserBubble : gradientUserBubbleLight;
@@ -312,19 +299,12 @@ abstract class AppColors {
   static LinearGradient get avatarGradient =>
       isDark ? gradientAvatar : gradientAvatarLight;
 
-  /// AI banner/header gradient stops (`ai-grad-1`/`ai-grad-2` in the design
-  /// tokens) — exposed individually for headers that need just the two
-  /// stops rather than the full 3-stop [aiBannerGradient].
-  static Color get aiGrad1 => isDark ? const Color(0xFF1C1108) : const Color(0xFFECFDF5);
-  static Color get aiGrad2 => isDark ? const Color(0xFF2A1B0C) : const Color(0xFFD1FAE5);
-
-  /// Small accent links/timestamps needing extra pop (`accent-text` token).
+  /// Accent for small links and timestamps.
   static Color get accentText => isDark ? const Color(0xFF06D6A0) : const Color(0xFF047857);
 
-  /// Vibrant green-toned brand panel background (login/onboarding hero
-  /// panels) — deliberately distinct from [aiBannerGradient]/[gradientDark],
-  /// which use the design's warm-brown `ai-grad` tokens meant only for the
-  /// AI chat screen. Reusing those elsewhere muddies the brand color.
+  /// Green brand panel background (login/onboarding heroes). Kept apart from
+  /// [aiBannerGradient]/[gradientDark], whose warm-brown tokens are meant for
+  /// the AI chat only.
   static const _darkBrandPanelGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,

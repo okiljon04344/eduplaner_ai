@@ -70,7 +70,7 @@ class _NavItem extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final active = isNavRouteActive(context, route);
-    final activeColor = AppColors.isDark ? AppColors.primaryLight : AppColors.primaryIndigo;
+    final activeColor = AppColors.isDark ? AppColors.primaryLight : AppColors.primaryDark;
     final inactiveColor = AppColors.textMuted;
 
     return Expanded(

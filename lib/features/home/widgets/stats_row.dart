@@ -37,7 +37,7 @@ class _StreakPill extends ConsumerWidget {
     return _StatPill(
       value: '$streak',
       label: AppStrings.t('home_streak'),
-      color: AppColors.isDark ? AppColors.primaryLight : AppColors.primaryIndigo,
+      color: AppColors.isDark ? AppColors.primaryLight : AppColors.primaryDark,
       tint: AppColors.primaryMid,
     );
   }
@@ -52,7 +52,7 @@ class _WeeklyPill extends ConsumerWidget {
     return _StatPill(
       value: '${weekly.completed}/${weekly.total}',
       label: AppStrings.t('home_completed'),
-      color: AppColors.isDark ? AppColors.primaryMid : AppColors.primaryIndigo,
+      color: AppColors.isDark ? AppColors.primaryMid : AppColors.primaryDark,
       tint: AppColors.primaryMid,
     );
   }
@@ -68,7 +68,7 @@ class _UrgentPill extends ConsumerWidget {
     return _StatPill(
       value: '$percent%',
       label: AppStrings.t('home_weekly_percent'),
-      color: AppColors.isDark ? AppColors.primaryLight : AppColors.primaryIndigo,
+      color: AppColors.isDark ? AppColors.primaryLight : AppColors.primaryDark,
       tint: AppColors.primaryLight,
     );
   }

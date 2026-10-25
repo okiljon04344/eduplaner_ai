@@ -95,7 +95,7 @@ class TimelineClassCard extends ConsumerWidget {
                           fontWeight: FontWeight.w700,
                           color: AppColors.isDark
                               ? AppColors.primaryMid
-                              : AppColors.primaryIndigo,
+                              : AppColors.primaryDark,
                         ),
                       ),
                       Expanded(

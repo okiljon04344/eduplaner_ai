@@ -55,13 +55,13 @@ class _AiStudyTipCardState extends ConsumerState<AiStudyTipCard> with SingleTick
           border: Border.all(
             color: AppColors.isDark
                 ? AppColors.primaryMid.withValues(alpha: 0.4)
-                : AppColors.primaryIndigo.withValues(alpha: 0.3),
+                : AppColors.primaryDark.withValues(alpha: 0.3),
           ),
           boxShadow: [
             BoxShadow(
               color: AppColors.isDark
                   ? AppColors.primaryMid.withValues(alpha: 0.2)
-                  : AppColors.primaryIndigo.withValues(alpha: 0.2),
+                  : AppColors.primaryDark.withValues(alpha: 0.2),
               blurRadius: 32,
               offset: const Offset(0, 8),
             ),

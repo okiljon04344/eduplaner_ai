@@ -43,7 +43,7 @@ class HomeScreen extends ConsumerWidget {
                   padding: const EdgeInsets.fromLTRB(16, 4, 16, 14),
                   child: _SectionLabel(
                     text: AppStrings.t('home_today_classes'),
-                    tint: AppColors.isDark ? AppColors.primaryMid : AppColors.primaryIndigo,
+                    tint: AppColors.isDark ? AppColors.primaryMid : AppColors.primaryDark,
                     trailingLabel: AppStrings.t('home_view_all'),
                     onTap: () => context.go('/timetable'),
                   ),
@@ -55,7 +55,7 @@ class HomeScreen extends ConsumerWidget {
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
                   child: _SectionLabel(
                     text: AppStrings.t('home_upcoming'),
-                    tint: AppColors.isDark ? AppColors.primaryMid : AppColors.primaryIndigo,
+                    tint: AppColors.isDark ? AppColors.primaryMid : AppColors.primaryDark,
                     trailingLabel: AppStrings.t('home_view_all'),
                     onTap: () => context.go('/assignments'),
                   ),
