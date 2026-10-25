@@ -1,20 +1,20 @@
 /**
- * EduPlanner AI — Firebase Cloud Functions
+ * EduPlanner AI Cloud Functions.
  *
- * Security model:
- *   • Every callable function verifies `request.auth` before doing any work.
- *   • Input lengths are capped server-side so oversized payloads cannot reach
- *     the Gemini API or Firestore.
- *   • The Gemini API key is stored in Firebase Secrets, never in source code.
- *   • Raw user content (messages, file bytes) is NEVER written to logs or
- *     Firestore — only derived results (quiz questions, completion percent …).
+ * Security:
+ *   - Every callable checks `request.auth` before doing any work.
+ *   - Input lengths are capped so oversized payloads never reach Gemini or
+ *     Firestore.
+ *   - The Gemini API key lives in Firebase Secrets, not in source.
+ *   - Raw user content (messages, file bytes) is never logged or stored; only
+ *     derived results (quiz questions, completion percent) are.
  *
  * AI data privacy:
- *   • Payloads sent to Gemini are the minimum necessary for each task.
- *   • To opt out of Google using API calls for model training, navigate to
- *     Google Cloud Console → APIs & Services → Generative Language API →
- *     Data Usage, and disable "Improve Google AI products".
- *   • Server-side logs (`logger.*`) never contain prompt text or student data.
+ *   - Each Gemini payload contains only what the task needs, and `logger.*`
+ *     never receives prompt text or student data.
+ *   - To stop Google using API calls for model training, disable "Improve
+ *     Google AI products" under Google Cloud Console > Generative Language
+ *     API > Data Usage.
  */
 
 import {GoogleGenAI} from '@google/genai';
@@ -32,11 +32,8 @@ initializeApp();
 
 const geminiApiKey = defineSecret('GEMINI_API_KEY');
 
-// Module-scope singletons: reused across warm invocations of the same
-// instance. `getFirestore()`/`getMessaging()` are cheap after
-// `initializeApp()`, but caching avoids the map lookup on every call.
-// `GoogleGenAI` needs `geminiApiKey.value()` (only available at runtime),
-// so it's lazily built on first use per warm instance.
+// Lazily created and reused across warm invocations. The Gemini client needs
+// `geminiApiKey.value()`, which is only available at runtime.
 let _db;
 let _messaging;
 let _ai;
@@ -46,11 +43,9 @@ const gemini = () => (_ai ??= new GoogleGenAI({apiKey: geminiApiKey.value()}));
 
 const GEMINI_MODEL = 'gemini-flash-latest';
 
-// BCP-47 code from the client's active locale (see `AppStrings.currentLocale`
-// in the Flutter app) → English language name for the Gemini prompt. An
-// allow-list so an arbitrary client-supplied string can never be injected
-// into the prompt. Shared by every AI callable that replies in the user's
-// language; falls back to Japanese for an unrecognised/missing code.
+// Locale code from the client (`AppStrings.currentLocale`) to the language name
+// used in the Gemini prompt. It is an allow-list so a client-supplied string can
+// never be injected into the prompt; unknown or missing codes fall back to Japanese.
 const LANGUAGE_NAMES = {
   ja: 'Japanese', en: 'English', uz: 'Uzbek', zh: 'Simplified Chinese',
   zh_TW: 'Traditional Chinese', ko: 'Korean', vi: 'Vietnamese', th: 'Thai',
@@ -60,9 +55,7 @@ const LANGUAGE_NAMES = {
 };
 const replyLanguageOf = (language) => LANGUAGE_NAMES[language] ?? 'Japanese';
 
-/// Throws the standard `unauthenticated` error every callable function opens
-/// with. Centralised so the message/code stays identical across all six
-/// callables instead of being retyped at each one.
+// Throws the standard `unauthenticated` error that every callable starts with.
 function requireAuth(request) {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'Login is required.');
@@ -71,9 +64,9 @@ function requireAuth(request) {
 
 const AI_DAILY_LIMIT = 100;
 
-/// Per-user daily cap on Gemini-backed calls, so one account can't run up
-/// the Gemini bill. Counter lives in `ai_usage/{uid}` (no client rule =
-/// implicit deny, so only the Admin SDK touches it) and resets per UTC day.
+// Per-user daily cap on Gemini-backed calls so one account can't run up the
+// bill. The counter lives in `ai_usage/{uid}`, which has no client rule (implicit
+// deny), so only the Admin SDK touches it. Resets per UTC day.
 async function enforceAiQuota(uid) {
   const ref = db().collection('ai_usage').doc(uid);
   const today = new Date().toISOString().slice(0, 10);
@@ -88,10 +81,9 @@ async function enforceAiQuota(uid) {
   });
 }
 
-/// Gives back one unit of today's quota after an AI call that failed through
-/// no fault of the user (Gemini error, unparsable output). Only refunds when
-/// the counter is still on the same UTC day, so a call straddling midnight
-/// can't push tomorrow's counter negative.
+// Gives back one unit of today's quota after an AI call fails through no fault
+// of the user. Only refunds on the same UTC day so a call straddling midnight
+// can't push tomorrow's counter negative.
 async function refundAiQuota(uid) {
   const ref = db().collection('ai_usage').doc(uid);
   const today = new Date().toISOString().slice(0, 10);
@@ -104,15 +96,14 @@ async function refundAiQuota(uid) {
   });
 }
 
-/// `JSON.stringify` a value and cap it to [max] chars — the shared truncation
-/// idiom used everywhere untrusted/unbounded data is embedded in a prompt.
+// JSON.stringify capped to `max` chars, for embedding untrusted data in a prompt.
 function truncatedJson(value, max = 3000) {
   return JSON.stringify(value).slice(0, max);
 }
 
-// Bot system prompts. Keep ids in sync with lib/features/ai_chat/models/ai_bot.dart.
-// These prompts are tiny (~100 chars each) — well below the ~1024-token minimum
-// for Gemini's cached-content API, so caching would add cost without benefit.
+// Bot system prompts; keep ids in sync with lib/features/ai_chat/models/ai_bot.dart.
+// They are far below the ~1024-token minimum for Gemini's cached-content API,
+// so caching would add cost without benefit.
 const botPrompts = {
   planner: 'You are Planner Bot, a concise study planning assistant.',
   math: 'You are Math Bot. Explain math step by step with short examples.',
@@ -130,9 +121,9 @@ const QUOTA_ERROR_RE = /quota|rate limit/i;
 const INVALID_ARG_ERROR_RE = /invalid|bad request/i;
 const UNAVAILABLE_ERROR_RE = /unavailable|timeout|deadline/i;
 
-/// Map any thrown Gemini SDK error into an `HttpsError` with a code the
-/// client can distinguish. Never let raw SDK error text (which may include
-/// prompt fragments, endpoint URLs, or stack traces) reach the client.
+// Maps a Gemini SDK error to an `HttpsError` the client can tell apart. Raw SDK
+// error text can include prompt fragments, URLs or stack traces, so it never
+// reaches the client.
 function mapGeminiError(err, japaneseFallback) {
   const status = err?.status ?? err?.response?.status ?? err?.code;
   const message = String(err?.message ?? '');
@@ -153,10 +144,8 @@ function mapGeminiError(err, japaneseFallback) {
   return new HttpsError('internal', japaneseFallback);
 }
 
-/// Shared call+error-mapping wrapper for the four callables that make a
-/// single, directly-awaited `generateContent` call and translate any
-/// failure via [mapGeminiError]. Not used by `generateQuiz`'s grounding
-/// stage, which intentionally catches-and-falls-back instead of throwing.
+// One `generateContent` call with failures translated by mapGeminiError. Not
+// used for the quiz grounding stage, which falls back instead of throwing.
 async function callGemini(config, japaneseFallback) {
   try {
     return await gemini().models.generateContent(config);
@@ -165,15 +154,13 @@ async function callGemini(config, japaneseFallback) {
   }
 }
 
-/// Extract a JSON object from a Gemini text response. Handles ```json fences,
-/// ``` fences, leading/trailing prose ("Here's the JSON: {...}"), and stray
-/// backticks. Returns the first balanced `{...}` block found.
+// Extracts the JSON object from a Gemini text response, tolerating code fences
+// and surrounding prose. Returns null if none parses.
 function extractJson(raw) {
   if (!raw) return null;
   let text = raw.trim();
-  // Strip a leading ```json or ``` fence and a trailing ``` fence, if present.
   text = text.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim();
-  // If the model added prose around the JSON, grab the first balanced object.
+  // Take everything from the first '{' to the last '}'.
   const start = text.indexOf('{');
   const end = text.lastIndexOf('}');
   if (start === -1 || end === -1 || end < start) return null;
@@ -185,13 +172,9 @@ function extractJson(raw) {
   }
 }
 
-// ---------------------------------------------------------------------------
-// chatWithTutor — main hot path. Short prompt + short reply, so 256MiB / 30s
-// is comfortable. `concurrency: 40` lets one warm instance serve multiple
-// simultaneous students, drastically cutting cold starts vs. the v1 default
-// of 1-per-instance. Consider `minInstances: 1` in production if p50 latency
-// under load matters more than idle cost (~$5-10/mo per pinned instance).
-// ---------------------------------------------------------------------------
+// Main hot path: short prompt and reply, so 256MiB is enough. `concurrency: 40`
+// lets one warm instance serve several students at once, cutting cold starts.
+// Consider `minInstances: 1` if latency under load matters more than idle cost.
 export const chatWithTutor = onCall({
   region: 'asia-northeast1',
   secrets: [geminiApiKey],
@@ -203,7 +186,6 @@ export const chatWithTutor = onCall({
 
   const {botId = 'planner', message, assignments = [], classes = [], language} = request.data ?? {};
 
-  // Validate and sanitise all inputs before they reach the AI.
   if (typeof message !== 'string' || message.trim().length === 0) {
     throw new HttpsError('invalid-argument', 'message is required.');
   }
@@ -212,15 +194,14 @@ export const chatWithTutor = onCall({
   }
   const uid = request.auth.uid;
   await enforceAiQuota(uid);
-  // Any failure past this point (Gemini error, unparsable output) refunds the
-  // quota unit so a broken call doesn't count against the daily cap.
+  // A failure past this point (Gemini error, unparsable output) refunds the
+  // quota unit.
   try {
-    // Reject botId values that don't exist in our allow-list; fall back safely.
+    // Unknown bot ids fall back to the planner.
     const resolvedBotId = (typeof botId === 'string' && botId in botPrompts) ? botId : 'planner';
     const replyLanguage = replyLanguageOf(language);
 
-    // Strip each context array to a safe size so a crafted client cannot send
-    // an unbounded context that exhausts tokens or manipulates the system prompt.
+    // Cap the context arrays so a crafted client can't send unbounded context.
     const safeAssignments = Array.isArray(assignments) ? assignments.slice(0, 30) : [];
     const safeClasses    = Array.isArray(classes)     ? classes.slice(0, 30)     : [];
 
@@ -241,8 +222,7 @@ export const chatWithTutor = onCall({
       {model: GEMINI_MODEL, contents: prompt, config: {systemInstruction}},
       'AIの応答に失敗しました。もう一度お試しください。',
     );
-    // Empty text is returned as-is: the client treats it as a failure and shows
-    // a localized fallback instead of a hardcoded Japanese string.
+    // Empty text is returned as is; the client shows a localized fallback.
     return {reply: response.text ?? ''};
   } catch (err) {
     await refundAiQuota(uid).catch(() => {});
@@ -250,10 +230,8 @@ export const chatWithTutor = onCall({
   }
 });
 
-// ---------------------------------------------------------------------------
-// deleteAccount — user-initiated. Serial `await` chain replaced with a
-// batched fan-out; the messages subcollection can grow large so batch it.
-// ---------------------------------------------------------------------------
+// Deletes the caller's data in batches (the messages subcollection can be large),
+// then the auth user.
 export const deleteAccount = onCall({
   region: 'asia-northeast1',
   memory: '256MiB',
@@ -264,7 +242,7 @@ export const deleteAccount = onCall({
   const uid = request.auth.uid;
   const firestore = db();
 
-  // Batched delete — 500 is the Firestore batch ceiling; loop until drained.
+  // Firestore batches hold at most 500 writes; loop in chunks of 400 until drained.
   const deleteQuery = async (query) => {
     while (true) {
       const snapshot = await query.limit(400).get();
@@ -282,9 +260,8 @@ export const deleteAccount = onCall({
       deleteQuery(firestore.collection('timetables').where('userId', '==', uid)),
       deleteQuery(firestore.collection('ai_reports').where('userId', '==', uid)),
       deleteQuery(firestore.collection('ai_chats').doc(uid).collection('messages')),
-      // Drop the user from every study group; a group they're the last member
-      // of is deleted outright instead of being left orphaned, and if they
-      // were the owner, ownership transfers to the first remaining member.
+      // Remove the user from every study group. A group they were the last member
+      // of is deleted; if they owned it, ownership passes to the first remaining member.
       firestore.collection('study_groups').where('memberIds', 'array-contains', uid).get()
         .then((snap) => Promise.all(snap.docs.map((doc) => {
           const data = doc.data();
@@ -316,8 +293,8 @@ const GROUP_CODE_LENGTH = 6;
 const MAX_GROUP_MEMBERS = 60;
 const JOIN_DAILY_LIMIT = 15;
 
-/// Per-user daily cap on `joinGroupByCode` attempts to prevent brute-forcing
-/// 6-character group codes. Shares the admin-only `ai_usage/{uid}` doc.
+// Per-user daily cap on `joinGroupByCode` attempts, to stop brute-forcing the
+// 6-character codes. Shares the admin-only `ai_usage/{uid}` doc.
 async function enforceJoinAttemptLimit(uid) {
   const ref = db().collection('ai_usage').doc(uid);
   const today = new Date().toISOString().slice(0, 10);
@@ -332,10 +309,9 @@ async function enforceJoinAttemptLimit(uid) {
   });
 }
 
-/// クラス全体での共有 — a student joins a study group's shared timetable by
-/// entering its 6-character code. This runs with admin privileges because
-/// Firestore rules only let *existing* group members update `memberIds`; a
-/// joiner isn't a member yet, so the add must happen server-side.
+// Joins a study group's shared timetable by its 6-character code. It runs
+// server-side because Firestore rules only let existing members update
+// `memberIds`, and a joiner isn't one yet.
 export const joinGroupByCode = onCall({
   region: 'asia-northeast1',
   memory: '256MiB',
@@ -351,9 +327,8 @@ export const joinGroupByCode = onCall({
   await enforceJoinAttemptLimit(uid);
 
   const firestore = db();
-  // Codes are random and not checked for uniqueness at creation, so more than
-  // one group can (rarely) share a code: join the oldest, deterministically,
-  // rather than whichever the query happens to return first.
+  // Codes aren't checked for uniqueness at creation, so two groups can rarely
+  // share one: join the oldest deterministically.
   const snapshot = await firestore
     .collection('study_groups')
     .where('code', '==', code.trim().toUpperCase())
@@ -368,8 +343,7 @@ export const joinGroupByCode = onCall({
   const groupDoc = snapshot.docs.reduce((oldest, doc) => (createdMillis(doc) < createdMillis(oldest) ? doc : oldest));
   const groupRef = groupDoc.ref;
 
-  // One group per student: the app shows a single group's timetable, so
-  // joining a second would silently orphan the first.
+  // One group per student: the app shows a single group's timetable.
   const mine = await firestore
     .collection('study_groups')
     .where('memberIds', 'array-contains', uid)
@@ -379,7 +353,7 @@ export const joinGroupByCode = onCall({
     throw new HttpsError('failed-precondition', 'Leave your current group before joining another.');
   }
 
-  // Transaction ensures concurrent joins cannot overshoot MAX_GROUP_MEMBERS.
+  // Transaction so concurrent joins can't exceed MAX_GROUP_MEMBERS.
   await firestore.runTransaction(async (tx) => {
     const freshSnap = await tx.get(groupRef);
     if (!freshSnap.exists) {
@@ -397,10 +371,9 @@ export const joinGroupByCode = onCall({
 
 const CLASS_STATUS_PUSH_COOLDOWN_MS = 5 * 60 * 1000;
 
-/// 休講・変更のアラート — when a shared class's status flips to
-/// cancelled/changed, push-notify every other group member via FCM. Silent
-/// no-op if the class isn't shared, the status didn't actually change, or no
-/// member has a registered token (e.g. notifications disabled).
+// When a shared class is marked cancelled/changed, push-notify the other group
+// members via FCM. No-op if the class isn't shared, the status didn't change,
+// or nobody has a token.
 export const onClassStatusChanged = onDocumentUpdated({
   document: 'timetables/{classId}',
   region: 'asia-northeast1',
@@ -411,15 +384,15 @@ export const onClassStatusChanged = onDocumentUpdated({
   const after = event.data?.after?.data();
   if (!before || !after || !after.groupId) return;
   if (after.status !== 'cancelled' && after.status !== 'changed') return;
-  // statusDate is the affected class date: re-reporting the same status for a
-  // later date must notify members again.
+  // statusDate is the affected class date, so the same status for a later date
+  // notifies again.
   const statusMillis = (data) => data.statusDate?.toMillis?.() ?? null;
   if (before.status === after.status &&
       before.statusNote === after.statusNote &&
       statusMillis(before) === statusMillis(after)) return;
 
-  // Cooldown: prevent a group member from spamming FCM pushes to up to 60
-  // members by rapidly toggling status/statusNote on the same class.
+  // Cooldown so a member can't spam pushes to the whole group by toggling the
+  // status quickly.
   const lastPushMs = after.statusPushSentAt?.toMillis?.() ?? before.statusPushSentAt?.toMillis?.() ?? 0;
   if (Date.now() - lastPushMs < CLASS_STATUS_PUSH_COOLDOWN_MS) return;
 
@@ -453,9 +426,8 @@ export const onClassStatusChanged = onDocumentUpdated({
   }
 });
 
-/// テスト問題の自動生成 — Exam Bot generates a 5-question multiple-choice
-/// quiz for a subject on demand, returned as structured JSON (not a chat
-/// reply) so the client can render tappable question cards.
+// Generates a 5-question multiple-choice quiz as structured JSON so the client
+// can render question cards.
 export const generateQuiz = onCall({
   region: 'asia-northeast1',
   secrets: [geminiApiKey],
@@ -470,18 +442,14 @@ export const generateQuiz = onCall({
   }
   const uid = request.auth.uid;
   await enforceAiQuota(uid);
-  // Any failure past this point (Gemini error, unparsable output) refunds the
-  // quota unit so a broken call doesn't count against the daily cap.
+  // A failure past this point refunds the quota unit.
   try {
     const trimmedTopic = String(topic ?? '').trim().slice(0, 200);
     const replyLanguage = replyLanguageOf(language);
 
-    // Two-stage when web search is enabled:
-    //   Stage 1: googleSearch grounding gathers current facts (JSON output is
-    //            not allowed alongside tools, so this stage returns prose).
-    //   Stage 2: a second call turns that prose into structured quiz JSON
-    //            (`responseMimeType: 'application/json'` needs no tools).
-    // Without search: single-pass JSON generation.
+    // With web search enabled this takes two calls: googleSearch grounding
+    // gathers facts as prose (JSON output isn't allowed alongside tools), then
+    // a second call turns them into quiz JSON. Without search it is one call.
     let context = '';
     if (useSearch && trimmedTopic.length > 0) {
       const groundingPrompt = [
@@ -497,8 +465,7 @@ export const generateQuiz = onCall({
         });
         context = String(groundResp.text ?? '').slice(0, 2000);
       } catch (err) {
-        // Grounding is best-effort. Fall back to model knowledge on failure
-        // instead of failing the whole request.
+        // Best-effort: fall back to the model's own knowledge.
         logger.warn('quiz grounding failed, falling back', {message: String(err?.message ?? '').slice(0, 200)});
       }
     }
@@ -528,7 +495,7 @@ export const generateQuiz = onCall({
       throw new HttpsError('internal', 'クイズの生成に失敗しました。もう一度お試しください。');
     }
 
-    // Shape-validate — don't leak malformed AI output to the client.
+    // Drop malformed questions rather than passing them to the client.
     const questions = Array.isArray(parsed.questions)
       ? parsed.questions.filter((q) =>
           q && typeof q.question === 'string' &&
@@ -545,9 +512,8 @@ export const generateQuiz = onCall({
   }
 });
 
-/// 苦手分野の分析 — the client aggregates per-subject assignment stats
-/// locally (no AI needed for counting) and sends just the summary numbers
-/// here; Gemini turns that into a short, actionable Japanese analysis.
+// Weak-area analysis. The client aggregates per-subject assignment stats and
+// sends only the summary numbers; Gemini turns them into a short, actionable tip.
 export const analyzeWeakArea = onCall({
   region: 'asia-northeast1',
   secrets: [geminiApiKey],
@@ -560,16 +526,13 @@ export const analyzeWeakArea = onCall({
   if (!Array.isArray(stats) || stats.length === 0) {
     throw new HttpsError('invalid-argument', 'stats is required.');
   }
-  // Cap stats array to prevent unbounded prompts.
   if (stats.length > 20) {
     throw new HttpsError('invalid-argument', 'stats array too large.');
   }
   const uid = request.auth.uid;
   await enforceAiQuota(uid);
-  // Any failure past this point (Gemini error, unparsable output) refunds the
-  // quota unit so a broken call doesn't count against the daily cap.
+  // A failure past this point refunds the quota unit.
   try {
-
     const replyLanguage = replyLanguageOf(language);
 
     const prompt = [
@@ -591,24 +554,21 @@ export const analyzeWeakArea = onCall({
   }
 });
 
-// 10MB decoded ceiling — base64 inflates size by ~4/3, so this bounds the
-// request payload too. Chosen to comfortably fit a phone photo or a
-// multi-page scanned PDF while keeping Gemini's request size sane.
+// 10MB decoded ceiling (base64 adds ~4/3, so this bounds the payload too). Fits
+// a phone photo or a multi-page scanned PDF.
 const MAX_FILE_BYTES = 10 * 1024 * 1024;
 const MAX_DOCX_UNCOMPRESSED_BYTES = 25 * 1024 * 1024;
 const MAX_DOCX_ENTRIES = 200;
 const MAX_EXTRACTED_TEXT_CHARS = 6000;
 
-/// Inspects the ZIP Central Directory of a `.docx` buffer before handing it
-/// to `mammoth` so a crafted zip-bomb cannot expand into gigabytes of heap
-/// and crash the function instance with OOM.
+// Checks the ZIP central directory of a `.docx` before it reaches `mammoth`, so
+// a crafted zip bomb can't expand into gigabytes of heap and OOM the instance.
 function validateDocxZip(buf) {
-  // Minimum ZIP with End of Central Directory (EOCD) record is 22 bytes;
-  // starts with PK\x03\x04.
+  // A ZIP is at least 22 bytes (the EOCD record) and starts with PK\x03\x04.
   if (!Buffer.isBuffer(buf) || buf.length < 22 || buf.readUInt32LE(0) !== 0x04034b50) {
     throw new HttpsError('invalid-argument', 'ファイルの読み取りに失敗しました。');
   }
-  // Locate EOCD signature (0x06054b50) within the last 65KB.
+  // Find the EOCD signature (0x06054b50) within the last 65KB.
   const minEocdOffset = Math.max(0, buf.length - 65557);
   let eocdOffset = -1;
   for (let i = buf.length - 22; i >= minEocdOffset; i--) {
@@ -632,7 +592,7 @@ function validateDocxZip(buf) {
     if (buf.readUInt32LE(pos) !== 0x02014b50) break;
     const uncompressedSize = buf.readUInt32LE(pos + 24);
     if (uncompressedSize === 0xffffffff) {
-      // Reject ZIP64 entries outright — no valid homework docx needs >4GB.
+      // Reject ZIP64 entries: no homework docx needs more than 4GB.
       throw new HttpsError('invalid-argument', 'ファイルサイズが大きすぎます。');
     }
     totalUncompressed += uncompressedSize;
@@ -646,22 +606,18 @@ function validateDocxZip(buf) {
   }
 }
 
-// Gemini reads images/PDF natively via inlineData; .docx/.txt are extracted
-// to plain text server-side first since Gemini has no native Word support.
+// Gemini reads images and PDF natively via inlineData; .docx and .txt are
+// extracted to text server-side first.
 const NATIVE_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif', 'application/pdf']);
 const DOCX_MIME_TYPE = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
 const TEXT_MIME_TYPE = 'text/plain';
 
-/// 課題の自動チェック — a student uploads a photo/PDF/Word/text file of
-/// their completed assignment; Gemini estimates how much is done, lists
-/// what's missing, and gives one study tip. The file itself is never
-/// written to Storage or logged — it exists only in memory for the
-/// duration of this call, matching the "no raw submission is persisted"
-/// privacy decision for this feature.
+// Reviews a student's submitted photo/PDF/Word/text file: Gemini estimates how
+// much is done, lists what's missing and gives one study tip. Privacy: the file
+// is never written to Storage or logged; it lives in memory for this call only.
 //
-// Memory bump: 10MB base64 input decodes to ~7.5MB Buffer, then mammoth's
-// DOCX-unzip + XML parse can temporarily hold several multiples of that in
-// V8 heap. 512MiB gave OOM crashes in past testing; 1GiB is the safe floor.
+// 1GiB: a 10MB base64 input decodes to ~7.5MB, and mammoth's unzip and XML parse
+// can hold several multiples of that in the heap. 512MiB hit OOM in testing.
 export const analyzeAssignmentSubmission = onCall({
   region: 'asia-northeast1',
   secrets: [geminiApiKey],
@@ -672,11 +628,10 @@ export const analyzeAssignmentSubmission = onCall({
   requireAuth(request);
 
   const {subject, fileBase64, mimeType, language} = request.data ?? {};
-  // Coerce optional text fields so a non-string can't throw on `.slice` below.
+  // Coerce so a non-string can't throw on `.slice`.
   const title = String(request.data?.title ?? '').slice(0, 200);
   const description = String(request.data?.description ?? '');
   const replyLanguage = replyLanguageOf(language);
-  // Validate and cap all text fields before they enter the AI prompt.
   if (typeof subject !== 'string' || subject.trim().length === 0) {
     throw new HttpsError('invalid-argument', 'subject is required.');
   }
@@ -694,10 +649,8 @@ export const analyzeAssignmentSubmission = onCall({
   }
   const uid = request.auth.uid;
   await enforceAiQuota(uid);
-  // Any failure past this point (Gemini error, unparsable output) refunds the
-  // quota unit so a broken call doesn't count against the daily cap.
+  // A failure past this point refunds the quota unit.
   try {
-
     const systemInstruction = [
       'You are Exam Bot, reviewing a student\'s submitted homework.',
       'Look at the submitted work and:',
@@ -736,8 +689,7 @@ export const analyzeAssignmentSubmission = onCall({
         logger.error('File extraction failed', {mimeType, message: String(err?.message ?? '').slice(0, 300)});
         throw new HttpsError('invalid-argument', 'ファイルの読み取りに失敗しました。');
       } finally {
-        // Hint V8 that the raw file buffer is done — helps peak memory under
-        // load since mammoth's own intermediate allocations are still hot.
+        // Release the raw buffer early to lower peak memory.
         buffer = null;
       }
       extractedText = (extractedText || '').slice(0, MAX_EXTRACTED_TEXT_CHARS);
@@ -752,7 +704,7 @@ export const analyzeAssignmentSubmission = onCall({
       '課題のチェックに失敗しました。もう一度お試しください。',
     );
 
-    // Never log `response.text` or the submitted content — it's the student's work.
+    // Never log `response.text` or the submitted content; it's the student's work.
     const parsed = extractJson(response.text ?? '');
     if (!parsed) {
       throw new HttpsError('internal', '課題のチェックに失敗しました。もう一度お試しください。');
