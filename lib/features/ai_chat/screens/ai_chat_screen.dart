@@ -43,8 +43,8 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
   @override
   Widget build(BuildContext context) {
     final messages = ref.watch(chatProvider);
-    // The chat state resets when the signed-in account changes; reload the
-    // new account's history even though this screen stays mounted.
+    // The chat state resets on an account change; reload the new account's
+    // history since this screen stays mounted.
     ref.listen(currentUserProvider.select((u) => u?.uid), (prev, next) {
       if (next != null && next != prev) ref.read(chatProvider.notifier).loadHistory();
     });
@@ -86,8 +86,8 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
   }
 }
 
-/// Shown while the conversation is empty: bot identity, a one-line prompt and
-/// three tappable example questions that go through the normal send path.
+/// Empty-conversation state: bot identity, a prompt and three example questions
+/// that go through the normal send path.
 class _ChatEmptyState extends StatelessWidget {
   final AiBot bot;
   final ValueChanged<String> onPick;

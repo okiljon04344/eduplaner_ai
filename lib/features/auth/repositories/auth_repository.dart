@@ -14,13 +14,9 @@ class AuthRepository {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   bool _googleSignInInitialized = false;
 
-  /// Memoized so a re-emission of `userChanges()` for the *same already
-  /// resolved* uid (e.g. an ID token refresh, which fires this stream
-  /// periodically for the whole session) doesn't re-read the Firestore doc.
-  /// Only re-fetches when the uid changes, or when the previous fetch didn't
-  /// find a doc yet (the brief window right after sign-up before the caller
-  /// writes it) — in that case we keep retrying so the router picks up the
-  /// real name as soon as it's written.
+  /// Memoised per uid so token refreshes (which re-emit `userChanges()`) don't
+  /// re-read the Firestore doc. Re-fetches when the uid changes and keeps
+  /// retrying while no doc exists yet (the window right after sign-up).
   UserModel? _cachedUser;
   String? _cachedUid;
   bool _cachedFromDoc = false;
@@ -54,10 +50,8 @@ class AuthRepository {
       final exists = doc?.exists ?? false;
       final model = doc != null && exists
           ? UserModel.fromFirestore(doc)
-          // User is authenticated but Firestore doc not yet written.
-          // This happens during the brief window between Firebase Auth completing
-          // (which fires userChanges()) and the caller writing the user doc.
-          // Return a minimal UserModel so the router doesn't redirect back to /login.
+          // Signed in but the doc isn't written yet (right after sign-up):
+          // return a minimal model so the router doesn't bounce back to /login.
           : UserModel(
               uid: user.uid,
               name: user.displayName ?? '',
@@ -72,9 +66,7 @@ class AuthRepository {
     }
   }
 
-  /// Re-reads `users/{uid}` up to 3 more times, 2s apart, after the first
-  /// read failed. Returns `null` if every attempt fails so the caller can
-  /// fall back to the minimal [UserModel].
+  /// Retries the read up to 3 times, 2s apart. Null if every attempt fails.
   Future<DocumentSnapshot<Map<String, dynamic>>?> _retryUserDocRead(String uid) async {
     for (var attempt = 0; attempt < 3; attempt++) {
       await Future<void>.delayed(const Duration(seconds: 2));
@@ -87,23 +79,14 @@ class AuthRepository {
     return null;
   }
 
-  /// google_sign_in 7.x requires `initialize()` to be called exactly once
-  /// before any other method — see the package's MIGRATION.md.
+  /// google_sign_in 7.x needs `initialize()` exactly once before anything else.
   ///
-  /// On web this throws if `web/index.html` has no
-  /// `<meta name="google-signin-client_id" ...>` tag (a required, per-platform
-  /// setup step — see that file). Wrapped so a missing/misconfigured client
-  /// id surfaces as a normal translated error instead of an uncaught
-  /// assertion.
+  /// Wrapped so a missing web client id (`google-signin-client_id` meta tag in
+  /// `web/index.html`) surfaces as a translated error, not an uncaught assertion.
   ///
-  /// On web this also starts listening for sign-in events fired by the
-  /// SDK-rendered button (see `renderGoogleSignInButton()`) — web has no
-  /// `authenticate()` support (`supportsAuthenticate()` is hard-coded false
-  /// in `google_sign_in_web`), so a user-initiated sign-in there completes
-  /// via this event stream instead of a direct method call/return. Once
-  /// Firebase sign-in succeeds, `authStateStream` picks it up exactly like
-  /// any other sign-in and the router redirects — there's nothing further
-  /// for a caller to await.
+  /// On web `authenticate()` is unsupported, so sign-in through the SDK-rendered
+  /// button completes via the event stream listened to here. `authStateStream`
+  /// then picks it up like any other sign-in; callers have nothing to await.
   Future<void> _ensureGoogleSignInInitialized() async {
     if (_googleSignInInitialized) return;
     try {
@@ -129,10 +112,8 @@ class AuthRepository {
     }
   }
 
-  /// Kicks off Google Sign-In initialization early on web, so the SDK's own
-  /// rendered button (which shows "Getting ready" until initialization
-  /// resolves) becomes interactive as soon as possible after the login
-  /// screen appears, rather than only starting once tapped.
+  /// Starts initialisation early on web so the SDK-rendered button is
+  /// interactive as soon as the login screen appears.
   Future<void> ensureGoogleSignInReady() => _ensureGoogleSignInInitialized();
 
   Future<UserModel> signInWithGoogle() async {
@@ -149,9 +130,8 @@ class AuthRepository {
     return _completeGoogleSignIn(googleUser);
   }
 
-  /// Exchanges a [GoogleSignInAccount]'s id token for a Firebase credential
-  /// and ensures the `users/{uid}` Firestore doc exists — shared by the
-  /// mobile `authenticate()` flow and the web sign-in event listener.
+  /// Exchanges the Google id token for a Firebase credential and ensures the
+  /// `users/{uid}` doc exists. Shared by mobile and the web event listener.
   Future<UserModel> _completeGoogleSignIn(GoogleSignInAccount googleUser) async {
     final credential = GoogleAuthProvider.credential(idToken: googleUser.authentication.idToken);
     final result = await _auth.signInWithCredential(credential);
@@ -160,9 +140,8 @@ class AuthRepository {
     return _getOrCreateUserDoc(user);
   }
 
-  /// Reads the `users/{uid}` doc for [user], creating it with sensible
-  /// defaults if it doesn't exist yet. [fallbackEmail] is used only when
-  /// [user] itself has no email on file (e.g. some email/password flows).
+  /// Reads `users/{uid}`, creating it with defaults if missing. [fallbackEmail]
+  /// is used only when [user] has no email.
   Future<UserModel> _getOrCreateUserDoc(User user, {String? fallbackEmail}) async {
     final docRef = _db.collection('users').doc(user.uid);
     final doc = await docRef.get();
@@ -178,17 +157,10 @@ class AuthRepository {
     return newUser;
   }
 
-  /// Registers a brand-new account, or — if [email] is already registered —
-  /// transparently logs the user in with the [password] they just typed.
-  ///
-  /// This turns the sign-up form into a "continue" action: a returning user
-  /// who mistakenly lands on sign-up instead of login isn't blocked with a
-  /// bare "email already in use" error. If their password matches the
-  /// existing account, they're simply signed in (Firebase's `userChanges()`
-  /// then routes them to `/home` exactly as a normal login would). If it
-  /// doesn't match, [err_account_exists] is thrown instead of a raw
-  /// FirebaseAuth error so the message is actionable ("this account already
-  /// exists — use the correct password or the login screen").
+  /// Registers a new account, or signs in if [email] is already registered and
+  /// [password] matches, so a returning user who lands on sign-up isn't blocked.
+  /// A wrong password throws `err_account_exists` (actionable) instead of the
+  /// raw FirebaseAuth error.
   Future<UserModel> signUpWithEmail(String email, String password, String name) async {
     try {
       final result = await _auth.createUserWithEmailAndPassword(email: email, password: password);
@@ -229,20 +201,17 @@ class AuthRepository {
     }
   }
 
-  /// Validates a password-reset `oobCode` (the code embedded in the link
-  /// Firebase emails on [sendPasswordResetEmail]) and returns the email
-  /// address it belongs to, so the confirmation screen can show "resetting
-  /// the password for {email}" before the user commits to a new password.
+  /// Validates a password-reset `oobCode` and returns the email it belongs to,
+  /// so the confirmation screen can name the account before the user commits.
   Future<String> verifyPasswordResetCode(String code) async {
     try {
-      final email = await _auth.verifyPasswordResetCode(code);
-      return email;
+      return await _auth.verifyPasswordResetCode(code);
     } on FirebaseAuthException catch (_) {
       throw Exception(AppStrings.t('reset_code_invalid'));
     }
   }
 
-  /// Applies [newPassword] using a previously-verified `oobCode`.
+  /// Applies [newPassword] using a previously verified `oobCode`.
   Future<void> confirmPasswordReset(String code, String newPassword) async {
     try {
       await _auth.confirmPasswordReset(code: code, newPassword: newPassword);
@@ -274,9 +243,9 @@ class AuthRepository {
     }
   }
 
-  /// Signs out after best-effort cleanup of device-local, per-user state
-  /// (push token, pending reminders, cached AI results) so the next account
-  /// on this device doesn't inherit it. Cleanup failures never block sign-out.
+  /// Signs out after best-effort cleanup of per-user, device-local state (push
+  /// token, reminders, cached AI results) so the next account doesn't inherit
+  /// it. Cleanup failures never block sign-out.
   Future<void> signOut() async {
     final uid = _auth.currentUser?.uid;
     if (uid != null) {
@@ -305,10 +274,8 @@ class AuthRepository {
     await Future.wait([_auth.signOut(), _googleSignIn.signOut()]);
   }
 
-  /// Merges the mandatory school-profile fields into the current user's
-  /// Firestore doc. [grade]/[program]/[faculty]/[department]/[course] are optional —
-  /// blank strings are written as `null` so they render as "not set" rather
-  /// than an empty label.
+  /// Merges the school-profile fields into the current user's doc. The optional
+  /// fields are stored as null when blank so they render as "not set".
   Future<void> saveSchoolProfile({
     required String schoolType,
     required String schoolName,
@@ -330,11 +297,8 @@ class AuthRepository {
       'department': blankToNull(department),
       'course': blankToNull(course),
     }, SetOptions(merge: true));
-    // authStateStream memoizes the model per-uid (see field docs above) and
-    // only re-reads Firestore when the uid changes — this write wouldn't
-    // otherwise surface until the next unrelated userChanges() emission
-    // (token refresh, up to ~1h later). Forcing a re-read here is what makes
-    // the router's profileComplete redirect fire immediately after saving.
+    // authStateStream caches the model per uid; drop the cache flag so the next
+    // emission re-reads this write instead of waiting for a token refresh (~1h).
     _cachedFromDoc = false;
   }
 }

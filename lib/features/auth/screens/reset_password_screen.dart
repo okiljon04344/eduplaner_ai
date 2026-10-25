@@ -9,14 +9,11 @@ import '../../../core/utils/responsive.dart';
 import '../../../core/utils/validators.dart';
 import '../../../shared/widgets/app_input_field.dart';
 
-/// Completes a Firebase password reset without deep-linking: the user pastes
-/// either the full reset link from their email, or just the `oobCode` query
-/// parameter value, and sets a new password entirely inside the app.
-///
-/// This avoids needing Firebase Dynamic Links (discontinued) or Android App
-/// Links / iOS Universal Links (real domain ownership + native config) —
-/// trading a bit of copy-paste friction for something that works today with
-/// no extra infrastructure.
+/// Completes a Firebase password reset without deep links: the user pastes the
+/// reset link from their email (or just its `oobCode`) and sets the new
+/// password in the app. This avoids Dynamic Links (discontinued) and
+/// App Links / Universal Links (need domain ownership and native config), at
+/// the cost of a copy-paste step.
 class ResetPasswordScreen extends ConsumerStatefulWidget {
   const ResetPasswordScreen({super.key});
 
@@ -35,8 +32,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
   bool _obscureNew = true;
   bool _obscureConfirm = true;
 
-  // Once the code is verified, we hold onto the raw code + the email it
-  // resolved to, and move to step 2 (new password entry).
+  // Set once the code is verified; step 2 (new password) starts then.
   String? _verifiedCode;
   String? _verifiedEmail;
 
@@ -48,8 +44,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
     super.dispose();
   }
 
-  /// Extracts `oobCode` from a full reset link, or returns the input as-is
-  /// if it doesn't look like a URL (the user pasted the bare code).
+  /// Extracts `oobCode` from a pasted reset link; a bare code is returned as-is.
   String _extractCode(String input) {
     final trimmed = input.trim();
     final uri = Uri.tryParse(trimmed);

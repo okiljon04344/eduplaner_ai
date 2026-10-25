@@ -7,15 +7,13 @@ import '../../assignments/providers/assignments_provider.dart';
 import '../providers/home_provider.dart';
 import '../../../core/l10n/app_strings.dart';
 
-// Fallback strings mirrored from home_provider.dart for comparison.
-// Getters so they always resolve in the currently loaded locale.
+// Same fallback strings as home_provider.dart, used for comparison. Getters so
+// they follow the current locale.
 String get _fallbackWeakArea => AppStrings.t('weak_fallback');
 String get _noAssignmentsWeakArea => AppStrings.t('weak_no_assignments');
 
-/// Quick local summary computed synchronously from [assignmentsStreamProvider].
-///
-/// Shown instantly while the AI analysis is loading so the card is never
-/// just a spinner.  Returns an empty string when there are no assignments.
+/// Local summary from [assignmentsStreamProvider], shown while the AI analysis
+/// loads so the card is never just a spinner. Empty when there are no assignments.
 final _localWeakSummaryProvider = Provider<String>((ref) {
   final all = ref.watch(assignmentsStreamProvider).valueOrNull ?? [];
   final incomplete = all.where((a) => a.status != AssignmentStatus.completed).toList();
@@ -40,15 +38,9 @@ final _localWeakSummaryProvider = Provider<String>((ref) {
   return template.replaceAll('{subject}', worst.key).replaceAll('{n}', '${worst.value}');
 });
 
-/// 苦手分野の分析 card.
-///
-/// Tappable:
-///   - No assignments → navigates to `/assignments` to register some.
-///   - Analysis available → shows a detail bottom sheet with the full text and
-///     a shortcut to the AI chat for further advice.
-///
-/// While the Cloud Function is in flight the card shows a quick locally
-/// computed summary so the user never sees a plain spinner.
+/// Weak-area analysis card. Tapping it opens `/assignments` when there are no
+/// assignments, otherwise a bottom sheet with the full text and a shortcut to
+/// the AI chat.
 class WeakAreaCard extends ConsumerWidget {
   const WeakAreaCard({super.key});
 
@@ -109,7 +101,7 @@ class WeakAreaCard extends ConsumerWidget {
                   ],
                 ),
               ),
-              // Refresh icon — tap to re-run analysis for today.
+              // Re-runs today's analysis.
               if (hasAssignments)
                 GestureDetector(
                   onTap: () => ref.invalidate(weakAreaProvider),
@@ -182,7 +174,7 @@ class WeakAreaCard extends ConsumerWidget {
   }
 }
 
-/// Renders the correct state: full AI text, quick local text, loading, or error.
+/// Shows the AI text, the local summary while loading, or the error state.
 class _AnalysisText extends StatelessWidget {
   final AsyncValue<String> analysis;
   final String localSummary;
@@ -196,7 +188,7 @@ class _AnalysisText extends StatelessWidget {
         style: TextStyle(fontSize: 12, color: AppColors.textSecondary, height: 1.4),
       ),
       loading: () => localSummary.isNotEmpty
-          // Show locally computed summary immediately while AI loads.
+          // Local summary while the AI result loads.
           ? Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

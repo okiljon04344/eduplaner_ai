@@ -5,9 +5,8 @@ import '../../../core/theme/app_colors.dart';
 import '../providers/home_provider.dart';
 import '../../../core/l10n/app_strings.dart';
 
-/// AI banner card at the bottom of Home — dark gradient, neon pulsing
-/// border, floating bot emoji, and the day's Gemini-generated study tip as
-/// the subtitle. Tapping it opens the AI chat tab.
+/// Banner at the bottom of Home showing the day's AI study tip; tapping it
+/// opens the AI chat tab.
 class AiStudyTipCard extends ConsumerStatefulWidget {
   const AiStudyTipCard({super.key});
 
@@ -70,9 +69,8 @@ class _AiStudyTipCardState extends ConsumerState<AiStudyTipCard> with SingleTick
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // RepaintBoundary isolates the 60fps floating-emoji animation so the
-            // rest of the card (text, arrow, gradient decoration) is not repainted
-            // every frame.
+            // RepaintBoundary keeps the floating-emoji animation from repainting
+            // the rest of the card every frame.
             RepaintBoundary(
               child: AnimatedBuilder(
                 animation: _controller,

@@ -4,11 +4,8 @@ import '../../core/l10n/app_strings.dart';
 import '../../core/theme/app_colors.dart';
 import 'nav_destinations.dart';
 
-/// Tablet/desktop side navigation rail — same four destinations as
-/// [AppBottomNav] but laid out vertically to make use of extra width.
-///
-/// Solid background (no BackdropFilter) for lower compositing cost on
-/// the web and mid-range Android devices.
+/// Side navigation rail for tablet/desktop; same destinations as
+/// [AppBottomNav]. Solid background (no BackdropFilter) for cheaper compositing.
 class AppNavRail extends StatelessWidget {
   const AppNavRail({super.key});
 
@@ -25,7 +22,7 @@ class AppNavRail extends StatelessWidget {
       child: Stack(
         clipBehavior: Clip.none,
         children: [
-          // Decorative vertical gradient line — cheap, no blur required.
+          // Decorative vertical gradient line.
           Positioned(
             top: 0,
             bottom: 0,

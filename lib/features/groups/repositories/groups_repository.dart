@@ -37,9 +37,8 @@ class GroupsRepository {
     return model;
   }
 
-  /// Runs server-side via [functions/index.js]'s `joinGroupByCode` — the
-  /// client can't add itself to `memberIds` directly because Firestore rules
-  /// only allow existing members to update a group document.
+  /// Runs server-side (`joinGroupByCode` in functions/index.js): rules only let
+  /// existing members update a group, so the client can't add itself.
   Future<String?> joinGroupByCode(String code) async {
     try {
       final callable = FunctionsService.callable('joinGroupByCode');
@@ -54,16 +53,14 @@ class GroupsRepository {
     }
   }
 
-  /// Removes [uid] from the group.
-  ///
-  /// The leaver's own classes are detached from the group first (while they
-  /// are still a member), so they stay in their personal timetable instead of
+  /// Removes [uid] from the group. Their classes are detached first (while they
+  /// are still a member) so they stay in their personal timetable instead of
   /// pointing at a group they can no longer read. Then:
-  ///  * sole member → the group document is deleted (rules forbid emptying
-  ///    `memberIds`, but allow a sole member to delete);
-  ///  * owner with others remaining → ownership moves to the longest-standing
-  ///    remaining member in the same write, so the group is never ownerless;
-  ///  * anyone else → just removed from `memberIds`.
+  ///  * sole member: the group is deleted (rules forbid emptying `memberIds`
+  ///    but allow a sole member to delete);
+  ///  * owner with others left: ownership moves to the longest-standing member
+  ///    in the same write, so the group is never ownerless;
+  ///  * anyone else: removed from `memberIds`.
   Future<void> leaveGroup(StudyGroupModel group, String uid) async {
     final mine = await _db
         .collection('timetables')

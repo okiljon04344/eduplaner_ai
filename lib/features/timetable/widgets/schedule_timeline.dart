@@ -6,11 +6,9 @@ import '../models/class_model.dart';
 import '../providers/timetable_provider.dart';
 import 'timeline_class_card.dart';
 
-/// Vertical timeline of classes for the currently selected day, with a
-/// fade+slide entrance whenever the day changes and a friendly empty state.
-///
-/// [weekStart] is the Monday of the displayed week; together with
-/// [selectedDay] it gives each card the exact date it is shown for.
+/// Timeline of the selected day's classes with a fade+slide entrance on day
+/// change and an empty state. [weekStart] (Monday) and [selectedDay] give each
+/// card its exact date.
 class ScheduleTimeline extends ConsumerWidget {
   final int selectedDay;
   final DateTime weekStart;
@@ -19,9 +17,8 @@ class ScheduleTimeline extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final classes = ref.watch(timetableStreamProvider).valueOrNull ?? const <ClassModel>[];
-    // Compare against the canonical (always-kanji) storage key, not the
-    // localized display label from DayTabRow.days — those diverge for any
-    // non-Japanese locale and previously made every day render empty.
+    // Compare against the canonical kanji key, not the localized label from
+    // DayTabRow.days, which differs in every non-Japanese locale.
     final day = kWeekdayKanji[selectedDay];
     final date = DateTime(weekStart.year, weekStart.month, weekStart.day + selectedDay);
     final dayClasses = classes.where((c) => c.dayOfWeek == day).toList()

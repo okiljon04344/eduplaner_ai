@@ -1,10 +1,9 @@
 /// An (hour, minute) wall-clock time.
 typedef Hm = (int hour, int minute);
 
-/// Single source of truth for class period clock times (periods 1-6, 90-minute
-/// blocks). [ClassModel] only stores the period index; the timetable cards,
-/// the home cards, the status date logic and the local reminders all read the
-/// times from here so they can never drift apart.
+/// Clock times for class periods 1-6 (90-minute blocks). [ClassModel] stores
+/// only the period index; cards, status dates and reminders all read the times
+/// from here so they can't drift apart.
 const Map<int, ({Hm start, Hm end})> kPeriodTimes = {
   1: (start: (9, 0), end: (10, 30)),
   2: (start: (10, 40), end: (12, 10)),

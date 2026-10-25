@@ -12,9 +12,9 @@ import '../../ai_chat/widgets/report_ai_content.dart';
 import '../models/quiz_question.dart';
 import '../providers/quiz_provider.dart';
 
-/// テスト問題の自動生成 — pick a subject, optionally add a specific topic
-/// and enable web-grounded generation, then answer 5 AI-generated MC questions
-/// with instant correct/incorrect feedback + explanation.
+/// Quiz generator: pick a subject, optionally a topic and web grounding, then
+/// answer 5 AI-generated multiple-choice questions with instant feedback and
+/// an explanation.
 class QuizScreen extends ConsumerStatefulWidget {
   const QuizScreen({super.key});
 
@@ -35,10 +35,9 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
     super.dispose();
   }
 
-  /// Suggestions only — the field always accepts a freely typed subject
-  /// name too (school/college/university subject names vary), not just
-  /// these. Combines the fixed color-coded subjects with any subject the
-  /// student already uses in their timetable classes or assignments.
+  /// Autocomplete suggestions only; any typed subject is accepted since subject
+  /// names vary by school. Combines the built-in subjects with those already in
+  /// the student's timetable and assignments.
   List<String> _subjectSuggestions() {
     final fromClasses = (ref.read(timetableStreamProvider).valueOrNull ?? []).map((c) => c.subject);
     final fromAssignments = (ref.read(assignmentsStreamProvider).valueOrNull ?? []).map((a) => a.subject);
@@ -103,10 +102,8 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                   return ListView.builder(
                     padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
                     itemCount: questions.length,
-                    // Keyed by question identity: without this, regenerating a
-                    // quiz reuses the old _QuizCardState at each position, so
-                    // answers from the previous quiz appear pre-selected on the
-                    // new questions.
+                    // Keyed by question: otherwise regenerating reuses the old
+                    // _QuizCardState and shows the previous answers pre-selected.
                     itemBuilder: (context, i) => _QuizCard(key: ObjectKey(questions[i]), index: i, question: questions[i]),
                   );
                 },
@@ -150,8 +147,8 @@ class _ConfigPanel extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Autocomplete<String>(
-            // Seeded once; fieldViewBuilder must not reassign the text
-            // or every rebuild would move the cursor to the end.
+            // Seeded once; reassigning the text in fieldViewBuilder would move
+            // the cursor to the end on every rebuild.
             initialValue: TextEditingValue(text: subjectCtrl.text),
             optionsBuilder: (value) {
               if (value.text.isEmpty) return subjectSuggestions;

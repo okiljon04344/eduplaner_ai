@@ -10,17 +10,12 @@ import 'core/theme/app_theme.dart';
 import 'features/auth/providers/auth_provider.dart';
 import 'features/onboarding/providers/onboarding_provider.dart';
 
-/// Root widget for EduPlanner AI.
+/// Root widget. Resolves the effective brightness, applies it to [AppColors]
+/// and keys [MaterialApp.router] on brightness + locale.
 ///
-/// Watches [themeProvider] and [localeProvider], resolves the effective
-/// [Brightness] (including the system value for [ThemeMode.system]), then:
-///   1. Mutates [AppColors] static tokens via [AppColors.applyBrightness] so
-///      every widget that reads those tokens picks up the new palette.
-///   2. Keys [MaterialApp.router] with `ValueKey('${resolvedBrightness}_$locale')`
-///      which forces a full subtree remount on theme or locale change — the
-///      cheaper alternative to threading `Theme.of(context)` through ~370 call
-///      sites.  GoRouter's navigation location is preserved across the remount;
-///      in-progress scroll / animation / form state on the visible screen is not.
+/// The key forces a full remount on theme or locale change. That is cheaper
+/// than threading `Theme.of(context)` through every call site; the GoRouter
+/// location survives, but scroll and form state on the visible screen do not.
 class EduPlannerApp extends ConsumerWidget {
   const EduPlannerApp({super.key});
 
@@ -35,17 +30,14 @@ class EduPlannerApp extends ConsumerWidget {
     };
     AppColors.applyBrightness(resolvedBrightness);
 
-    // Use only the primary language subtag for MaterialApp locale so standard
-    // Material widgets (date pickers, etc.) resolve their own localizations.
-    // The full locale code (e.g. 'zh_TW') is still passed to AppStrings
-    // separately so we can serve the correct JSON translation file.
+    // Material widgets only know the primary language subtag; AppStrings still
+    // gets the full code (e.g. 'zh_TW') to pick its JSON file.
     final flutterLocale = Locale(locale.split('_').first);
 
-    // Until auth/onboarding are known, paint a splash over the router instead
-    // of the routed page: no flash of Home (and no unauthenticated AI calls
-    // from it). The router itself must exist from the first frame — swapping
-    // in a plain MaterialApp first resets the browser URL to '/', which loses
-    // web deep links such as /login/reset?oobCode=...
+    // Paint a splash over the router until auth/onboarding are known, so Home
+    // never flashes or fires unauthenticated AI calls. The router itself must
+    // exist from the first frame: swapping in a plain MaterialApp resets the
+    // web URL and loses deep links such as /login/reset?oobCode=...
     final authState = ref.watch(authStateProvider);
     final onboardingState = ref.watch(onboardingProvider);
     final booting = (authState.isLoading && !authState.hasValue) ||

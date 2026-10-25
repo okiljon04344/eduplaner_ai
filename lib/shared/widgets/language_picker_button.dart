@@ -4,10 +4,8 @@ import '../../../core/l10n/app_strings.dart';
 import '../../../core/providers/locale_provider.dart';
 import '../../../core/theme/app_colors.dart';
 
-/// A reusable language picker button that shows a modal bottom sheet.
-///
-/// Designed to be used in nav bars or hero sections where a full [ListTile]
-/// is too large. Displays the current language's flag emoji by default.
+/// Compact language picker button that opens [showLanguagePicker]; shows the
+/// current language's flag by default.
 class LanguagePickerButton extends ConsumerWidget {
   final Color? color;
   final bool showLabel;
@@ -61,7 +59,7 @@ class LanguagePickerButton extends ConsumerWidget {
   }
 }
 
-/// Language picker sheet — shared by [LanguagePickerButton] and Settings.
+/// Bottom sheet listing all languages; shared by [LanguagePickerButton] and Settings.
 void showLanguagePicker(BuildContext context, WidgetRef ref, String currentLocale) {
   showModalBottomSheet(
     context: context,
@@ -71,8 +69,8 @@ void showLanguagePicker(BuildContext context, WidgetRef ref, String currentLocal
     ),
     isScrollControlled: true,
     builder: (ctx) => DraggableScrollableSheet(
-      // Opens at max size: on web a mouse wheel scrolls the list but never
-      // grows the sheet, which left the last languages out of reach at 0.7.
+      // Open at max size: on web the mouse wheel scrolls the list but never
+      // grows the sheet, so the last languages were unreachable at 0.7.
       initialChildSize: 0.9,
       minChildSize: 0.4,
       maxChildSize: 0.9,

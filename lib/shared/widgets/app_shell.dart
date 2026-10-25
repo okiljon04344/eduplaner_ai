@@ -44,10 +44,9 @@ class _DirectionalTab extends ConsumerStatefulWidget {
 
 class _DirectionalTabState extends ConsumerState<_DirectionalTab> {
   bool _goingRight = true;
-  // Bumped on every tab switch (even back to a previously-visited index) so
-  // the KeyedSubtree below is never reused across visits — AppColors' mutable
-  // statics don't flow through InheritedWidget, so a reused Element can paint
-  // stale colors picked up from before this tab was last hidden.
+  // Bumped on every tab switch so the KeyedSubtree is never reused: AppColors'
+  // mutable statics don't flow through InheritedWidget, and a reused Element
+  // could paint stale colors.
   int _visitNonce = 0;
 
   @override

@@ -11,9 +11,8 @@ class SubjectStyle {
 class SubjectColors {
   SubjectColors._();
 
-  // Getters, not `static const` fields — [AppColors]'s text/dot tokens are
-  // mutable (they flip with the theme), so these must be re-read on every
-  // access rather than baked in once at first use.
+  // Getters, not const fields: [AppColors]' text/dot tokens flip with the theme,
+  // so they must be re-read on every access.
   static Map<String, SubjectStyle> get _map => <String, SubjectStyle>{
         '数学': SubjectStyle(fill: AppColors.mathFill, text: AppColors.mathText, dot: AppColors.mathDot),
         '英語': SubjectStyle(fill: AppColors.engFill, text: AppColors.engText, dot: AppColors.engDot),

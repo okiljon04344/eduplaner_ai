@@ -9,20 +9,16 @@ import '../../../shared/widgets/app_input_field.dart';
 import '../models/school_type.dart';
 import '../providers/auth_provider.dart';
 
-/// Mandatory school-profile step: school type first, then only the fields
-/// that type has in the Japanese system — 課程 (高校/大学院), 学年 chips,
-/// 学部/研究科, 学科/専攻 and コース (see [SchoolType]).
+/// School-profile step: school type first, then only the fields that type has
+/// (program, grade, faculty, department, course; see [SchoolType]).
 ///
 /// Reached two ways:
-///  - Router redirect right after sign-up/onboarding, while
-///    `currentUserProvider`'s `profileComplete` is still false — blocking,
-///    no way to leave until saved (the router itself won't route anywhere
-///    else while incomplete).
-///  - Pushed from Settings to edit an already-complete profile — normal
-///    back button, pops on save.
-/// Which mode this is is captured once in [initState] from the *current*
-/// `profileComplete` value, so the AppBar doesn't change mid-edit if the
-/// save itself is what flips it.
+///  - Router redirect while `profileComplete` is false: blocking, no way out
+///    until saved.
+///  - Pushed from Settings to edit a complete profile: normal back button,
+///    pops on save.
+/// The mode is captured once in [initState] so the AppBar doesn't change
+/// mid-edit when the save flips `profileComplete`.
 class ProfileSetupScreen extends ConsumerStatefulWidget {
   const ProfileSetupScreen({super.key});
 
@@ -70,7 +66,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   }
 
   void _selectType(SchoolType t) {
-    // Keep the current 課程 when it is also valid for the new type.
+    // Keep the current program when it is also valid for the new type.
     _program = t.programs.contains(_program) ? _program : t.defaultProgram;
     _selectedType = t;
     _clampGrade();
@@ -156,7 +152,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
         ),
       ),
       body: SafeArea(
-        // Top-aligned (not centered) so toggling the 学部 field never shifts the form.
+        // Top-aligned (not centered) so toggling the faculty field never shifts the form.
         child: Align(
           alignment: Alignment.topCenter,
           child: ConstrainedBox(

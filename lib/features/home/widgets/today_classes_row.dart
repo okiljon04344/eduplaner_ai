@@ -6,8 +6,7 @@ import '../../timetable/providers/timetable_provider.dart';
 import 'home_class_card.dart';
 import '../../../core/l10n/app_strings.dart';
 
-/// Vertical stack of today's classes (the currently-live one gets a glowing
-/// highlighted card), matching the dark-neon design's home layout.
+/// Vertical stack of today's classes; the live one is highlighted.
 class TodayClassesRow extends ConsumerWidget {
   const TodayClassesRow({super.key});
 

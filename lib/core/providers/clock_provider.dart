@@ -1,9 +1,8 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// Emits [initial] immediately, then re-emits at every instant returned by
-/// [nextBoundary] (called with the current time after each emission). The
-/// timer is cancelled and the stream closed when the provider is disposed.
+/// Emits [initial] now and again at each instant returned by [nextBoundary];
+/// the timer and stream are cleaned up when the provider is disposed.
 Stream<DateTime> _boundaryStream(
   Ref ref, {
   required DateTime Function(DateTime now) initial,
@@ -25,9 +24,8 @@ Stream<DateTime> _boundaryStream(
   return controller.stream;
 }
 
-/// Today's date (local midnight), emitted immediately and again at each next
-/// local midnight, so providers that depend on "today" refresh on rollover
-/// instead of reading `DateTime.now()` once.
+/// Today's date (local midnight), re-emitted at each midnight so providers that
+/// depend on "today" refresh on rollover.
 final todayProvider = StreamProvider<DateTime>((ref) {
   return _boundaryStream(
     ref,
@@ -36,8 +34,8 @@ final todayProvider = StreamProvider<DateTime>((ref) {
   );
 });
 
-/// The current time, emitted immediately and then once every minute aligned
-/// to the start of the minute — for labels like "live / in N min / ended".
+/// The current time, re-emitted at the start of every minute (for "live / in N
+/// min / ended" labels).
 final minuteTickProvider = StreamProvider.autoDispose<DateTime>((ref) {
   return _boundaryStream(
     ref,

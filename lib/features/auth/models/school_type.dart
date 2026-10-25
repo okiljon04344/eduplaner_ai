@@ -1,11 +1,8 @@
 import '../../../core/l10n/app_strings.dart';
 import 'user_model.dart';
 
-/// Canonical school-type keys stored in Firestore (`users/{uid}.schoolType`).
-/// Never store the localized label — always this `key`, resolved to the
-/// current locale via [label] at display time (same pattern as
-/// `kWeekdayKanji`/`DateHelper.localizedWeekday`).
-/// Declaration order is the chip order in the profile form.
+/// School-type keys stored in `users/{uid}.schoolType`. Store the `key`, never
+/// the localized [label]. Declaration order is the chip order in the profile form.
 enum SchoolType {
   juniorHigh('junior_high'),
   highSchool('high_school'),
@@ -28,8 +25,9 @@ enum SchoolType {
 
   String get label => AppStrings.t('school_type_$key');
 
-  /// 課程 keys (stored in `users/{uid}.program`, localized as `program_$key`).
-  /// Only 高校 (全日制/定時制/通信制) and 大学院 (修士/博士/専門職) have them.
+  /// Program (course track) keys, stored in `users/{uid}.program` and localized as
+  /// `program_$key`. Only high school (full-time/part-time/correspondence) and
+  /// graduate school (master/doctor/professional) have them.
   List<String> get programs => switch (this) {
         SchoolType.highSchool => const ['full_time', 'part_time', 'correspondence'],
         SchoolType.graduate => const ['master', 'doctor', 'professional'],
@@ -42,9 +40,8 @@ enum SchoolType {
         _ => null,
       };
 
-  /// Number of selectable 学年 for this type (0 = no grade, e.g. その他).
-  /// 定時制/通信制 high school run 4 years; 博士課程 is 4 (medical doctoral
-  /// programs), 修士/専門職学位課程 are 2.
+  /// Number of selectable grades (0 = none). Part-time/correspondence high school
+  /// runs 4 years; doctoral programs are 4, master/professional programs 2.
   int maxGrade(String? program) => switch (this) {
         SchoolType.juniorHigh => 3,
         SchoolType.highSchool => (program == 'part_time' || program == 'correspondence') ? 4 : 3,
@@ -56,9 +53,8 @@ enum SchoolType {
         SchoolType.other => 0,
       };
 
-  /// Only university-level institutions in the Japanese system have a 学部
-  /// (faculty) tier above 学科 (department) — 大学院 relabels them as
-  /// 研究科/専攻 via [facultyLabelKey]/[departmentLabelKey].
+  /// Only university and graduate school have a faculty tier above department;
+  /// graduate school relabels them via [facultyLabelKey]/[departmentLabelKey].
   bool get hasFaculty => this == SchoolType.university || this == SchoolType.graduate;
 
   bool get hasDepartment => this != SchoolType.juniorHigh && this != SchoolType.other;
@@ -80,8 +76,8 @@ enum SchoolType {
   }
 }
 
-/// One-line school summary for Settings, e.g. "大学 2年 · 工学部".
-/// Null when the school type is unknown (profile not set up).
+/// One-line school summary for Settings, e.g. "大学 2年 · 工学部"; null if the
+/// profile isn't set up.
 String? schoolSummary(UserModel? user) {
   final type = SchoolType.fromKey(user?.schoolType);
   if (type == null) return null;

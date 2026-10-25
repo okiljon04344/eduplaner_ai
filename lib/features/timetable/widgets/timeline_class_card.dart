@@ -13,12 +13,9 @@ import '../providers/timetable_provider.dart';
 import 'add_edit_class_sheet.dart';
 import 'class_detail_sheet.dart';
 
-/// One row of the schedule timeline: a time column (start time, gradient
-/// connector line, end time) beside a glass class card with a colored left
-/// border, subject name, room · teacher line, and a period tag pill.
-///
-/// [date] is the calendar day this card is displayed for; the 休講/変更 badge
-/// shows only when the class's status applies to that date.
+/// One row of the schedule timeline: time column plus class card. [date] is the
+/// day the card is shown for; the cancellation/change badge only shows when the
+/// class's status applies to that date.
 class TimelineClassCard extends ConsumerWidget {
   final ClassModel classModel;
   final DateTime date;

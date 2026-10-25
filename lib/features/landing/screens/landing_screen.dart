@@ -59,10 +59,8 @@ class _LandingScreenState extends State<LandingScreen>
       backgroundColor: const Color(0xFF100C08),
       body: Stack(
         children: [
-          // Animated background orbs
           _AnimatedBg(ctrl: _bgCtrl),
-          // Scrollable content — SafeArea keeps the nav bar (title + CTA
-          // button) clear of the OS status bar/notch on phones.
+          // SafeArea keeps the nav bar clear of the status bar/notch on phones.
           SafeArea(
             bottom: false,
             child: SingleChildScrollView(
@@ -87,8 +85,6 @@ class _LandingScreenState extends State<LandingScreen>
     );
   }
 }
-
-// ─── Animated background ─────────────────────────────────────────────────────
 
 class _AnimatedBg extends StatelessWidget {
   final AnimationController ctrl;
@@ -140,8 +136,6 @@ class _OrbPainter extends CustomPainter {
   bool shouldRepaint(_OrbPainter old) => old.t != t;
 }
 
-// ─── Nav bar ─────────────────────────────────────────────────────────────────
-
 class _NavBar extends StatelessWidget {
   final bool isDesktop;
   const _NavBar({required this.isDesktop});
@@ -157,7 +151,6 @@ class _NavBar extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Animated logo
           Container(
             width: 34, height: 34,
             decoration: BoxDecoration(
@@ -173,9 +166,8 @@ class _NavBar extends StatelessWidget {
               .animate(onPlay: (c) => MediaQuery.disableAnimationsOf(context) ? c.stop() : c.repeat(reverse: true))
               .shimmer(duration: 2400.ms, color: Colors.white.withValues(alpha: 0.15)),
           const SizedBox(width: 10),
-          // Expanded (not Flexible+Spacer) so the wordmark claims the *entire*
-          // leftover width; scaleDown (not ellipsis) keeps the brand whole when
-          // a long localized CTA (de/ru/vi) leaves less room on phones.
+          // Expanded + scaleDown (not ellipsis) keeps the wordmark whole when a
+          // long localized CTA (de/ru/vi) leaves less room on phones.
           const Expanded(
             child: FittedBox(
               fit: BoxFit.scaleDown,
@@ -193,10 +185,8 @@ class _NavBar extends StatelessWidget {
           ),
           const LanguagePickerButton(color: Colors.white),
           const SizedBox(width: 12),
-          // The hero section right below already repeats both the login and
-          // signup CTAs prominently, so on narrow phones the nav bar only
-          // keeps the signup button — otherwise there isn't enough width for
-          // the full "EduPlanner AI" wordmark next to three separate CTAs.
+          // The hero repeats both CTAs, so narrow phones keep only the signup
+          // button here to leave room for the wordmark.
           if (isDesktop) ...[
             TextButton(
               onPressed: () => context.push('/login'),
@@ -211,9 +201,8 @@ class _NavBar extends StatelessWidget {
             ),
             const SizedBox(width: 8),
           ],
-          // Capped on phones so a long translation ("Commencer gratuitement")
-          // shrinks the button instead of squeezing the wordmark; dropped
-          // under 360dp, where the hero CTAs right below are enough.
+          // Capped on phones so a long translation shrinks the button instead of
+          // squeezing the wordmark; dropped under 360dp (the hero CTAs suffice).
           if (isDesktop || MediaQuery.sizeOf(context).width >= 360) ConstrainedBox(
             constraints: BoxConstraints(maxWidth: isDesktop ? double.infinity : 140),
             child: FittedBox(
@@ -230,8 +219,6 @@ class _NavBar extends StatelessWidget {
     ).animate().fadeIn(duration: 500.ms).slideY(begin: -0.05, end: 0);
   }
 }
-
-// ─── Hero section ────────────────────────────────────────────────────────────
 
 class _HeroSection extends StatelessWidget {
   final bool isDesktop;
@@ -283,7 +270,6 @@ class _HeroText extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Badge
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
           decoration: BoxDecoration(
@@ -330,7 +316,7 @@ class _HeroText extends StatelessWidget {
 
         const SizedBox(height: 24),
 
-        // Main title — each word animates in
+        // Each word animates in.
         _GradientTitle()
             .animate()
             .fadeIn(delay: 400.ms, duration: 700.ms)
@@ -385,7 +371,6 @@ class _HeroText extends StatelessWidget {
 
         const SizedBox(height: 28),
 
-        // Social proof
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -433,8 +418,6 @@ class _GradientTitle extends StatelessWidget {
     );
   }
 }
-
-// ─── Floating mockup card ─────────────────────────────────────────────────────
 
 class _FloatingMockup extends StatelessWidget {
   final AnimationController ctrl;
@@ -578,8 +561,6 @@ class _MockupRow extends StatelessWidget {
   }
 }
 
-// ─── Features ─────────────────────────────────────────────────────────────────
-
 const _features = [
   (Icons.calendar_month_outlined, Color(0xFF06B6D4), 'feat_timetable',  'feat_timetable_desc'),
   (Icons.assignment_outlined,     Color(0xFF10B981), 'feat_assignments',    'feat_assignments_desc'),
@@ -602,7 +583,6 @@ class _FeaturesSection extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // Section label
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
             decoration: BoxDecoration(
@@ -762,8 +742,6 @@ class _FeatureCardState extends State<_FeatureCard> {
   }
 }
 
-// ─── CTA section ──────────────────────────────────────────────────────────────
-
 class _CtaSection extends StatelessWidget {
   final AnimationController pulseCtrl;
   const _CtaSection({required this.pulseCtrl});
@@ -843,8 +821,6 @@ class _CtaSection extends StatelessWidget {
   }
 }
 
-// ─── Footer ───────────────────────────────────────────────────────────────────
-
 class _Footer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -865,8 +841,6 @@ class _Footer extends StatelessWidget {
     );
   }
 }
-
-// ─── Glow button ──────────────────────────────────────────────────────────────
 
 class _GlowButton extends StatefulWidget {
   final String label;

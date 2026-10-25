@@ -4,11 +4,8 @@ import '../../core/l10n/app_strings.dart';
 import '../../core/theme/app_colors.dart';
 import 'nav_destinations.dart';
 
-/// Mobile bottom navigation bar — four main destinations.
-///
-/// Uses a solid-color background (no BackdropFilter) to keep compositing
-/// cost minimal.  A thin gradient at the top edge creates a soft fade from
-/// the page content into the nav bar without the GPU cost of a blur pass.
+/// Mobile bottom navigation for the four main destinations. Solid background
+/// (no BackdropFilter) to keep compositing cheap.
 class AppBottomNav extends StatelessWidget {
   const AppBottomNav({super.key});
 
@@ -23,7 +20,7 @@ class AppBottomNav extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Soft gradient separator — cheap alternative to BackdropFilter blur.
+          // Gradient fade into the bar instead of a blur.
           if (AppColors.isDark)
             Container(
               height: 1,

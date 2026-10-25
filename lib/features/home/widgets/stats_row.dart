@@ -6,11 +6,8 @@ import '../../assignments/providers/assignments_provider.dart';
 import '../providers/home_provider.dart';
 import '../../../core/l10n/app_strings.dart';
 
-/// Three side-by-side stat pills (streak / weekly done / urgent count).
-///
-/// Each pill is wrapped in its own [Consumer] so a change in one provider
-/// (e.g. the streak count ticking over) rebuilds *only* that pill — not the
-/// two neighbouring pills whose data hasn't changed.
+/// Three stat pills (streak / weekly done / urgent count), each in its own
+/// [Consumer] so a change in one provider rebuilds only that pill.
 class StatsRow extends StatelessWidget {
   const StatsRow({super.key});
 

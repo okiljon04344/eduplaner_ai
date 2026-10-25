@@ -6,12 +6,10 @@ import '../../../core/providers/app_providers.dart';
 import '../../../shared/widgets/confirm_dialog.dart';
 import '../../auth/providers/auth_provider.dart';
 
-/// Asks the user to confirm, then files an `ai_reports` document for AI-generated
-/// content (Google Play AI-generated content policy). [kind] is `'chat'` or
-/// `'quiz'`; [botId]/[refId] are chat-only.
-///
-/// Reads providers through [ProviderScope.containerOf] so it works from plain
-/// stateless widgets.
+/// Asks for confirmation, then files an `ai_reports` document for AI-generated
+/// content (required by Google Play's AI-content policy). [kind] is `'chat'` or
+/// `'quiz'`; [botId]/[refId] are chat-only. Reads providers through
+/// [ProviderScope.containerOf] so plain stateless widgets can call it.
 Future<void> confirmAndReportAiContent(
   BuildContext context, {
   required String kind,

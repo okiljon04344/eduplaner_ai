@@ -2,16 +2,15 @@ import 'package:flutter/material.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
 
-/// Mirrors the `botPrompts` map in `functions/index.js` — keep the `id`
-/// values in sync with that file so `botId` round-trips correctly.
+/// Mirrors the `botPrompts` map in `functions/index.js`; keep the ids in sync
+/// so `botId` round-trips.
 class AiBot {
   final String id;
   final String emoji;
   final Color color;
   const AiBot({required this.id, required this.emoji, required this.color});
 
-  /// Localized display name, resolved from `bot_<id>` at read time so it
-  /// always reflects the currently loaded locale.
+  /// Display name from `bot_<id>`, resolved on read so it follows the locale.
   String get label => AppStrings.t('bot_$id');
 }
 

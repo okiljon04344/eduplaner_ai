@@ -9,15 +9,12 @@ import '../../../core/utils/date_helper.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../models/assignment_model.dart';
 
-/// Mirrors the server-side cap in `functions/index.js`'s
-/// `analyzeAssignmentSubmission` (`MAX_FILE_BYTES`). Checked here too so an
-/// oversized file is rejected before it's base64-encoded (~4/3 size bloat)
-/// and sent over the network, only to be rejected server-side anyway.
+/// Mirrors `MAX_FILE_BYTES` in `analyzeAssignmentSubmission` (functions/index.js).
+/// Checked here too so an oversized file is rejected before it is base64-encoded
+/// and uploaded.
 const _kMaxAssignmentFileBytes = 10 * 1024 * 1024;
 
-/// Streams all assignments for the current user from Firestore.
-///
-/// Emits an empty stream when the user is not signed in.
+/// The current user's assignments; empty when signed out.
 final assignmentsStreamProvider = StreamProvider<List<AssignmentModel>>((ref) {
   final uid = ref.watch(currentUserProvider)?.uid;
   if (uid == null) return const Stream.empty();
@@ -31,15 +28,12 @@ final assignmentsStreamProvider = StreamProvider<List<AssignmentModel>>((ref) {
   });
 });
 
-/// Currently active status filter on the assignments screen.
-///
-/// Values are locale-independent ids: `'all'`, `'notStarted'`,
-/// `'inProgress'`, `'completed'` — display labels are looked up via
-/// `AppStrings.t()` in [FilterChipsRow] so switching language never
-/// breaks an active filter.
+/// Active status filter: `'all'`, `'notStarted'`, `'inProgress'` or `'completed'`.
+/// Locale-independent ids; [FilterChipsRow] translates the labels, so switching
+/// language never breaks an active filter.
 final selectedFilterProvider = StateProvider<String>((_) => 'all');
 
-/// The assignment list after applying [selectedFilterProvider].
+/// Assignments after applying [selectedFilterProvider].
 final filteredAssignmentsProvider = Provider<List<AssignmentModel>>((ref) {
   final all = ref.watch(assignmentsStreamProvider).valueOrNull ?? [];
   final filter = ref.watch(selectedFilterProvider);
@@ -55,13 +49,11 @@ final filteredAssignmentsProvider = Provider<List<AssignmentModel>>((ref) {
   }
 });
 
-/// How many assignments are due this week and how many are completed.
-///
-/// Used by the weekly progress ring on the home and assignments screens.
+/// Assignments due this week and how many of them are completed.
 final weeklyProgressProvider = Provider<({int completed, int total})>((ref) {
   final all = ref.watch(assignmentsStreamProvider).valueOrNull ?? [];
   final now = DateTime.now();
-  // Calendar arithmetic (not Duration): Monday 00:00 .. next Monday 00:00,
+  // Calendar arithmetic (not Duration) keeps Monday 00:00 .. next Monday 00:00
   // correct across DST changes.
   final start = DateTime(now.year, now.month, now.day - (now.weekday - 1));
   final end = DateTime(start.year, start.month, start.day + 7);
@@ -74,10 +66,8 @@ final weeklyProgressProvider = Provider<({int completed, int total})>((ref) {
   return (completed: completed, total: weekAssignments.length);
 });
 
-/// The next 3 incomplete assignments — shown on the home screen quick-view.
-///
-/// Only items due within the last 7 days or later are considered, so ancient
-/// overdue leftovers can't crowd out the real upcoming work.
+/// The next 3 incomplete assignments for the home quick-view. Anything overdue
+/// by more than 7 days is ignored so old leftovers don't crowd out upcoming work.
 final upcomingAssignmentsProvider = Provider<List<AssignmentModel>>((ref) {
   final all = ref.watch(assignmentsStreamProvider).valueOrNull ?? [];
   final now = DateTime.now();
@@ -90,9 +80,7 @@ final upcomingAssignmentsProvider = Provider<List<AssignmentModel>>((ref) {
   return upcoming.take(3).toList();
 });
 
-/// How many incomplete assignments are overdue or due within the next 3 days.
-///
-/// Used to show an urgent badge count in the nav bar.
+/// Incomplete assignments that are overdue or due within 3 days (nav badge).
 final urgentAssignmentsCountProvider = Provider<int>((ref) {
   final all = ref.watch(assignmentsStreamProvider).valueOrNull ?? [];
   final now = DateTime.now();
@@ -103,14 +91,13 @@ final urgentAssignmentsCountProvider = Provider<int>((ref) {
       .length;
 });
 
-/// Handles all assignment write operations and AI-check integration.
+/// Assignment writes and the AI submission check.
 class AssignmentsNotifier extends AsyncNotifier<void> {
   @override
   Future<void> build() async {}
 
-  /// Runs a [NotificationService] call, logging (not rethrowing) any
-  /// failure — reminder scheduling is best-effort and must never surface
-  /// as a user-facing error for what is otherwise a successful write.
+  /// Runs a [NotificationService] call, logging failures instead of rethrowing:
+  /// reminders are best-effort and must not turn a successful write into an error.
   Future<void> _safeNotify(Future<void> Function() action, String label) async {
     try {
       await action();
@@ -119,9 +106,8 @@ class AssignmentsNotifier extends AsyncNotifier<void> {
     }
   }
 
-  /// Runs [write], returning `null` on success or the localized generic
-  /// retry message on failure (after logging) — callers show the message in
-  /// an error toast and keep their UI open.
+  /// Runs [write]; returns null on success, else the generic retry message
+  /// (callers show it in a toast and keep their UI open).
   Future<String?> _guarded(Future<void> Function() write, String label) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(write);
@@ -132,9 +118,8 @@ class AssignmentsNotifier extends AsyncNotifier<void> {
     return null;
   }
 
-  /// Creates a new assignment and schedules due-date reminders.
-  ///
-  /// Returns `null` on success, otherwise an error message to show.
+  /// Creates an assignment and schedules its reminders. Returns null on success,
+  /// else an error message (same for the other write methods).
   Future<String?> add(AssignmentModel model) async {
     final error = await _guarded(() => ref.read(assignmentsRepositoryProvider).add(model), 'Assignment add');
     if (error == null) {
@@ -143,9 +128,7 @@ class AssignmentsNotifier extends AsyncNotifier<void> {
     return error;
   }
 
-  /// Updates an existing assignment and reschedules its reminders.
-  ///
-  /// Returns `null` on success, otherwise an error message to show.
+  /// Updates an assignment and reschedules its reminders.
   Future<String?> updateAssignment(AssignmentModel model) async {
     final error = await _guarded(() => ref.read(assignmentsRepositoryProvider).update(model), 'Assignment update');
     if (error == null) {
@@ -154,9 +137,7 @@ class AssignmentsNotifier extends AsyncNotifier<void> {
     return error;
   }
 
-  /// Deletes an assignment and cancels its pending notifications.
-  ///
-  /// Returns `null` on success, otherwise an error message to show.
+  /// Deletes an assignment and cancels its reminders.
   Future<String?> delete(String id) async {
     final error = await _guarded(() => ref.read(assignmentsRepositoryProvider).delete(id), 'Assignment delete');
     if (error == null) {
@@ -165,23 +146,17 @@ class AssignmentsNotifier extends AsyncNotifier<void> {
     return error;
   }
 
-  /// Sets [status] on [model] and writes it together with the progress that
-  /// goes with it (see [AssignmentModel.withStatus]).
-  ///
-  /// Returns `null` on success, otherwise an error message to show.
+  /// Writes [status] together with its matching progress (see [AssignmentModel.withStatus]).
   Future<String?> updateStatus(AssignmentModel model, AssignmentStatus status) =>
       _writeStatusProgress(model, model.withStatus(status));
 
-  /// Sets the progress (0.0–1.0) of [model] and writes it together with the
-  /// status derived from it (see [AssignmentModel.withProgress]).
-  ///
-  /// Returns `null` on success, otherwise an error message to show.
+  /// Writes [progress] (0.0-1.0) together with its derived status (see
+  /// [AssignmentModel.withProgress]).
   Future<String?> updateProgress(AssignmentModel model, double progress) =>
       _writeStatusProgress(model, model.withProgress(progress));
 
-  /// Persists [next]'s status + progress in one Firestore update and keeps
-  /// reminders in step: cancelled when it becomes completed, rescheduled when
-  /// it leaves completed.
+  /// Writes [next]'s status and progress in one update and keeps reminders in
+  /// step: cancelled on completion, rescheduled when leaving completed.
   Future<String?> _writeStatusProgress(AssignmentModel previous, AssignmentModel next) async {
     try {
       await ref.read(assignmentsRepositoryProvider).updateStatusAndProgress(next.id, next.status, next.progress);
@@ -197,16 +172,13 @@ class AssignmentsNotifier extends AsyncNotifier<void> {
     return null;
   }
 
-  /// 課題の自動チェック — base64-encodes a file picked by the user and sends it
-  /// to the `analyzeAssignmentSubmission` Cloud Function for Gemini analysis.
+  /// AI check of a submitted file via `analyzeAssignmentSubmission`.
   ///
-  /// The file is never written to Storage or logged — it exists only in the
-  /// Cloud Function's memory for that single invocation.  Only the derived
-  /// result (`completionPercent`, `missingParts`, `advice`) is written back
-  /// to Firestore and returned to the caller.
+  /// Privacy: the file is never stored or logged; it only lives in the
+  /// function's memory for that call. Only the derived result
+  /// (`completionPercent`, `missingParts`, `advice`) is written to Firestore.
   ///
-  /// Returns `(model: updated, error: null)` on success or
-  /// `(model: null, error: message)` on failure.
+  /// Returns `(model: updated, error: null)` or `(model: null, error: message)`.
   Future<({AssignmentModel? model, String? error})> checkWithAi(
     AssignmentModel assignment, {
     required Uint8List fileBytes,
@@ -252,6 +224,5 @@ class AssignmentsNotifier extends AsyncNotifier<void> {
   }
 }
 
-/// Global provider for [AssignmentsNotifier].
 final assignmentsNotifierProvider =
     AsyncNotifierProvider<AssignmentsNotifier, void>(AssignmentsNotifier.new);

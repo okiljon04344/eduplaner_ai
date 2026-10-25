@@ -7,30 +7,22 @@ import '../../assignments/models/assignment_model.dart';
 import '../../timetable/models/class_model.dart';
 import '../models/message_model.dart';
 
-/// Data layer for AI tutor chat.
-///
-/// All AI inference happens server-side via the `chatWithTutor` Cloud Function —
-/// the Gemini API key never leaves the Firebase backend.  This class only:
-///   - Builds the minimal, privacy-safe payload sent to the function.
-///   - Persists messages to Firestore so history survives app restarts.
-///   - Loads the last 50 messages on demand (capped to keep read costs low).
+/// Data layer for the AI tutor chat. Inference runs in the `chatWithTutor`
+/// Cloud Function, so the Gemini API key never reaches the client. This class
+/// builds the payload for it and persists/loads the last 50 messages.
 class ChatRepository {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-  /// Reference to the messages sub-collection for a given user.
   CollectionReference _msgs(String userId) =>
       _db.collection('ai_chats').doc(userId).collection('messages');
 
-  /// Calls the `chatWithTutor` Cloud Function and returns the AI reply.
+  /// Calls `chatWithTutor` and returns the reply. Throws a localised [Exception]
+  /// that callers can show as is.
   ///
-  /// Only anonymous, non-identifying fields leave the device:
-  ///   - Assignments: `{subject, dueDate, status, progress}` — no title or
-  ///     description (may contain personal notes).
-  ///   - Classes: `{subject, dayOfWeek, period}` — no teacher names
-  ///     (third-party personal data).
-  ///
-  /// Throws a localised [Exception] (via [AppStrings]) on error so callers
-  /// can surface it directly in the UI without further translation.
+  /// Privacy: only non-identifying fields leave the device. Assignments send
+  /// `{subject, dueDate, status, progress}` (titles and descriptions may hold
+  /// personal notes); classes send `{subject, dayOfWeek, period}` (teacher names
+  /// are third-party personal data). That is still enough for useful advice.
   Future<String> sendMessage({
     required String botId,
     required String userMessage,
@@ -43,10 +35,6 @@ class ChatRepository {
         'botId': botId,
         'message': userMessage,
         'language': AppStrings.currentLocale,
-        // Privacy: only anonymous, non-identifying fields leave the device —
-        // no assignment titles/descriptions (may contain personal notes) and
-        // no teacher names (third-party personal data). The AI still gets
-        // enough context (subject, due date, progress) to give useful advice.
         'assignments': assignments.map((a) => {'subject': a.subject, 'dueDate': a.dueDateLabel, 'status': a.status.label, 'progress': a.progress}).toList(),
         'classes': classes.map((c) => {'subject': c.subject, 'dayOfWeek': c.dayOfWeek, 'period': c.period}).toList(),
       });
@@ -89,10 +77,8 @@ class ChatRepository {
     });
   }
 
-  /// Writes a single [MessageModel] to Firestore.
-  ///
-  /// Failures are logged with [debugPrint] and swallowed — a failed save
-  /// should never crash the chat UI; the message is already shown locally.
+  /// Saves one message. Failures are logged and swallowed: the message is
+  /// already shown locally and a failed save must not break the chat.
   Future<void> saveMessage(String userId, MessageModel msg) async {
     try {
       await _msgs(userId).doc(msg.id).set(msg.toFirestore());
@@ -101,10 +87,8 @@ class ChatRepository {
     }
   }
 
-  /// Returns the last 50 messages for [userId] ordered by timestamp.
-  ///
-  /// Returns an empty list on any error so the chat screen opens cleanly
-  /// even without a network connection.
+  /// The last 50 messages ordered by time; empty on any error so the chat opens
+  /// offline.
   Future<List<MessageModel>> loadHistory(String userId) async {
     try {
       final snap = await _msgs(userId).orderBy('timestamp').limitToLast(50).get();
@@ -114,7 +98,7 @@ class ChatRepository {
     }
   }
 
-  /// Deletes all messages for [userId] in a single batched write.
+  /// Deletes all messages in one batch.
   Future<void> clearHistory(String userId) async {
     final snap = await _msgs(userId).get();
     final batch = _db.batch();

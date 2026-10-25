@@ -2,28 +2,23 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../l10n/app_strings.dart';
 
-/// Manages the active UI locale and persists it across app restarts.
+/// The active UI locale, persisted across restarts.
 ///
-/// Uses a synchronous [Notifier] (not AsyncNotifier) so there is no
-/// intermediate AsyncLoading state.  State changes directly from the old
-/// locale to the new one after the JSON asset has been loaded, which means
-/// the [ValueKey] in [EduPlannerApp] changes exactly once per language switch
-/// and triggers a clean full-tree remount.
+/// A synchronous [Notifier] so there is no AsyncLoading state: [state] changes
+/// once, after the new strings are loaded, so the [ValueKey] in [EduPlannerApp]
+/// triggers exactly one remount per language switch.
 class LocaleNotifier extends Notifier<String> {
   static const _key = 'app_locale';
 
-  /// Returns the locale that was pre-loaded in [main] before runApp.
-  /// Falls back to `'ja'` if nothing was loaded yet.
+  /// Starts from the locale pre-loaded in [main] before `runApp`.
   @override
   String build() => AppStrings.currentLocale;
 
-  /// Loads the translation JSON for [locale], persists the choice, then
-  /// updates [state].  State changes only once — after the load completes —
-  /// so the widget tree rebuilds exactly once with the new strings in place.
+  /// Loads the strings for [locale], persists the choice, then updates [state].
   ///
-  /// If the load fell back to another locale (unsupported code or an
-  /// unreadable asset), nothing is persisted or changed and the previous
-  /// locale's strings are restored, so state and loaded strings never diverge.
+  /// If the load fell back to another locale (unsupported code or unreadable
+  /// asset), nothing is persisted and the previous strings are restored, so
+  /// state and loaded strings never diverge.
   Future<void> setLocale(String locale) async {
     final previous = state;
     await AppStrings.load(locale);
@@ -37,8 +32,6 @@ class LocaleNotifier extends Notifier<String> {
   }
 }
 
-/// Global provider for the current locale string (e.g. `'ja'`, `'en'`, `'uz'`).
-///
-/// Watch this in [EduPlannerApp] to rebuild on locale changes.
-/// Use `ref.read(localeProvider.notifier).setLocale(code)` to change locale.
+/// Current locale code (e.g. `'ja'`, `'en'`, `'uz'`); change it with
+/// `ref.read(localeProvider.notifier).setLocale(code)`.
 final localeProvider = NotifierProvider<LocaleNotifier, String>(LocaleNotifier.new);

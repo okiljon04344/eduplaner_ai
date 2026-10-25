@@ -17,7 +17,7 @@ class AssignmentCard extends ConsumerWidget {
     final isCompleted = assignment.status == AssignmentStatus.completed;
     final subjectStyle = SubjectColors.of(assignment.subject);
 
-    // Entry tween removed: it replayed on every rebuild while scrolling (scroll jank).
+
     return RepaintBoundary(child: GestureDetector(
         onTap: () => showAssignmentDetailSheet(context, ref, assignment),
         child: Container(

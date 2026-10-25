@@ -4,7 +4,7 @@ import 'package:toastification/toastification.dart';
 import '../models/assignment_model.dart';
 import '../providers/assignments_provider.dart';
 
-/// Shows a flat error toast — shared by every assignment write that can fail.
+/// Flat error toast shared by every assignment write that can fail.
 void showAssignmentErrorToast(BuildContext context, String message) {
   toastification.show(
     context: context,
@@ -16,8 +16,8 @@ void showAssignmentErrorToast(BuildContext context, String message) {
 }
 
 /// Checkbox behaviour shared by the assignments list and the home quick-view:
-/// completed → notStarted (progress 0), anything else → completed (progress 1).
-/// Status and progress are written together; a failed write shows an error toast.
+/// completed becomes notStarted, anything else becomes completed. A failed
+/// write shows an error toast.
 Future<void> toggleAssignmentDone(BuildContext context, WidgetRef ref, AssignmentModel assignment) async {
   final next = assignment.status == AssignmentStatus.completed
       ? AssignmentStatus.notStarted

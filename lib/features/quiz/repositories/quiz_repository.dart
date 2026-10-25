@@ -22,9 +22,8 @@ class QuizRepository {
       return raw.map((e) => QuizQuestion.fromJson(Map<String, dynamic>.from(e as Map))).toList();
     } on FirebaseFunctionsException catch (e) {
       debugPrint('generateQuiz error: ${e.code} ${e.message}');
-      // Show the server-provided Japanese message when available so users see
-      // "quota reached" vs "invalid input" vs "server busy" instead of one
-      // generic fallback. Empty/null falls back to a generic message.
+      // Prefer the server's message so users can tell "quota reached" from
+      // "invalid input"; fall back to a generic one if it is empty.
       final serverMsg = (e.message ?? '').trim();
       if (e.code == 'not-found') {
         throw Exception(AppStrings.t('err_quiz_unavailable'));

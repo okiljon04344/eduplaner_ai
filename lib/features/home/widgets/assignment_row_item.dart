@@ -5,8 +5,8 @@ import '../../assignments/models/assignment_model.dart';
 import '../../assignments/widgets/assignment_actions.dart';
 import '../../assignments/widgets/assignment_detail_sheet.dart';
 
-/// One row in [UpcomingAssignmentsList]: a circular checkbox (tap toggles
-/// completion directly) and title + colored deadline text.
+/// One row of [UpcomingAssignmentsList]: a checkbox that toggles completion,
+/// the title and a colored deadline.
 class AssignmentRowItem extends ConsumerWidget {
   final AssignmentModel assignment;
   final bool showDivider;

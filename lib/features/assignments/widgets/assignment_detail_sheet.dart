@@ -44,7 +44,7 @@ Future<void> showAssignmentDetailSheet(BuildContext context, WidgetRef ref, Assi
     context: context,
     isScrollControlled: true,
     useRootNavigator: true,
-    // backgroundColor/shape inherited from the app's dark bottomSheetTheme.
+    // backgroundColor and shape come from bottomSheetTheme.
     builder: (_) => _AssignmentDetailSheet(assignment: assignment),
   );
 }
@@ -111,7 +111,7 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
     } on FirebaseFunctionsException catch (e) {
       if (!mounted) return;
       setState(() => _aiLoading = false);
-      // Quota/login problems are actionable — show them instead of the generic failure.
+      // Quota and login problems are actionable; show them instead of the generic failure.
       final actionable = e.code == 'resource-exhausted' || e.code == 'unauthenticated';
       _showAiError(actionable ? FunctionsService.describeError(e) : AppStrings.t('ai_plan_failed'));
     } catch (e) {
@@ -123,11 +123,8 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
 
   void _showAiError(String message) => showAssignmentErrorToast(context, message);
 
-  /// 課題の自動チェック — picks an image/PDF/Word/text file and reads its
-  /// bytes via `PlatformFile.readAsBytes()` (file_picker 12's API — the
-  /// platform-agnostic way to get bytes on web, desktop, and mobile alike,
-  /// replacing the old synchronous `.bytes` getter + `withData` param),
-  /// sends it for AI review, and shows the result inline.
+  /// Picks an image/PDF/Word/text file, reads it with `readAsBytes()` (works on
+  /// web, desktop and mobile alike), sends it for AI review and shows the result.
   Future<void> _pickAndCheckSubmission() async {
     final file = await FilePicker.pickFile(
       type: FileType.custom,
@@ -187,8 +184,8 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
     });
   }
 
-  // Committing on drag-end (not every `onChanged` tick) avoids firing a
-  // Firestore write per pixel of drag while the slider is being dragged.
+  // Commit on drag end, not every `onChanged` tick, to avoid a Firestore write
+  // per pixel of drag.
   Future<void> _onProgressChangeEnd(double value) async {
     if (value == _current.progress) return;
     final error = await ref.read(assignmentsNotifierProvider.notifier).updateProgress(_current, value);

@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 
-/// A very faint 32×32px grid of 1px lines across the whole screen —
-/// the design handoff's "ambient background grid" texture. Barely visible
-/// by design (brand accent at ~3-5% opacity); only rendered in dark mode,
-/// where the design intends it to actually show (per the handoff doc).
+/// Faint 32px grid texture (brand accent at ~3-5% opacity), dark mode only.
 class AmbientGridBackground extends StatelessWidget {
   const AmbientGridBackground({super.key});
 

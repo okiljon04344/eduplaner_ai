@@ -140,11 +140,9 @@ class AssignmentModel with _$AssignmentModel {
         'aiAnalyzedAt': aiAnalyzedAt == null ? null : Timestamp.fromDate(aiAnalyzedAt!),
       };
 
-  /// The single status ⇄ progress rule, applied wherever either changes.
-  ///
-  /// Progress that goes with [status]: completed → 1.0, notStarted → 0.0,
-  /// inProgress keeps [progress] but clamped into (0, 1) exclusive (0 → 0.1,
-  /// 1.0 → 0.9) so an in-progress item never reads as 0% or 100%.
+  /// The single status/progress rule, applied wherever either changes.
+  /// completed -> 1.0, notStarted -> 0.0; inProgress keeps [progress] but nudged
+  /// into (0, 1) (0 -> 0.1, 1.0 -> 0.9) so it never reads as 0% or 100%.
   static double progressForStatus(AssignmentStatus status, double progress) {
     switch (status) {
       case AssignmentStatus.completed:
@@ -158,7 +156,7 @@ class AssignmentModel with _$AssignmentModel {
     }
   }
 
-  /// Status implied by [progress]: 0 → notStarted, >= 1 → completed, else inProgress.
+  /// Status implied by [progress]: 0 is notStarted, >= 1 is completed, else inProgress.
   static AssignmentStatus statusForProgress(double progress) {
     if (progress <= 0) return AssignmentStatus.notStarted;
     if (progress >= 1) return AssignmentStatus.completed;
@@ -175,7 +173,7 @@ class AssignmentModel with _$AssignmentModel {
 
   bool get hasAiAnalysis => aiAnalyzedAt != null;
 
-  // Finished work is never "overdue" / "due today": show the plain date, muted.
+  // Finished work is never overdue or due today: show the plain date, muted.
   bool get _isDone => status == AssignmentStatus.completed;
 
   String get dueDateLabel =>

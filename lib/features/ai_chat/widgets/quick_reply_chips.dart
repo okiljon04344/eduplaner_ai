@@ -4,8 +4,7 @@ import '../../../core/theme/app_colors.dart';
 import '../models/ai_bot.dart';
 import '../providers/chat_provider.dart';
 
-/// Bot picker — mirrors the 10 subject bots defined server-side in
-/// `functions/index.js` (`chatWithTutor`'s `botPrompts`).
+/// Bot picker for the subject bots defined in `botPrompts` (functions/index.js).
 class QuickReplyChips extends ConsumerWidget {
   const QuickReplyChips({super.key});
 

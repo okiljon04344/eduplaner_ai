@@ -2,24 +2,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/app_providers.dart';
 import '../models/quiz_question.dart';
 
-/// Remembers which subject was last used on the quiz screen so the dropdown
-/// restores its value when the user navigates away and comes back.
+/// Last subject used on the quiz screen, restored when the user returns.
 final selectedQuizSubjectProvider = StateProvider<String?>((_) => null);
 
-/// Manages AI quiz generation state.
-///
-/// State is the list of [QuizQuestion]s returned by the last successful
-/// generation, or an empty list before the first call.
+/// Holds the questions from the last successful generation (empty before the first).
 class QuizNotifier extends AsyncNotifier<List<QuizQuestion>> {
   @override
   Future<List<QuizQuestion>> build() async => [];
 
-  /// Calls the `generateQuiz` Cloud Function and replaces state with the
-  /// returned questions.
-  ///
-  /// [useSearch] enables Google Search grounding for up-to-date content.
-  /// Generation uses a two-stage Gemini call (search + JSON formatting) with
-  /// a 120-second server-side timeout to avoid the previous 45-second freeze.
+  /// Calls the `generateQuiz` Cloud Function. [useSearch] enables Google Search
+  /// grounding, which costs a second AI call and a longer server-side timeout.
   Future<void> generate({
     required String subject,
     String topic = '',
@@ -35,10 +27,9 @@ class QuizNotifier extends AsyncNotifier<List<QuizQuestion>> {
     );
   }
 
-  /// Clears the current question list (e.g. when the subject changes).
+  /// Clears the current questions.
   void reset() => state = const AsyncData([]);
 }
 
-/// Global provider for [QuizNotifier].
 final quizNotifierProvider =
     AsyncNotifierProvider<QuizNotifier, List<QuizQuestion>>(QuizNotifier.new);

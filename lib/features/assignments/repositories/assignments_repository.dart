@@ -18,20 +18,18 @@ class AssignmentsRepository {
   Future<void> add(AssignmentModel model) async =>
       _col.doc(model.id).set(model.toFirestore());
 
-  /// Writes every editable field but never the `ai*` result fields — those
-  /// are owned by [saveAiAnalysis], so a stale model passed here can't erase
-  /// a fresher AI check.
+  /// Writes the editable fields but never the `ai*` ones, which [saveAiAnalysis]
+  /// owns, so a stale model can't erase a fresher AI check.
   Future<void> update(AssignmentModel model) async =>
       _col.doc(model.id).update(model.toFirestore()..removeWhere((k, _) => k.startsWith('ai')));
   Future<void> delete(String id) async => _col.doc(id).delete();
 
-  /// Writes status and progress together in one update so the two fields
-  /// can never be observed out of sync.
+  /// Writes status and progress in one update so they are never out of sync.
   Future<void> updateStatusAndProgress(String id, AssignmentStatus status, double progress) async =>
       _col.doc(id).update({'status': status.firestoreValue, 'progress': progress});
 
-  /// 課題の自動チェック — sends the submitted file (never stored, only
-  /// forwarded) to `analyzeAssignmentSubmission` for a Gemini-based review.
+  /// Forwards the submitted file (never stored) to `analyzeAssignmentSubmission`
+  /// for an AI review.
   Future<Map<String, dynamic>> analyzeSubmission({
     required String subject,
     required String title,

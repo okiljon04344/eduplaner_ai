@@ -17,7 +17,7 @@ import '../providers/assignments_provider.dart';
 import 'assignment_actions.dart';
 
 Future<void> showAddEditAssignmentSheet(BuildContext context, WidgetRef ref, {AssignmentModel? existing}) {
-  // backgroundColor/shape are inherited from the app's dark bottomSheetTheme.
+  // backgroundColor and shape come from bottomSheetTheme.
   return showModalBottomSheet(
     context: context,
     isScrollControlled: true,
@@ -76,9 +76,8 @@ class _AddEditAssignmentSheetState extends ConsumerState<_AddEditAssignmentSheet
     super.dispose();
   }
 
-  /// Suggestions only — the field always accepts freely typed subject names
-  /// too, not just these. Combines the fixed color-coded subjects with any
-  /// subject the student already uses in their timetable classes.
+  /// Autocomplete suggestions only; any typed subject is accepted. Combines the
+  /// built-in subjects with those in the student's timetable.
   List<String> _subjectSuggestions() {
     final fromClasses = (ref.read(timetableStreamProvider).valueOrNull ?? []).map((c) => c.subject);
     return {...SubjectColors.all, ...fromClasses}.where((s) => s.trim().isNotEmpty).toList();
@@ -87,8 +86,8 @@ class _AddEditAssignmentSheetState extends ConsumerState<_AddEditAssignmentSheet
   Future<void> _pickDate() async {
     final now = DateTime.now();
     final initial = _selectedDate ?? now;
-    // The range must contain initialDate or showDatePicker asserts — an edited
-    // assignment can be due further back/ahead than the usual window.
+    // showDatePicker asserts unless the range contains initialDate, and an edited
+    // assignment can be due outside the usual window.
     final firstDate = initial.isBefore(now.subtract(const Duration(days: 365))) ? initial : now.subtract(const Duration(days: 365));
     final lastDate = initial.isAfter(now.add(const Duration(days: 365 * 2))) ? initial : now.add(const Duration(days: 365 * 2));
     final picked = await showDatePicker(
@@ -295,7 +294,7 @@ class _AddEditAssignmentSheetState extends ConsumerState<_AddEditAssignmentSheet
                     const SizedBox(height: 8),
                     Text(AppStrings.t('fld_status'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
                     const SizedBox(height: 8),
-                    // Same chips as the detail sheet (SegmentedButton rendered borderless and cramped here).
+                    // Same chips as the detail sheet; SegmentedButton looked cramped here.
                     Wrap(
                       spacing: 8,
                       runSpacing: 8,

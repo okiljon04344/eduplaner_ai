@@ -29,8 +29,7 @@ class HomeScreen extends ConsumerWidget {
           color: AppColors.accentText,
           backgroundColor: AppColors.bgLayer,
           onRefresh: () async {
-            // Explicit user refresh: drop today's cached AI results so the
-            // providers below actually fetch instead of re-serving the cache.
+            // Explicit refresh: drop cached AI results so the providers refetch.
             await clearTodaysAiCache(ref.read(localeProvider));
             ref.invalidate(aiStudyTipProvider);
             ref.invalidate(weakAreaProvider);

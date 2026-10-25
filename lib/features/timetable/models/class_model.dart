@@ -6,37 +6,27 @@ import '../../../core/l10n/app_strings.dart';
 part 'class_model.freezed.dart';
 part 'class_model.g.dart';
 
-/// Canonical storage/comparison keys for weekdays (Mon–Fri).
-///
-/// Always Japanese kanji regardless of the app's display locale — this is
-/// the value written to and matched against in Firestore. UI code must
-/// localize what it *displays* (see `DayTabRow.days`) but always compare
-/// and store against this fixed list, never a localized label.
+/// Weekday keys (Mon–Fri) as stored in Firestore. Always kanji regardless of
+/// locale: display via [weekdayLabel], but store and compare against this list.
 const List<String> kWeekdayKanji = ['月', '火', '水', '木', '金'];
 
-/// Localized (locale-aware) display label for a canonical [kWeekdayKanji] value.
-///
-/// Falls back to the kanji itself if [kanji] isn't one of the five weekdays.
+/// Localized label for a [kWeekdayKanji] value; returns [kanji] unchanged if unknown.
 String weekdayLabel(String kanji) {
   const keys = ['day_mon', 'day_tue', 'day_wed', 'day_thu', 'day_fri'];
   final index = kWeekdayKanji.indexOf(kanji);
   return index == -1 ? kanji : AppStrings.t(keys[index]);
 }
 
-/// `DateTime.monday..friday` for a canonical [kWeekdayKanji] value, or null
-/// for anything else.
+/// `DateTime.monday..friday` for a [kWeekdayKanji] value, or null.
 int? weekdayFromKanji(String kanji) {
   final index = kWeekdayKanji.indexOf(kanji);
   return index == -1 ? null : index + 1;
 }
 
-/// Local-midnight date of the next time a class on [dayOfWeek] / [period]
-/// takes place, as seen at [now].
-///
-/// That is today when the class's weekday is today and its period hasn't
-/// ended yet, otherwise the next date with a matching weekday. A cancellation
-/// or change reported now applies to this date — not to the report time.
-/// Returns null for a [dayOfWeek] outside Mon–Fri.
+/// Local-midnight date of the next occurrence of a class, as seen at [now]:
+/// today if the weekday matches and the period hasn't ended, else the next
+/// matching weekday. A cancellation reported now applies to this date, not to
+/// the report time. Null for a [dayOfWeek] outside Mon–Fri.
 DateTime? nextClassDate({required String dayOfWeek, required int period, DateTime? now}) {
   final weekday = weekdayFromKanji(dayOfWeek);
   if (weekday == null) return null;
@@ -137,10 +127,8 @@ class ClassModel with _$ClassModel {
         'statusDate': statusDate == null ? null : Timestamp.fromDate(statusDate!),
       };
 
-  /// Whether a 休講/変更 status is set for the calendar day of [day].
-  ///
-  /// [statusDate] is the date of the affected class occurrence (see
-  /// [nextClassDate]), not the time the status was reported.
+  /// Whether a cancellation/change is set for the calendar day of [day].
+  /// [statusDate] is the affected occurrence (see [nextClassDate]), not the report time.
   bool statusAppliesTo(DateTime day) {
     final date = statusDate;
     if (status == ClassStatus.normal || date == null) return false;
@@ -149,8 +137,7 @@ class ClassModel with _$ClassModel {
 
   bool get hasStatusAlertToday => statusAppliesTo(DateTime.now());
 
-  /// Whether a 休講/変更 status is set for today or a later date — i.e. it
-  /// hasn't expired yet.
+  /// Whether a cancellation/change is set for today or later (not yet expired).
   bool get hasStatusAlertUpcoming {
     final date = statusDate;
     if (status == ClassStatus.normal || date == null) return false;

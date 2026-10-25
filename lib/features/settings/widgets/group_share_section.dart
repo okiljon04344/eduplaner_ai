@@ -8,9 +8,8 @@ import '../../../shared/widgets/confirm_dialog.dart';
 import '../../groups/models/study_group_model.dart';
 import '../../groups/providers/groups_provider.dart';
 
-/// "クラス全体での共有" — lets a student create or join a class-wide study
-/// group by a 6-character code. Once joined, timetable classes created while
-/// in a group are shared with every member (see `TimetableNotifier`).
+/// Lets a student create or join a study group by a 6-character code. Classes
+/// created while in a group are shared with every member (see `TimetableNotifier`).
 class GroupShareSection extends ConsumerWidget {
   const GroupShareSection({super.key});
 

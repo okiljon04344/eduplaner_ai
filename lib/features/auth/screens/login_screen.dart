@@ -25,9 +25,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    // Kick off Google Sign-In init as soon as this screen appears so the
-    // web SDK button (see _GoogleSignInArea) is ready to render, rather
-    // than only starting once the user taps something.
+    // Initialise Google Sign-In now so the web SDK button (see
+    // _GoogleSignInArea) is ready to render.
     if (kIsWeb) {
       unawaited(ref.read(authRepositoryProvider).ensureGoogleSignInReady());
     }
@@ -242,8 +241,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 }
 
-// ─── Desktop 2-column login layout ───────────────────────────────────────────
-
 class _DesktopLoginLayout extends StatelessWidget {
   final bool loading;
   final VoidCallback onSignInWithGoogle;
@@ -255,7 +252,6 @@ class _DesktopLoginLayout extends StatelessWidget {
       backgroundColor: AppColors.background,
       body: Row(
         children: [
-          // Left: brand panel
           Expanded(
             flex: 5,
             child: Container(
@@ -338,7 +334,6 @@ class _DesktopLoginLayout extends StatelessWidget {
             ),
           ),
 
-          // Right: login form
           Expanded(
             flex: 4,
             child: Container(
@@ -445,9 +440,7 @@ class _DesktopLoginLayout extends StatelessWidget {
   }
 }
 
-// Getter (not a top-level const/final) so it re-resolves in the currently
-// loaded locale — a plain `final` would freeze these strings at first
-// access and never update when the user switches language.
+// A getter, not a top-level final, so the strings follow locale changes.
 List<(String, IconData, Color, String)> get _desktopFeatures => [
   (AppStrings.t('feat_timetable'), Icons.calendar_month_outlined, const Color(0xFF06B6D4), AppStrings.t('feat_timetable_desc')),
   (AppStrings.t('feat_assignments'), Icons.assignment_outlined, const Color(0xFF10B981), AppStrings.t('feat_assignments_desc')),
@@ -455,13 +448,12 @@ List<(String, IconData, Color, String)> get _desktopFeatures => [
   (AppStrings.t('feat_quiz'), Icons.quiz_outlined, const Color(0xFFF59E0B), AppStrings.t('feat_quiz_desc')),
 ];
 
-/// Google sign-in entry point, shared by the mobile and desktop layouts.
+/// Google sign-in entry point for the mobile and desktop layouts.
 ///
-/// Web has no `authenticate()` support — `GoogleSignIn` on web requires a
-/// button rendered by Google's own SDK (see `google_signin_button.dart`),
-/// which handles the click internally and completes sign-in via
-/// `AuthRepository`'s `authenticationEvents` listener, not [onTap]. Other
-/// platforms keep the app's own styled button wired to [onTap].
+/// Web has no `authenticate()`, so it shows the SDK-rendered button (see
+/// `google_signin_button.dart`), which completes sign-in through
+/// `AuthRepository`'s `authenticationEvents` listener rather than [onTap].
+/// Other platforms use the app's own button wired to [onTap].
 class _GoogleSignInArea extends StatelessWidget {
   final bool loading;
   final VoidCallback onTap;
@@ -514,8 +506,7 @@ class _GoogleSignInArea extends StatelessWidget {
   }
 }
 
-/// A handful of soft, slowly-pulsing radial-gradient blobs behind the brand
-/// panel — a livelier, more youthful alternative to a single static glow.
+/// Slowly pulsing radial-gradient blobs behind the brand panel.
 class _FloatingOrbs extends StatelessWidget {
   const _FloatingOrbs();
 

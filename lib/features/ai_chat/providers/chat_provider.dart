@@ -9,15 +9,12 @@ import '../../timetable/providers/timetable_provider.dart';
 import '../models/message_model.dart';
 import '../repositories/chat_repository.dart';
 
-/// Manages the in-memory list of chat messages for the active bot session.
-///
-/// Optimistically appends a loading message while the Cloud Function call is
-/// in flight, then replaces it with the real AI reply (or an error message)
-/// once the result arrives.  This ensures the UI never shows an empty gap
-/// between the user's message and the bot's reply.
+/// In-memory chat messages. A loading placeholder is appended while the Cloud
+/// Function call is in flight and replaced by the reply (or an error message),
+/// so there is never a gap after the user's message.
 class ChatNotifier extends Notifier<List<MessageModel>> {
-  /// Watches the signed-in uid so the in-memory conversation is reset (and
-  /// can never leak) when a different account signs in on this device.
+  // Watching the uid resets the conversation when another account signs in, so
+  // it can't leak across accounts.
   @override
   List<MessageModel> build() {
     ref.watch(currentUserProvider.select((u) => u?.uid));
@@ -27,12 +24,10 @@ class ChatNotifier extends Notifier<List<MessageModel>> {
   String get _uid => ref.read(currentUserProvider)?.uid ?? '';
   ChatRepository get _repo => ref.read(chatRepositoryProvider);
 
-  /// Resolves the AI context from [current], briefly awaiting [whenLoaded]
-  /// when the stream hasn't emitted yet (cold open: a message sent right
-  /// after the chat screen mounts would otherwise silently give the AI an
-  /// empty timetable/assignment context). Context is optional, so timeout
-  /// and error (e.g. signed-out empty stream) fall back to an empty list
-  /// instead of failing the send.
+  /// Resolves the AI context from [current]. If the stream hasn't emitted yet
+  /// (a message sent right after the screen mounts) it waits briefly on
+  /// [whenLoaded] instead of silently sending an empty context. Context is
+  /// optional, so a timeout or error falls back to an empty list.
   Future<List<T>> _contextOf<T>(AsyncValue<List<T>> current, Future<List<T>> whenLoaded) async {
     final value = current.valueOrNull;
     if (value != null) return value;
@@ -43,13 +38,10 @@ class ChatNotifier extends Notifier<List<MessageModel>> {
     }
   }
 
-  /// Loads the last 50 messages from Firestore and merges them into the
-  /// current state.
-  ///
-  /// Called whenever the chat screen mounts.  Local messages that aren't in
-  /// the loaded history (an in-flight loading placeholder, unsaved or error
-  /// messages) are kept, so remounting mid-reply doesn't drop the answer.
-  /// No-op when not signed in.
+  /// Merges the last 50 stored messages into the state when the chat screen
+  /// mounts. Local messages missing from the history (an in-flight placeholder,
+  /// unsaved or error messages) are kept, so remounting mid-reply doesn't drop
+  /// the answer. No-op when signed out.
   Future<void> loadHistory() async {
     final uid = _uid;
     if (uid.isEmpty) return;
@@ -65,18 +57,13 @@ class ChatNotifier extends Notifier<List<MessageModel>> {
     state = merged;
   }
 
-  /// Appends [content] as a user message, then sends it to the AI.
-  ///
-  /// A placeholder loading message is inserted immediately so the typing
-  /// indicator appears without waiting for the network round-trip.
-  /// Both the user message and the eventual AI reply are persisted to
-  /// Firestore.  On error the placeholder is replaced with a visible error
-  /// message rather than being removed.
+  /// Appends [content] as a user message and sends it to the AI. Both messages
+  /// are persisted; on error the placeholder becomes a visible error message.
   Future<void> sendMessage(String content, {required String botId}) async {
     final trimmed = content.trim();
     if (trimmed.isEmpty) return;
-    // Captured once: both saves below must go to the account that sent the
-    // message, even if another account signs in while the reply is in flight.
+    // Captured once: both saves must go to the sending account even if another
+    // account signs in while the reply is in flight.
     final uid = _uid;
     final userMsg = MessageModel(
       id: const Uuid().v4(),
@@ -94,9 +81,8 @@ class ChatNotifier extends Notifier<List<MessageModel>> {
       botId: botId,
     );
     state = [...state, userMsg, loadingMsg];
-    // saveMessage swallows its own errors (see ChatRepository), so the user
-    // message write can safely run concurrently with the AI round-trip
-    // instead of delaying it by one Firestore write.
+    // saveMessage swallows its own errors, so this write can run concurrently
+    // with the AI round-trip.
     final userMsgSave = uid.isNotEmpty ? _repo.saveMessage(uid, userMsg) : Future<void>.value();
     try {
       final (classes, assignments) = await (
@@ -124,10 +110,8 @@ class ChatNotifier extends Notifier<List<MessageModel>> {
     }
   }
 
-  /// Clears all messages from state and deletes them from Firestore.
-  ///
-  /// Firestore deletion failures are logged and swallowed — the local state
-  /// is cleared regardless so the user always gets a fresh-looking chat.
+  /// Clears the state and deletes the stored messages. A failed delete is logged
+  /// and swallowed so the user still gets a fresh chat.
   Future<void> clearHistory() async {
     state = [];
     if (_uid.isNotEmpty) {
@@ -140,12 +124,8 @@ class ChatNotifier extends Notifier<List<MessageModel>> {
   }
 }
 
-/// Global provider for the active chat message list.
 final chatProvider = NotifierProvider<ChatNotifier, List<MessageModel>>(ChatNotifier.new);
 
-/// Tracks which AI bot is currently selected (defaults to the planner bot).
-///
-/// Changed by the bot picker at the top of [AiChatScreen].
-/// The selected id is passed into every [ChatNotifier.sendMessage] call so
-/// each message is stored and rendered with the correct bot identity.
+/// Id of the selected AI bot (default: planner), set by the bot picker and
+/// passed to every [ChatNotifier.sendMessage].
 final selectedBotIdProvider = StateProvider<String>((_) => 'planner');

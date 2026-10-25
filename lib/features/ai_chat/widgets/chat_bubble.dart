@@ -7,7 +7,7 @@ import '../models/message_model.dart';
 import 'report_ai_content.dart';
 import 'typing_indicator.dart';
 
-const _kAiBorderColorDark = Color(0x3306D6A0); // rgba(6,214,160,.2)
+const _kAiBorderColorDark = Color(0x3306D6A0);
 
 class ChatBubble extends StatelessWidget {
   final MessageModel message;
@@ -57,7 +57,7 @@ class ChatBubble extends StatelessWidget {
         ],
       ),
     );
-    // Replaying the entry animation on rebuild/scroll-back causes scroll jank; animate only fresh messages.
+    // Animate only fresh messages: replaying on rebuild or scroll-back janks scrolling.
     if (DateTime.now().difference(message.timestamp) >= const Duration(seconds: 3)) return bubble;
     return bubble
         .animate()

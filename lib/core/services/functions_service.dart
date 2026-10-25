@@ -1,18 +1,14 @@
 import 'package:cloud_functions/cloud_functions.dart';
 import '../l10n/app_strings.dart';
 
-/// Centralized entry point for every Cloud Functions call in the app.
-///
-/// All callables are deployed in `asia-northeast1` (see `functions/index.js`)
-/// — this must match, or every call fails with `not-found`. `timeout` is
-/// shared across all calls (AI analysis / quiz generation are the slowest,
-/// so the whole surface uses the same generous budget rather than tuning
-/// each call site separately).
+/// Entry point for every Cloud Functions call. Callables are deployed in
+/// `asia-northeast1` (see `functions/index.js`); the region must match or calls
+/// fail with `not-found`. One generous timeout is shared by all calls because
+/// AI analysis and quiz generation are the slowest.
 abstract class FunctionsService {
   static final FirebaseFunctions _instance = () {
     final f = FirebaseFunctions.instanceFor(region: 'asia-northeast1');
-    // Emulator-auth tokens are rejected by production functions anyway;
-    // route to a (possibly absent) local functions emulator instead.
+    // Emulator auth tokens are rejected by production, so use the local emulator.
     if (const bool.fromEnvironment('USE_EMULATOR')) f.useFunctionsEmulator('localhost', 5001);
     return f;
   }();
@@ -21,9 +17,8 @@ abstract class FunctionsService {
   static HttpsCallable callable(String name) =>
       _instance.httpsCallable(name, options: HttpsCallableOptions(timeout: timeout));
 
-  /// Maps the error codes any callable can raise (auth/timeout/offline/server)
-  /// to a localized message. Call sites should check their own
-  /// function-specific codes first and fall back to this for the rest.
+  /// Localized message for the error codes any callable can raise
+  /// (auth/timeout/offline/server). Call sites check their own codes first.
   static String describeError(FirebaseFunctionsException e) {
     switch (e.code) {
       case 'unauthenticated':

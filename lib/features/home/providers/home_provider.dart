@@ -9,25 +9,23 @@ import '../../auth/providers/auth_provider.dart';
 import '../../assignments/models/assignment_model.dart';
 import '../../assignments/providers/assignments_provider.dart';
 
-// Getters (not consts) so they always resolve in the currently loaded locale.
+// Getters, not consts, so they follow the current locale.
 String get _fallbackTip => AppStrings.t('tip_fallback');
 String get _fallbackWeakArea => AppStrings.t('weak_fallback');
 String get _noAssignmentsWeakArea => AppStrings.t('weak_no_assignments');
 
-// Cache keys are per locale and per day, so switching language re-fetches in
-// the new language and a new day starts fresh.
+// Keyed per locale and day: switching language re-fetches, a new day starts fresh.
 String _studyTipCacheKey(String locale, DateTime day) => 'study_tip_${locale}_${DateHelper.dayKey(day)}';
 String _weakAreaCacheKey(String locale, DateTime day) => 'weak_area_${locale}_${DateHelper.dayKey(day)}';
 
-/// While set and in the future, [weakAreaProvider] makes no `analyzeWeakArea`
-/// call: after a failure, every assignment change would otherwise retry the
-/// function (and burn daily AI quota) while it is failing.
+/// While in the future, [weakAreaProvider] makes no `analyzeWeakArea` call.
+/// Without it every assignment change would retry a failing function and burn
+/// the daily AI quota.
 DateTime? _weakAreaBackoffUntil;
 const _weakAreaBackoff = Duration(minutes: 10);
 
-/// Removes today's cached study tip and weak-area analysis for [locale] (and
-/// any weak-area failure backoff) so the next provider read hits the server.
-/// Used by the home pull-to-refresh, which is an explicit user request.
+/// Drops today's cached study tip and weak-area analysis for [locale], plus the
+/// failure backoff, so the next read hits the server. Used by pull-to-refresh.
 Future<void> clearTodaysAiCache(String locale) async {
   final prefs = await SharedPreferences.getInstance();
   final now = DateTime.now();
@@ -36,11 +34,9 @@ Future<void> clearTodaysAiCache(String locale) async {
   _weakAreaBackoffUntil = null;
 }
 
-/// Tracks consecutive-day app-open streak and persists it to [SharedPreferences].
-///
-/// Backs the "🔥 Streak" stat pill on the home screen with a real number.
-/// The streak increments when the app is opened on the day immediately
-/// following the last recorded open; it resets to 1 otherwise.
+/// Consecutive-day app-open streak, persisted in [SharedPreferences]. It
+/// increments when the app opens the day after the last open and resets to 1
+/// otherwise.
 final dailyStreakProvider = FutureProvider<int>((ref) async {
   final prefs = await SharedPreferences.getInstance();
   final now = DateTime.now();
@@ -51,8 +47,8 @@ final dailyStreakProvider = FutureProvider<int>((ref) async {
   if (lastOpen == todayKey) return streak == 0 ? 1 : streak;
 
   if (lastOpen != null) {
-    // Calendar arithmetic (not `subtract(Duration(days: 1))`, which is 24h and
-    // lands on the wrong day just after a DST change).
+    // Calendar arithmetic: `subtract(Duration(days: 1))` lands on the wrong day
+    // just after a DST change.
     final yesterdayKey = DateHelper.dayKey(DateTime(now.year, now.month, now.day - 1));
     streak = (lastOpen == yesterdayKey) ? streak + 1 : 1;
   } else {
@@ -64,16 +60,13 @@ final dailyStreakProvider = FutureProvider<int>((ref) async {
   return streak;
 });
 
-/// Fetches a short daily AI study tip from the `chatWithTutor` Cloud Function.
-///
-/// The tip is cached in [SharedPreferences] keyed by today's date so the
-/// function is called at most once per calendar day.  Falls back to a static
-/// motivational string if the call fails or returns empty.
+/// Daily AI study tip from the `chatWithTutor` function, cached per day so it is
+/// called at most once a day. Falls back to a static string on failure or empty.
 final aiStudyTipProvider = FutureProvider<String>((ref) async {
   if (ref.watch(currentUserProvider) == null) return _fallbackTip;
-  final locate = ref.watch(localeProvider);
+  final locale = ref.watch(localeProvider);
   final prefs = await SharedPreferences.getInstance();
-  final cacheKey = _studyTipCacheKey(locate, DateTime.now());
+  final cacheKey = _studyTipCacheKey(locale, DateTime.now());
   final cached = prefs.getString(cacheKey);
   if (cached != null && cached.isNotEmpty) return cached;
 
@@ -82,7 +75,7 @@ final aiStudyTipProvider = FutureProvider<String>((ref) async {
     final result = await callable.call<Map<String, dynamic>>({
       'botId': 'focus',
       'message': AppStrings.t('ai_tip_prompt'),
-      'language': locate,
+      'language': locale,
     });
     final tip = (result.data['reply'] as String?)?.trim();
     if (tip == null || tip.isEmpty) return _fallbackTip;
@@ -102,24 +95,22 @@ class _SubjectStat {
   int difficultySum = 0;
 }
 
-/// 苦手分野の分析 — aggregates per-subject assignment stats locally (no AI
-/// needed for the counting), then sends just the summary numbers to the
-/// `analyzeWeakArea` Cloud Function so Gemini can name the weakest subject(s)
-/// and produce a short actionable tip.
+/// Weak-area analysis. Per-subject stats are counted locally; only the summary
+/// numbers go to the `analyzeWeakArea` function, which names the weakest
+/// subject(s) and gives a short tip.
 ///
 /// The result is cached per locale and day as JSON `{sig, text}`, where `sig`
-/// is a stable string of the computed stats: the function is only called when
-/// the stats actually changed, not on every assignment-stream emission. After
-/// a failed call no new call is made for 10 minutes; the cached text (even
-/// from older stats) is returned if there is one, else the localized fallback.
+/// is a stable string of the stats, so the function is only called when the
+/// stats changed. After a failed call there is no new call for 10 minutes; the
+/// cached text (even from older stats) is returned if any, else the fallback.
 final weakAreaProvider = FutureProvider<String>((ref) async {
-  final locate = ref.watch(localeProvider);
+  final locale = ref.watch(localeProvider);
   final assignments = ref.watch(assignmentsStreamProvider).valueOrNull ?? [];
   if (assignments.isEmpty) return _noAssignmentsWeakArea;
 
   final now = DateTime.now();
   final prefs = await SharedPreferences.getInstance();
-  final cacheKey = _weakAreaCacheKey(locate, now);
+  final cacheKey = _weakAreaCacheKey(locale, now);
   final cached = _decodeWeakAreaCache(prefs.getString(cacheKey));
 
   final statsBySubject = <String, _SubjectStat>{};
@@ -154,7 +145,7 @@ final weakAreaProvider = FutureProvider<String>((ref) async {
     final callable = FunctionsService.callable('analyzeWeakArea');
     final result = await callable.call<Map<String, dynamic>>({
       'stats': stats,
-      'language': locate,
+      'language': locale,
     });
     analysis = (result.data['analysis'] as String?)?.trim();
   } catch (_) {
@@ -168,9 +159,9 @@ final weakAreaProvider = FutureProvider<String>((ref) async {
   return analysis;
 });
 
-/// Parses the `{sig, text}` weak-area cache entry. A plain-text entry written
-/// by an older app version is returned with an empty `sig` (never matches, so
-/// it is refreshed once, but still usable as a fallback text).
+/// Parses the `{sig, text}` cache entry. A plain-text entry from an older app
+/// version gets an empty `sig`: it never matches (so it is refreshed once) but
+/// still works as fallback text.
 ({String sig, String text})? _decodeWeakAreaCache(String? raw) {
   if (raw == null || raw.isEmpty) return null;
   try {

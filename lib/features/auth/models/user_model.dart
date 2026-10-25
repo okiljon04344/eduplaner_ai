@@ -45,10 +45,8 @@ class UserModel with _$UserModel {
 
   const UserModel._();
 
-  /// True once the mandatory school-profile setup step is done. `schoolType`
-  /// is the gate — it's only ever written together with `school` by
-  /// [AuthRepository.saveSchoolProfile], never independently, so checking it
-  /// alone is enough to know the whole step was completed.
+  /// True once the school-profile step is done. `schoolType` is the gate: it is
+  /// only written together with `school` by [AuthRepository.saveSchoolProfile].
   bool get profileComplete => schoolType != null && schoolType!.isNotEmpty;
 
   Map<String, dynamic> toFirestore() => {

@@ -11,7 +11,7 @@ class ThemeNotifier extends Notifier<ThemeMode> {
     return ThemeMode.system;
   }
 
-  // Fire-and-forget from build() — must not let a SharedPreferences failure
+  // Fire-and-forget from build(), so a SharedPreferences failure must not
   // escape as an unhandled async error.
   Future<void> _loadFromPrefs() async {
     try {

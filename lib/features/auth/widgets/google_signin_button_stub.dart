@@ -1,9 +1,8 @@
 import 'package:flutter/widgets.dart';
 
-/// Non-web stub — never actually called (gated by `kIsWeb` at the call
-/// site), but this file must exist and compile on Android/iOS since
-/// `google_signin_button.dart` conditionally exports either this or the
-/// real web implementation.
+/// Non-web stub. Never called (callers check `kIsWeb`), but
+/// `google_signin_button.dart` conditionally exports this or the web
+/// implementation, so it must compile on Android/iOS.
 Widget renderGoogleSignInButton() {
   throw StateError('renderGoogleSignInButton() is web-only');
 }

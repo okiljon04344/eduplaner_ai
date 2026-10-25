@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 abstract class Breakpoints {
   static const compact = 600.0;
   static const medium = 840.0;
-  static const expanded = 1200.0;
 }
 
 enum ScreenSize { compact, medium, expanded }
@@ -12,8 +11,7 @@ enum ScreenSize { compact, medium, expanded }
 extension ResponsiveContext on BuildContext {
   double get screenWidth => MediaQuery.sizeOf(this).width;
 
-  /// True at tablet width and above (>=600dp) — the point where a side
-  /// nav rail replaces the bottom nav bar.
+  /// True from 600dp up, where the side nav rail replaces the bottom bar.
   bool get isTablet => screenWidth >= Breakpoints.compact;
 
   ScreenSize get screenSize {
@@ -24,14 +22,10 @@ extension ResponsiveContext on BuildContext {
   }
 }
 
-/// Centers [child] and clamps it to [maxWidth] once the viewport is wider
-/// than that, so phone-tuned layouts don't stretch into unreadably long
-/// rows/lines on tablets and desktop. No-ops below [maxWidth].
-///
-/// On [ScreenSize.expanded] screens (>=1200dp — a real desktop window, not
-/// just a tablet), [expandedMaxWidth] is used instead so wide monitors get a
-/// noticeably wider column rather than the same tablet-tuned width with huge
-/// empty margins on both sides. Defaults to 1.3x [maxWidth].
+/// Centers [child] and clamps it to [maxWidth] so phone-tuned layouts don't
+/// stretch into unreadably long lines on tablets and desktop. On
+/// [ScreenSize.expanded] screens [expandedMaxWidth] applies instead (default
+/// 1.3x [maxWidth]) so wide windows aren't left with huge empty margins.
 class ResponsiveBody extends StatelessWidget {
   final Widget child;
   final double maxWidth;

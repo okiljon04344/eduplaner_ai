@@ -120,8 +120,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 40),
           children: [
-            // Profile hero — gradient-tinted card so it reads as the top of the
-            // page, not just another row.
+            // Gradient-tinted card so the profile reads as the top of the page.
             Container(
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
@@ -196,7 +195,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ],
             ),
             _SectionTitle(AppStrings.t('set_class_share')),
-            // Deliberately non-const: identical-widget tree reuse freezes buttons across theme switches (CLAUDE.md 2026-08-27)
+            // Deliberately non-const: an identical const widget tree is reused
+            // across theme switches and its buttons freeze.
             // ignore: prefer_const_constructors, prefer_const_literals_to_create_immutables
             _SettingsCard(children: [GroupShareSection()]),
             _SectionTitle(AppStrings.t('settings_section_notifications')),
@@ -300,9 +300,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 }
 
-/// Rounded card grouping related settings rows — the single visual
-/// container every section below uses, replacing bare `ListTile`s directly
-/// on the scaffold background.
+/// Rounded card that groups related settings rows.
 class _SettingsCard extends StatelessWidget {
   final List<Widget> children;
   const _SettingsCard({required this.children});
@@ -321,8 +319,8 @@ class _SettingsCard extends StatelessWidget {
   }
 }
 
-/// One row inside a [_SettingsCard]: colored icon chip + title (+ optional
-/// subtitle) + trailing widget, tappable when [onTap] is given.
+/// One row of a [_SettingsCard]: icon chip, title, optional subtitle and
+/// trailing widget; tappable when [onTap] is given.
 class _SettingsRow extends StatelessWidget {
   final IconData icon;
   final Color iconColor;

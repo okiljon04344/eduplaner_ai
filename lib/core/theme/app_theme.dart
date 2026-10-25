@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'app_colors.dart';
 
-/// EduPlanner AI dizayn tizimi (Green Neon).
+/// Light and dark [ThemeData] built from the [AppColors] tokens.
 class AppTheme {
   static ThemeData get light => _build(Brightness.light);
   static ThemeData get dark => _build(Brightness.dark);
@@ -10,10 +10,9 @@ class AppTheme {
   static ThemeData _build(Brightness brightness) {
     final isDark = brightness == Brightness.dark;
 
-    // Resolve colors based on requested brightness, NOT current AppColors statics.
-    // This prevents ThemeData.light from being built with Dark colors if the
-    // app is currently in dark mode (since MaterialApp evaluates both theme
-    // and darkTheme getters during every build).
+    // Resolve colors from the requested brightness, not the mutable AppColors
+    // statics: MaterialApp evaluates both `theme` and `darkTheme` on every build,
+    // so the light theme would otherwise pick up dark colors in dark mode.
     final background = isDark ? AppColors.darkBackground : AppColors.lightBackground;
     final surface = isDark ? AppColors.darkSurface : AppColors.lightSurface;
     final surfaceVar = isDark ? AppColors.darkSurfaceVar : AppColors.lightSurfaceVar;

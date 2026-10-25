@@ -8,12 +8,9 @@ class TimetableRepository {
 
   List<ClassModel> _classes(QuerySnapshot s) => s.docs.map(ClassModel.fromFirestore).toList();
 
-  /// Streams the user's timetable sorted by period.
-  ///
-  /// Outside a group this is just the user's own classes. In a group it is the
-  /// union of the user's own classes (personal ones keep their reminders, so
-  /// they must stay visible) and the group's shared classes, de-duplicated by
-  /// doc id — two snapshot streams merged by hand, no rxdart.
+  /// The user's classes ordered by period. In a group the group's shared classes
+  /// are merged in by doc id; personal rows stay visible because they keep their
+  /// own reminders. Two snapshot streams merged by hand, no rxdart.
   Stream<List<ClassModel>> watch(String userId, {String? groupId}) {
     final own = _col.where('userId', isEqualTo: userId).orderBy('period').snapshots().map(_classes);
     if (groupId == null) return own;
@@ -74,10 +71,8 @@ class TimetableRepository {
     await _col.doc(id).delete();
   }
 
-  /// Whether [day]/[period] is already taken, ignoring [excludeId].
-  ///
-  /// In a group the slot counts as taken if either the user's own classes or
-  /// the group's classes occupy it (the same two sets [watch] displays).
+  /// Whether [day]/[period] is taken, ignoring [excludeId]. In a group, the
+  /// user's own and the group's classes both count (the sets [watch] shows).
   Future<bool> slotOccupied(String userId, String day, int period, {String? excludeId, String? groupId}) async {
     Future<bool> taken(String field, String value) async {
       final q = await _col

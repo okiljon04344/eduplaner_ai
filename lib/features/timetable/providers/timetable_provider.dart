@@ -10,12 +10,8 @@ import '../../groups/providers/groups_provider.dart';
 import '../models/class_model.dart';
 import '../repositories/timetable_repository.dart';
 
-/// Streams the current user's full timetable.
-///
-/// When the user belongs to a study group the stream is the union of the
-/// group's shared classes (queried by `groupId`) and the user's own personal
-/// classes, de-duplicated by id.  The switch is reactive — joining or leaving
-/// a group automatically updates every listener of this provider.
+/// The user's timetable. In a study group this is the group's shared classes
+/// plus the user's own, de-duplicated by id; it follows group changes reactively.
 final timetableStreamProvider = StreamProvider<List<ClassModel>>((ref) {
   final uid = ref.watch(currentUserProvider)?.uid;
   if (uid == null) return const Stream.empty();
@@ -30,8 +26,7 @@ final timetableStreamProvider = StreamProvider<List<ClassModel>>((ref) {
   });
 });
 
-/// Transforms the flat class list into a `{dayOfWeek: {period: ClassModel}}`
-/// grid that the timetable widget can look up in O(1).
+/// Classes indexed as `{dayOfWeek: {period: ClassModel}}` for O(1) lookup.
 final timetableGridProvider = Provider<Map<String, Map<int, ClassModel>>>((ref) {
   final classes = ref.watch(timetableStreamProvider).valueOrNull ?? [];
   final grid = <String, Map<int, ClassModel>>{};
@@ -41,9 +36,7 @@ final timetableGridProvider = Provider<Map<String, Map<int, ClassModel>>>((ref) 
   return grid;
 });
 
-/// Returns today's classes sorted by period.
-///
-/// Returns an empty list on Saturday/Sunday (weekday > 5).
+/// Today's classes ordered by period; empty on weekends.
 final todayClassesProvider = Provider<List<ClassModel>>((ref) {
   final all = ref.watch(timetableStreamProvider).valueOrNull ?? [];
   // Watching the clock re-evaluates this at each local midnight.
@@ -54,10 +47,8 @@ final todayClassesProvider = Provider<List<ClassModel>>((ref) {
     ..sort((a, b) => a.period.compareTo(b.period));
 });
 
-/// Handles all write operations on the timetable (add, update, delete, status).
-///
-/// Each mutation checks for slot conflicts before writing and schedules (or
-/// reschedules) push-notification reminders via [NotificationService].
+/// Timetable writes. Each mutation checks the slot for conflicts first and
+/// keeps reminders in sync via [NotificationService].
 class TimetableNotifier extends AsyncNotifier<void> {
   @override
   Future<void> build() async {}
@@ -66,9 +57,7 @@ class TimetableNotifier extends AsyncNotifier<void> {
   String get _uid => ref.read(currentUserProvider)?.uid ?? '';
   String? get _groupId => ref.read(myGroupProvider).valueOrNull?.id;
 
-  /// Shared conflict-check + write + reminder-schedule sequence for
-  /// [addClass]/[updateClass] — they differ only in the conflict-check
-  /// params, the repository call, and the save-failure message.
+  /// Shared conflict check + write + reminder scheduling for add/update.
   Future<String?> _saveClass({
     required ClassModel model,
     required String? excludeId,
@@ -102,10 +91,8 @@ class TimetableNotifier extends AsyncNotifier<void> {
     return state.hasError ? AppStrings.t(saveFailedKey) : null;
   }
 
-  /// Adds a new class, auto-attaching the caller's current group id if present.
-  ///
-  /// Returns a localised error string if the target slot is already occupied,
-  /// or `null` on success.
+  /// Adds a class tagged with the caller's current group. Returns a localised
+  /// error string, or null on success.
   Future<String?> addClass(ClassModel model) async {
     final groupId = _groupId;
     final toSave = groupId != null ? model.copyWith(groupId: groupId) : model;
@@ -118,14 +105,11 @@ class TimetableNotifier extends AsyncNotifier<void> {
     );
   }
 
-  /// Updates an existing class, excluding its own id from the conflict check.
-  ///
-  /// Returns a localised error string on slot conflict or save failure,
-  /// or `null` on success.
+  /// Updates a class, ignoring its own slot in the conflict check. Returns a
+  /// localised error string, or null on success.
   Future<String?> updateClass(ClassModel model) async {
-    // Check against the group the user is in *now*. A class still tagged with
-    // a group the user has since left is detached first: querying that group
-    // would be rejected by the rules, and the row is theirs alone again.
+    // Use the group the user is in now. A class tagged with a group they have
+    // since left is detached first: querying that group would be denied by the rules.
     final groupId = _groupId;
     final toSave = model.groupId != null && model.groupId != groupId ? model.copyWith(groupId: null) : model;
     return _saveClass(
@@ -137,9 +121,7 @@ class TimetableNotifier extends AsyncNotifier<void> {
     );
   }
 
-  /// Deletes a class by [id].
-  ///
-  /// Returns a localised error string on failure, or `null` on success.
+  /// Returns a localised error string on failure, or null on success.
   Future<String?> deleteClass(String id) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() => _repo.delete(id));
@@ -152,10 +134,9 @@ class TimetableNotifier extends AsyncNotifier<void> {
     return null;
   }
 
-  /// 休講・変更のアラート — marks [model] as cancelled/changed for its next
-  /// occurrence (see [nextClassDate]) and, if it's shared with a study group,
-  /// triggers `onClassStatusChanged` in functions/index.js to push-notify the
-  /// other members. Passing [ClassStatus.normal] clears the alert.
+  /// Cancellation / change alert: marks [model] for its next occurrence (see
+  /// [nextClassDate]). For shared classes the `onClassStatusChanged` function
+  /// notifies the other members. [ClassStatus.normal] clears the alert.
   Future<String?> setStatus(
     ClassModel model, {
     required ClassStatus status,
@@ -178,6 +159,5 @@ class TimetableNotifier extends AsyncNotifier<void> {
   }
 }
 
-/// Global provider for [TimetableNotifier].
 final timetableNotifierProvider =
     AsyncNotifierProvider<TimetableNotifier, void>(TimetableNotifier.new);

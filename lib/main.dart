@@ -14,23 +14,12 @@ import 'core/l10n/app_strings.dart';
 import 'core/services/notification_service.dart';
 import 'firebase_options.dart';
 
-/// App entry point.
-///
-/// Runs all one-time initialisation in order before handing control to
-/// [EduPlannerApp]:
-///   1. Flutter engine binding
-///   2. Portrait-only orientation lock
-///   3. System UI overlay colours (dark-mode safe transparent status bar)
-///   4. Timezone data + Asia/Tokyo default (school schedule context)
-///   5. Japanese date symbols for [intl] formatting, and Firebase (failures
-///      are logged and swallowed — app still boots offline) — run concurrently,
-///      neither depends on the other
-///   7. Local push-notification channels
-///   8. Pre-load saved locale into [AppStrings] so the first frame is never
-///      rendered with untranslated strings
-/// See the emulator block in `initFirebase` below.
+/// Set with `--dart-define=USE_EMULATOR=true` to run against the local
+/// Firebase emulators.
 const kUseEmulator = bool.fromEnvironment('USE_EMULATOR');
 
+/// Runs one-time initialisation, then starts [EduPlannerApp]. Firebase and
+/// notification failures are logged and swallowed so the app still boots offline.
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   LicenseRegistry.addLicense(() async* {
@@ -44,9 +33,8 @@ Future<void> main() async {
   Future<void> initFirebase() async {
     try {
       await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-      // Local UI testing only: `--dart-define=USE_EMULATOR=true` points Auth
-      // and Firestore at `firebase emulators:start` so test accounts never
-      // touch production. Off in every normal build.
+      // Local testing only: points Auth/Firestore at the emulators so test
+      // accounts never touch production.
       if (kUseEmulator) {
         await FirebaseAuth.instance.useAuthEmulator('localhost', 9099);
         FirebaseFirestore.instance.useFirestoreEmulator('localhost', 8085);
@@ -56,8 +44,7 @@ Future<void> main() async {
     }
   }
 
-  // intl date symbols and Firebase are independent subsystems — initialise
-  // them concurrently instead of one after another.
+  // Independent of each other, so run concurrently.
   await Future.wait([initializeDateFormatting(null), initFirebase()]);
   try {
     await NotificationService.initialize();

@@ -9,8 +9,7 @@ import '../widgets/add_edit_class_sheet.dart';
 import '../widgets/day_tab_row.dart';
 import '../widgets/schedule_timeline.dart';
 
-/// Schedule tab — a day-tab row (月火水木金) + a vertical timeline of that
-/// day's classes, matching the dark-neon design reference.
+/// Schedule tab: day tabs plus a vertical timeline of that day's classes.
 class TimetableScreen extends ConsumerStatefulWidget {
   const TimetableScreen({super.key});
 
@@ -142,7 +141,7 @@ class _Header extends ConsumerWidget {
       decoration: BoxDecoration(
         gradient: isDark ? null : AppColors.heroScheduleGradient,
         border: isDark
-            ? const Border(bottom: BorderSide(color: Color(0x26A855F7))) // rgba(168,85,247,.15)
+            ? const Border(bottom: BorderSide(color: Color(0x26A855F7)))
             : null,
         borderRadius: isDark
             ? null

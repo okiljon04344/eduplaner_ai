@@ -20,27 +20,22 @@ import '../../features/settings/screens/settings_screen.dart';
 import '../../features/timetable/screens/timetable_screen.dart';
 import '../../shared/widgets/app_shell.dart';
 
-/// Provides the singleton [GoRouter] instance.
+/// The app's single [GoRouter]. Its redirect reads [authStateProvider] and
+/// [onboardingProvider] and is re-run by `_RouterRefreshNotifier` when either changes.
 ///
-/// The router is created once inside a Riverpod [Provider]; its redirect reads
-/// [authStateProvider] and [onboardingProvider] and is re-run by
-/// `_RouterRefreshNotifier` when auth state changes (e.g. sign-out from any screen).
-///
-/// Redirect logic (evaluated on every navigation and on auth/onboarding state changes):
-///   - While either provider is loading → no redirect (avoid flicker).
-///   - Not logged in and not on an auth/landing path → redirect to `'/'`.
-///   - Logged in and on login/root → redirect to `/home`, `/onboarding`, or `/profile-setup`.
-///   - Logged in but onboarding not done → redirect to `/onboarding`.
-///   - Logged in, onboarded, but the mandatory school-profile step isn't done
-///     (`UserModel.profileComplete` false) → redirect to `/profile-setup`.
-///     This also catches pre-existing accounts from before this field
-///     existed — they're prompted once, same as a brand-new sign-up.
+/// Redirects:
+///   - Either provider loading: none (avoids flicker).
+///   - Logged out outside the login/landing routes: `/`.
+///   - Logged in on login or `/`: `/onboarding`, `/profile-setup` or `/home`.
+///   - Logged in, onboarding not done: `/onboarding`.
+///   - Logged in, onboarded, `profileComplete` false: `/profile-setup`. This also
+///     catches accounts created before that field existed.
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/home',
     refreshListenable: _RouterRefreshNotifier(ref),
     redirect: (context, state) {
-      // read (not watch): the notifier below re-runs redirect, and watching
+      // read, not watch: the refresh notifier re-runs redirect, and watching
       // would recreate the GoRouter on every auth change.
       final authState = ref.read(authStateProvider);
       final onboardingState = ref.read(onboardingProvider);
@@ -56,32 +51,26 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isOnOnboarding = state.matchedLocation == '/onboarding';
       final isOnProfileSetup = state.matchedLocation == '/profile-setup';
 
-      // Wait for both auth and onboarding state to load
       if (isAuthLoading || isOnboardingLoading) return null;
 
-      // Not logged in → go to landing (if not already on an auth page)
       if (!isLoggedIn && !isOnLogin && !isOnLanding) return '/';
 
-      // Logged in but on login → redirect to appropriate screen
       if (isLoggedIn && (isOnLogin || state.matchedLocation == '/')) {
         if (!onboardingDone) return '/onboarding';
         if (needsProfileSetup) return '/profile-setup';
         return '/home';
       }
 
-      // Onboarding just finished → move on (the router is long-lived, so
-      // nothing else navigates away from /onboarding).
+      // Onboarding just finished: nothing else navigates away from /onboarding.
       if (isLoggedIn && isOnOnboarding && onboardingDone) {
         return needsProfileSetup ? '/profile-setup' : '/home';
       }
 
-      // Logged in but hasn't seen onboarding → show onboarding
       if (isLoggedIn && !isOnOnboarding && !onboardingDone) {
         return '/onboarding';
       }
 
-      // Logged in, onboarded, but the mandatory school-profile step is
-      // missing → block every other route until it's filled in.
+      // Block every other route until the school profile is filled in.
       if (isLoggedIn && onboardingDone && needsProfileSetup && !isOnProfileSetup) {
         return '/profile-setup';
       }
@@ -120,9 +109,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   );
 });
 
-// ─── Page transition helpers ─────────────────────────────────────────────────
-
-/// Simple cross-fade — used for top-level tab switches and login.
+/// Cross-fade for top-level tabs and login.
 CustomTransitionPage<void> _fade(GoRouterState s, Widget child) =>
     CustomTransitionPage<void>(
       key: s.pageKey,
@@ -133,7 +120,7 @@ CustomTransitionPage<void> _fade(GoRouterState s, Widget child) =>
           FadeTransition(opacity: anim, child: c),
     );
 
-/// Slight upward slide + fade — used for modal-style pushes (sign-up, quiz).
+/// Slight upward slide + fade for modal-style pushes (sign-up, quiz).
 CustomTransitionPage<void> _slideUp(GoRouterState s, Widget child) =>
     CustomTransitionPage<void>(
       key: s.pageKey,
@@ -149,7 +136,7 @@ CustomTransitionPage<void> _slideUp(GoRouterState s, Widget child) =>
       },
     );
 
-/// Slight right-to-left slide + fade — used for settings (secondary screen).
+/// Slight horizontal slide + fade for settings.
 CustomTransitionPage<void> _slideRight(GoRouterState s, Widget child) =>
     CustomTransitionPage<void>(
       key: s.pageKey,
@@ -165,9 +152,7 @@ CustomTransitionPage<void> _slideRight(GoRouterState s, Widget child) =>
       },
     );
 
-/// Bridges Riverpod provider changes to GoRouter's [ChangeNotifier]-based
-/// refresh mechanism so the router re-evaluates its redirect logic whenever
-/// auth or onboarding state changes.
+/// Bridges Riverpod changes to GoRouter's [ChangeNotifier]-based refresh.
 class _RouterRefreshNotifier extends ChangeNotifier {
   _RouterRefreshNotifier(Ref ref) {
     ref.listen(authStateProvider, (_, __) => notifyListeners());

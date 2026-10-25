@@ -142,8 +142,6 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
   }
 }
 
-// ─── Header ─────────────────────────────────────────────────────────────────
-
 class _TasksHeader extends StatelessWidget {
   final int doneCount;
   final int totalCount;
@@ -202,7 +200,6 @@ class _TasksHeader extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Overline + calendar toggle
               Row(
                 children: [
                   Text(
@@ -267,7 +264,6 @@ class _TasksHeader extends StatelessWidget {
               ),
               const SizedBox(height: 14),
 
-              // Total progress bar
               Container(
                 // Full width, or the track shrink-wraps the fill and is never visible.
                 width: double.infinity,
@@ -278,9 +274,7 @@ class _TasksHeader extends StatelessWidget {
                   border: Border.all(color: AppColors.primary.withValues(alpha: 0.1)),
                 ),
                 clipBehavior: Clip.hardEdge,
-                // Isolate the 600ms tween's per-frame paint from the header's
-                // radial-gradient background so the whole header doesn't
-                // repaint 60x/s while the bar animates.
+                // Keeps the bar's per-frame repaint off the header's radial gradient.
                 child: RepaintBoundary(
                   child: AnimatedFractionallySizedBox(
                     duration: const Duration(milliseconds: 300),
@@ -299,7 +293,6 @@ class _TasksHeader extends StatelessWidget {
 
               const SizedBox(height: 14),
 
-              // Weekly progress graph
               _WeeklyProgressBar(completed: weekly.completed, total: weekly.total),
             ],
           ),
@@ -308,8 +301,6 @@ class _TasksHeader extends StatelessWidget {
     );
   }
 }
-
-// ─── Weekly progress graph ───────────────────────────────────────────────────
 
 class _WeeklyProgressBar extends StatelessWidget {
   final int completed;
@@ -375,8 +366,7 @@ class _WeeklyProgressBar extends StatelessWidget {
               width: double.infinity,
               height: 6,
               color: AppColors.primaryMid.withValues(alpha: isDark ? 0.15 : 0.12),
-              // Isolate the tween from the header's radial-gradient decoration
-              // so it repaints in its own layer during the 700ms animation.
+              // Keeps the tween's repaint off the header's radial gradient.
               child: RepaintBoundary(
                 child: AnimatedFractionallySizedBox(
                     duration: const Duration(milliseconds: 300),
@@ -399,8 +389,6 @@ class _WeeklyProgressBar extends StatelessWidget {
   }
 }
 
-// ─── Calendar ────────────────────────────────────────────────────────────────
-
 class _AssignmentCalendar extends StatelessWidget {
   final List<AssignmentModel> assignments;
   final DateTime focusedDay;
@@ -416,8 +404,8 @@ class _AssignmentCalendar extends StatelessWidget {
     required this.onFocusedDayChanged,
   });
 
-  /// Groups [assignments] by due-day once so `eventLoader` below is an O(1)
-  /// map lookup per visible cell instead of an O(n) scan per cell.
+  /// Groups [assignments] by due day once so `eventLoader` is a map lookup per
+  /// cell instead of a scan.
   Map<DateTime, List<AssignmentModel>> _groupByDueDay() {
     final byDay = <DateTime, List<AssignmentModel>>{};
     for (final a in assignments) {
@@ -533,8 +521,6 @@ class _AssignmentCalendar extends StatelessWidget {
     );
   }
 }
-
-// ─── Add button ──────────────────────────────────────────────────────────────
 
 class _AddTaskButton extends StatelessWidget {
   final VoidCallback onTap;

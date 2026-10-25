@@ -16,8 +16,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final _controller = PageController();
   int _page = 0;
 
-  // Getter, not const: titles/subtitles resolve in the currently loaded
-  // locale (same pattern as AppTextStyles/SubjectColors).
+  // A getter, not a const, so titles and subtitles follow the current locale.
   static List<_PageData> get _pages => [
     _PageData(
       icon: Icons.auto_awesome,
@@ -62,7 +61,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   Future<void> _finish() async {
     await ref.read(onboardingProvider.notifier).markDone();
-    // Router will rebuild and redirect to /home automatically
+    // The router redirects to /home once onboarding is marked done.
   }
 
   @override
@@ -78,7 +77,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Skip button row
             SizedBox(
               height: 52,
               child: Align(
@@ -105,7 +103,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               ),
             ),
 
-            // Page content
             Expanded(
               child: PageView.builder(
                 controller: _controller,
@@ -118,12 +115,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               ),
             ),
 
-            // Bottom controls
             Padding(
               padding: const EdgeInsets.fromLTRB(32, 20, 32, 44),
               child: Column(
                 children: [
-                  // Page dots
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(_pages.length, (i) {
@@ -144,7 +139,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   ),
                   const SizedBox(height: 28),
 
-                  // Action button
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 280),
                     width: double.infinity,
@@ -195,8 +189,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 }
 
-// ─── Page data ──────────────────────────────────────────────────────────────
-
 class _PageData {
   final IconData icon;
   final Color color;
@@ -212,8 +204,6 @@ class _PageData {
   });
 }
 
-// ─── Page content widget ────────────────────────────────────────────────────
-
 class _PageContent extends StatelessWidget {
   final _PageData data;
   const _PageContent({super.key, required this.data});
@@ -225,11 +215,9 @@ class _PageContent extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Glow circle + icon
           Stack(
             alignment: Alignment.center,
             children: [
-              // Outer glow
               Container(
                 width: 180,
                 height: 180,
@@ -243,7 +231,6 @@ class _PageContent extends StatelessWidget {
                   ),
                 ),
               ),
-              // Mid ring
               Container(
                 width: 120,
                 height: 120,
@@ -261,7 +248,6 @@ class _PageContent extends StatelessWidget {
                   ),
                 ),
               ),
-              // Icon box
               Container(
                 width: 84,
                 height: 84,
@@ -298,7 +284,6 @@ class _PageContent extends StatelessWidget {
 
           const SizedBox(height: 44),
 
-          // Title
           Text(
             data.title,
             textAlign: TextAlign.center,
@@ -324,7 +309,6 @@ class _PageContent extends StatelessWidget {
 
           const SizedBox(height: 16),
 
-          // Subtitle
           Text(
             data.subtitle,
             textAlign: TextAlign.center,
@@ -351,8 +335,7 @@ class _PageContent extends StatelessWidget {
   }
 }
 
-/// Label/icon color for content on a page's accent fill: each onboarding page
-/// has its own hue (blue, cyan, green, amber), so pick white or dark ink by the
-/// fill's luminance instead of assuming the green brand fill.
+/// Label/icon color on a page's accent fill. Pages use different hues (blue,
+/// cyan, green, amber), so choose white or dark ink by luminance.
 Color _onColor(Color fill) =>
     ThemeData.estimateBrightnessForColor(fill) == Brightness.dark ? Colors.white : AppColors.onPrimary;
