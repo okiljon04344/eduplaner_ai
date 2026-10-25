@@ -19,7 +19,10 @@ class QuizRepository {
         'language': AppStrings.currentLocale,
       });
       final raw = result.data['questions'] as List<dynamic>? ?? [];
-      return raw.map((e) => QuizQuestion.fromJson(Map<String, dynamic>.from(e as Map))).toList();
+      return raw
+          .map(
+              (e) => QuizQuestion.fromJson(Map<String, dynamic>.from(e as Map)))
+          .toList();
     } on FirebaseFunctionsException catch (e) {
       debugPrint('generateQuiz error: ${e.code} ${e.message}');
       // Prefer the server's message so users can tell "quota reached" from
@@ -31,10 +34,14 @@ class QuizRepository {
       if (e.code == 'resource-exhausted') {
         throw Exception(AppStrings.t('err_ai_limit_reached'));
       }
-      if (e.code == 'unauthenticated' || e.code == 'deadline-exceeded' || e.code == 'unavailable') {
+      if (e.code == 'unauthenticated' ||
+          e.code == 'deadline-exceeded' ||
+          e.code == 'unavailable') {
         throw Exception(FunctionsService.describeError(e));
       }
-      throw Exception(serverMsg.isNotEmpty ? serverMsg : AppStrings.t('err_quiz_generate_failed'));
+      throw Exception(serverMsg.isNotEmpty
+          ? serverMsg
+          : AppStrings.t('err_quiz_generate_failed'));
     }
   }
 }

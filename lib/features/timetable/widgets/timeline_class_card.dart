@@ -19,7 +19,8 @@ import 'class_detail_sheet.dart';
 class TimelineClassCard extends ConsumerWidget {
   final ClassModel classModel;
   final DateTime date;
-  const TimelineClassCard({super.key, required this.classModel, required this.date});
+  const TimelineClassCard(
+      {super.key, required this.classModel, required this.date});
 
   Future<void> _onLongPress(
       BuildContext context, WidgetRef ref, Offset globalPosition) async {
@@ -36,7 +37,8 @@ class TimelineClassCard extends ConsumerWidget {
       ),
       items: [
         PopupMenuItem(value: 'edit', child: Text(AppStrings.t('common_edit'))),
-        PopupMenuItem(value: 'delete', child: Text(AppStrings.t('common_delete'))),
+        PopupMenuItem(
+            value: 'delete', child: Text(AppStrings.t('common_delete'))),
       ],
     );
     if (!context.mounted) return;
@@ -45,7 +47,8 @@ class TimelineClassCard extends ConsumerWidget {
     } else if (selected == 'delete') {
       final ok = await showConfirmDialog(context,
           title: AppStrings.t('tt_delete_class'),
-          message: AppStrings.t('tt_delete_confirm').replaceAll('{subject}', classModel.subject));
+          message: AppStrings.t('tt_delete_confirm')
+              .replaceAll('{subject}', classModel.subject));
       if (ok) {
         final error = await ref
             .read(timetableNotifierProvider.notifier)
@@ -69,7 +72,8 @@ class TimelineClassCard extends ConsumerWidget {
     final times = periodTimeLabels(classModel.period);
     final statusAlert = classModel.statusAppliesTo(date);
 
-    return RepaintBoundary(child: Padding(
+    return RepaintBoundary(
+        child: Padding(
       padding: const EdgeInsets.only(bottom: 14),
       child: GestureDetector(
         onTap: () => showClassDetailSheet(context, ref, classModel),
@@ -227,7 +231,8 @@ class TimelineClassCard extends ConsumerWidget {
                                                 .withValues(alpha: 0.25)),
                                       ),
                                       child: Text(
-                                        AppStrings.t('tt_period').replaceAll('{n}', '${classModel.period}'),
+                                        AppStrings.t('tt_period').replaceAll(
+                                            '{n}', '${classModel.period}'),
                                         style: TextStyle(
                                             fontSize: 10,
                                             fontWeight: FontWeight.w700,

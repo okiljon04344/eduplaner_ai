@@ -61,8 +61,9 @@ final weeklyProgressProvider = Provider<({int completed, int total})>((ref) {
     final due = a.dueDate;
     return !due.isBefore(start) && due.isBefore(end);
   }).toList();
-  final completed =
-      weekAssignments.where((a) => a.status == AssignmentStatus.completed).length;
+  final completed = weekAssignments
+      .where((a) => a.status == AssignmentStatus.completed)
+      .length;
   return (completed: completed, total: weekAssignments.length);
 });
 
@@ -121,33 +122,45 @@ class AssignmentsNotifier extends AsyncNotifier<void> {
   /// Creates an assignment and schedules its reminders. Returns null on success,
   /// else an error message (same for the other write methods).
   Future<String?> add(AssignmentModel model) async {
-    final error = await _guarded(() => ref.read(assignmentsRepositoryProvider).add(model), 'Assignment add');
+    final error = await _guarded(
+        () => ref.read(assignmentsRepositoryProvider).add(model),
+        'Assignment add');
     if (error == null) {
-      await _safeNotify(() => NotificationService.scheduleAssignmentReminders(model), 'Assignment reminder schedule');
+      await _safeNotify(
+          () => NotificationService.scheduleAssignmentReminders(model),
+          'Assignment reminder schedule');
     }
     return error;
   }
 
   /// Updates an assignment and reschedules its reminders.
   Future<String?> updateAssignment(AssignmentModel model) async {
-    final error = await _guarded(() => ref.read(assignmentsRepositoryProvider).update(model), 'Assignment update');
+    final error = await _guarded(
+        () => ref.read(assignmentsRepositoryProvider).update(model),
+        'Assignment update');
     if (error == null) {
-      await _safeNotify(() => NotificationService.scheduleAssignmentReminders(model), 'Assignment reminder schedule');
+      await _safeNotify(
+          () => NotificationService.scheduleAssignmentReminders(model),
+          'Assignment reminder schedule');
     }
     return error;
   }
 
   /// Deletes an assignment and cancels its reminders.
   Future<String?> delete(String id) async {
-    final error = await _guarded(() => ref.read(assignmentsRepositoryProvider).delete(id), 'Assignment delete');
+    final error = await _guarded(
+        () => ref.read(assignmentsRepositoryProvider).delete(id),
+        'Assignment delete');
     if (error == null) {
-      await _safeNotify(() => NotificationService.cancelAssignmentReminders(id), 'Assignment reminder cancel');
+      await _safeNotify(() => NotificationService.cancelAssignmentReminders(id),
+          'Assignment reminder cancel');
     }
     return error;
   }
 
   /// Writes [status] together with its matching progress (see [AssignmentModel.withStatus]).
-  Future<String?> updateStatus(AssignmentModel model, AssignmentStatus status) =>
+  Future<String?> updateStatus(
+          AssignmentModel model, AssignmentStatus status) =>
       _writeStatusProgress(model, model.withStatus(status));
 
   /// Writes [progress] (0.0-1.0) together with its derived status (see
@@ -157,17 +170,24 @@ class AssignmentsNotifier extends AsyncNotifier<void> {
 
   /// Writes [next]'s status and progress in one update and keeps reminders in
   /// step: cancelled on completion, rescheduled when leaving completed.
-  Future<String?> _writeStatusProgress(AssignmentModel previous, AssignmentModel next) async {
+  Future<String?> _writeStatusProgress(
+      AssignmentModel previous, AssignmentModel next) async {
     try {
-      await ref.read(assignmentsRepositoryProvider).updateStatusAndProgress(next.id, next.status, next.progress);
+      await ref
+          .read(assignmentsRepositoryProvider)
+          .updateStatusAndProgress(next.id, next.status, next.progress);
     } catch (e) {
       debugPrint('Assignment status/progress error: $e');
       return AppStrings.t('err_generic_retry');
     }
     if (next.status == AssignmentStatus.completed) {
-      await _safeNotify(() => NotificationService.cancelAssignmentReminders(next.id), 'Assignment reminder cancel');
+      await _safeNotify(
+          () => NotificationService.cancelAssignmentReminders(next.id),
+          'Assignment reminder cancel');
     } else if (previous.status == AssignmentStatus.completed) {
-      await _safeNotify(() => NotificationService.scheduleAssignmentReminders(next), 'Assignment reminder schedule');
+      await _safeNotify(
+          () => NotificationService.scheduleAssignmentReminders(next),
+          'Assignment reminder schedule');
     }
     return null;
   }

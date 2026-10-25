@@ -16,7 +16,8 @@ String get _noAssignmentsWeakArea => AppStrings.t('weak_no_assignments');
 /// loads so the card is never just a spinner. Empty when there are no assignments.
 final _localWeakSummaryProvider = Provider<String>((ref) {
   final all = ref.watch(assignmentsStreamProvider).valueOrNull ?? [];
-  final incomplete = all.where((a) => a.status != AssignmentStatus.completed).toList();
+  final incomplete =
+      all.where((a) => a.status != AssignmentStatus.completed).toList();
   if (incomplete.isEmpty) return '';
 
   final now = DateTime.now();
@@ -31,11 +32,14 @@ final _localWeakSummaryProvider = Provider<String>((ref) {
   for (final a in sourceList) {
     countBySubject[a.subject] = (countBySubject[a.subject] ?? 0) + 1;
   }
-  final worst = countBySubject.entries.reduce((a, b) => a.value > b.value ? a : b);
+  final worst =
+      countBySubject.entries.reduce((a, b) => a.value > b.value ? a : b);
   final template = overdue.isNotEmpty
       ? AppStrings.t('weak_overdue_msg')
       : AppStrings.t('weak_pending_msg');
-  return template.replaceAll('{subject}', worst.key).replaceAll('{n}', '${worst.value}');
+  return template
+      .replaceAll('{subject}', worst.key)
+      .replaceAll('{n}', '${worst.value}');
 });
 
 /// Weak-area analysis card. Tapping it opens `/assignments` when there are no
@@ -61,7 +65,9 @@ class WeakAreaCard extends ConsumerWidget {
             return;
           }
           final text = analysis.valueOrNull;
-          if (text != null && text != _noAssignmentsWeakArea && text != _fallbackWeakArea) {
+          if (text != null &&
+              text != _noAssignmentsWeakArea &&
+              text != _fallbackWeakArea) {
             _showDetailSheet(context, ref, text);
           } else if (localSummary.isNotEmpty) {
             _showDetailSheet(context, ref, localSummary);
@@ -72,7 +78,8 @@ class WeakAreaCard extends ConsumerWidget {
           decoration: BoxDecoration(
             color: AppColors.surfaceVar,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppColors.primaryMid.withValues(alpha: 0.25)),
+            border:
+                Border.all(color: AppColors.primaryMid.withValues(alpha: 0.25)),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -94,10 +101,14 @@ class WeakAreaCard extends ConsumerWidget {
                   children: [
                     Text(
                       AppStrings.t('home_weak_area_title'),
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: AppColors.textPrimary),
+                      style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.textPrimary),
                     ),
                     const SizedBox(height: 4),
-                    _AnalysisText(analysis: analysis, localSummary: localSummary),
+                    _AnalysisText(
+                        analysis: analysis, localSummary: localSummary),
                   ],
                 ),
               ),
@@ -107,7 +118,8 @@ class WeakAreaCard extends ConsumerWidget {
                   onTap: () => ref.invalidate(weakAreaProvider),
                   child: Padding(
                     padding: const EdgeInsets.only(left: 8),
-                    child: Icon(Icons.refresh_rounded, size: 18, color: AppColors.textMuted),
+                    child: Icon(Icons.refresh_rounded,
+                        size: 18, color: AppColors.textMuted),
                   ),
                 ),
             ],
@@ -132,8 +144,11 @@ class WeakAreaCard extends ConsumerWidget {
           children: [
             Center(
               child: Container(
-                width: 40, height: 4,
-                decoration: BoxDecoration(color: AppColors.border, borderRadius: BorderRadius.circular(2)),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                    color: AppColors.border,
+                    borderRadius: BorderRadius.circular(2)),
               ),
             ),
             const SizedBox(height: 20),
@@ -141,7 +156,11 @@ class WeakAreaCard extends ConsumerWidget {
               children: [
                 const Text('📊', style: TextStyle(fontSize: 22)),
                 const SizedBox(width: 10),
-                Text(AppStrings.t('home_weak_area_title'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
+                Text(AppStrings.t('home_weak_area_title'),
+                    style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.textPrimary)),
               ],
             ),
             const SizedBox(height: 14),
@@ -151,9 +170,12 @@ class WeakAreaCard extends ConsumerWidget {
               decoration: BoxDecoration(
                 color: AppColors.primaryMid.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: AppColors.primaryMid.withValues(alpha: 0.18)),
+                border: Border.all(
+                    color: AppColors.primaryMid.withValues(alpha: 0.18)),
               ),
-              child: Text(text, style: TextStyle(fontSize: 13, height: 1.6, color: AppColors.textPrimary)),
+              child: Text(text,
+                  style: TextStyle(
+                      fontSize: 13, height: 1.6, color: AppColors.textPrimary)),
             ),
             const SizedBox(height: 16),
             SizedBox(
@@ -185,7 +207,8 @@ class _AnalysisText extends StatelessWidget {
     return analysis.when(
       data: (text) => Text(
         text,
-        style: TextStyle(fontSize: 12, color: AppColors.textSecondary, height: 1.4),
+        style: TextStyle(
+            fontSize: 12, color: AppColors.textSecondary, height: 1.4),
       ),
       loading: () => localSummary.isNotEmpty
           // Local summary while the AI result loads.
@@ -195,13 +218,18 @@ class _AnalysisText extends StatelessWidget {
                 Expanded(
                   child: Text(
                     localSummary,
-                    style: TextStyle(fontSize: 12, color: AppColors.textSecondary, height: 1.4),
+                    style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
+                        height: 1.4),
                   ),
                 ),
                 const SizedBox(width: 6),
                 const SizedBox(
-                  width: 12, height: 12,
-                  child: CircularProgressIndicator(strokeWidth: 1.5, color: AppColors.primaryMid),
+                  width: 12,
+                  height: 12,
+                  child: CircularProgressIndicator(
+                      strokeWidth: 1.5, color: AppColors.primaryMid),
                 ),
               ],
             )
@@ -211,7 +239,8 @@ class _AnalysisText extends StatelessWidget {
             ),
       error: (_, __) => Text(
         localSummary.isNotEmpty ? localSummary : AppStrings.t('weak_no_data'),
-        style: TextStyle(fontSize: 12, color: AppColors.textSecondary, height: 1.4),
+        style: TextStyle(
+            fontSize: 12, color: AppColors.textSecondary, height: 1.4),
       ),
     );
   }

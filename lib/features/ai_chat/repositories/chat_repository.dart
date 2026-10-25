@@ -35,8 +35,21 @@ class ChatRepository {
         'botId': botId,
         'message': userMessage,
         'language': AppStrings.currentLocale,
-        'assignments': assignments.map((a) => {'subject': a.subject, 'dueDate': a.dueDateLabel, 'status': a.status.label, 'progress': a.progress}).toList(),
-        'classes': classes.map((c) => {'subject': c.subject, 'dayOfWeek': c.dayOfWeek, 'period': c.period}).toList(),
+        'assignments': assignments
+            .map((a) => {
+                  'subject': a.subject,
+                  'dueDate': a.dueDateLabel,
+                  'status': a.status.label,
+                  'progress': a.progress
+                })
+            .toList(),
+        'classes': classes
+            .map((c) => {
+                  'subject': c.subject,
+                  'dayOfWeek': c.dayOfWeek,
+                  'period': c.period
+                })
+            .toList(),
       });
       final reply = result.data['reply'] as String?;
       if (reply == null || reply.isEmpty) {
@@ -48,7 +61,9 @@ class ChatRepository {
       if (e.code == 'unauthenticated') {
         throw Exception(AppStrings.t('err_login_required'));
       }
-      if (e.code == 'deadline-exceeded' || e.code == 'unavailable' || e.code == 'resource-exhausted') {
+      if (e.code == 'deadline-exceeded' ||
+          e.code == 'unavailable' ||
+          e.code == 'resource-exhausted') {
         throw Exception(FunctionsService.describeError(e));
       }
       throw Exception(AppStrings.t('err_ai_connection_failed'));
@@ -91,7 +106,8 @@ class ChatRepository {
   /// offline.
   Future<List<MessageModel>> loadHistory(String userId) async {
     try {
-      final snap = await _msgs(userId).orderBy('timestamp').limitToLast(50).get();
+      final snap =
+          await _msgs(userId).orderBy('timestamp').limitToLast(50).get();
       return snap.docs.map(MessageModel.fromFirestore).toList();
     } catch (_) {
       return [];

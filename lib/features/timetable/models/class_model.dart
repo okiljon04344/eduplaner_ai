@@ -27,7 +27,8 @@ int? weekdayFromKanji(String kanji) {
 /// today if the weekday matches and the period hasn't ended, else the next
 /// matching weekday. A cancellation reported now applies to this date, not to
 /// the report time. Null for a [dayOfWeek] outside Mon–Fri.
-DateTime? nextClassDate({required String dayOfWeek, required int period, DateTime? now}) {
+DateTime? nextClassDate(
+    {required String dayOfWeek, required int period, DateTime? now}) {
   final weekday = weekdayFromKanji(dayOfWeek);
   if (weekday == null) return null;
   final at = now ?? DateTime.now();
@@ -89,7 +90,8 @@ class ClassModel with _$ClassModel {
     DateTime? statusDate,
   }) = _ClassModel;
 
-  factory ClassModel.fromJson(Map<String, dynamic> json) => _$ClassModelFromJson(json);
+  factory ClassModel.fromJson(Map<String, dynamic> json) =>
+      _$ClassModelFromJson(json);
 
   factory ClassModel.fromFirestore(DocumentSnapshot doc) {
     final d = doc.data() as Map<String, dynamic>? ?? {};
@@ -124,7 +126,8 @@ class ClassModel with _$ClassModel {
         'groupId': groupId,
         'status': status.firestoreValue,
         'statusNote': statusNote,
-        'statusDate': statusDate == null ? null : Timestamp.fromDate(statusDate!),
+        'statusDate':
+            statusDate == null ? null : Timestamp.fromDate(statusDate!),
       };
 
   /// Whether a cancellation/change is set for the calendar day of [day].
@@ -132,7 +135,9 @@ class ClassModel with _$ClassModel {
   bool statusAppliesTo(DateTime day) {
     final date = statusDate;
     if (status == ClassStatus.normal || date == null) return false;
-    return date.year == day.year && date.month == day.month && date.day == day.day;
+    return date.year == day.year &&
+        date.month == day.month &&
+        date.day == day.day;
   }
 
   bool get hasStatusAlertToday => statusAppliesTo(DateTime.now());
@@ -142,6 +147,7 @@ class ClassModel with _$ClassModel {
     final date = statusDate;
     if (status == ClassStatus.normal || date == null) return false;
     final now = DateTime.now();
-    return !DateTime(date.year, date.month, date.day).isBefore(DateTime(now.year, now.month, now.day));
+    return !DateTime(date.year, date.month, date.day)
+        .isBefore(DateTime(now.year, now.month, now.day));
   }
 }

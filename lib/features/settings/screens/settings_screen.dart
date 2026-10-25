@@ -41,7 +41,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Future<void> _loadNotificationPref() async {
     final prefs = await SharedPreferences.getInstance();
     if (!mounted) return;
-    setState(() => _notificationsEnabled = prefs.getBool('notifications_enabled') ?? true);
+    setState(() =>
+        _notificationsEnabled = prefs.getBool('notifications_enabled') ?? true);
   }
 
   Future<void> _toggleNotifications(bool enabled) async {
@@ -110,11 +111,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Widget build(BuildContext context) {
     final user = ref.watch(currentUserProvider);
     final themeMode = ref.watch(themeProvider);
-    final initials = (user?.name.isNotEmpty ?? false) ? user!.name.substring(0, 1) : 'U';
+    final initials =
+        (user?.name.isNotEmpty ?? false) ? user!.name.substring(0, 1) : 'U';
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(title: Text(AppStrings.t('set_title')), backgroundColor: AppColors.background, elevation: 0),
+      appBar: AppBar(
+          title: Text(AppStrings.t('set_title')),
+          backgroundColor: AppColors.background,
+          elevation: 0),
       body: ResponsiveBody(
         maxWidth: 640,
         child: ListView(
@@ -127,10 +132,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [AppColors.primary.withValues(alpha: 0.16), AppColors.primary.withValues(alpha: 0.04)],
+                  colors: [
+                    AppColors.primary.withValues(alpha: 0.16),
+                    AppColors.primary.withValues(alpha: 0.04)
+                  ],
                 ),
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
+                border: Border.all(
+                    color: AppColors.primary.withValues(alpha: 0.25)),
               ),
               child: Row(
                 children: [
@@ -140,10 +149,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     decoration: BoxDecoration(
                       gradient: AppColors.avatarGradient,
                       shape: BoxShape.circle,
-                      boxShadow: [BoxShadow(color: AppColors.primaryMid.withValues(alpha: 0.5), blurRadius: 18)],
+                      boxShadow: [
+                        BoxShadow(
+                            color: AppColors.primaryMid.withValues(alpha: 0.5),
+                            blurRadius: 18)
+                      ],
                     ),
                     alignment: Alignment.center,
-                    child: Text(initials, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: Colors.white)),
+                    child: Text(initials,
+                        style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white)),
                   ),
                   const SizedBox(width: 14),
                   Expanded(
@@ -151,17 +168,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          (user?.name.isNotEmpty ?? false) ? user!.name : AppStrings.t('set_user_fallback'),
+                          (user?.name.isNotEmpty ?? false)
+                              ? user!.name
+                              : AppStrings.t('set_user_fallback'),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.textPrimary, fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP']),
+                          style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.textPrimary,
+                              fontFamily: 'Plus Jakarta Sans',
+                              fontFamilyFallback: const ['NotoSansJP']),
                         ),
                         const SizedBox(height: 2),
                         Text(
                           user?.email ?? '',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                          style: TextStyle(
+                              fontSize: 13, color: AppColors.textSecondary),
                         ),
                       ],
                     ),
@@ -175,9 +200,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 _SettingsRow(
                   icon: Icons.school_outlined,
                   iconColor: AppColors.accentText,
-                  title: (user?.school?.isNotEmpty ?? false) ? user!.school! : AppStrings.t('school_setup_title'),
+                  title: (user?.school?.isNotEmpty ?? false)
+                      ? user!.school!
+                      : AppStrings.t('school_setup_title'),
                   subtitle: schoolSummary(user),
-                  trailing: Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
+                  trailing: Icon(Icons.chevron_right_rounded,
+                      color: AppColors.textMuted),
                   onTap: () => context.push('/profile-setup'),
                 ),
               ],
@@ -227,19 +255,28 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     showSelectedIcon: false,
                     style: SegmentedButton.styleFrom(
                       backgroundColor: AppColors.surfaceVar,
-                      selectedBackgroundColor: AppColors.primary.withValues(alpha: 0.22),
+                      selectedBackgroundColor:
+                          AppColors.primary.withValues(alpha: 0.22),
                       selectedForegroundColor: AppColors.accentText,
                       foregroundColor: AppColors.textSecondary,
                       side: BorderSide(color: AppColors.border),
-                      textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                      textStyle: const TextStyle(
+                          fontSize: 12, fontWeight: FontWeight.w700),
                     ),
                     segments: [
-                      ButtonSegment(value: ThemeMode.light, label: Text(AppStrings.t('set_theme_light'))),
-                      ButtonSegment(value: ThemeMode.system, label: Text(AppStrings.t('set_theme_system'))),
-                      ButtonSegment(value: ThemeMode.dark, label: Text(AppStrings.t('set_theme_dark'))),
+                      ButtonSegment(
+                          value: ThemeMode.light,
+                          label: Text(AppStrings.t('set_theme_light'))),
+                      ButtonSegment(
+                          value: ThemeMode.system,
+                          label: Text(AppStrings.t('set_theme_system'))),
+                      ButtonSegment(
+                          value: ThemeMode.dark,
+                          label: Text(AppStrings.t('set_theme_dark'))),
                     ],
                     selected: {themeMode},
-                    onSelectionChanged: (s) => ref.read(themeProvider.notifier).setTheme(s.first),
+                    onSelectionChanged: (s) =>
+                        ref.read(themeProvider.notifier).setTheme(s.first),
                   ),
                 ),
               ],
@@ -251,23 +288,29 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   icon: Icons.info_outline,
                   iconColor: AppColors.textMuted,
                   title: AppStrings.t('settings_version'),
-                  trailing: Text('1.0.0', style: TextStyle(color: AppColors.textMuted, fontSize: 13)),
+                  trailing: Text('1.0.0',
+                      style:
+                          TextStyle(color: AppColors.textMuted, fontSize: 13)),
                 ),
                 Divider(height: 1, color: AppColors.dividerSubtle),
                 _SettingsRow(
                   icon: Icons.privacy_tip_outlined,
                   iconColor: AppColors.textMuted,
                   title: AppStrings.t('set_privacy'),
-                  trailing: Icon(Icons.open_in_new, size: 16, color: AppColors.textMuted),
-                  onTap: () => launchUrl(Uri.parse('https://okiljon04344.github.io/eduplaner_ai/privacy-policy.html')),
+                  trailing: Icon(Icons.open_in_new,
+                      size: 16, color: AppColors.textMuted),
+                  onTap: () => launchUrl(Uri.parse(
+                      'https://okiljon04344.github.io/eduplaner_ai/privacy-policy.html')),
                 ),
                 Divider(height: 1, color: AppColors.dividerSubtle),
                 _SettingsRow(
                   icon: Icons.gavel_outlined,
                   iconColor: AppColors.textMuted,
                   title: AppStrings.t('set_terms'),
-                  trailing: Icon(Icons.open_in_new, size: 16, color: AppColors.textMuted),
-                  onTap: () => launchUrl(Uri.parse('https://okiljon04344.github.io/eduplaner_ai/terms-of-service.html')),
+                  trailing: Icon(Icons.open_in_new,
+                      size: 16, color: AppColors.textMuted),
+                  onTap: () => launchUrl(Uri.parse(
+                      'https://okiljon04344.github.io/eduplaner_ai/terms-of-service.html')),
                 ),
               ],
             ),
@@ -278,10 +321,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 onPressed: _signOut,
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.danger,
-                  side: BorderSide(color: AppColors.danger.withValues(alpha: 0.4)),
+                  side: BorderSide(
+                      color: AppColors.danger.withValues(alpha: 0.4)),
                   padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
-                child: Text(AppStrings.t('set_logout'), style: const TextStyle(fontWeight: FontWeight.w700)),
+                child: Text(AppStrings.t('set_logout'),
+                    style: const TextStyle(fontWeight: FontWeight.w700)),
               ),
             ),
             const SizedBox(height: 12),
@@ -289,8 +334,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               child: TextButton(
                 onPressed: _deletingAccount ? null : _deleteAccount,
                 child: _deletingAccount
-                    ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.danger))
-                    : Text(AppStrings.t('set_delete_account'), style: TextStyle(color: AppColors.danger.withValues(alpha: 0.7), fontSize: 12)),
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: AppColors.danger))
+                    : Text(AppStrings.t('set_delete_account'),
+                        style: TextStyle(
+                            color: AppColors.danger.withValues(alpha: 0.7),
+                            fontSize: 12)),
               ),
             ),
           ],
@@ -350,7 +402,9 @@ class _SettingsRow extends StatelessWidget {
             Container(
               width: 36,
               height: 36,
-              decoration: BoxDecoration(color: iconColor.withValues(alpha: 0.14), borderRadius: BorderRadius.circular(11)),
+              decoration: BoxDecoration(
+                  color: iconColor.withValues(alpha: 0.14),
+                  borderRadius: BorderRadius.circular(11)),
               alignment: Alignment.center,
               child: Icon(icon, size: 18, color: iconColor),
             ),
@@ -363,7 +417,12 @@ class _SettingsRow extends StatelessWidget {
                     title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textPrimary, fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP']),
+                    style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
+                        fontFamily: 'Plus Jakarta Sans',
+                        fontFamilyFallback: const ['NotoSansJP']),
                   ),
                   if (subtitle != null) ...[
                     const SizedBox(height: 2),
@@ -371,7 +430,9 @@ class _SettingsRow extends StatelessWidget {
                       subtitle!,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 12, color: subtitleColor ?? AppColors.textSecondary),
+                      style: TextStyle(
+                          fontSize: 12,
+                          color: subtitleColor ?? AppColors.textSecondary),
                     ),
                   ],
                 ],
@@ -395,7 +456,11 @@ class _SectionTitle extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(4, 20, 4, 10),
       child: Text(
         title,
-        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.5, color: AppColors.textMuted),
+        style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.5,
+            color: AppColors.textMuted),
       ),
     );
   }
@@ -405,14 +470,18 @@ class _LanguageTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentLocale = ref.watch(localeProvider);
-    final currentEntry = AppStrings.locales.where((l) => l.$1 == currentLocale).firstOrNull;
-    final currentLabel = currentEntry != null ? '${currentEntry.$3} ${currentEntry.$2}' : currentLocale;
+    final currentEntry =
+        AppStrings.locales.where((l) => l.$1 == currentLocale).firstOrNull;
+    final currentLabel = currentEntry != null
+        ? '${currentEntry.$3} ${currentEntry.$2}'
+        : currentLocale;
 
     return _SettingsRow(
       icon: Icons.language_outlined,
       iconColor: AppColors.accentText,
       title: AppStrings.t('settings_language'),
-      trailing: Text(currentLabel, style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+      trailing: Text(currentLabel,
+          style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
       onTap: () => showLanguagePicker(context, ref, currentLocale),
     );
   }

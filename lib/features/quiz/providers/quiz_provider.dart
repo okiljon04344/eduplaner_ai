@@ -20,10 +20,10 @@ class QuizNotifier extends AsyncNotifier<List<QuizQuestion>> {
     state = const AsyncLoading();
     state = await AsyncValue.guard(
       () => ref.read(quizRepositoryProvider).generateQuiz(
-        subject: subject,
-        topic: topic,
-        useSearch: useSearch,
-      ),
+            subject: subject,
+            topic: topic,
+            useSearch: useSearch,
+          ),
     );
   }
 

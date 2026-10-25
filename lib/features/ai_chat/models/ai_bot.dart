@@ -27,4 +27,5 @@ const List<AiBot> aiBots = [
   AiBot(id: 'career', emoji: '🎓', color: AppColors.primaryLight),
 ];
 
-AiBot botById(String id) => aiBots.firstWhere((b) => b.id == id, orElse: () => aiBots.first);
+AiBot botById(String id) =>
+    aiBots.firstWhere((b) => b.id == id, orElse: () => aiBots.first);

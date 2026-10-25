@@ -67,7 +67,8 @@ class AuthRepository {
   }
 
   /// Retries the read up to 3 times, 2s apart. Null if every attempt fails.
-  Future<DocumentSnapshot<Map<String, dynamic>>?> _retryUserDocRead(String uid) async {
+  Future<DocumentSnapshot<Map<String, dynamic>>?> _retryUserDocRead(
+      String uid) async {
     for (var attempt = 0; attempt < 3; attempt++) {
       await Future<void>.delayed(const Duration(seconds: 2));
       try {
@@ -132,17 +133,22 @@ class AuthRepository {
 
   /// Exchanges the Google id token for a Firebase credential and ensures the
   /// `users/{uid}` doc exists. Shared by mobile and the web event listener.
-  Future<UserModel> _completeGoogleSignIn(GoogleSignInAccount googleUser) async {
-    final credential = GoogleAuthProvider.credential(idToken: googleUser.authentication.idToken);
+  Future<UserModel> _completeGoogleSignIn(
+      GoogleSignInAccount googleUser) async {
+    final credential = GoogleAuthProvider.credential(
+        idToken: googleUser.authentication.idToken);
     final result = await _auth.signInWithCredential(credential);
     final user = result.user;
-    if (user == null) throw Exception(AppStrings.t('err_user_info_unavailable'));
+    if (user == null) {
+      throw Exception(AppStrings.t('err_user_info_unavailable'));
+    }
     return _getOrCreateUserDoc(user);
   }
 
   /// Reads `users/{uid}`, creating it with defaults if missing. [fallbackEmail]
   /// is used only when [user] has no email.
-  Future<UserModel> _getOrCreateUserDoc(User user, {String? fallbackEmail}) async {
+  Future<UserModel> _getOrCreateUserDoc(User user,
+      {String? fallbackEmail}) async {
     final docRef = _db.collection('users').doc(user.uid);
     final doc = await docRef.get();
     if (doc.exists) return UserModel.fromFirestore(doc);
@@ -161,13 +167,18 @@ class AuthRepository {
   /// [password] matches, so a returning user who lands on sign-up isn't blocked.
   /// A wrong password throws `err_account_exists` (actionable) instead of the
   /// raw FirebaseAuth error.
-  Future<UserModel> signUpWithEmail(String email, String password, String name) async {
+  Future<UserModel> signUpWithEmail(
+      String email, String password, String name) async {
     try {
-      final result = await _auth.createUserWithEmailAndPassword(email: email, password: password);
+      final result = await _auth.createUserWithEmailAndPassword(
+          email: email, password: password);
       final user = result.user;
-      if (user == null) throw Exception(AppStrings.t('err_user_info_unavailable'));
+      if (user == null) {
+        throw Exception(AppStrings.t('err_user_info_unavailable'));
+      }
       await user.updateDisplayName(name);
-      final newUser = UserModel(uid: user.uid, name: name, email: email, createdAt: DateTime.now());
+      final newUser = UserModel(
+          uid: user.uid, name: name, email: email, createdAt: DateTime.now());
       await _db.collection('users').doc(user.uid).set(newUser.toFirestore());
       return newUser;
     } on FirebaseAuthException catch (e) {
@@ -184,9 +195,12 @@ class AuthRepository {
 
   Future<UserModel> signInWithEmail(String email, String password) async {
     try {
-      final result = await _auth.signInWithEmailAndPassword(email: email, password: password);
+      final result = await _auth.signInWithEmailAndPassword(
+          email: email, password: password);
       final user = result.user;
-      if (user == null) throw Exception(AppStrings.t('err_user_info_unavailable'));
+      if (user == null) {
+        throw Exception(AppStrings.t('err_user_info_unavailable'));
+      }
       return await _getOrCreateUserDoc(user, fallbackEmail: email);
     } on FirebaseAuthException catch (e) {
       throw Exception(_authErrorMessage(e.code));
@@ -287,7 +301,8 @@ class AuthRepository {
   }) async {
     final uid = _auth.currentUser?.uid;
     if (uid == null) throw Exception(AppStrings.t('err_user_info_unavailable'));
-    String? blankToNull(String? v) => (v == null || v.trim().isEmpty) ? null : v.trim();
+    String? blankToNull(String? v) =>
+        (v == null || v.trim().isEmpty) ? null : v.trim();
     await _db.collection('users').doc(uid).set({
       'schoolType': schoolType,
       'school': schoolName.trim(),

@@ -9,11 +9,16 @@ class TypingIndicator extends StatefulWidget {
   State<TypingIndicator> createState() => _TypingIndicatorState();
 }
 
-class _TypingIndicatorState extends State<TypingIndicator> with SingleTickerProviderStateMixin {
+class _TypingIndicatorState extends State<TypingIndicator>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
 
   static const _period = Duration(milliseconds: 1200);
-  static const _delays = [0.0, 1 / 6, 2 / 6]; // 0ms, 200ms, 400ms of a 1200ms cycle
+  static const _delays = [
+    0.0,
+    1 / 6,
+    2 / 6
+  ]; // 0ms, 200ms, 400ms of a 1200ms cycle
 
   @override
   void initState() {
@@ -46,7 +51,8 @@ class _TypingIndicatorState extends State<TypingIndicator> with SingleTickerProv
             mainAxisSize: MainAxisSize.min,
             children: List.generate(3, (i) {
               final v = _pulse(_controller.value, _delays[i]);
-              final scale = 0.3 + v * 0.7; // stays visible at rest, still reads as a pulse
+              final scale = 0.3 +
+                  v * 0.7; // stays visible at rest, still reads as a pulse
               final opacity = 0.3 + v * 0.7;
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 3),
@@ -61,7 +67,10 @@ class _TypingIndicatorState extends State<TypingIndicator> with SingleTickerProv
                         color: AppColors.primaryMid,
                         shape: BoxShape.circle,
                         boxShadow: [
-                          BoxShadow(color: AppColors.primaryMid.withValues(alpha: 0.6), blurRadius: 6),
+                          BoxShadow(
+                              color:
+                                  AppColors.primaryMid.withValues(alpha: 0.6),
+                              blurRadius: 6),
                         ],
                       ),
                     ),

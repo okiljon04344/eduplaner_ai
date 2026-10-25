@@ -29,7 +29,11 @@ enum SchoolType {
   /// `program_$key`. Only high school (full-time/part-time/correspondence) and
   /// graduate school (master/doctor/professional) have them.
   List<String> get programs => switch (this) {
-        SchoolType.highSchool => const ['full_time', 'part_time', 'correspondence'],
+        SchoolType.highSchool => const [
+            'full_time',
+            'part_time',
+            'correspondence'
+          ],
         SchoolType.graduate => const ['master', 'doctor', 'professional'],
         _ => const [],
       };
@@ -44,7 +48,8 @@ enum SchoolType {
   /// runs 4 years; doctoral programs are 4, master/professional programs 2.
   int maxGrade(String? program) => switch (this) {
         SchoolType.juniorHigh => 3,
-        SchoolType.highSchool => (program == 'part_time' || program == 'correspondence') ? 4 : 3,
+        SchoolType.highSchool =>
+          (program == 'part_time' || program == 'correspondence') ? 4 : 3,
         SchoolType.kosen => 5,
         SchoolType.vocational => 4,
         SchoolType.juniorCollege => 3,
@@ -55,23 +60,38 @@ enum SchoolType {
 
   /// Only university and graduate school have a faculty tier above department;
   /// graduate school relabels them via [facultyLabelKey]/[departmentLabelKey].
-  bool get hasFaculty => this == SchoolType.university || this == SchoolType.graduate;
+  bool get hasFaculty =>
+      this == SchoolType.university || this == SchoolType.graduate;
 
-  bool get hasDepartment => this != SchoolType.juniorHigh && this != SchoolType.other;
+  bool get hasDepartment =>
+      this != SchoolType.juniorHigh && this != SchoolType.other;
 
-  bool get hasCourse => this == SchoolType.highSchool || this == SchoolType.vocational;
+  bool get hasCourse =>
+      this == SchoolType.highSchool || this == SchoolType.vocational;
 
-  String get facultyLabelKey => this == SchoolType.graduate ? 'school_graduate_school_label' : 'school_faculty_label';
-  String get facultyHintKey => this == SchoolType.graduate ? 'school_graduate_school_hint' : 'school_faculty_hint';
-  String get departmentLabelKey => this == SchoolType.graduate ? 'school_major_label' : 'school_department_label';
-  String get departmentHintKey => this == SchoolType.graduate ? 'school_major_hint' : 'school_department_hint';
+  String get facultyLabelKey => this == SchoolType.graduate
+      ? 'school_graduate_school_label'
+      : 'school_faculty_label';
+  String get facultyHintKey => this == SchoolType.graduate
+      ? 'school_graduate_school_hint'
+      : 'school_faculty_hint';
+  String get departmentLabelKey => this == SchoolType.graduate
+      ? 'school_major_label'
+      : 'school_department_label';
+  String get departmentHintKey => this == SchoolType.graduate
+      ? 'school_major_hint'
+      : 'school_department_hint';
 
   /// First run of digits (half- or full-width) in [raw]. Legacy `grade` data
   /// is free text like "2年生" or "２年"; new data is digits only.
   static int? parseGrade(String? raw) {
     final m = RegExp(r'[0-9０-９]+').firstMatch(raw ?? '');
     if (m == null) return null;
-    final digits = m.group(0)!.runes.map((r) => r >= 0xFF10 ? r - 0xFF10 : r - 0x30).join();
+    final digits = m
+        .group(0)!
+        .runes
+        .map((r) => r >= 0xFF10 ? r - 0xFF10 : r - 0x30)
+        .join();
     return int.tryParse(digits);
   }
 }
@@ -84,6 +104,8 @@ String? schoolSummary(UserModel? user) {
   final grade = SchoolType.parseGrade(user?.grade);
   final faculty = user?.faculty;
   return type.label +
-      (grade != null ? ' ${AppStrings.t('school_grade_n', {'n': grade})}' : '') +
+      (grade != null
+          ? ' ${AppStrings.t('school_grade_n', {'n': grade})}'
+          : '') +
       (faculty != null && faculty.isNotEmpty ? ' · $faculty' : '');
 }

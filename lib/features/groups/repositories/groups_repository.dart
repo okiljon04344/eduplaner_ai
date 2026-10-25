@@ -14,12 +14,15 @@ class GroupsRepository {
 
   String _generateCode() {
     final rand = Random.secure();
-    return List.generate(6, (_) => _codeChars[rand.nextInt(_codeChars.length)]).join();
+    return List.generate(6, (_) => _codeChars[rand.nextInt(_codeChars.length)])
+        .join();
   }
 
   Stream<StudyGroupModel?> watchMyGroup(String uid) {
     return _col.where('memberIds', arrayContains: uid).limit(1).snapshots().map(
-          (s) => s.docs.isEmpty ? null : StudyGroupModel.fromFirestore(s.docs.first),
+          (s) => s.docs.isEmpty
+              ? null
+              : StudyGroupModel.fromFirestore(s.docs.first),
         );
   }
 
@@ -42,11 +45,14 @@ class GroupsRepository {
   Future<String?> joinGroupByCode(String code) async {
     try {
       final callable = FunctionsService.callable('joinGroupByCode');
-      await callable.call<Map<String, dynamic>>({'code': code.trim().toUpperCase()});
+      await callable
+          .call<Map<String, dynamic>>({'code': code.trim().toUpperCase()});
       return null;
     } on FirebaseFunctionsException catch (e) {
       if (e.code == 'not-found') return AppStrings.t('err_group_not_found');
-      if (e.code == 'unauthenticated' || e.code == 'deadline-exceeded' || e.code == 'unavailable') {
+      if (e.code == 'unauthenticated' ||
+          e.code == 'deadline-exceeded' ||
+          e.code == 'unavailable') {
         return FunctionsService.describeError(e);
       }
       return AppStrings.t('err_group_join_failed');

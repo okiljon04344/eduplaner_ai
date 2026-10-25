@@ -18,7 +18,14 @@ import '../providers/assignments_provider.dart';
 import 'add_edit_assignment_sheet.dart';
 import 'assignment_actions.dart';
 
-const _kSupportedSubmissionExtensions = ['jpg', 'jpeg', 'png', 'pdf', 'docx', 'txt'];
+const _kSupportedSubmissionExtensions = [
+  'jpg',
+  'jpeg',
+  'png',
+  'pdf',
+  'docx',
+  'txt'
+];
 const _kMaxSubmissionBytes = 10 * 1024 * 1024;
 
 String? _mimeTypeForExtension(String? extension) {
@@ -39,7 +46,8 @@ String? _mimeTypeForExtension(String? extension) {
   }
 }
 
-Future<void> showAssignmentDetailSheet(BuildContext context, WidgetRef ref, AssignmentModel assignment) {
+Future<void> showAssignmentDetailSheet(
+    BuildContext context, WidgetRef ref, AssignmentModel assignment) {
   return showModalBottomSheet(
     context: context,
     isScrollControlled: true,
@@ -54,10 +62,12 @@ class _AssignmentDetailSheet extends ConsumerStatefulWidget {
   const _AssignmentDetailSheet({required this.assignment});
 
   @override
-  ConsumerState<_AssignmentDetailSheet> createState() => _AssignmentDetailSheetState();
+  ConsumerState<_AssignmentDetailSheet> createState() =>
+      _AssignmentDetailSheetState();
 }
 
-class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> {
+class _AssignmentDetailSheetState
+    extends ConsumerState<_AssignmentDetailSheet> {
   /// Live slider/chip values — may run ahead of [_current] while a write is
   /// in flight, and are reverted to it if the write fails.
   late double _progress;
@@ -86,10 +96,14 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
         'message': AppStrings.t('ai_plan_prompt', {
               'title': a.title,
               'subject': a.subject,
-              'due': '${DateHelper.formatJapaneseDate(a.dueDate)} (${a.dueDateLabel})',
+              'due':
+                  '${DateHelper.formatJapaneseDate(a.dueDate)} (${a.dueDateLabel})',
               'difficulty': a.difficulty,
             }) +
-            (a.description?.isNotEmpty == true ? AppStrings.t('ai_plan_prompt_detail', {'description': a.description ?? ''}) : ''),
+            (a.description?.isNotEmpty == true
+                ? AppStrings.t('ai_plan_prompt_detail',
+                    {'description': a.description ?? ''})
+                : ''),
         'language': AppStrings.currentLocale,
       });
       final reply = (result.data['reply'] as String?)?.trim();
@@ -102,18 +116,26 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
       await showDialog<void>(
         context: context,
         builder: (ctx) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: Text(AppStrings.t('ai_plan_title', {'title': a.title})),
           content: SingleChildScrollView(child: Text(reply)),
-          actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: Text(AppStrings.t('common_close')))],
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text(AppStrings.t('common_close')))
+          ],
         ),
       );
     } on FirebaseFunctionsException catch (e) {
       if (!mounted) return;
       setState(() => _aiLoading = false);
       // Quota and login problems are actionable; show them instead of the generic failure.
-      final actionable = e.code == 'resource-exhausted' || e.code == 'unauthenticated';
-      _showAiError(actionable ? FunctionsService.describeError(e) : AppStrings.t('ai_plan_failed'));
+      final actionable =
+          e.code == 'resource-exhausted' || e.code == 'unauthenticated';
+      _showAiError(actionable
+          ? FunctionsService.describeError(e)
+          : AppStrings.t('ai_plan_failed'));
     } catch (e) {
       if (!mounted) return;
       setState(() => _aiLoading = false);
@@ -121,7 +143,8 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
     }
   }
 
-  void _showAiError(String message) => showAssignmentErrorToast(context, message);
+  void _showAiError(String message) =>
+      showAssignmentErrorToast(context, message);
 
   /// Picks an image/PDF/Word/text file, reads it with `readAsBytes()` (works on
   /// web, desktop and mobile alike), sends it for AI review and shows the result.
@@ -145,7 +168,8 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
       _showAiError(AppStrings.t('file_too_large'));
       return;
     }
-    final extension = file.name.contains('.') ? file.name.split('.').last : null;
+    final extension =
+        file.name.contains('.') ? file.name.split('.').last : null;
     final mimeType = _mimeTypeForExtension(extension);
     if (mimeType == null) {
       _showAiError(AppStrings.t('file_unsupported'));
@@ -153,11 +177,14 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
     }
 
     setState(() => _aiCheckLoading = true);
-    final outcome = await ref.read(assignmentsNotifierProvider.notifier).checkWithAi(_current, fileBytes: bytes, mimeType: mimeType);
+    final outcome = await ref
+        .read(assignmentsNotifierProvider.notifier)
+        .checkWithAi(_current, fileBytes: bytes, mimeType: mimeType);
     if (!mounted) return;
     setState(() => _aiCheckLoading = false);
     if (outcome.model == null) {
-      _showAiError(outcome.error ?? AppStrings.t('err_assignment_check_failed'));
+      _showAiError(
+          outcome.error ?? AppStrings.t('err_assignment_check_failed'));
       return;
     }
     // Merge only the AI fields: progress/status may have changed while the
@@ -188,7 +215,9 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
   // per pixel of drag.
   Future<void> _onProgressChangeEnd(double value) async {
     if (value == _current.progress) return;
-    final error = await ref.read(assignmentsNotifierProvider.notifier).updateProgress(_current, value);
+    final error = await ref
+        .read(assignmentsNotifierProvider.notifier)
+        .updateProgress(_current, value);
     if (!mounted) return;
     if (error != null) {
       setState(_revertToCurrent);
@@ -205,7 +234,9 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
       _status = next.status;
       _progress = next.progress;
     });
-    final error = await ref.read(assignmentsNotifierProvider.notifier).updateStatus(_current, status);
+    final error = await ref
+        .read(assignmentsNotifierProvider.notifier)
+        .updateStatus(_current, status);
     if (!mounted) return;
     if (error != null) {
       setState(_revertToCurrent);
@@ -224,9 +255,14 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
   }
 
   Future<void> _delete() async {
-    final ok = await showConfirmDialog(context, title: AppStrings.t('as_delete_title'), message: AppStrings.t('as_delete_confirm', {'title': widget.assignment.title}));
+    final ok = await showConfirmDialog(context,
+        title: AppStrings.t('as_delete_title'),
+        message: AppStrings.t(
+            'as_delete_confirm', {'title': widget.assignment.title}));
     if (!ok) return;
-    final error = await ref.read(assignmentsNotifierProvider.notifier).delete(widget.assignment.id);
+    final error = await ref
+        .read(assignmentsNotifierProvider.notifier)
+        .delete(widget.assignment.id);
     if (!mounted) return;
     if (error != null) {
       showAssignmentErrorToast(context, error);
@@ -246,7 +282,8 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
   Widget build(BuildContext context) {
     final assignment = _current;
     return SingleChildScrollView(
-      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom + 32),
+      padding:
+          EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom + 32),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -255,7 +292,9 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
               width: 40,
               height: 4,
               margin: const EdgeInsets.only(top: 12),
-              decoration: BoxDecoration(color: AppColors.textMuted, borderRadius: BorderRadius.circular(2)),
+              decoration: BoxDecoration(
+                  color: AppColors.textMuted,
+                  borderRadius: BorderRadius.circular(2)),
             ),
           ),
           Padding(
@@ -269,8 +308,10 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
                   child: Container(
                     width: 36,
                     height: 36,
-                    decoration: BoxDecoration(color: AppColors.surfaceVar, shape: BoxShape.circle),
-                    child: Icon(Icons.close, size: 18, color: AppColors.textPrimary),
+                    decoration: BoxDecoration(
+                        color: AppColors.surfaceVar, shape: BoxShape.circle),
+                    child: Icon(Icons.close,
+                        size: 18, color: AppColors.textPrimary),
                   ),
                 ),
               ],
@@ -282,7 +323,11 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 12),
-                Text(assignment.title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+                Text(assignment.title,
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary)),
                 const SizedBox(height: 8),
                 // Wrap so a long localized date can push the badge to the next line.
                 Wrap(
@@ -291,40 +336,79 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     Text(
-                      AppStrings.t('as_due_prefix', {'date': DateHelper.formatJapaneseDate(assignment.dueDate)}),
-                      style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                      AppStrings.t('as_due_prefix', {
+                        'date':
+                            DateHelper.formatJapaneseDate(assignment.dueDate)
+                      }),
+                      style: TextStyle(
+                          fontSize: 13, color: AppColors.textSecondary),
                     ),
                     // The full date is already in the prefix; a finished task needs no countdown badge.
-                    if (_status != AssignmentStatus.completed) Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                      decoration: BoxDecoration(color: assignment.dueDateBgColor, borderRadius: BorderRadius.circular(20)),
-                      child: Text(assignment.dueDateLabel, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: assignment.dueDateColor)),
-                    ),
+                    if (_status != AssignmentStatus.completed)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 3),
+                        decoration: BoxDecoration(
+                            color: assignment.dueDateBgColor,
+                            borderRadius: BorderRadius.circular(20)),
+                        child: Text(assignment.dueDateLabel,
+                            style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: assignment.dueDateColor)),
+                      ),
                   ],
                 ),
                 const SizedBox(height: 8),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(AppStrings.t('fld_difficulty'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-                    StarRating(initialRating: assignment.difficulty, readOnly: true),
+                    Text(AppStrings.t('fld_difficulty'),
+                        style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textPrimary)),
+                    StarRating(
+                        initialRating: assignment.difficulty, readOnly: true),
                   ],
                 ),
-                if (assignment.description != null && assignment.description!.isNotEmpty) ...[
+                if (assignment.description != null &&
+                    assignment.description!.isNotEmpty) ...[
                   const SizedBox(height: 12),
-                  Text(assignment.description ?? '', style: TextStyle(fontSize: 14, color: AppColors.textSecondary)),
+                  Text(assignment.description ?? '',
+                      style: TextStyle(
+                          fontSize: 14, color: AppColors.textSecondary)),
                 ],
                 const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(AppStrings.t('fld_progress'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-                    Text('${(_progress * 100).round()}%', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.accentText)),
+                    Text(AppStrings.t('fld_progress'),
+                        style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textPrimary)),
+                    Text('${(_progress * 100).round()}%',
+                        style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.accentText)),
                   ],
                 ),
-                Slider(value: _progress, min: 0, max: 1, divisions: 10, activeColor: AppColors.primary, onChanged: _onProgressChanged, onChangeEnd: _onProgressChangeEnd),
+                Slider(
+                    value: _progress,
+                    min: 0,
+                    max: 1,
+                    divisions: 10,
+                    activeColor: AppColors.primary,
+                    onChanged: _onProgressChanged,
+                    onChangeEnd: _onProgressChangeEnd),
                 const SizedBox(height: 12),
-                Text(AppStrings.t('fld_status'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                Text(AppStrings.t('fld_status'),
+                    style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary)),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 8,
@@ -337,7 +421,11 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
                       onSelected: (_) => _onStatusChanged(s),
                       selectedColor: AppColors.primary,
                       checkmarkColor: AppColors.onPrimary,
-                      labelStyle: TextStyle(color: selected ? AppColors.onPrimary : AppColors.textPrimary, fontWeight: FontWeight.w500),
+                      labelStyle: TextStyle(
+                          color: selected
+                              ? AppColors.onPrimary
+                              : AppColors.textPrimary,
+                          fontWeight: FontWeight.w500),
                     );
                   }).toList(),
                 ),
@@ -346,11 +434,18 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
                   width: double.infinity,
                   child: FilledButton.icon(
                     onPressed: _aiLoading ? null : _askAiToPlan,
-                    style: FilledButton.styleFrom(backgroundColor: AppColors.primary),
+                    style: FilledButton.styleFrom(
+                        backgroundColor: AppColors.primary),
                     icon: _aiLoading
-                        ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.onPrimary))
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2, color: AppColors.onPrimary))
                         : const Text('🎯'),
-                    label: Text(_aiLoading ? AppStrings.t('ai_thinking') : AppStrings.t('ai_plan_btn')),
+                    label: Text(_aiLoading
+                        ? AppStrings.t('ai_thinking')
+                        : AppStrings.t('ai_plan_btn')),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -359,9 +454,14 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
                   child: OutlinedButton.icon(
                     onPressed: _aiCheckLoading ? null : _pickAndCheckSubmission,
                     icon: _aiCheckLoading
-                        ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2))
                         : const Icon(Icons.upload_file_outlined, size: 18),
-                    label: Text(_aiCheckLoading ? AppStrings.t('ai_checking') : AppStrings.t('ai_check_btn')),
+                    label: Text(_aiCheckLoading
+                        ? AppStrings.t('ai_checking')
+                        : AppStrings.t('ai_check_btn')),
                   ),
                 ),
                 if (assignment.hasAiAnalysis) ...[
@@ -371,12 +471,17 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
                 const SizedBox(height: 12),
                 Row(
                   children: [
-                    Expanded(child: OutlinedButton(onPressed: _edit, child: Text(AppStrings.t('common_edit')))),
+                    Expanded(
+                        child: OutlinedButton(
+                            onPressed: _edit,
+                            child: Text(AppStrings.t('common_edit')))),
                     const SizedBox(width: 12),
                     Expanded(
                       child: OutlinedButton(
                         onPressed: _delete,
-                        style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.danger), foregroundColor: AppColors.danger),
+                        style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: AppColors.danger),
+                            foregroundColor: AppColors.danger),
                         child: Text(AppStrings.t('common_delete')),
                       ),
                     ),
@@ -397,7 +502,8 @@ class _AiCheckResult extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final percent = (assignment.aiCompletionPercent ?? 0).clamp(0, 100).toDouble();
+    final percent =
+        (assignment.aiCompletionPercent ?? 0).clamp(0, 100).toDouble();
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -420,27 +526,44 @@ class _AiCheckResult extends StatelessWidget {
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: Text(AppStrings.t('ai_check_result'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
+                child: Text(AppStrings.t('ai_check_result'),
+                    style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.textPrimary)),
               ),
             ],
           ),
           if (assignment.aiMissingParts.isNotEmpty) ...[
             const SizedBox(height: 12),
-            Text(AppStrings.t('ai_missing_parts'), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.warning)),
+            Text(AppStrings.t('ai_missing_parts'),
+                style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.warning)),
             const SizedBox(height: 6),
             ...assignment.aiMissingParts.map(
               (m) => Padding(
                 padding: const EdgeInsets.only(bottom: 4),
-                child: Text('• $m', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                child: Text('• $m',
+                    style: TextStyle(
+                        fontSize: 12, color: AppColors.textSecondary)),
               ),
             ),
           ],
-          if (assignment.aiAdvice != null && assignment.aiAdvice!.isNotEmpty) ...[
+          if (assignment.aiAdvice != null &&
+              assignment.aiAdvice!.isNotEmpty) ...[
             const SizedBox(height: 10),
             Container(
               padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(color: AppColors.primaryLight.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(10)),
-              child: Text(assignment.aiAdvice!, style: TextStyle(fontSize: 12, color: AppColors.textSecondary, height: 1.4)),
+              decoration: BoxDecoration(
+                  color: AppColors.primaryLight.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(10)),
+              child: Text(assignment.aiAdvice!,
+                  style: TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                      height: 1.4)),
             ),
           ],
         ],

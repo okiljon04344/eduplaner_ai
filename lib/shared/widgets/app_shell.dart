@@ -66,16 +66,19 @@ class _DirectionalTabState extends ConsumerState<_DirectionalTab> {
       duration: const Duration(milliseconds: 220),
       transitionBuilder: (child, animation) {
         final dx = _goingRight ? 0.05 : -0.05;
-        final curved = CurvedAnimation(parent: animation, curve: Curves.easeOutCubic);
+        final curved =
+            CurvedAnimation(parent: animation, curve: Curves.easeOutCubic);
         return SlideTransition(
-          position: Tween(begin: Offset(dx, 0), end: Offset.zero).animate(curved),
+          position:
+              Tween(begin: Offset(dx, 0), end: Offset.zero).animate(curved),
           child: FadeTransition(
             opacity: curved,
             child: child,
           ),
         );
       },
-      child: KeyedSubtree(key: ValueKey('${index}_$_visitNonce'), child: widget.child),
+      child: KeyedSubtree(
+          key: ValueKey('${index}_$_visitNonce'), child: widget.child),
     );
   }
 }

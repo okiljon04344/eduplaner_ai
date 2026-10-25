@@ -21,7 +21,8 @@ class _ChatInputBarState extends ConsumerState<ChatInputBar> {
   @override
   void initState() {
     super.initState();
-    _focusNode.addListener(() => setState(() => _isFocused = _focusNode.hasFocus));
+    _focusNode
+        .addListener(() => setState(() => _isFocused = _focusNode.hasFocus));
   }
 
   @override
@@ -34,16 +35,21 @@ class _ChatInputBarState extends ConsumerState<ChatInputBar> {
   void _send() {
     final text = _controller.text.trim();
     if (text.isEmpty) return;
-    ref.read(chatProvider.notifier).sendMessage(text, botId: ref.read(selectedBotIdProvider));
+    ref
+        .read(chatProvider.notifier)
+        .sendMessage(text, botId: ref.read(selectedBotIdProvider));
     _controller.clear();
     setState(() => _hasText = false);
   }
 
   @override
   Widget build(BuildContext context) {
-    final borderColor = _isFocused ? AppColors.primaryMid.withValues(alpha: 0.6) : AppColors.primaryMid.withValues(alpha: 0.2);
+    final borderColor = _isFocused
+        ? AppColors.primaryMid.withValues(alpha: 0.6)
+        : AppColors.primaryMid.withValues(alpha: 0.2);
     return Container(
-      padding: EdgeInsets.fromLTRB(16, 10, 16, 16 + MediaQuery.viewInsetsOf(context).bottom),
+      padding: EdgeInsets.fromLTRB(
+          16, 10, 16, 16 + MediaQuery.viewInsetsOf(context).bottom),
       decoration: BoxDecoration(
         color: AppColors.surface,
         border: Border(top: BorderSide(color: AppColors.borderLight, width: 1)),
@@ -66,7 +72,8 @@ class _ChatInputBarState extends ConsumerState<ChatInputBar> {
                 maxLines: 4,
                 // Matches the server-side cap in `chatWithTutor`.
                 inputFormatters: [LengthLimitingTextInputFormatter(4000)],
-                onChanged: (v) => setState(() => _hasText = v.trim().isNotEmpty),
+                onChanged: (v) =>
+                    setState(() => _hasText = v.trim().isNotEmpty),
                 onSubmitted: (_) => _send(),
                 textInputAction: TextInputAction.send,
                 style: TextStyle(
@@ -87,7 +94,8 @@ class _ChatInputBarState extends ConsumerState<ChatInputBar> {
                   ),
                   filled: false,
                   isDense: true,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
                   border: InputBorder.none,
                   enabledBorder: InputBorder.none,
                   focusedBorder: InputBorder.none,
@@ -108,10 +116,13 @@ class _ChatInputBarState extends ConsumerState<ChatInputBar> {
                   gradient: AppColors.gradientPrimary,
                   shape: BoxShape.circle,
                   boxShadow: [
-                    BoxShadow(color: AppColors.primaryMid.withValues(alpha: 0.6), blurRadius: 20),
+                    BoxShadow(
+                        color: AppColors.primaryMid.withValues(alpha: 0.6),
+                        blurRadius: 20),
                   ],
                 ),
-                child: const Icon(Icons.send_rounded, size: 18, color: AppColors.onPrimary),
+                child: const Icon(Icons.send_rounded,
+                    size: 18, color: AppColors.onPrimary),
               ),
             ),
           ),

@@ -71,28 +71,50 @@ final routerProvider = Provider<GoRouter>((ref) {
       }
 
       // Block every other route until the school profile is filled in.
-      if (isLoggedIn && onboardingDone && needsProfileSetup && !isOnProfileSetup) {
+      if (isLoggedIn &&
+          onboardingDone &&
+          needsProfileSetup &&
+          !isOnProfileSetup) {
         return '/profile-setup';
       }
 
       return null;
     },
     routes: [
-      GoRoute(path: '/', pageBuilder: (_, s) => _fade(s, const LandingScreen())),
-      GoRoute(path: '/login', pageBuilder: (_, s) => _fade(s, const LoginScreen())),
-      GoRoute(path: '/login/signup', pageBuilder: (_, s) => _slideUp(s, const EmailSignupScreen())),
-      GoRoute(path: '/login/email', pageBuilder: (_, s) => _slideUp(s, const EmailLoginScreen())),
-      GoRoute(path: '/login/reset', pageBuilder: (_, s) => _slideUp(s, const ResetPasswordScreen())),
-      GoRoute(path: '/onboarding', pageBuilder: (_, s) => _fade(s, const OnboardingScreen())),
-      GoRoute(path: '/profile-setup', pageBuilder: (_, s) => _fade(s, const ProfileSetupScreen())),
-      GoRoute(path: '/settings', pageBuilder: (_, s) => _slideRight(s, const SettingsScreen())),
-      GoRoute(path: '/quiz', pageBuilder: (_, s) => _slideUp(s, const QuizScreen())),
+      GoRoute(
+          path: '/', pageBuilder: (_, s) => _fade(s, const LandingScreen())),
+      GoRoute(
+          path: '/login', pageBuilder: (_, s) => _fade(s, const LoginScreen())),
+      GoRoute(
+          path: '/login/signup',
+          pageBuilder: (_, s) => _slideUp(s, const EmailSignupScreen())),
+      GoRoute(
+          path: '/login/email',
+          pageBuilder: (_, s) => _slideUp(s, const EmailLoginScreen())),
+      GoRoute(
+          path: '/login/reset',
+          pageBuilder: (_, s) => _slideUp(s, const ResetPasswordScreen())),
+      GoRoute(
+          path: '/onboarding',
+          pageBuilder: (_, s) => _fade(s, const OnboardingScreen())),
+      GoRoute(
+          path: '/profile-setup',
+          pageBuilder: (_, s) => _fade(s, const ProfileSetupScreen())),
+      GoRoute(
+          path: '/settings',
+          pageBuilder: (_, s) => _slideRight(s, const SettingsScreen())),
+      GoRoute(
+          path: '/quiz',
+          pageBuilder: (_, s) => _slideUp(s, const QuizScreen())),
       ShellRoute(
         builder: (context, state, child) => AppShell(child: child),
         routes: [
           GoRoute(path: '/home', builder: (_, __) => const HomeScreen()),
-          GoRoute(path: '/timetable', builder: (_, __) => const TimetableScreen()),
-          GoRoute(path: '/assignments', builder: (_, __) => const AssignmentsScreen()),
+          GoRoute(
+              path: '/timetable', builder: (_, __) => const TimetableScreen()),
+          GoRoute(
+              path: '/assignments',
+              builder: (_, __) => const AssignmentsScreen()),
           GoRoute(path: '/ai', builder: (_, __) => const AiChatScreen()),
         ],
       ),
@@ -128,9 +150,11 @@ CustomTransitionPage<void> _slideUp(GoRouterState s, Widget child) =>
       transitionDuration: const Duration(milliseconds: 260),
       reverseTransitionDuration: const Duration(milliseconds: 260),
       transitionsBuilder: (_, anim, __, c) {
-        final curved = CurvedAnimation(parent: anim, curve: Curves.easeOutCubic);
+        final curved =
+            CurvedAnimation(parent: anim, curve: Curves.easeOutCubic);
         return SlideTransition(
-          position: Tween(begin: const Offset(0, 0.08), end: Offset.zero).animate(curved),
+          position: Tween(begin: const Offset(0, 0.08), end: Offset.zero)
+              .animate(curved),
           child: FadeTransition(opacity: curved, child: c),
         );
       },
@@ -144,9 +168,11 @@ CustomTransitionPage<void> _slideRight(GoRouterState s, Widget child) =>
       transitionDuration: const Duration(milliseconds: 240),
       reverseTransitionDuration: const Duration(milliseconds: 240),
       transitionsBuilder: (_, anim, __, c) {
-        final curved = CurvedAnimation(parent: anim, curve: Curves.easeOutCubic);
+        final curved =
+            CurvedAnimation(parent: anim, curve: Curves.easeOutCubic);
         return SlideTransition(
-          position: Tween(begin: const Offset(-0.06, 0), end: Offset.zero).animate(curved),
+          position: Tween(begin: const Offset(-0.06, 0), end: Offset.zero)
+              .animate(curved),
           child: FadeTransition(opacity: curved, child: c),
         );
       },

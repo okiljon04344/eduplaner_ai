@@ -14,13 +14,15 @@ class AiStudyTipCard extends ConsumerStatefulWidget {
   ConsumerState<AiStudyTipCard> createState() => _AiStudyTipCardState();
 }
 
-class _AiStudyTipCardState extends ConsumerState<AiStudyTipCard> with SingleTickerProviderStateMixin {
+class _AiStudyTipCardState extends ConsumerState<AiStudyTipCard>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(seconds: 3));
+    _controller =
+        AnimationController(vsync: this, duration: const Duration(seconds: 3));
   }
 
   bool _started = false;
@@ -75,7 +77,8 @@ class _AiStudyTipCardState extends ConsumerState<AiStudyTipCard> with SingleTick
               child: AnimatedBuilder(
                 animation: _controller,
                 builder: (context, child) => Transform.translate(
-                  offset: Offset(0, -6 * Curves.easeInOut.transform(_controller.value)),
+                  offset: Offset(
+                      0, -6 * Curves.easeInOut.transform(_controller.value)),
                   child: child,
                 ),
                 child: Container(
@@ -84,7 +87,11 @@ class _AiStudyTipCardState extends ConsumerState<AiStudyTipCard> with SingleTick
                   decoration: BoxDecoration(
                     gradient: AppColors.gradientPrimary,
                     borderRadius: BorderRadius.circular(16),
-                    boxShadow: [BoxShadow(color: AppColors.primaryMid.withValues(alpha: 0.7), blurRadius: 20)],
+                    boxShadow: [
+                      BoxShadow(
+                          color: AppColors.primaryMid.withValues(alpha: 0.7),
+                          blurRadius: 20)
+                    ],
                   ),
                   alignment: Alignment.center,
                   child: const Text('🤖', style: TextStyle(fontSize: 22)),
@@ -99,8 +106,12 @@ class _AiStudyTipCardState extends ConsumerState<AiStudyTipCard> with SingleTick
                   Text(
                     AppStrings.t('home_ai_title'),
                     style: TextStyle(
-                      fontSize: 15, fontWeight: FontWeight.w800, letterSpacing: -0.2, color: AppColors.textOnHero,
-                      fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP'],
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.2,
+                      color: AppColors.textOnHero,
+                      fontFamily: 'Plus Jakarta Sans',
+                      fontFamilyFallback: const ['NotoSansJP'],
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -110,19 +121,24 @@ class _AiStudyTipCardState extends ConsumerState<AiStudyTipCard> with SingleTick
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        fontSize: 12, fontWeight: FontWeight.w500, height: 1.4,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        height: 1.4,
                         color: AppColors.textSecondary,
-                        fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP'],
+                        fontFamily: 'Plus Jakarta Sans',
+                        fontFamilyFallback: const ['NotoSansJP'],
                       ),
                     ),
                     loading: () => SizedBox(
                       width: 14,
                       height: 14,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.textSecondary),
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: AppColors.textSecondary),
                     ),
                     error: (_, __) => Text(
                       AppStrings.t('home_ai_fallback'),
-                      style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                      style: TextStyle(
+                          fontSize: 12, color: AppColors.textSecondary),
                     ),
                   ),
                 ],
@@ -136,9 +152,11 @@ class _AiStudyTipCardState extends ConsumerState<AiStudyTipCard> with SingleTick
               decoration: BoxDecoration(
                 color: AppColors.primaryMid.withValues(alpha: 0.2),
                 shape: BoxShape.circle,
-                border: Border.all(color: AppColors.primaryMid.withValues(alpha: 0.4)),
+                border: Border.all(
+                    color: AppColors.primaryMid.withValues(alpha: 0.4)),
               ),
-              child: Icon(Icons.arrow_forward, size: 15, color: AppColors.accentText),
+              child: Icon(Icons.arrow_forward,
+                  size: 15, color: AppColors.accentText),
             ),
           ],
         ),

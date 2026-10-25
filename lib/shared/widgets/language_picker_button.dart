@@ -19,7 +19,8 @@ class LanguagePickerButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentLocale = ref.watch(localeProvider);
-    final currentEntry = AppStrings.locales.where((l) => l.$1 == currentLocale).firstOrNull;
+    final currentEntry =
+        AppStrings.locales.where((l) => l.$1 == currentLocale).firstOrNull;
     final flag = currentEntry?.$3 ?? '🌐';
     final name = currentEntry?.$2 ?? currentLocale;
 
@@ -33,7 +34,9 @@ class LanguagePickerButton extends ConsumerWidget {
           decoration: BoxDecoration(
             color: (color ?? AppColors.textPrimary).withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: (color ?? AppColors.textPrimary).withValues(alpha: 0.15)),
+            border: Border.all(
+                color:
+                    (color ?? AppColors.textPrimary).withValues(alpha: 0.15)),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -60,7 +63,8 @@ class LanguagePickerButton extends ConsumerWidget {
 }
 
 /// Bottom sheet listing all languages; shared by [LanguagePickerButton] and Settings.
-void showLanguagePicker(BuildContext context, WidgetRef ref, String currentLocale) {
+void showLanguagePicker(
+    BuildContext context, WidgetRef ref, String currentLocale) {
   showModalBottomSheet(
     context: context,
     backgroundColor: AppColors.surface,
@@ -89,7 +93,10 @@ void showLanguagePicker(BuildContext context, WidgetRef ref, String currentLocal
           const SizedBox(height: 16),
           Text(
             AppStrings.t('settings_language'),
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+            style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimary),
           ),
           const SizedBox(height: 8),
           Expanded(
@@ -101,11 +108,17 @@ void showLanguagePicker(BuildContext context, WidgetRef ref, String currentLocal
                 final isSelected = code == currentLocale;
                 return ListTile(
                   leading: Text(flag, style: const TextStyle(fontSize: 24)),
-                  title: Text(name, style: TextStyle(
-                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
-                    color: isSelected ? AppColors.accentText : AppColors.textPrimary,
-                  )),
-                  trailing: isSelected ? Icon(Icons.check_rounded, color: AppColors.accentText) : null,
+                  title: Text(name,
+                      style: TextStyle(
+                        fontWeight:
+                            isSelected ? FontWeight.w700 : FontWeight.w400,
+                        color: isSelected
+                            ? AppColors.accentText
+                            : AppColors.textPrimary,
+                      )),
+                  trailing: isSelected
+                      ? Icon(Icons.check_rounded, color: AppColors.accentText)
+                      : null,
                   onTap: () {
                     Navigator.pop(ctx);
                     ref.read(localeProvider.notifier).setLocale(code);

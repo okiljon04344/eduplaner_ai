@@ -38,10 +38,26 @@ class AppBottomNav extends StatelessWidget {
             child: RepaintBoundary(
               child: Row(
                 children: [
-                  _NavItem(icon: Icons.home_outlined, activeIcon: Icons.home_rounded, label: AppStrings.t('nav_home'), route: '/home'),
-                  _NavItem(icon: Icons.calendar_month_outlined, activeIcon: Icons.calendar_month_rounded, label: AppStrings.t('nav_timetable'), route: '/timetable'),
-                  _NavItem(icon: Icons.task_alt_outlined, activeIcon: Icons.task_alt_rounded, label: AppStrings.t('nav_assignments'), route: '/assignments'),
-                  _NavItem(icon: Icons.smart_toy_outlined, activeIcon: Icons.smart_toy_rounded, label: AppStrings.t('nav_ai'), route: '/ai'),
+                  _NavItem(
+                      icon: Icons.home_outlined,
+                      activeIcon: Icons.home_rounded,
+                      label: AppStrings.t('nav_home'),
+                      route: '/home'),
+                  _NavItem(
+                      icon: Icons.calendar_month_outlined,
+                      activeIcon: Icons.calendar_month_rounded,
+                      label: AppStrings.t('nav_timetable'),
+                      route: '/timetable'),
+                  _NavItem(
+                      icon: Icons.task_alt_outlined,
+                      activeIcon: Icons.task_alt_rounded,
+                      label: AppStrings.t('nav_assignments'),
+                      route: '/assignments'),
+                  _NavItem(
+                      icon: Icons.smart_toy_outlined,
+                      activeIcon: Icons.smart_toy_rounded,
+                      label: AppStrings.t('nav_ai'),
+                      route: '/ai'),
                 ],
               ),
             ),
@@ -67,7 +83,8 @@ class _NavItem extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final active = isNavRouteActive(context, route);
-    final activeColor = AppColors.isDark ? AppColors.primaryLight : AppColors.primaryDark;
+    final activeColor =
+        AppColors.isDark ? AppColors.primaryLight : AppColors.primaryDark;
     final inactiveColor = AppColors.textMuted;
 
     return Expanded(
@@ -97,7 +114,11 @@ class _NavItem extends ConsumerWidget {
                 size: 24,
                 color: active ? activeColor : inactiveColor,
                 shadows: active
-                    ? [Shadow(color: activeColor.withValues(alpha: 0.7), blurRadius: 8)]
+                    ? [
+                        Shadow(
+                            color: activeColor.withValues(alpha: 0.7),
+                            blurRadius: 8)
+                      ]
                     : null,
               ),
             ),

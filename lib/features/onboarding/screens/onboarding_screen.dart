@@ -18,35 +18,35 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   // A getter, not a const, so titles and subtitles follow the current locale.
   static List<_PageData> get _pages => [
-    _PageData(
-      icon: Icons.auto_awesome,
-      color: AppColors.blue,
-      accentColor: const Color(0xFF2563EB),
-      title: AppStrings.t('onboard_1_title'),
-      subtitle: AppStrings.t('onboard_1_sub'),
-    ),
-    _PageData(
-      icon: Icons.calendar_month_outlined,
-      color: const Color(0xFF06B6D4),
-      accentColor: const Color(0xFF0891B2),
-      title: AppStrings.t('onboard_2_title'),
-      subtitle: AppStrings.t('onboard_2_sub'),
-    ),
-    _PageData(
-      icon: Icons.assignment_outlined,
-      color: const Color(0xFF10B981),
-      accentColor: const Color(0xFF059669),
-      title: AppStrings.t('onboard_3_title'),
-      subtitle: AppStrings.t('onboard_3_sub'),
-    ),
-    _PageData(
-      icon: Icons.smart_toy_outlined,
-      color: AppColors.amber,
-      accentColor: AppColors.amberDeep,
-      title: AppStrings.t('onboard_4_title'),
-      subtitle: AppStrings.t('onboard_4_sub'),
-    ),
-  ];
+        _PageData(
+          icon: Icons.auto_awesome,
+          color: AppColors.blue,
+          accentColor: const Color(0xFF2563EB),
+          title: AppStrings.t('onboard_1_title'),
+          subtitle: AppStrings.t('onboard_1_sub'),
+        ),
+        _PageData(
+          icon: Icons.calendar_month_outlined,
+          color: const Color(0xFF06B6D4),
+          accentColor: const Color(0xFF0891B2),
+          title: AppStrings.t('onboard_2_title'),
+          subtitle: AppStrings.t('onboard_2_sub'),
+        ),
+        _PageData(
+          icon: Icons.assignment_outlined,
+          color: const Color(0xFF10B981),
+          accentColor: const Color(0xFF059669),
+          title: AppStrings.t('onboard_3_title'),
+          subtitle: AppStrings.t('onboard_3_sub'),
+        ),
+        _PageData(
+          icon: Icons.smart_toy_outlined,
+          color: AppColors.amber,
+          accentColor: AppColors.amberDeep,
+          title: AppStrings.t('onboard_4_title'),
+          subtitle: AppStrings.t('onboard_4_sub'),
+        ),
+      ];
 
   void _next() {
     if (_page < _pages.length - 1) {
@@ -102,7 +102,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 ),
               ),
             ),
-
             Expanded(
               child: PageView.builder(
                 controller: _controller,
@@ -114,7 +113,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 ),
               ),
             ),
-
             Padding(
               padding: const EdgeInsets.fromLTRB(32, 20, 32, 44),
               child: Column(
@@ -129,23 +127,24 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         width: active ? 28 : 8,
                         height: 8,
                         decoration: BoxDecoration(
-                          color: active
-                              ? _pages[_page].color
-                              : AppColors.border,
+                          color:
+                              active ? _pages[_page].color : AppColors.border,
                           borderRadius: BorderRadius.circular(4),
                         ),
                       );
                     }),
                   ),
                   const SizedBox(height: 28),
-
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 280),
                     width: double.infinity,
                     height: 54,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [_pages[_page].color, _pages[_page].accentColor],
+                        colors: [
+                          _pages[_page].color,
+                          _pages[_page].accentColor
+                        ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
@@ -165,7 +164,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         onTap: _next,
                         child: Center(
                           child: Text(
-                            _page < _pages.length - 1 ? AppStrings.t('onboard_next') : AppStrings.t('onboard_start'),
+                            _page < _pages.length - 1
+                                ? AppStrings.t('onboard_next')
+                                : AppStrings.t('onboard_start'),
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
@@ -269,7 +270,8 @@ class _PageContent extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: Icon(data.icon, size: 42, color: _onColor(data.accentColor)),
+                child: Icon(data.icon,
+                    size: 42, color: _onColor(data.accentColor)),
               ),
             ],
           )
@@ -281,9 +283,7 @@ class _PageContent extends StatelessWidget {
                 curve: Curves.elasticOut,
               )
               .fadeIn(duration: 400.ms),
-
           const SizedBox(height: 44),
-
           Text(
             data.title,
             textAlign: TextAlign.center,
@@ -306,9 +306,7 @@ class _PageContent extends StatelessWidget {
                 curve: Curves.easeOut,
               )
               .fadeIn(duration: 400.ms, delay: 180.ms),
-
           const SizedBox(height: 16),
-
           Text(
             data.subtitle,
             textAlign: TextAlign.center,
@@ -338,4 +336,6 @@ class _PageContent extends StatelessWidget {
 /// Label/icon color on a page's accent fill. Pages use different hues (blue,
 /// cyan, green, amber), so choose white or dark ink by luminance.
 Color _onColor(Color fill) =>
-    ThemeData.estimateBrightnessForColor(fill) == Brightness.dark ? Colors.white : AppColors.onPrimary;
+    ThemeData.estimateBrightnessForColor(fill) == Brightness.dark
+        ? Colors.white
+        : AppColors.onPrimary;

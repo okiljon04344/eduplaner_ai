@@ -13,7 +13,8 @@ import '../../features/assignments/models/assignment_model.dart';
 import '../../features/timetable/models/class_model.dart';
 
 abstract class NotificationService {
-  static final FlutterLocalNotificationsPlugin _plugin = FlutterLocalNotificationsPlugin();
+  static final FlutterLocalNotificationsPlugin _plugin =
+      FlutterLocalNotificationsPlugin();
   static bool _initialized = false;
   static bool _enabled = true;
 
@@ -21,17 +22,19 @@ abstract class NotificationService {
   // channelId in functions/index.js.
   static const _channelId = 'eduplanner_reminders';
 
-  static AndroidNotificationDetails get _androidDetails => AndroidNotificationDetails(
-    _channelId,
-    AppStrings.t('notif_channel_name'),
-    channelDescription: AppStrings.t('notif_channel_desc'),
-    importance: Importance.high,
-    priority: Priority.high,
-    icon: 'ic_stat_notify',
-    color: const Color(0xFF059669),
-  );
+  static AndroidNotificationDetails get _androidDetails =>
+      AndroidNotificationDetails(
+        _channelId,
+        AppStrings.t('notif_channel_name'),
+        channelDescription: AppStrings.t('notif_channel_desc'),
+        importance: Importance.high,
+        priority: Priority.high,
+        icon: 'ic_stat_notify',
+        color: const Color(0xFF059669),
+      );
 
-  static NotificationDetails get _details => NotificationDetails(android: _androidDetails, iOS: const DarwinNotificationDetails());
+  static NotificationDetails get _details => NotificationDetails(
+      android: _androidDetails, iOS: const DarwinNotificationDetails());
 
   static Future<void> initialize() async {
     try {
@@ -53,7 +56,8 @@ abstract class NotificationService {
     // FCM pushes name this channel; create it up front or Android files them
     // under "Miscellaneous".
     await _plugin
-        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()
         ?.createNotificationChannel(AndroidNotificationChannel(
           _channelId,
           AppStrings.t('notif_channel_name'),
@@ -108,13 +112,13 @@ abstract class NotificationService {
     final n = message.notification;
     if (n == null) return;
     unawaited(_plugin.show(
-      message.messageId?.hashCode ?? DateTime.now().millisecondsSinceEpoch.toSigned(32),
+      message.messageId?.hashCode ??
+          DateTime.now().millisecondsSinceEpoch.toSigned(32),
       n.title,
       n.body,
       _details,
     ));
   }
-
 
   /// Persists the notification preference. Disabling clears all reminders and
   /// unlinks FCM; enabling re-registers FCM and reschedules reminders.
@@ -188,19 +192,25 @@ abstract class NotificationService {
       'time': start == null ? '' : formatHm(start),
     });
     // Heuristic strip: a subject that itself ends in "()" would lose it.
-    return c.room.trim().isEmpty ? text.replaceAll(' ()', '').replaceAll('()', '') : text;
+    return c.room.trim().isEmpty
+        ? text.replaceAll(' ()', '').replaceAll('()', '')
+        : text;
   }
 
   /// Start time of [period], from the same table the timetable cards use.
   @visibleForTesting
   static Hm? periodStart(int period) => kPeriodTimes[period]?.start;
 
-  static tz.TZDateTime _nextWeekdayTime({required int weekday, required int hour, required int minute}) {
+  static tz.TZDateTime _nextWeekdayTime(
+      {required int weekday, required int hour, required int minute}) {
     final now = tz.TZDateTime.now(tz.local);
-    var scheduled = tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
+    var scheduled =
+        tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
     final diff = (weekday - scheduled.weekday) % 7;
     scheduled = scheduled.add(Duration(days: diff));
-    if (!scheduled.isAfter(now)) scheduled = scheduled.add(const Duration(days: 7));
+    if (!scheduled.isAfter(now)) {
+      scheduled = scheduled.add(const Duration(days: 7));
+    }
     return scheduled;
   }
 
@@ -219,7 +229,8 @@ abstract class NotificationService {
       time,
       _details,
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
       matchDateTimeComponents: matchComponents,
     );
   }
@@ -234,7 +245,8 @@ abstract class NotificationService {
     await cancelClassReminders(c.id);
     if (!_enabled) return;
 
-    final classStart = _nextWeekdayTime(weekday: weekday, hour: start.$1, minute: start.$2);
+    final classStart =
+        _nextWeekdayTime(weekday: weekday, hour: start.$1, minute: start.$2);
     final morning = _nextWeekdayTime(weekday: weekday, hour: 7, minute: 0);
     var beforeClass = classStart.subtract(const Duration(minutes: 30));
     // Added less than 30 min before the class: start the weekly repeat next week.
@@ -280,7 +292,10 @@ abstract class NotificationService {
     // `update`, not `set(merge)`: after deleteAccount the doc is gone and a
     // merge-set would recreate it as an empty orphan.
     try {
-      await FirebaseFirestore.instance.collection('users').doc(uid).update({'fcmToken': FieldValue.delete()});
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .update({'fcmToken': FieldValue.delete()});
     } catch (e) {
       debugPrint('FCM token unlink skipped: $e');
     }
@@ -294,9 +309,14 @@ abstract class NotificationService {
     final dueDay = DateTime(a.dueDate.year, a.dueDate.month, a.dueDate.day);
     final now = tz.TZDateTime.now(tz.local);
 
-    final threeDaysBefore = tz.TZDateTime.from(dueDay.subtract(const Duration(days: 3)).add(const Duration(hours: 9)), tz.local);
-    final oneDayBefore = tz.TZDateTime.from(dueDay.subtract(const Duration(days: 1)).add(const Duration(hours: 9)), tz.local);
-    final onDueDay = tz.TZDateTime.from(dueDay.add(const Duration(hours: 8)), tz.local);
+    final threeDaysBefore = tz.TZDateTime.from(
+        dueDay.subtract(const Duration(days: 3)).add(const Duration(hours: 9)),
+        tz.local);
+    final oneDayBefore = tz.TZDateTime.from(
+        dueDay.subtract(const Duration(days: 1)).add(const Duration(hours: 9)),
+        tz.local);
+    final onDueDay =
+        tz.TZDateTime.from(dueDay.add(const Duration(hours: 8)), tz.local);
 
     final title = AppStrings.t('notif_assign_rem_title');
     final args = {'subject': a.subject, 'title': a.title};
@@ -304,13 +324,16 @@ abstract class NotificationService {
     // Schedule only the reminders still in the future, concurrently.
     final futures = <Future<void>>[];
     if (threeDaysBefore.isAfter(now)) {
-      futures.add(_schedule(a.id.hashCode, title, AppStrings.t('notif_assign_rem_3d', args), threeDaysBefore));
+      futures.add(_schedule(a.id.hashCode, title,
+          AppStrings.t('notif_assign_rem_3d', args), threeDaysBefore));
     }
     if (oneDayBefore.isAfter(now)) {
-      futures.add(_schedule(a.id.hashCode + 1, title, AppStrings.t('notif_assign_rem_1d', args), oneDayBefore));
+      futures.add(_schedule(a.id.hashCode + 1, title,
+          AppStrings.t('notif_assign_rem_1d', args), oneDayBefore));
     }
     if (onDueDay.isAfter(now)) {
-      futures.add(_schedule(a.id.hashCode + 2, title, AppStrings.t('notif_assign_rem_today', args), onDueDay));
+      futures.add(_schedule(a.id.hashCode + 2, title,
+          AppStrings.t('notif_assign_rem_today', args), onDueDay));
     }
     await Future.wait(futures);
   }

@@ -34,4 +34,5 @@ class LocaleNotifier extends Notifier<String> {
 
 /// Current locale code (e.g. `'ja'`, `'en'`, `'uz'`); change it with
 /// `ref.read(localeProvider.notifier).setLocale(code)`.
-final localeProvider = NotifierProvider<LocaleNotifier, String>(LocaleNotifier.new);
+final localeProvider =
+    NotifierProvider<LocaleNotifier, String>(LocaleNotifier.new);

@@ -30,11 +30,17 @@ class ResponsiveBody extends StatelessWidget {
   final Widget child;
   final double maxWidth;
   final double? expandedMaxWidth;
-  const ResponsiveBody({super.key, required this.child, this.maxWidth = 900, this.expandedMaxWidth});
+  const ResponsiveBody(
+      {super.key,
+      required this.child,
+      this.maxWidth = 900,
+      this.expandedMaxWidth});
 
   @override
   Widget build(BuildContext context) {
-    final effectiveMaxWidth = context.screenSize == ScreenSize.expanded ? (expandedMaxWidth ?? maxWidth * 1.3) : maxWidth;
+    final effectiveMaxWidth = context.screenSize == ScreenSize.expanded
+        ? (expandedMaxWidth ?? maxWidth * 1.3)
+        : maxWidth;
     return Center(
       child: ConstrainedBox(
         constraints: BoxConstraints(maxWidth: effectiveMaxWidth),

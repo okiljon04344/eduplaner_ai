@@ -9,13 +9,15 @@ abstract class FunctionsService {
   static final FirebaseFunctions _instance = () {
     final f = FirebaseFunctions.instanceFor(region: 'asia-northeast1');
     // Emulator auth tokens are rejected by production, so use the local emulator.
-    if (const bool.fromEnvironment('USE_EMULATOR')) f.useFunctionsEmulator('localhost', 5001);
+    if (const bool.fromEnvironment('USE_EMULATOR')) {
+      f.useFunctionsEmulator('localhost', 5001);
+    }
     return f;
   }();
   static const Duration timeout = Duration(seconds: 120);
 
-  static HttpsCallable callable(String name) =>
-      _instance.httpsCallable(name, options: HttpsCallableOptions(timeout: timeout));
+  static HttpsCallable callable(String name) => _instance.httpsCallable(name,
+      options: HttpsCallableOptions(timeout: timeout));
 
   /// Localized message for the error codes any callable can raise
   /// (auth/timeout/offline/server). Call sites check their own codes first.

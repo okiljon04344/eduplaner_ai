@@ -20,13 +20,17 @@ class AssignmentsRepository {
 
   /// Writes the editable fields but never the `ai*` ones, which [saveAiAnalysis]
   /// owns, so a stale model can't erase a fresher AI check.
-  Future<void> update(AssignmentModel model) async =>
-      _col.doc(model.id).update(model.toFirestore()..removeWhere((k, _) => k.startsWith('ai')));
+  Future<void> update(AssignmentModel model) async => _col
+      .doc(model.id)
+      .update(model.toFirestore()..removeWhere((k, _) => k.startsWith('ai')));
   Future<void> delete(String id) async => _col.doc(id).delete();
 
   /// Writes status and progress in one update so they are never out of sync.
-  Future<void> updateStatusAndProgress(String id, AssignmentStatus status, double progress) async =>
-      _col.doc(id).update({'status': status.firestoreValue, 'progress': progress});
+  Future<void> updateStatusAndProgress(
+          String id, AssignmentStatus status, double progress) async =>
+      _col
+          .doc(id)
+          .update({'status': status.firestoreValue, 'progress': progress});
 
   /// Forwards the submitted file (never stored) to `analyzeAssignmentSubmission`
   /// for an AI review.
@@ -49,8 +53,13 @@ class AssignmentsRepository {
       });
       return Map<String, dynamic>.from(result.data);
     } on FirebaseFunctionsException catch (e) {
-      if (e.code == 'invalid-argument') throw Exception(e.message ?? AppStrings.t('err_invalid_file'));
-      if (e.code == 'unauthenticated' || e.code == 'deadline-exceeded' || e.code == 'unavailable' || e.code == 'resource-exhausted') {
+      if (e.code == 'invalid-argument') {
+        throw Exception(e.message ?? AppStrings.t('err_invalid_file'));
+      }
+      if (e.code == 'unauthenticated' ||
+          e.code == 'deadline-exceeded' ||
+          e.code == 'unavailable' ||
+          e.code == 'resource-exhausted') {
         throw Exception(FunctionsService.describeError(e));
       }
       throw Exception(AppStrings.t('err_assignment_check_failed'));

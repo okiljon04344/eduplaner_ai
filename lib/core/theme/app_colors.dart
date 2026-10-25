@@ -44,12 +44,17 @@ abstract class AppColors {
   static Color histText = darkHistText;
   static Color histDot = darkHistDot;
 
-  static LinearGradient get heroHomeGradient => isDark ? darkHeroHomeGradient : lightHeroHomeGradient;
-  static LinearGradient get heroScheduleGradient => isDark ? darkHeroScheduleGradient : lightHeroScheduleGradient;
-  static LinearGradient get heroTasksGradient => isDark ? darkHeroTasksGradient : lightHeroTasksGradient;
+  static LinearGradient get heroHomeGradient =>
+      isDark ? darkHeroHomeGradient : lightHeroHomeGradient;
+  static LinearGradient get heroScheduleGradient =>
+      isDark ? darkHeroScheduleGradient : lightHeroScheduleGradient;
+  static LinearGradient get heroTasksGradient =>
+      isDark ? darkHeroTasksGradient : lightHeroTasksGradient;
 
-  static List<BoxShadow> get cardShadow => isDark ? darkCardShadow : lightCardShadow;
-  static List<BoxShadow> get heroCardShadow => isDark ? darkHeroCardShadow : lightHeroCardShadow;
+  static List<BoxShadow> get cardShadow =>
+      isDark ? darkCardShadow : lightCardShadow;
+  static List<BoxShadow> get heroCardShadow =>
+      isDark ? darkHeroCardShadow : lightHeroCardShadow;
 
   static Color get cardSurface => isDark ? surfaceVar : surface;
   static Color get cardStroke => border;
@@ -62,19 +67,19 @@ abstract class AppColors {
     if (_brightness == value) return;
     _brightness = value;
     final isDarkMode = value == Brightness.dark;
-    
+
     bgDeep = isDarkMode ? darkBgDeep : lightBgDeep;
     background = isDarkMode ? darkBackground : lightBackground;
     surface = isDarkMode ? darkSurface : lightSurface;
     surfaceVar = isDarkMode ? darkSurfaceVar : lightSurfaceVar;
     bgInput = isDarkMode ? darkBgInput : lightBgInput;
     bgLayer = isDarkMode ? darkBgLayer : lightBgLayer;
-    
+
     textPrimary = isDarkMode ? darkTextPrimary : lightTextPrimary;
     textSecondary = isDarkMode ? darkTextSecondary : lightTextSecondary;
     textMuted = isDarkMode ? darkTextMuted : lightTextMuted;
     textOnHero = isDarkMode ? Colors.white : lightTextPrimary;
-    
+
     border = isDarkMode ? darkBorder : lightBorder;
     borderLight = isDarkMode ? darkBorderLight : lightBorderLight;
     cardBg = isDarkMode ? darkCardBg : lightCardBg;
@@ -84,9 +89,10 @@ abstract class AppColors {
     glassBorder = isDarkMode ? darkGlassBorder : lightGlassBorder;
     navBg = isDarkMode ? darkNavBg : lightNavBg;
     navBorder = isDarkMode ? darkNavBorder : lightNavBorder;
-    checkboxUnchecked = isDarkMode ? darkCheckboxUnchecked : lightCheckboxUnchecked;
+    checkboxUnchecked =
+        isDarkMode ? darkCheckboxUnchecked : lightCheckboxUnchecked;
     iconButtonBg = isDarkMode ? darkIconButtonBg : lightIconButtonBg;
-    
+
     progText = isDarkMode ? darkProgText : lightProgText;
     progDot = isDarkMode ? darkProgDot : lightProgDot;
     mathText = isDarkMode ? darkMathText : lightMathText;
@@ -300,7 +306,8 @@ abstract class AppColors {
       isDark ? gradientAvatar : gradientAvatarLight;
 
   /// Accent for small links and timestamps.
-  static Color get accentText => isDark ? const Color(0xFF06D6A0) : const Color(0xFF047857);
+  static Color get accentText =>
+      isDark ? const Color(0xFF06D6A0) : const Color(0xFF047857);
 
   /// Green brand panel background (login/onboarding heroes). Kept apart from
   /// [aiBannerGradient]/[gradientDark], whose warm-brown tokens are meant for

@@ -100,7 +100,8 @@ class AssignmentModel with _$AssignmentModel {
     DateTime? aiAnalyzedAt,
   }) = _AssignmentModel;
 
-  factory AssignmentModel.fromJson(Map<String, dynamic> json) => _$AssignmentModelFromJson(json);
+  factory AssignmentModel.fromJson(Map<String, dynamic> json) =>
+      _$AssignmentModelFromJson(json);
 
   factory AssignmentModel.fromFirestore(DocumentSnapshot doc) {
     final d = doc.data() as Map<String, dynamic>? ?? {};
@@ -111,12 +112,15 @@ class AssignmentModel with _$AssignmentModel {
       subject: d['subject'] as String? ?? '',
       description: d['description'] as String?,
       dueDate: (d['dueDate'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      status: AssignmentStatus.fromString(d['status'] as String? ?? 'notStarted'),
+      status:
+          AssignmentStatus.fromString(d['status'] as String? ?? 'notStarted'),
       difficulty: (d['difficulty'] as num?)?.toInt() ?? 1,
       progress: (d['progress'] as num?)?.toDouble() ?? 0.0,
       createdAt: (d['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       aiCompletionPercent: (d['aiCompletionPercent'] as num?)?.toDouble(),
-      aiMissingParts: (d['aiMissingParts'] as List<dynamic>? ?? []).map((e) => e.toString()).toList(),
+      aiMissingParts: (d['aiMissingParts'] as List<dynamic>? ?? [])
+          .map((e) => e.toString())
+          .toList(),
       aiAdvice: d['aiAdvice'] as String?,
       aiAnalyzedAt: (d['aiAnalyzedAt'] as Timestamp?)?.toDate(),
     );
@@ -137,7 +141,8 @@ class AssignmentModel with _$AssignmentModel {
         'aiCompletionPercent': aiCompletionPercent,
         'aiMissingParts': aiMissingParts,
         'aiAdvice': aiAdvice,
-        'aiAnalyzedAt': aiAnalyzedAt == null ? null : Timestamp.fromDate(aiAnalyzedAt!),
+        'aiAnalyzedAt':
+            aiAnalyzedAt == null ? null : Timestamp.fromDate(aiAnalyzedAt!),
       };
 
   /// The single status/progress rule, applied wherever either changes.
@@ -176,11 +181,14 @@ class AssignmentModel with _$AssignmentModel {
   // Finished work is never overdue or due today: show the plain date, muted.
   bool get _isDone => status == AssignmentStatus.completed;
 
-  String get dueDateLabel =>
-      _isDone ? DateFormat.MMMd(AppStrings.currentLocale).format(dueDate) : DateHelper.dueDateLabel(dueDate);
+  String get dueDateLabel => _isDone
+      ? DateFormat.MMMd(AppStrings.currentLocale).format(dueDate)
+      : DateHelper.dueDateLabel(dueDate);
 
-  Color get dueDateColor => _isDone ? AppColors.textMuted : DateHelper.dueDateColor(dueDate);
+  Color get dueDateColor =>
+      _isDone ? AppColors.textMuted : DateHelper.dueDateColor(dueDate);
 
-  Color get dueDateBgColor =>
-      _isDone ? AppColors.textMuted.withValues(alpha: 0.12) : DateHelper.dueDateBgColor(dueDate);
+  Color get dueDateBgColor => _isDone
+      ? AppColors.textMuted.withValues(alpha: 0.12)
+      : DateHelper.dueDateBgColor(dueDate);
 }

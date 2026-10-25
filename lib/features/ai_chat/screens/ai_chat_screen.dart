@@ -46,7 +46,9 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
     // The chat state resets on an account change; reload the new account's
     // history since this screen stays mounted.
     ref.listen(currentUserProvider.select((u) => u?.uid), (prev, next) {
-      if (next != null && next != prev) ref.read(chatProvider.notifier).loadHistory();
+      if (next != null && next != prev) {
+        ref.read(chatProvider.notifier).loadHistory();
+      }
     });
 
     final selectedBot = botById(ref.watch(selectedBotIdProvider));

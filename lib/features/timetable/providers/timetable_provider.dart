@@ -17,7 +17,10 @@ final timetableStreamProvider = StreamProvider<List<ClassModel>>((ref) {
   if (uid == null) return const Stream.empty();
   final groupId = ref.watch(myGroupProvider).valueOrNull?.id;
   var synced = false;
-  return ref.watch(timetableRepositoryProvider).watch(uid, groupId: groupId).map((classes) {
+  return ref
+      .watch(timetableRepositoryProvider)
+      .watch(uid, groupId: groupId)
+      .map((classes) {
     if (!synced) {
       synced = true;
       unawaited(NotificationService.syncAllReminders(classes: classes));
@@ -27,7 +30,8 @@ final timetableStreamProvider = StreamProvider<List<ClassModel>>((ref) {
 });
 
 /// Classes indexed as `{dayOfWeek: {period: ClassModel}}` for O(1) lookup.
-final timetableGridProvider = Provider<Map<String, Map<int, ClassModel>>>((ref) {
+final timetableGridProvider =
+    Provider<Map<String, Map<int, ClassModel>>>((ref) {
   final classes = ref.watch(timetableStreamProvider).valueOrNull ?? [];
   final grid = <String, Map<int, ClassModel>>{};
   for (final c in classes) {
@@ -68,7 +72,9 @@ class TimetableNotifier extends AsyncNotifier<void> {
     final bool occupied;
     try {
       occupied = await _repo.slotOccupied(
-        _uid, model.dayOfWeek, model.period,
+        _uid,
+        model.dayOfWeek,
+        model.period,
         excludeId: excludeId,
         groupId: groupId,
       );
@@ -77,7 +83,8 @@ class TimetableNotifier extends AsyncNotifier<void> {
       return AppStrings.t(saveFailedKey);
     }
     if (occupied) {
-      return AppStrings.t('err_slot_occupied', {'day': weekdayLabel(model.dayOfWeek), 'period': model.period});
+      return AppStrings.t('err_slot_occupied',
+          {'day': weekdayLabel(model.dayOfWeek), 'period': model.period});
     }
     state = const AsyncLoading();
     state = await AsyncValue.guard(write);
@@ -111,7 +118,9 @@ class TimetableNotifier extends AsyncNotifier<void> {
     // Use the group the user is in now. A class tagged with a group they have
     // since left is detached first: querying that group would be denied by the rules.
     final groupId = _groupId;
-    final toSave = model.groupId != null && model.groupId != groupId ? model.copyWith(groupId: null) : model;
+    final toSave = model.groupId != null && model.groupId != groupId
+        ? model.copyWith(groupId: null)
+        : model;
     return _saveClass(
       model: toSave,
       excludeId: toSave.id,
@@ -155,7 +164,9 @@ class TimetableNotifier extends AsyncNotifier<void> {
         reportedBy: _uid.isEmpty ? null : _uid,
       ),
     );
-    return state.hasError ? AppStrings.t('err_class_status_update_failed') : null;
+    return state.hasError
+        ? AppStrings.t('err_class_status_update_failed')
+        : null;
   }
 }
 

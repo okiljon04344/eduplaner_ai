@@ -18,10 +18,15 @@ void showAssignmentErrorToast(BuildContext context, String message) {
 /// Checkbox behaviour shared by the assignments list and the home quick-view:
 /// completed becomes notStarted, anything else becomes completed. A failed
 /// write shows an error toast.
-Future<void> toggleAssignmentDone(BuildContext context, WidgetRef ref, AssignmentModel assignment) async {
+Future<void> toggleAssignmentDone(
+    BuildContext context, WidgetRef ref, AssignmentModel assignment) async {
   final next = assignment.status == AssignmentStatus.completed
       ? AssignmentStatus.notStarted
       : AssignmentStatus.completed;
-  final error = await ref.read(assignmentsNotifierProvider.notifier).updateStatus(assignment, next);
-  if (error != null && context.mounted) showAssignmentErrorToast(context, error);
+  final error = await ref
+      .read(assignmentsNotifierProvider.notifier)
+      .updateStatus(assignment, next);
+  if (error != null && context.mounted) {
+    showAssignmentErrorToast(context, error);
+  }
 }

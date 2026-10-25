@@ -39,19 +39,24 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
   /// names vary by school. Combines the built-in subjects with those already in
   /// the student's timetable and assignments.
   List<String> _subjectSuggestions() {
-    final fromClasses = (ref.read(timetableStreamProvider).valueOrNull ?? []).map((c) => c.subject);
-    final fromAssignments = (ref.read(assignmentsStreamProvider).valueOrNull ?? []).map((a) => a.subject);
-    return {...SubjectColors.all, ...fromClasses, ...fromAssignments}.where((s) => s.trim().isNotEmpty).toList();
+    final fromClasses = (ref.read(timetableStreamProvider).valueOrNull ?? [])
+        .map((c) => c.subject);
+    final fromAssignments =
+        (ref.read(assignmentsStreamProvider).valueOrNull ?? [])
+            .map((a) => a.subject);
+    return {...SubjectColors.all, ...fromClasses, ...fromAssignments}
+        .where((s) => s.trim().isNotEmpty)
+        .toList();
   }
 
   Future<void> _generate() async {
     if (_subjectCtrl.text.trim().isEmpty) return;
     FocusScope.of(context).unfocus();
     await ref.read(quizNotifierProvider.notifier).generate(
-      subject: _subjectCtrl.text.trim(),
-      topic: _topicCtrl.text.trim(),
-      useSearch: _useSearch,
-    );
+          subject: _subjectCtrl.text.trim(),
+          topic: _topicCtrl.text.trim(),
+          useSearch: _useSearch,
+        );
   }
 
   @override
@@ -104,7 +109,10 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                     itemCount: questions.length,
                     // Keyed by question: otherwise regenerating reuses the old
                     // _QuizCardState and shows the previous answers pre-selected.
-                    itemBuilder: (context, i) => _QuizCard(key: ObjectKey(questions[i]), index: i, question: questions[i]),
+                    itemBuilder: (context, i) => _QuizCard(
+                        key: ObjectKey(questions[i]),
+                        index: i,
+                        question: questions[i]),
                   );
                 },
               ),
@@ -143,7 +151,11 @@ class _ConfigPanel extends StatelessWidget {
         children: [
           Text(
             AppStrings.t('quiz_subject'),
-            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.5, color: AppColors.textSecondary),
+            style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.5,
+                color: AppColors.textSecondary),
           ),
           const SizedBox(height: 6),
           Autocomplete<String>(
@@ -167,7 +179,11 @@ class _ConfigPanel extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             AppStrings.t('quiz_topic'),
-            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.5, color: AppColors.textSecondary),
+            style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.5,
+                color: AppColors.textSecondary),
           ),
           const SizedBox(height: 6),
           AppInputField(
@@ -186,11 +202,15 @@ class _ConfigPanel extends StatelessWidget {
             child: SwitchListTile.adaptive(
               value: useSearch,
               onChanged: isLoading ? null : onUseSearchChanged,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
               activeThumbColor: AppColors.primary,
               title: Text(
                 AppStrings.t('quiz_use_search'),
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+                style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary),
               ),
               subtitle: Text(
                 AppStrings.t('quiz_use_search_sub'),
@@ -204,9 +224,15 @@ class _ConfigPanel extends StatelessWidget {
             child: ElevatedButton.icon(
               onPressed: isLoading ? null : onGenerate,
               icon: isLoading
-                  ? SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.textSecondary))
+                  ? SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: AppColors.textSecondary))
                   : const Icon(Icons.auto_awesome, size: 18),
-              label: Text(isLoading ? AppStrings.t('quiz_generating') : AppStrings.t('quiz_generate_btn')),
+              label: Text(isLoading
+                  ? AppStrings.t('quiz_generating')
+                  : AppStrings.t('quiz_generate_btn')),
             ),
           ),
         ],
@@ -257,7 +283,8 @@ class _EmptyState extends StatelessWidget {
             Text(
               AppStrings.t('quiz_empty'),
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 13, color: AppColors.textSecondary, height: 1.5),
+              style: TextStyle(
+                  fontSize: 13, color: AppColors.textSecondary, height: 1.5),
             ),
           ],
         ),
@@ -279,12 +306,14 @@ class _ErrorState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.error_outline_rounded, size: 40, color: AppColors.danger),
+            const Icon(Icons.error_outline_rounded,
+                size: 40, color: AppColors.danger),
             const SizedBox(height: 12),
             Text(
               message,
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 13, color: AppColors.textPrimary, height: 1.5),
+              style: TextStyle(
+                  fontSize: 13, color: AppColors.textPrimary, height: 1.5),
             ),
             const SizedBox(height: 16),
             OutlinedButton.icon(
@@ -326,7 +355,8 @@ class _QuizCardState extends State<_QuizCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Q${widget.index + 1}. ${widget.question.question}', style: AppTextStyles.headMD),
+          Text('Q${widget.index + 1}. ${widget.question.question}',
+              style: AppTextStyles.headMD),
           const SizedBox(height: 12),
           ...List.generate(widget.question.choices.length, (i) {
             final isCorrect = i == widget.question.answerIndex;
@@ -338,11 +368,13 @@ class _QuizCardState extends State<_QuizCard> {
               if (isCorrect) {
                 bg = AppColors.successLight;
                 borderColor = AppColors.success;
-                trailing = const Icon(Icons.check_circle, size: 18, color: AppColors.success);
+                trailing = const Icon(Icons.check_circle,
+                    size: 18, color: AppColors.success);
               } else if (isSelected) {
                 bg = AppColors.dangerLight;
                 borderColor = AppColors.danger;
-                trailing = const Icon(Icons.cancel, size: 18, color: AppColors.danger);
+                trailing =
+                    const Icon(Icons.cancel, size: 18, color: AppColors.danger);
               }
             }
             return Padding(
@@ -351,12 +383,18 @@ class _QuizCardState extends State<_QuizCard> {
                 onTap: answered ? null : () => setState(() => _selected = i),
                 child: Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                  decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(12), border: Border.all(color: borderColor)),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  decoration: BoxDecoration(
+                      color: bg,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: borderColor)),
                   child: Row(
                     children: [
                       Expanded(
-                        child: Text(widget.question.choices[i], style: TextStyle(fontSize: 13, color: AppColors.textPrimary)),
+                        child: Text(widget.question.choices[i],
+                            style: TextStyle(
+                                fontSize: 13, color: AppColors.textPrimary)),
                       ),
                       if (trailing != null) trailing,
                     ],
@@ -372,15 +410,21 @@ class _QuizCardState extends State<_QuizCard> {
               decoration: BoxDecoration(
                 color: AppColors.primaryLight.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.primaryMid.withValues(alpha: 0.15)),
+                border: Border.all(
+                    color: AppColors.primaryMid.withValues(alpha: 0.15)),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.lightbulb_outline, size: 16, color: AppColors.accentText),
+                  Icon(Icons.lightbulb_outline,
+                      size: 16, color: AppColors.accentText),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: Text(widget.question.explanation, style: TextStyle(fontSize: 12, height: 1.5, color: AppColors.textSecondary)),
+                    child: Text(widget.question.explanation,
+                        style: TextStyle(
+                            fontSize: 12,
+                            height: 1.5,
+                            color: AppColors.textSecondary)),
                   ),
                 ],
               ),

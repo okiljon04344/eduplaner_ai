@@ -20,12 +20,15 @@ class ChatBubble extends StatelessWidget {
     final bubble = Padding(
       padding: const EdgeInsets.only(bottom: 14),
       child: Column(
-        crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        crossAxisAlignment:
+            isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
           if (isUser)
             _buildUserBubble(context)
           else if (canReport)
-            GestureDetector(onLongPress: () => _report(context), child: _buildAssistantBubble(context))
+            GestureDetector(
+                onLongPress: () => _report(context),
+                child: _buildAssistantBubble(context))
           else
             _buildAssistantBubble(context),
           Padding(
@@ -46,9 +49,11 @@ class ChatBubble extends StatelessWidget {
                   IconButton(
                     onPressed: () => _report(context),
                     tooltip: AppStrings.t('ai_report_title'),
-                    icon: Icon(Icons.outlined_flag, size: 14, color: AppColors.textMuted),
+                    icon: Icon(Icons.outlined_flag,
+                        size: 14, color: AppColors.textMuted),
                     visualDensity: VisualDensity.compact,
-                    constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                    constraints:
+                        const BoxConstraints(minWidth: 32, minHeight: 32),
                     padding: EdgeInsets.zero,
                   ),
               ],
@@ -58,11 +63,14 @@ class ChatBubble extends StatelessWidget {
       ),
     );
     // Animate only fresh messages: replaying on rebuild or scroll-back janks scrolling.
-    if (DateTime.now().difference(message.timestamp) >= const Duration(seconds: 3)) return bubble;
+    final isFresh = DateTime.now().difference(message.timestamp) <
+        const Duration(seconds: 3);
+    if (!isFresh) return bubble;
     return bubble
         .animate()
         .fadeIn(duration: 300.ms, curve: Curves.easeOutExpo)
-        .slideY(begin: 0.12, end: 0, duration: 300.ms, curve: Curves.easeOutExpo);
+        .slideY(
+            begin: 0.12, end: 0, duration: 300.ms, curve: Curves.easeOutExpo);
   }
 
   void _report(BuildContext context) => confirmAndReportAiContent(
@@ -77,7 +85,8 @@ class ChatBubble extends StatelessWidget {
     return Align(
       alignment: Alignment.centerRight,
       child: Container(
-        constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width * 0.75),
+        constraints:
+            BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width * 0.75),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
           gradient: AppColors.userBubbleGradient,
@@ -115,7 +124,9 @@ class ChatBubble extends StatelessWidget {
             gradient: AppColors.gradientPrimary,
             shape: BoxShape.circle,
             boxShadow: [
-              BoxShadow(color: AppColors.primaryMid.withValues(alpha: 0.5), blurRadius: 14),
+              BoxShadow(
+                  color: AppColors.primaryMid.withValues(alpha: 0.5),
+                  blurRadius: 14),
             ],
           ),
           alignment: Alignment.center,
@@ -124,7 +135,8 @@ class ChatBubble extends StatelessWidget {
         const SizedBox(width: 8),
         Flexible(
           child: Container(
-            constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width * 0.7),
+            constraints: BoxConstraints(
+                maxWidth: MediaQuery.sizeOf(context).width * 0.7),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
               color: AppColors.bgLayer,
@@ -156,7 +168,8 @@ class ChatBubble extends StatelessWidget {
                         message.content,
                         // SelectableText owns long-press (text selection), so the
                         // report action is also offered in its context menu.
-                        contextMenuBuilder: (ctx, state) => AdaptiveTextSelectionToolbar.buttonItems(
+                        contextMenuBuilder: (ctx, state) =>
+                            AdaptiveTextSelectionToolbar.buttonItems(
                           anchors: state.contextMenuAnchors,
                           buttonItems: [
                             ...state.contextMenuButtonItems,

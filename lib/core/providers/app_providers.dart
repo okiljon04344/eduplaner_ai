@@ -11,14 +11,20 @@ import '../../features/timetable/repositories/timetable_repository.dart';
 final shellTabIndexProvider = StateProvider<int>((ref) => 0);
 
 // Repositories are plain Dart objects; providing them lets tests override them.
-final authRepositoryProvider = Provider<AuthRepository>((_) => AuthRepository());
+final authRepositoryProvider =
+    Provider<AuthRepository>((_) => AuthRepository());
 
-final timetableRepositoryProvider = Provider<TimetableRepository>((_) => TimetableRepository());
+final timetableRepositoryProvider =
+    Provider<TimetableRepository>((_) => TimetableRepository());
 
-final assignmentsRepositoryProvider = Provider<AssignmentsRepository>((_) => AssignmentsRepository());
+final assignmentsRepositoryProvider =
+    Provider<AssignmentsRepository>((_) => AssignmentsRepository());
 
-final chatRepositoryProvider = Provider<ChatRepository>((_) => ChatRepository());
+final chatRepositoryProvider =
+    Provider<ChatRepository>((_) => ChatRepository());
 
-final groupsRepositoryProvider = Provider<GroupsRepository>((_) => GroupsRepository());
+final groupsRepositoryProvider =
+    Provider<GroupsRepository>((_) => GroupsRepository());
 
-final quizRepositoryProvider = Provider<QuizRepository>((_) => QuizRepository());
+final quizRepositoryProvider =
+    Provider<QuizRepository>((_) => QuizRepository());

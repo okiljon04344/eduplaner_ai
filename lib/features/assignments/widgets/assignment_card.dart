@@ -17,136 +17,169 @@ class AssignmentCard extends ConsumerWidget {
     final isCompleted = assignment.status == AssignmentStatus.completed;
     final subjectStyle = SubjectColors.of(assignment.subject);
 
-
-    return RepaintBoundary(child: GestureDetector(
-        onTap: () => showAssignmentDetailSheet(context, ref, assignment),
-        child: Container(
-          clipBehavior: Clip.hardEdge,
-          decoration: BoxDecoration(
-            color: AppColors.cardSurface,
-            borderRadius: BorderRadius.circular(AppColors.isDark ? 22 : 20),
-            border: Border.all(color: AppColors.cardStroke),
-            boxShadow: AppColors.cardShadow,
-          ),
-          child: Stack(
-            children: [
-              Positioned(
-                top: 0,
-                right: 0,
-                child: IgnorePointer(
-                  child: Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: RadialGradient(
-                        colors: [assignment.dueDateColor.withValues(alpha: 0.08), Colors.transparent],
-                      ),
+    return RepaintBoundary(
+        child: GestureDetector(
+      onTap: () => showAssignmentDetailSheet(context, ref, assignment),
+      child: Container(
+        clipBehavior: Clip.hardEdge,
+        decoration: BoxDecoration(
+          color: AppColors.cardSurface,
+          borderRadius: BorderRadius.circular(AppColors.isDark ? 22 : 20),
+          border: Border.all(color: AppColors.cardStroke),
+          boxShadow: AppColors.cardShadow,
+        ),
+        child: Stack(
+          children: [
+            Positioned(
+              top: 0,
+              right: 0,
+              child: IgnorePointer(
+                child: Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        assignment.dueDateColor.withValues(alpha: 0.08),
+                        Colors.transparent
+                      ],
                     ),
                   ),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    GestureDetector(
-                      onTap: () => toggleAssignmentDone(context, ref, assignment),
-                      child: Container(
-                        width: 28,
-                        height: 28,
-                        margin: const EdgeInsets.only(top: 1),
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: isCompleted
-                                ? AppColors.primaryMid
-                                : (AppColors.isDark
-                                    ? Colors.white.withValues(alpha: 0.15)
-                                    : AppColors.checkboxUnchecked),
-                            width: 2,
-                          ),
-                          gradient: isCompleted ? AppColors.gradientPrimary : null,
-                          boxShadow: isCompleted && AppColors.isDark
-                              ? [BoxShadow(color: AppColors.primaryMid.withValues(alpha: 0.6), blurRadius: 12)]
-                              : null,
-                        ),
-                        child: isCompleted ? const Icon(Icons.check, size: 14, color: AppColors.onPrimary) : null,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            assignment.title,
-                            style: TextStyle(
-                              fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP'],
-                              fontSize: 14, fontWeight: FontWeight.w800, letterSpacing: -0.2,
-                              color: isCompleted ? AppColors.textMuted : AppColors.textPrimary,
-                              decoration: isCompleted ? TextDecoration.lineThrough : TextDecoration.none,
-                            ),
-                          ),
-                          const SizedBox(height: 3),
-                          Text(
-                            assignment.subject,
-                            style: TextStyle(
-                              fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP'],
-                              fontSize: 12, fontWeight: FontWeight.w500,
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          ProgressBarRow(progress: assignment.progress, color: subjectStyle.dot),
-                          const SizedBox(height: 5),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                AppStrings.t('as_pct_done').replaceAll('{pct}', '${(assignment.progress * 100).round()}'),
-                                style: TextStyle(
-                                  fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP'],
-                                  fontSize: 10, fontWeight: FontWeight.w600,
-                                  color: AppColors.textMuted,
-                                ),
-                              ),
-                              Text(
-                                assignment.dueDateLabel,
-                                style: TextStyle(
-                                  fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP'],
-                                  fontSize: 10, fontWeight: FontWeight.w700, color: assignment.dueDateColor,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  GestureDetector(
+                    onTap: () => toggleAssignmentDone(context, ref, assignment),
+                    child: Container(
+                      width: 28,
+                      height: 28,
+                      margin: const EdgeInsets.only(top: 1),
+                      alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: assignment.status.bgColor,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: assignment.status.borderColor),
-                      ),
-                      child: Text(
-                        assignment.status.label,
-                        style: TextStyle(
-                          fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP'],
-                          fontSize: 10, fontWeight: FontWeight.w700, color: assignment.status.textColor,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: isCompleted
+                              ? AppColors.primaryMid
+                              : (AppColors.isDark
+                                  ? Colors.white.withValues(alpha: 0.15)
+                                  : AppColors.checkboxUnchecked),
+                          width: 2,
                         ),
+                        gradient:
+                            isCompleted ? AppColors.gradientPrimary : null,
+                        boxShadow: isCompleted && AppColors.isDark
+                            ? [
+                                BoxShadow(
+                                    color: AppColors.primaryMid
+                                        .withValues(alpha: 0.6),
+                                    blurRadius: 12)
+                              ]
+                            : null,
+                      ),
+                      child: isCompleted
+                          ? const Icon(Icons.check,
+                              size: 14, color: AppColors.onPrimary)
+                          : null,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          assignment.title,
+                          style: TextStyle(
+                            fontFamily: 'Plus Jakarta Sans',
+                            fontFamilyFallback: const ['NotoSansJP'],
+                            fontSize: 14,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.2,
+                            color: isCompleted
+                                ? AppColors.textMuted
+                                : AppColors.textPrimary,
+                            decoration: isCompleted
+                                ? TextDecoration.lineThrough
+                                : TextDecoration.none,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          assignment.subject,
+                          style: TextStyle(
+                            fontFamily: 'Plus Jakarta Sans',
+                            fontFamilyFallback: const ['NotoSansJP'],
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        ProgressBarRow(
+                            progress: assignment.progress,
+                            color: subjectStyle.dot),
+                        const SizedBox(height: 5),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              AppStrings.t('as_pct_done').replaceAll('{pct}',
+                                  '${(assignment.progress * 100).round()}'),
+                              style: TextStyle(
+                                fontFamily: 'Plus Jakarta Sans',
+                                fontFamilyFallback: const ['NotoSansJP'],
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textMuted,
+                              ),
+                            ),
+                            Text(
+                              assignment.dueDateLabel,
+                              style: TextStyle(
+                                fontFamily: 'Plus Jakarta Sans',
+                                fontFamilyFallback: const ['NotoSansJP'],
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                                color: assignment.dueDateColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: assignment.status.bgColor,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: assignment.status.borderColor),
+                    ),
+                    child: Text(
+                      assignment.status.label,
+                      style: TextStyle(
+                        fontFamily: 'Plus Jakarta Sans',
+                        fontFamilyFallback: const ['NotoSansJP'],
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: assignment.status.textColor,
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
-      ));
+      ),
+    ));
   }
 }

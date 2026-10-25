@@ -28,7 +28,8 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
   @override
   Widget build(BuildContext context) {
     final all = ref.watch(assignmentsStreamProvider).valueOrNull ?? [];
-    final doneCount = all.where((a) => a.status == AssignmentStatus.completed).length;
+    final doneCount =
+        all.where((a) => a.status == AssignmentStatus.completed).length;
     final progressPct = all.isEmpty ? 0.0 : doneCount / all.length;
     final weekly = ref.watch(weeklyProgressProvider);
 
@@ -67,16 +68,18 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
                   focusedDay: _focusedDay,
                   selectedDay: _selectedDay,
                   onDaySelected: (selected, focused) => setState(() {
-                    _selectedDay = _sameDay(selected, _selectedDay ?? DateTime(0))
-                        ? null // tap same day to deselect
-                        : selected;
+                    _selectedDay =
+                        _sameDay(selected, _selectedDay ?? DateTime(0))
+                            ? null // tap same day to deselect
+                            : selected;
                     _focusedDay = focused;
                   }),
                   onFocusedDayChanged: (focused) =>
                       setState(() => _focusedDay = focused),
                 ),
               ),
-            if (!_calendarMode) const SliverToBoxAdapter(child: FilterChipsRow()),
+            if (!_calendarMode)
+              const SliverToBoxAdapter(child: FilterChipsRow()),
             if (_calendarMode && _selectedDay != null)
               SliverToBoxAdapter(
                 child: Padding(
@@ -193,7 +196,8 @@ class _TasksHeader extends StatelessWidget {
                         stops: [0.0, 0.7],
                       )
                     : null,
-                color: isDark ? null : AppColors.primary.withValues(alpha: 0.06),
+                color:
+                    isDark ? null : AppColors.primary.withValues(alpha: 0.06),
               ),
             ),
           ),
@@ -211,11 +215,15 @@ class _TasksHeader extends StatelessWidget {
                     onTap: onToggleCalendar,
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 220),
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 5),
                       decoration: BoxDecoration(
-                        color: accent.withValues(alpha: calendarMode ? 0.25 : (isDark ? 0.05 : 0.12)),
+                        color: accent.withValues(
+                            alpha:
+                                calendarMode ? 0.25 : (isDark ? 0.05 : 0.12)),
                         border: Border.all(
-                          color: accent.withValues(alpha: calendarMode ? 0.6 : 0.3),
+                          color: accent.withValues(
+                              alpha: calendarMode ? 0.6 : 0.3),
                         ),
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -223,13 +231,17 @@ class _TasksHeader extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
-                            calendarMode ? Icons.list_rounded : Icons.calendar_month_outlined,
+                            calendarMode
+                                ? Icons.list_rounded
+                                : Icons.calendar_month_outlined,
                             size: 13,
                             color: accent,
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            calendarMode ? AppStrings.t('as_list_view') : AppStrings.t('as_calendar_view'),
+                            calendarMode
+                                ? AppStrings.t('as_list_view')
+                                : AppStrings.t('as_calendar_view'),
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
@@ -263,15 +275,17 @@ class _TasksHeader extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 14),
-
               Container(
                 // Full width, or the track shrink-wraps the fill and is never visible.
                 width: double.infinity,
                 height: 8,
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0x12FFFFFF) : AppColors.primary.withValues(alpha: 0.1),
+                  color: isDark
+                      ? const Color(0x12FFFFFF)
+                      : AppColors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(4),
-                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.1)),
+                  border: Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.1)),
                 ),
                 clipBehavior: Clip.hardEdge,
                 // Keeps the bar's per-frame repaint off the header's radial gradient.
@@ -290,10 +304,9 @@ class _TasksHeader extends StatelessWidget {
                   ),
                 ),
               ),
-
               const SizedBox(height: 14),
-
-              _WeeklyProgressBar(completed: weekly.completed, total: weekly.total),
+              _WeeklyProgressBar(
+                  completed: weekly.completed, total: weekly.total),
             ],
           ),
         ],
@@ -312,14 +325,17 @@ class _WeeklyProgressBar extends StatelessWidget {
     final pct = total == 0 ? 0.0 : completed / total;
     final pctText = '${(pct * 100).round()}%';
     final isDark = AppColors.isDark;
-    final labelColor = AppColors.isDark ? AppColors.primaryLight : AppColors.primaryDark;
+    final labelColor =
+        AppColors.isDark ? AppColors.primaryLight : AppColors.primaryDark;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
         color: AppColors.primaryMid.withValues(alpha: isDark ? 0.07 : 0.1),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.primaryMid.withValues(alpha: isDark ? 0.18 : 0.22)),
+        border: Border.all(
+            color:
+                AppColors.primaryMid.withValues(alpha: isDark ? 0.18 : 0.22)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -365,21 +381,22 @@ class _WeeklyProgressBar extends StatelessWidget {
             child: Container(
               width: double.infinity,
               height: 6,
-              color: AppColors.primaryMid.withValues(alpha: isDark ? 0.15 : 0.12),
+              color:
+                  AppColors.primaryMid.withValues(alpha: isDark ? 0.15 : 0.12),
               // Keeps the tween's repaint off the header's radial gradient.
               child: RepaintBoundary(
                 child: AnimatedFractionallySizedBox(
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeOutCubic,
-                    alignment: AlignmentDirectional.centerStart,
-                    widthFactor: pct.clamp(0.0, 1.0),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        gradient: AppColors.gradientPrimary,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeOutCubic,
+                  alignment: AlignmentDirectional.centerStart,
+                  widthFactor: pct.clamp(0.0, 1.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: AppColors.gradientPrimary,
+                      borderRadius: BorderRadius.circular(4),
                     ),
                   ),
+                ),
               ),
             ),
           ),
@@ -437,7 +454,9 @@ class _AssignmentCalendar extends StatelessWidget {
         eventLoader: (day) =>
             eventsByDay[DateTime(day.year, day.month, day.day)] ?? const [],
         calendarFormat: CalendarFormat.month,
-        availableCalendarFormats: {CalendarFormat.month: AppStrings.t('as_month_view')},
+        availableCalendarFormats: {
+          CalendarFormat.month: AppStrings.t('as_month_view')
+        },
         calendarStyle: CalendarStyle(
           outsideDaysVisible: false,
           defaultTextStyle: TextStyle(
@@ -542,14 +561,21 @@ class _AddTaskButton extends StatelessWidget {
                 ? LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [AppColors.primary.withValues(alpha: 0.2), AppColors.primaryDark.withValues(alpha: 0.1)],
+                    colors: [
+                      AppColors.primary.withValues(alpha: 0.2),
+                      AppColors.primaryDark.withValues(alpha: 0.1)
+                    ],
                   )
                 : AppColors.gradientAddTaskLight,
             borderRadius: BorderRadius.circular(isDark ? 20 : 18),
-            border: isDark ? Border.all(color: AppColors.primary.withValues(alpha: 0.3)) : null,
+            border: isDark
+                ? Border.all(color: AppColors.primary.withValues(alpha: 0.3))
+                : null,
             boxShadow: [
               BoxShadow(
-                color: isDark ? AppColors.primary.withValues(alpha: 0.15) : const Color(0x5900B894),
+                color: isDark
+                    ? AppColors.primary.withValues(alpha: 0.15)
+                    : const Color(0x5900B894),
                 blurRadius: isDark ? 20 : 24,
                 offset: isDark ? Offset.zero : const Offset(0, 6),
               ),

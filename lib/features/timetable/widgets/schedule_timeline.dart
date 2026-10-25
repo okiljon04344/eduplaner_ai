@@ -12,15 +12,18 @@ import 'timeline_class_card.dart';
 class ScheduleTimeline extends ConsumerWidget {
   final int selectedDay;
   final DateTime weekStart;
-  const ScheduleTimeline({super.key, required this.selectedDay, required this.weekStart});
+  const ScheduleTimeline(
+      {super.key, required this.selectedDay, required this.weekStart});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final classes = ref.watch(timetableStreamProvider).valueOrNull ?? const <ClassModel>[];
+    final classes =
+        ref.watch(timetableStreamProvider).valueOrNull ?? const <ClassModel>[];
     // Compare against the canonical kanji key, not the localized label from
     // DayTabRow.days, which differs in every non-Japanese locale.
     final day = kWeekdayKanji[selectedDay];
-    final date = DateTime(weekStart.year, weekStart.month, weekStart.day + selectedDay);
+    final date =
+        DateTime(weekStart.year, weekStart.month, weekStart.day + selectedDay);
     final dayClasses = classes.where((c) => c.dayOfWeek == day).toList()
       ..sort((a, b) => a.period.compareTo(b.period));
 
@@ -31,7 +34,9 @@ class ScheduleTimeline extends ConsumerWidget {
       transitionBuilder: (child, animation) => FadeTransition(
         opacity: animation,
         child: SlideTransition(
-          position: Tween<Offset>(begin: const Offset(0, 0.04), end: Offset.zero).animate(animation),
+          position:
+              Tween<Offset>(begin: const Offset(0, 0.04), end: Offset.zero)
+                  .animate(animation),
           child: child,
         ),
       ),
@@ -41,7 +46,8 @@ class ScheduleTimeline extends ConsumerWidget {
               key: ValueKey('list-$selectedDay'),
               padding: const EdgeInsets.fromLTRB(16, 14, 16, 24),
               itemCount: dayClasses.length,
-              itemBuilder: (context, index) => TimelineClassCard(classModel: dayClasses[index], date: date),
+              itemBuilder: (context, index) =>
+                  TimelineClassCard(classModel: dayClasses[index], date: date),
             ),
     );
   }
@@ -63,7 +69,10 @@ class _EmptyDay extends StatelessWidget {
             Text(
               AppStrings.t('tt_no_classes_day'),
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textMuted),
+              style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textMuted),
             ),
           ],
         ),

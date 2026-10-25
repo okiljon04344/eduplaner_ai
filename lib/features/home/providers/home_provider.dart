@@ -15,8 +15,10 @@ String get _fallbackWeakArea => AppStrings.t('weak_fallback');
 String get _noAssignmentsWeakArea => AppStrings.t('weak_no_assignments');
 
 // Keyed per locale and day: switching language re-fetches, a new day starts fresh.
-String _studyTipCacheKey(String locale, DateTime day) => 'study_tip_${locale}_${DateHelper.dayKey(day)}';
-String _weakAreaCacheKey(String locale, DateTime day) => 'weak_area_${locale}_${DateHelper.dayKey(day)}';
+String _studyTipCacheKey(String locale, DateTime day) =>
+    'study_tip_${locale}_${DateHelper.dayKey(day)}';
+String _weakAreaCacheKey(String locale, DateTime day) =>
+    'weak_area_${locale}_${DateHelper.dayKey(day)}';
 
 /// While in the future, [weakAreaProvider] makes no `analyzeWeakArea` call.
 /// Without it every assignment change would retry a failing function and burn
@@ -49,7 +51,8 @@ final dailyStreakProvider = FutureProvider<int>((ref) async {
   if (lastOpen != null) {
     // Calendar arithmetic: `subtract(Duration(days: 1))` lands on the wrong day
     // just after a DST change.
-    final yesterdayKey = DateHelper.dayKey(DateTime(now.year, now.month, now.day - 1));
+    final yesterdayKey =
+        DateHelper.dayKey(DateTime(now.year, now.month, now.day - 1));
     streak = (lastOpen == yesterdayKey) ? streak + 1 : 1;
   } else {
     streak = 1;
@@ -86,7 +89,6 @@ final aiStudyTipProvider = FutureProvider<String>((ref) async {
   }
 });
 
-
 /// Per-subject assignment stat accumulator for [weakAreaProvider].
 class _SubjectStat {
   int total = 0;
@@ -118,7 +120,10 @@ final weakAreaProvider = FutureProvider<String>((ref) async {
     final stat = statsBySubject.putIfAbsent(a.subject, () => _SubjectStat());
     stat.total++;
     if (a.status == AssignmentStatus.completed) stat.completed++;
-    if (a.status != AssignmentStatus.completed && DateHelper.daysBetween(a.dueDate, now) < 0) stat.overdue++;
+    if (a.status != AssignmentStatus.completed &&
+        DateHelper.daysBetween(a.dueDate, now) < 0) {
+      stat.overdue++;
+    }
     stat.difficultySum += a.difficulty;
   }
 
@@ -130,7 +135,8 @@ final weakAreaProvider = FutureProvider<String>((ref) async {
         'totalCount': statsBySubject[subject]!.total,
         'completedCount': statsBySubject[subject]!.completed,
         'overdueCount': statsBySubject[subject]!.overdue,
-        'avgDifficulty': statsBySubject[subject]!.difficultySum / statsBySubject[subject]!.total,
+        'avgDifficulty': statsBySubject[subject]!.difficultySum /
+            statsBySubject[subject]!.total,
       },
   ];
   final sig = jsonEncode(stats);
@@ -138,7 +144,9 @@ final weakAreaProvider = FutureProvider<String>((ref) async {
   if (cached != null && cached.sig == sig) return cached.text;
 
   final backoffUntil = _weakAreaBackoffUntil;
-  if (backoffUntil != null && now.isBefore(backoffUntil)) return cached?.text ?? _fallbackWeakArea;
+  if (backoffUntil != null && now.isBefore(backoffUntil)) {
+    return cached?.text ?? _fallbackWeakArea;
+  }
 
   String? analysis;
   try {
@@ -166,7 +174,9 @@ final weakAreaProvider = FutureProvider<String>((ref) async {
   if (raw == null || raw.isEmpty) return null;
   try {
     final json = jsonDecode(raw);
-    if (json is Map && json['text'] is String && (json['text'] as String).isNotEmpty) {
+    if (json is Map &&
+        json['text'] is String &&
+        (json['text'] as String).isNotEmpty) {
       return (sig: json['sig'] as String? ?? '', text: json['text'] as String);
     }
     return null;

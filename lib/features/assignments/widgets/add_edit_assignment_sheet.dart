@@ -16,7 +16,8 @@ import '../models/assignment_model.dart';
 import '../providers/assignments_provider.dart';
 import 'assignment_actions.dart';
 
-Future<void> showAddEditAssignmentSheet(BuildContext context, WidgetRef ref, {AssignmentModel? existing}) {
+Future<void> showAddEditAssignmentSheet(BuildContext context, WidgetRef ref,
+    {AssignmentModel? existing}) {
   // backgroundColor and shape come from bottomSheetTheme.
   return showModalBottomSheet(
     context: context,
@@ -31,10 +32,12 @@ class _AddEditAssignmentSheet extends ConsumerStatefulWidget {
   const _AddEditAssignmentSheet({this.existing});
 
   @override
-  ConsumerState<_AddEditAssignmentSheet> createState() => _AddEditAssignmentSheetState();
+  ConsumerState<_AddEditAssignmentSheet> createState() =>
+      _AddEditAssignmentSheetState();
 }
 
-class _AddEditAssignmentSheetState extends ConsumerState<_AddEditAssignmentSheet> {
+class _AddEditAssignmentSheetState
+    extends ConsumerState<_AddEditAssignmentSheet> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
@@ -79,8 +82,11 @@ class _AddEditAssignmentSheetState extends ConsumerState<_AddEditAssignmentSheet
   /// Autocomplete suggestions only; any typed subject is accepted. Combines the
   /// built-in subjects with those in the student's timetable.
   List<String> _subjectSuggestions() {
-    final fromClasses = (ref.read(timetableStreamProvider).valueOrNull ?? []).map((c) => c.subject);
-    return {...SubjectColors.all, ...fromClasses}.where((s) => s.trim().isNotEmpty).toList();
+    final fromClasses = (ref.read(timetableStreamProvider).valueOrNull ?? [])
+        .map((c) => c.subject);
+    return {...SubjectColors.all, ...fromClasses}
+        .where((s) => s.trim().isNotEmpty)
+        .toList();
   }
 
   Future<void> _pickDate() async {
@@ -88,8 +94,12 @@ class _AddEditAssignmentSheetState extends ConsumerState<_AddEditAssignmentSheet
     final initial = _selectedDate ?? now;
     // showDatePicker asserts unless the range contains initialDate, and an edited
     // assignment can be due outside the usual window.
-    final firstDate = initial.isBefore(now.subtract(const Duration(days: 365))) ? initial : now.subtract(const Duration(days: 365));
-    final lastDate = initial.isAfter(now.add(const Duration(days: 365 * 2))) ? initial : now.add(const Duration(days: 365 * 2));
+    final firstDate = initial.isBefore(now.subtract(const Duration(days: 365)))
+        ? initial
+        : now.subtract(const Duration(days: 365));
+    final lastDate = initial.isAfter(now.add(const Duration(days: 365 * 2)))
+        ? initial
+        : now.add(const Duration(days: 365 * 2));
     final picked = await showDatePicker(
       context: context,
       initialDate: initial,
@@ -114,7 +124,9 @@ class _AddEditAssignmentSheetState extends ConsumerState<_AddEditAssignmentSheet
       userId: uid,
       title: _titleController.text.trim(),
       subject: _subjectController.text.trim(),
-      description: _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
+      description: _descriptionController.text.trim().isEmpty
+          ? null
+          : _descriptionController.text.trim(),
       dueDate: _selectedDate ?? DateTime.now(),
       status: _status,
       difficulty: _difficulty,
@@ -122,7 +134,9 @@ class _AddEditAssignmentSheetState extends ConsumerState<_AddEditAssignmentSheet
       createdAt: existing?.createdAt ?? DateTime.now(),
     );
     final notifier = ref.read(assignmentsNotifierProvider.notifier);
-    final error = existing != null ? await notifier.updateAssignment(model) : await notifier.add(model);
+    final error = existing != null
+        ? await notifier.updateAssignment(model)
+        : await notifier.add(model);
     if (!mounted) return;
     if (error != null) {
       setState(() => _saving = false);
@@ -134,7 +148,9 @@ class _AddEditAssignmentSheetState extends ConsumerState<_AddEditAssignmentSheet
       context: context,
       type: ToastificationType.success,
       style: ToastificationStyle.flat,
-      title: Text(existing != null ? AppStrings.t('as_updated') : AppStrings.t('as_added')),
+      title: Text(existing != null
+          ? AppStrings.t('as_updated')
+          : AppStrings.t('as_added')),
       autoCloseDuration: const Duration(seconds: 2),
     );
   }
@@ -142,10 +158,14 @@ class _AddEditAssignmentSheetState extends ConsumerState<_AddEditAssignmentSheet
   Future<void> _delete() async {
     final existing = widget.existing;
     if (existing == null || _saving) return;
-    final ok = await showConfirmDialog(context, title: AppStrings.t('as_delete_title'), message: AppStrings.t('as_delete_confirm', {'title': existing.title}));
+    final ok = await showConfirmDialog(context,
+        title: AppStrings.t('as_delete_title'),
+        message: AppStrings.t('as_delete_confirm', {'title': existing.title}));
     if (!ok || !mounted) return;
     setState(() => _saving = true);
-    final error = await ref.read(assignmentsNotifierProvider.notifier).delete(existing.id);
+    final error = await ref
+        .read(assignmentsNotifierProvider.notifier)
+        .delete(existing.id);
     if (!mounted) return;
     if (error != null) {
       setState(() => _saving = false);
@@ -166,7 +186,8 @@ class _AddEditAssignmentSheetState extends ConsumerState<_AddEditAssignmentSheet
   Widget build(BuildContext context) {
     final existing = widget.existing;
     return SingleChildScrollView(
-      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom + 32),
+      padding:
+          EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom + 32),
       child: Form(
         key: _formKey,
         child: Column(
@@ -177,7 +198,9 @@ class _AddEditAssignmentSheetState extends ConsumerState<_AddEditAssignmentSheet
                 width: 40,
                 height: 4,
                 margin: const EdgeInsets.only(top: 12),
-                decoration: BoxDecoration(color: AppColors.textMuted, borderRadius: BorderRadius.circular(2)),
+                decoration: BoxDecoration(
+                    color: AppColors.textMuted,
+                    borderRadius: BorderRadius.circular(2)),
               ),
             ),
             Padding(
@@ -186,7 +209,9 @@ class _AddEditAssignmentSheetState extends ConsumerState<_AddEditAssignmentSheet
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    existing != null ? AppStrings.t('as_edit_title') : AppStrings.t('as_add_title'),
+                    existing != null
+                        ? AppStrings.t('as_edit_title')
+                        : AppStrings.t('as_add_title'),
                     style: AppTextStyles.h2,
                   ),
                   GestureDetector(
@@ -194,8 +219,10 @@ class _AddEditAssignmentSheetState extends ConsumerState<_AddEditAssignmentSheet
                     child: Container(
                       width: 36,
                       height: 36,
-                      decoration: BoxDecoration(color: AppColors.surfaceVar, shape: BoxShape.circle),
-                      child: Icon(Icons.close, size: 18, color: AppColors.textPrimary),
+                      decoration: BoxDecoration(
+                          color: AppColors.surfaceVar, shape: BoxShape.circle),
+                      child: Icon(Icons.close,
+                          size: 18, color: AppColors.textPrimary),
                     ),
                   ),
                 ],
@@ -207,44 +234,70 @@ class _AddEditAssignmentSheetState extends ConsumerState<_AddEditAssignmentSheet
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 20),
-                  Text(AppStrings.t('fld_subject'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
+                  Text(AppStrings.t('fld_subject'),
+                      style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textSecondary)),
                   const SizedBox(height: 6),
                   Autocomplete<String>(
                     // Seeded once; fieldViewBuilder must not reassign the text
                     // or every rebuild would move the cursor to the end.
-                    initialValue: TextEditingValue(text: _subjectController.text),
+                    initialValue:
+                        TextEditingValue(text: _subjectController.text),
                     optionsBuilder: (value) {
                       final suggestions = _subjectSuggestions();
                       if (value.text.isEmpty) return suggestions;
                       return suggestions.where((s) => s.contains(value.text));
                     },
-                    onSelected: (value) => setState(() => _subjectController.text = value),
-                    fieldViewBuilder: (context, controller, focusNode, onSubmit) {
+                    onSelected: (value) =>
+                        setState(() => _subjectController.text = value),
+                    fieldViewBuilder:
+                        (context, controller, focusNode, onSubmit) {
                       return AppInputField(
                         controller: controller,
                         focusNode: focusNode,
                         maxLength: 100,
                         hintText: AppStrings.t('fld_subject_hint_free'),
                         onChanged: (v) => _subjectController.text = v,
-                        validator: (_) => _subjectController.text.trim().isEmpty ? AppStrings.t('val_subject_required') : null,
+                        validator: (_) => _subjectController.text.trim().isEmpty
+                            ? AppStrings.t('val_subject_required')
+                            : null,
                       );
                     },
                   ),
                   const SizedBox(height: 16),
-                  Text(AppStrings.t('fld_assign_title'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
+                  Text(AppStrings.t('fld_assign_title'),
+                      style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textSecondary)),
                   const SizedBox(height: 6),
                   AppInputField(
                     controller: _titleController,
                     hintText: AppStrings.t('fld_assign_title_hint'),
                     maxLength: 500,
-                    validator: (v) => (v == null || v.trim().isEmpty) ? AppStrings.t('val_assign_title_required') : null,
+                    validator: (v) => (v == null || v.trim().isEmpty)
+                        ? AppStrings.t('val_assign_title_required')
+                        : null,
                   ),
                   const SizedBox(height: 16),
-                  Text(AppStrings.t('fld_memo'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
+                  Text(AppStrings.t('fld_memo'),
+                      style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textSecondary)),
                   const SizedBox(height: 6),
-                  AppInputField(controller: _descriptionController, hintText: AppStrings.t('fld_memo_hint'), maxLines: 3),
+                  AppInputField(
+                      controller: _descriptionController,
+                      hintText: AppStrings.t('fld_memo_hint'),
+                      maxLines: 3),
                   const SizedBox(height: 16),
-                  Text(AppStrings.t('fld_due'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
+                  Text(AppStrings.t('fld_due'),
+                      style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textSecondary)),
                   const SizedBox(height: 6),
                   GestureDetector(
                     onTap: _pickDate,
@@ -253,18 +306,27 @@ class _AddEditAssignmentSheetState extends ConsumerState<_AddEditAssignmentSheet
                       padding: const EdgeInsets.symmetric(horizontal: 14),
                       decoration: BoxDecoration(
                         color: AppColors.background,
-                        border: Border.all(color: _triedSave && _selectedDate == null ? AppColors.danger : AppColors.border),
+                        border: Border.all(
+                            color: _triedSave && _selectedDate == null
+                                ? AppColors.danger
+                                : AppColors.border),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.calendar_today_outlined, size: 18, color: AppColors.accentText),
+                          Icon(Icons.calendar_today_outlined,
+                              size: 18, color: AppColors.accentText),
                           const SizedBox(width: 10),
                           Text(
-                            _selectedDate != null ? DateHelper.formatJapaneseDate(_selectedDate ?? DateTime.now()) : AppStrings.t('fld_pick_date'),
+                            _selectedDate != null
+                                ? DateHelper.formatJapaneseDate(
+                                    _selectedDate ?? DateTime.now())
+                                : AppStrings.t('fld_pick_date'),
                             style: TextStyle(
                               fontSize: 14,
-                              color: _selectedDate != null ? AppColors.textPrimary : AppColors.textMuted,
+                              color: _selectedDate != null
+                                  ? AppColors.textPrimary
+                                  : AppColors.textMuted,
                             ),
                           ),
                         ],
@@ -276,8 +338,16 @@ class _AddEditAssignmentSheetState extends ConsumerState<_AddEditAssignmentSheet
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(AppStrings.t('fld_progress'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
-                        Text('${(_progress * 100).round()}%', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.accentText)),
+                        Text(AppStrings.t('fld_progress'),
+                            style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: AppColors.textSecondary)),
+                        Text('${(_progress * 100).round()}%',
+                            style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.accentText)),
                       ],
                     ),
                     Slider(
@@ -292,7 +362,11 @@ class _AddEditAssignmentSheetState extends ConsumerState<_AddEditAssignmentSheet
                       }),
                     ),
                     const SizedBox(height: 8),
-                    Text(AppStrings.t('fld_status'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
+                    Text(AppStrings.t('fld_status'),
+                        style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.textSecondary)),
                     const SizedBox(height: 8),
                     // Same chips as the detail sheet; SegmentedButton looked cramped here.
                     Wrap(
@@ -305,11 +379,16 @@ class _AddEditAssignmentSheetState extends ConsumerState<_AddEditAssignmentSheet
                           selected: selected,
                           onSelected: (_) => setState(() {
                             _status = st;
-                            _progress = AssignmentModel.progressForStatus(_status, _progress);
+                            _progress = AssignmentModel.progressForStatus(
+                                _status, _progress);
                           }),
                           selectedColor: AppColors.primary,
                           checkmarkColor: AppColors.onPrimary,
-                          labelStyle: TextStyle(color: selected ? AppColors.onPrimary : AppColors.textPrimary, fontWeight: FontWeight.w500),
+                          labelStyle: TextStyle(
+                              color: selected
+                                  ? AppColors.onPrimary
+                                  : AppColors.textPrimary,
+                              fontWeight: FontWeight.w500),
                         );
                       }).toList(),
                     ),
@@ -318,8 +397,14 @@ class _AddEditAssignmentSheetState extends ConsumerState<_AddEditAssignmentSheet
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(AppStrings.t('fld_difficulty'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
-                      StarRating(initialRating: _difficulty, onChanged: (v) => setState(() => _difficulty = v)),
+                      Text(AppStrings.t('fld_difficulty'),
+                          style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.textSecondary)),
+                      StarRating(
+                          initialRating: _difficulty,
+                          onChanged: (v) => setState(() => _difficulty = v)),
                     ],
                   ),
                   if (existing != null) ...[
@@ -327,18 +412,26 @@ class _AddEditAssignmentSheetState extends ConsumerState<_AddEditAssignmentSheet
                     Center(
                       child: TextButton(
                         onPressed: _saving ? null : _delete,
-                        child: Text(AppStrings.t('common_delete'), style: const TextStyle(color: AppColors.danger)),
+                        child: Text(AppStrings.t('common_delete'),
+                            style: const TextStyle(color: AppColors.danger)),
                       ),
                     ),
                   ],
-                  const Padding(padding: EdgeInsets.symmetric(vertical: 24), child: Divider(height: 1)),
+                  const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 24),
+                      child: Divider(height: 1)),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: _saving ? null : _save,
                       child: _saving
-                          ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                          : Text(existing != null ? AppStrings.t('btn_update') : AppStrings.t('btn_save')),
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2))
+                          : Text(existing != null
+                              ? AppStrings.t('btn_update')
+                              : AppStrings.t('btn_save')),
                     ),
                   ),
                 ],

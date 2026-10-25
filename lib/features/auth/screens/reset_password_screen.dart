@@ -18,7 +18,8 @@ class ResetPasswordScreen extends ConsumerStatefulWidget {
   const ResetPasswordScreen({super.key});
 
   @override
-  ConsumerState<ResetPasswordScreen> createState() => _ResetPasswordScreenState();
+  ConsumerState<ResetPasswordScreen> createState() =>
+      _ResetPasswordScreenState();
 }
 
 class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
@@ -59,7 +60,8 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
     final code = _extractCode(_codeController.text);
     setState(() => _loading = true);
     try {
-      final email = await ref.read(authRepositoryProvider).verifyPasswordResetCode(code);
+      final email =
+          await ref.read(authRepositoryProvider).verifyPasswordResetCode(code);
       if (!mounted) return;
       setState(() {
         _verifiedCode = code;
@@ -78,7 +80,9 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
     if (code == null) return;
     setState(() => _loading = true);
     try {
-      await ref.read(authRepositoryProvider).confirmPasswordReset(code, _newPasswordController.text);
+      await ref
+          .read(authRepositoryProvider)
+          .confirmPasswordReset(code, _newPasswordController.text);
       if (!mounted) return;
       toastification.show(
         context: context,
@@ -114,14 +118,18 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
-        title: Text(AppStrings.t('reset_code_title'), style: const TextStyle(fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: ['NotoSansJP'])),
+        title: Text(AppStrings.t('reset_code_title'),
+            style: const TextStyle(
+                fontFamily: 'Plus Jakarta Sans',
+                fontFamilyFallback: ['NotoSansJP'])),
       ),
       body: SafeArea(
         child: ResponsiveBody(
           maxWidth: 480,
           child: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
-            child: _verifiedCode == null ? _buildCodeStep() : _buildPasswordStep(),
+            child:
+                _verifiedCode == null ? _buildCodeStep() : _buildPasswordStep(),
           ),
         ),
       ),
@@ -136,7 +144,11 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
         children: [
           Text(
             AppStrings.t('reset_code_intro'),
-            style: TextStyle(fontSize: 13, color: AppColors.textSecondary, fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP']),
+            style: TextStyle(
+                fontSize: 13,
+                color: AppColors.textSecondary,
+                fontFamily: 'Plus Jakarta Sans',
+                fontFamilyFallback: const ['NotoSansJP']),
           ),
           const SizedBox(height: 20),
           AppInputField(
@@ -150,7 +162,11 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
           ElevatedButton(
             onPressed: _loading ? null : _verifyCode,
             child: _loading
-                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2.5, color: AppColors.onPrimary))
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                        strokeWidth: 2.5, color: AppColors.onPrimary))
                 : Text(AppStrings.t('reset_code_verify_btn')),
           ),
         ],
@@ -165,8 +181,13 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            AppStrings.t('reset_code_for_email', {'email': _verifiedEmail ?? ''}),
-            style: TextStyle(fontSize: 13, color: AppColors.textSecondary, fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP']),
+            AppStrings.t(
+                'reset_code_for_email', {'email': _verifiedEmail ?? ''}),
+            style: TextStyle(
+                fontSize: 13,
+                color: AppColors.textSecondary,
+                fontFamily: 'Plus Jakarta Sans',
+                fontFamilyFallback: const ['NotoSansJP']),
           ),
           const SizedBox(height: 20),
           AppInputField(
@@ -176,7 +197,11 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
             textInputAction: TextInputAction.next,
             validator: Validators.minLength(6),
             suffix: IconButton(
-              icon: Icon(_obscureNew ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: AppColors.textMuted),
+              icon: Icon(
+                  _obscureNew
+                      ? Icons.visibility_off_outlined
+                      : Icons.visibility_outlined,
+                  color: AppColors.textMuted),
               onPressed: () => setState(() => _obscureNew = !_obscureNew),
             ),
           ),
@@ -186,10 +211,17 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
             hintText: AppStrings.t('reset_code_confirm_hint'),
             obscureText: _obscureConfirm,
             textInputAction: TextInputAction.done,
-            validator: (v) => v != _newPasswordController.text ? AppStrings.t('val_pass_mismatch') : null,
+            validator: (v) => v != _newPasswordController.text
+                ? AppStrings.t('val_pass_mismatch')
+                : null,
             suffix: IconButton(
-              icon: Icon(_obscureConfirm ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: AppColors.textMuted),
-              onPressed: () => setState(() => _obscureConfirm = !_obscureConfirm),
+              icon: Icon(
+                  _obscureConfirm
+                      ? Icons.visibility_off_outlined
+                      : Icons.visibility_outlined,
+                  color: AppColors.textMuted),
+              onPressed: () =>
+                  setState(() => _obscureConfirm = !_obscureConfirm),
             ),
             onSubmitted: (_) => _submitNewPassword(),
           ),
@@ -197,7 +229,11 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
           ElevatedButton(
             onPressed: _loading ? null : _submitNewPassword,
             child: _loading
-                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2.5, color: AppColors.onPrimary))
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                        strokeWidth: 2.5, color: AppColors.onPrimary))
                 : Text(AppStrings.t('reset_code_submit_btn')),
           ),
         ],

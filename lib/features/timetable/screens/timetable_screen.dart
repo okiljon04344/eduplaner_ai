@@ -19,7 +19,8 @@ class TimetableScreen extends ConsumerStatefulWidget {
 
 /// Local-midnight Monday of [d]'s week (calendar arithmetic, so a DST change
 /// can't push the result onto the neighbouring day).
-DateTime _mondayOf(DateTime d) => DateTime(d.year, d.month, d.day - (d.weekday - 1));
+DateTime _mondayOf(DateTime d) =>
+    DateTime(d.year, d.month, d.day - (d.weekday - 1));
 
 class _TimetableScreenState extends ConsumerState<TimetableScreen> {
   late int _selectedDay;
@@ -34,11 +35,13 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final classCount = ref.watch(timetableStreamProvider).valueOrNull?.length ?? 0;
+    final classCount =
+        ref.watch(timetableStreamProvider).valueOrNull?.length ?? 0;
     // Watching the clock re-derives the displayed week after midnight.
     final today = ref.watch(todayProvider).valueOrNull ?? DateTime.now();
     final monday = _mondayOf(today);
-    final weekStart = DateTime(monday.year, monday.month, monday.day + 7 * _weekOffset);
+    final weekStart =
+        DateTime(monday.year, monday.month, monday.day + 7 * _weekOffset);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -58,7 +61,9 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
               weekStart: weekStart,
               onSelect: (index) => setState(() => _selectedDay = index),
             ),
-            Expanded(child: ScheduleTimeline(selectedDay: _selectedDay, weekStart: weekStart)),
+            Expanded(
+                child: ScheduleTimeline(
+                    selectedDay: _selectedDay, weekStart: weekStart)),
           ],
         ),
       ),
@@ -83,7 +88,8 @@ class _WeekNavigator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final weekEnd = weekStart.add(const Duration(days: 4));
-    final label = '${weekStart.month}/${weekStart.day} - ${weekEnd.month}/${weekEnd.day}';
+    final label =
+        '${weekStart.month}/${weekStart.day} - ${weekEnd.month}/${weekEnd.day}';
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
       child: Row(
@@ -95,8 +101,13 @@ class _WeekNavigator extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
-                isCurrentWeek ? '${AppStrings.t('tt_this_week')} · $label' : label,
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textSecondary.withValues(alpha: 0.8)),
+                isCurrentWeek
+                    ? '${AppStrings.t('tt_this_week')} · $label'
+                    : label,
+                style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textSecondary.withValues(alpha: 0.8)),
               ),
             ),
           ),
@@ -122,7 +133,10 @@ class _NavIconButton extends StatelessWidget {
         child: Container(
           width: 28,
           height: 28,
-          decoration: BoxDecoration(color: AppColors.surfaceVar, shape: BoxShape.circle, border: Border.all(color: AppColors.border)),
+          decoration: BoxDecoration(
+              color: AppColors.surfaceVar,
+              shape: BoxShape.circle,
+              border: Border.all(color: AppColors.border)),
           child: Icon(icon, size: 16, color: AppColors.textSecondary),
         ),
       ),
@@ -163,7 +177,10 @@ class _Header extends ConsumerWidget {
                   shape: BoxShape.circle,
                   gradient: isDark
                       ? RadialGradient(
-                          colors: [AppColors.primaryMid.withValues(alpha: 0.25), AppColors.primaryMid.withValues(alpha: 0)],
+                          colors: [
+                            AppColors.primaryMid.withValues(alpha: 0.25),
+                            AppColors.primaryMid.withValues(alpha: 0)
+                          ],
                         )
                       : null,
                   color: isDark ? null : Colors.white.withValues(alpha: 0.06),
@@ -190,10 +207,12 @@ class _Header extends ConsumerWidget {
                         ),
                       ),
                       const SizedBox(height: 6),
-                      Text('📅 ${AppStrings.t('tt_title')}', style: AppTextStyles.headLG),
+                      Text('📅 ${AppStrings.t('tt_title')}',
+                          style: AppTextStyles.headLG),
                       const SizedBox(height: 4),
                       Text(
-                        AppStrings.t('tt_count').replaceAll('{n}', '$classCount'),
+                        AppStrings.t('tt_count')
+                            .replaceAll('{n}', '$classCount'),
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
@@ -213,9 +232,14 @@ class _Header extends ConsumerWidget {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       gradient: AppColors.gradientPrimary,
-                      boxShadow: [BoxShadow(color: AppColors.primaryMid.withValues(alpha: 0.5), blurRadius: 20)],
+                      boxShadow: [
+                        BoxShadow(
+                            color: AppColors.primaryMid.withValues(alpha: 0.5),
+                            blurRadius: 20)
+                      ],
                     ),
-                    child: const Icon(Icons.add, color: AppColors.onPrimary, size: 22),
+                    child: const Icon(Icons.add,
+                        color: AppColors.onPrimary, size: 22),
                   ),
                 ),
               ],

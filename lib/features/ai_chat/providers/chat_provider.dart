@@ -28,7 +28,8 @@ class ChatNotifier extends Notifier<List<MessageModel>> {
   /// (a message sent right after the screen mounts) it waits briefly on
   /// [whenLoaded] instead of silently sending an empty context. Context is
   /// optional, so a timeout or error falls back to an empty list.
-  Future<List<T>> _contextOf<T>(AsyncValue<List<T>> current, Future<List<T>> whenLoaded) async {
+  Future<List<T>> _contextOf<T>(
+      AsyncValue<List<T>> current, Future<List<T>> whenLoaded) async {
     final value = current.valueOrNull;
     if (value != null) return value;
     try {
@@ -48,8 +49,10 @@ class ChatNotifier extends Notifier<List<MessageModel>> {
     final history = await _repo.loadHistory(uid);
     if (_uid != uid) return; // account switched while loading
     final historyIds = {for (final m in history) m.id};
-    final merged = [...history, ...state.where((m) => !historyIds.contains(m.id))]
-      ..sort((a, b) {
+    final merged = [
+      ...history,
+      ...state.where((m) => !historyIds.contains(m.id))
+    ]..sort((a, b) {
         final byTime = a.timestamp.compareTo(b.timestamp);
         // Coarse clocks can tie a user message and its placeholder: user first.
         return byTime != 0 ? byTime : a.role.index.compareTo(b.role.index);
@@ -83,11 +86,14 @@ class ChatNotifier extends Notifier<List<MessageModel>> {
     state = [...state, userMsg, loadingMsg];
     // saveMessage swallows its own errors, so this write can run concurrently
     // with the AI round-trip.
-    final userMsgSave = uid.isNotEmpty ? _repo.saveMessage(uid, userMsg) : Future<void>.value();
+    final userMsgSave =
+        uid.isNotEmpty ? _repo.saveMessage(uid, userMsg) : Future<void>.value();
     try {
       final (classes, assignments) = await (
-        _contextOf(ref.read(timetableStreamProvider), ref.read(timetableStreamProvider.future)),
-        _contextOf(ref.read(assignmentsStreamProvider), ref.read(assignmentsStreamProvider.future)),
+        _contextOf(ref.read(timetableStreamProvider),
+            ref.read(timetableStreamProvider.future)),
+        _contextOf(ref.read(assignmentsStreamProvider),
+            ref.read(assignmentsStreamProvider.future)),
       ).wait;
       final response = await _repo.sendMessage(
         botId: botId,
@@ -95,13 +101,16 @@ class ChatNotifier extends Notifier<List<MessageModel>> {
         classes: classes,
         assignments: assignments,
       );
-      final assistantMsg = loadingMsg.copyWith(content: response, isLoading: false);
-      state = state.map((m) => m.id == loadingMsg.id ? assistantMsg : m).toList();
+      final assistantMsg =
+          loadingMsg.copyWith(content: response, isLoading: false);
+      state =
+          state.map((m) => m.id == loadingMsg.id ? assistantMsg : m).toList();
       await userMsgSave;
       if (uid.isNotEmpty) await _repo.saveMessage(uid, assistantMsg);
     } catch (e) {
       final errMsg = loadingMsg.copyWith(
-        content: AppStrings.t('err_prefix', {'message': e.toString().replaceAll('Exception: ', '')}),
+        content: AppStrings.t('err_prefix',
+            {'message': e.toString().replaceAll('Exception: ', '')}),
         isLoading: false,
         isError: true,
       );
@@ -124,7 +133,8 @@ class ChatNotifier extends Notifier<List<MessageModel>> {
   }
 }
 
-final chatProvider = NotifierProvider<ChatNotifier, List<MessageModel>>(ChatNotifier.new);
+final chatProvider =
+    NotifierProvider<ChatNotifier, List<MessageModel>>(ChatNotifier.new);
 
 /// Id of the selected AI bot (default: planner), set by the bot picker and
 /// passed to every [ChatNotifier.sendMessage].

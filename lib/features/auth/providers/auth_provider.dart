@@ -26,16 +26,18 @@ class AuthNotifier extends AsyncNotifier<void> {
   }
 
   /// Creates an Auth account and writes [name] into `users/{uid}`.
-  Future<void> signUpWithEmail(String email, String password, String name) async {
+  Future<void> signUpWithEmail(
+      String email, String password, String name) async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(
-        () => ref.read(authRepositoryProvider).signUpWithEmail(email, password, name));
+    state = await AsyncValue.guard(() => ref
+        .read(authRepositoryProvider)
+        .signUpWithEmail(email, password, name));
   }
 
   Future<void> signInWithEmail(String email, String password) async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(
-        () => ref.read(authRepositoryProvider).signInWithEmail(email, password));
+    state = await AsyncValue.guard(() =>
+        ref.read(authRepositoryProvider).signInWithEmail(email, password));
   }
 
   /// The router redirects to the landing screen once [authStateProvider] emits null.

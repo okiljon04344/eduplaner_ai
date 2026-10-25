@@ -30,7 +30,8 @@ class FilterChipsRow extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
       decoration: BoxDecoration(
-        color: AppColors.isDark ? const Color(0x05FFFFFF) : AppColors.background,
+        color:
+            AppColors.isDark ? const Color(0x05FFFFFF) : AppColors.background,
         border: Border(bottom: BorderSide(color: AppColors.dividerSubtle)),
       ),
       child: SingleChildScrollView(
@@ -38,23 +39,30 @@ class FilterChipsRow extends ConsumerWidget {
         child: Row(
           children: _filters.map((f) {
             final isSelected = f == selected;
-            final activeColor = AppColors.isDark ? AppColors.primaryMid : AppColors.primaryDark;
+            final activeColor =
+                AppColors.isDark ? AppColors.primaryMid : AppColors.primaryDark;
             return Padding(
               padding: const EdgeInsets.only(right: 8),
               child: GestureDetector(
-                onTap: () => ref.read(selectedFilterProvider.notifier).state = f,
+                onTap: () =>
+                    ref.read(selectedFilterProvider.notifier).state = f,
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? (AppColors.isDark ? activeColor.withValues(alpha: 0.15) : activeColor)
+                        ? (AppColors.isDark
+                            ? activeColor.withValues(alpha: 0.15)
+                            : activeColor)
                         : AppColors.surfaceVar,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
                       color: isSelected
-                          ? (AppColors.isDark ? activeColor.withValues(alpha: 0.3) : Colors.transparent)
+                          ? (AppColors.isDark
+                              ? activeColor.withValues(alpha: 0.3)
+                              : Colors.transparent)
                           : AppColors.border,
                     ),
                   ),
@@ -67,7 +75,9 @@ class FilterChipsRow extends ConsumerWidget {
                       fontWeight: FontWeight.w800,
                       color: isSelected
                           ? (AppColors.isDark ? activeColor : Colors.white)
-                          : (AppColors.isDark ? AppColors.textSecondary : const Color(0xFF374151)),
+                          : (AppColors.isDark
+                              ? AppColors.textSecondary
+                              : const Color(0xFF374151)),
                     ),
                   ),
                 ),

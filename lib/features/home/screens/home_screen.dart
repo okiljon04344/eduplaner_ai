@@ -24,54 +24,67 @@ class HomeScreen extends ConsumerWidget {
         children: [
           const AmbientGridBackground(),
           SafeArea(
-        bottom: false,
-        child: RefreshIndicator(
-          color: AppColors.accentText,
-          backgroundColor: AppColors.bgLayer,
-          onRefresh: () async {
-            // Explicit refresh: drop cached AI results so the providers refetch.
-            await clearTodaysAiCache(ref.read(localeProvider));
-            ref.invalidate(aiStudyTipProvider);
-            ref.invalidate(weakAreaProvider);
-          },
-          child: CustomScrollView(
-            slivers: [
-              SliverToBoxAdapter(child: KeyedSubtree(key: ValueKey(AppColors.brightness), child: const _HeroHeader())),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 14),
-                  child: _SectionLabel(
-                    text: AppStrings.t('home_today_classes'),
-                    tint: AppColors.isDark ? AppColors.primaryMid : AppColors.primaryDark,
-                    trailingLabel: AppStrings.t('home_view_all'),
-                    onTap: () => context.go('/timetable'),
+            bottom: false,
+            child: RefreshIndicator(
+              color: AppColors.accentText,
+              backgroundColor: AppColors.bgLayer,
+              onRefresh: () async {
+                // Explicit refresh: drop cached AI results so the providers refetch.
+                await clearTodaysAiCache(ref.read(localeProvider));
+                ref.invalidate(aiStudyTipProvider);
+                ref.invalidate(weakAreaProvider);
+              },
+              child: CustomScrollView(
+                slivers: [
+                  SliverToBoxAdapter(
+                      child: KeyedSubtree(
+                          key: ValueKey(AppColors.brightness),
+                          child: const _HeroHeader())),
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 4, 16, 14),
+                      child: _SectionLabel(
+                        text: AppStrings.t('home_today_classes'),
+                        tint: AppColors.isDark
+                            ? AppColors.primaryMid
+                            : AppColors.primaryDark,
+                        trailingLabel: AppStrings.t('home_view_all'),
+                        onTap: () => context.go('/timetable'),
+                      ),
+                    ),
                   ),
-                ),
-              ),
-              const SliverToBoxAdapter(child: TodayClassesRow()),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
-                  child: _SectionLabel(
-                    text: AppStrings.t('home_upcoming'),
-                    tint: AppColors.isDark ? AppColors.primaryMid : AppColors.primaryDark,
-                    trailingLabel: AppStrings.t('home_view_all'),
-                    onTap: () => context.go('/assignments'),
+                  const SliverToBoxAdapter(child: TodayClassesRow()),
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
+                      child: _SectionLabel(
+                        text: AppStrings.t('home_upcoming'),
+                        tint: AppColors.isDark
+                            ? AppColors.primaryMid
+                            : AppColors.primaryDark,
+                        trailingLabel: AppStrings.t('home_view_all'),
+                        onTap: () => context.go('/assignments'),
+                      ),
+                    ),
                   ),
-                ),
+                  const SliverToBoxAdapter(
+                    child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16),
+                        child: UpcomingAssignmentsList()),
+                  ),
+                  const SliverToBoxAdapter(
+                    child: Padding(
+                        padding: EdgeInsets.fromLTRB(16, 16, 16, 14),
+                        child: AiStudyTipCard()),
+                  ),
+                  const SliverToBoxAdapter(
+                    child: Padding(
+                        padding: EdgeInsets.fromLTRB(16, 0, 16, 110),
+                        child: WeakAreaCard()),
+                  ),
+                ],
               ),
-              const SliverToBoxAdapter(
-                child: Padding(padding: EdgeInsets.symmetric(horizontal: 16), child: UpcomingAssignmentsList()),
-              ),
-              const SliverToBoxAdapter(
-                child: Padding(padding: EdgeInsets.fromLTRB(16, 16, 16, 14), child: AiStudyTipCard()),
-              ),
-              const SliverToBoxAdapter(
-                child: Padding(padding: EdgeInsets.fromLTRB(16, 0, 16, 110), child: WeakAreaCard()),
-              ),
-            ],
-          ),
-        ),
+            ),
           ),
         ],
       ),
@@ -108,7 +121,10 @@ class _HeroHeader extends StatelessWidget {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       gradient: RadialGradient(
-                        colors: [AppColors.primaryMid.withValues(alpha: 0.28), Colors.transparent],
+                        colors: [
+                          AppColors.primaryMid.withValues(alpha: 0.28),
+                          Colors.transparent
+                        ],
                       ),
                     ),
                   ),
@@ -124,7 +140,10 @@ class _HeroHeader extends StatelessWidget {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       gradient: RadialGradient(
-                        colors: [AppColors.primaryMid.withValues(alpha: 0.15), Colors.transparent],
+                        colors: [
+                          AppColors.primaryMid.withValues(alpha: 0.15),
+                          Colors.transparent
+                        ],
                       ),
                     ),
                   ),
@@ -180,11 +199,16 @@ class _SectionLabel extends StatelessWidget {
   final Color tint;
   final String trailingLabel;
   final VoidCallback onTap;
-  const _SectionLabel({required this.text, required this.tint, required this.trailingLabel, required this.onTap});
+  const _SectionLabel(
+      {required this.text,
+      required this.tint,
+      required this.trailingLabel,
+      required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    final labelColor = AppColors.isDark ? tint.withValues(alpha: 0.6) : AppColors.textPrimary;
+    final labelColor =
+        AppColors.isDark ? tint.withValues(alpha: 0.6) : AppColors.textPrimary;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -205,7 +229,9 @@ class _SectionLabel extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
             decoration: BoxDecoration(
               color: tint.withValues(alpha: AppColors.isDark ? 0.12 : 0.08),
-              border: Border.all(color: tint.withValues(alpha: AppColors.isDark ? 0.22 : 0.15)),
+              border: Border.all(
+                  color:
+                      tint.withValues(alpha: AppColors.isDark ? 0.22 : 0.15)),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(

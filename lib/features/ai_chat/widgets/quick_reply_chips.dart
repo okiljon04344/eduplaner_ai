@@ -15,7 +15,8 @@ class QuickReplyChips extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
         color: const Color(0x05FFFFFF),
-        border: Border(bottom: BorderSide(color: AppColors.borderLight, width: 1)),
+        border:
+            Border(bottom: BorderSide(color: AppColors.borderLight, width: 1)),
       ),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
@@ -26,7 +27,8 @@ class QuickReplyChips extends ConsumerWidget {
               child: _BotChip(
                 bot: bot,
                 selected: bot.id == selected,
-                onTap: () => ref.read(selectedBotIdProvider.notifier).state = bot.id,
+                onTap: () =>
+                    ref.read(selectedBotIdProvider.notifier).state = bot.id,
               ),
             );
           }).toList(),
@@ -40,7 +42,8 @@ class _BotChip extends StatelessWidget {
   final AiBot bot;
   final bool selected;
   final VoidCallback onTap;
-  const _BotChip({required this.bot, required this.selected, required this.onTap});
+  const _BotChip(
+      {required this.bot, required this.selected, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +57,9 @@ class _BotChip extends StatelessWidget {
           decoration: BoxDecoration(
             color: bot.color.withValues(alpha: selected ? 0.28 : 0.12),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: bot.color.withValues(alpha: selected ? 0.7 : 0.22), width: selected ? 1.5 : 1),
+            border: Border.all(
+                color: bot.color.withValues(alpha: selected ? 0.7 : 0.22),
+                width: selected ? 1.5 : 1),
           ),
           child: Text(
             '${bot.emoji} ${bot.label}',

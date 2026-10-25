@@ -2,7 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show LicenseEntryWithLineBreaks, LicenseRegistry;
+import 'package:flutter/foundation.dart'
+    show LicenseEntryWithLineBreaks, LicenseRegistry;
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -23,8 +24,10 @@ const kUseEmulator = bool.fromEnvironment('USE_EMULATOR');
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   LicenseRegistry.addLicense(() async* {
-    yield LicenseEntryWithLineBreaks(['Plus Jakarta Sans'], await rootBundle.loadString('assets/fonts/OFL-PlusJakartaSans.txt'));
-    yield LicenseEntryWithLineBreaks(['Noto Sans CJK JP'], await rootBundle.loadString('assets/fonts/OFL-NotoSansCJK.txt'));
+    yield LicenseEntryWithLineBreaks(['Plus Jakarta Sans'],
+        await rootBundle.loadString('assets/fonts/OFL-PlusJakartaSans.txt'));
+    yield LicenseEntryWithLineBreaks(['Noto Sans CJK JP'],
+        await rootBundle.loadString('assets/fonts/OFL-NotoSansCJK.txt'));
   });
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   tzdata.initializeTimeZones();
@@ -32,7 +35,8 @@ Future<void> main() async {
 
   Future<void> initFirebase() async {
     try {
-      await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+      await Firebase.initializeApp(
+          options: DefaultFirebaseOptions.currentPlatform);
       // Local testing only: points Auth/Firestore at the emulators so test
       // accounts never touch production.
       if (kUseEmulator) {

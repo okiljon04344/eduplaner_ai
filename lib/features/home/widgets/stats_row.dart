@@ -61,7 +61,9 @@ class _UrgentPill extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final weekly = ref.watch(weeklyProgressProvider);
-    final percent = weekly.total == 0 ? 0 : ((weekly.completed / weekly.total) * 100).round();
+    final percent = weekly.total == 0
+        ? 0
+        : ((weekly.completed / weekly.total) * 100).round();
     return _StatPill(
       value: '$percent%',
       label: AppStrings.t('home_weekly_percent'),
@@ -76,7 +78,11 @@ class _StatPill extends StatelessWidget {
   final String label;
   final Color color;
   final Color tint;
-  const _StatPill({required this.value, required this.label, required this.color, required this.tint});
+  const _StatPill(
+      {required this.value,
+      required this.label,
+      required this.color,
+      required this.tint});
 
   @override
   Widget build(BuildContext context) {
@@ -87,12 +93,17 @@ class _StatPill extends StatelessWidget {
             ? LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [tint.withValues(alpha: 0.18), tint.withValues(alpha: 0.05)],
+                colors: [
+                  tint.withValues(alpha: 0.18),
+                  tint.withValues(alpha: 0.05)
+                ],
               )
             : null,
         color: AppColors.isDark ? null : AppColors.glassBg,
         border: Border.all(
-          color: AppColors.isDark ? tint.withValues(alpha: 0.3) : AppColors.glassBorder,
+          color: AppColors.isDark
+              ? tint.withValues(alpha: 0.3)
+              : AppColors.glassBorder,
         ),
         borderRadius: BorderRadius.circular(AppColors.isDark ? 18 : 14),
       ),

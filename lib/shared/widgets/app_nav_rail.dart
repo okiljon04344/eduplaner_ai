@@ -17,7 +17,8 @@ class AppNavRail extends StatelessWidget {
       padding: EdgeInsets.only(top: top + 24, bottom: 24),
       decoration: BoxDecoration(
         color: AppColors.background,
-        border: Border(right: BorderSide(color: AppColors.navBorder, width: 0.5)),
+        border:
+            Border(right: BorderSide(color: AppColors.navBorder, width: 0.5)),
       ),
       child: Stack(
         clipBehavior: Clip.none,
@@ -33,7 +34,12 @@ class AppNavRail extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [Colors.transparent, Color(0x8006D6A0), Color(0x4D34D399), Colors.transparent],
+                  colors: [
+                    Colors.transparent,
+                    Color(0x8006D6A0),
+                    Color(0x4D34D399),
+                    Colors.transparent
+                  ],
                 ),
               ),
             ),
@@ -41,13 +47,21 @@ class AppNavRail extends StatelessWidget {
           Column(
             children: [
               const SizedBox(height: 8),
-              _RailItem(emoji: '🏠', label: AppStrings.t('nav_home'), route: '/home'),
+              _RailItem(
+                  emoji: '🏠', label: AppStrings.t('nav_home'), route: '/home'),
               const SizedBox(height: 28),
-              _RailItem(emoji: '📅', label: AppStrings.t('nav_timetable'), route: '/timetable'),
+              _RailItem(
+                  emoji: '📅',
+                  label: AppStrings.t('nav_timetable'),
+                  route: '/timetable'),
               const SizedBox(height: 28),
-              _RailItem(emoji: '📝', label: AppStrings.t('nav_assignments'), route: '/assignments'),
+              _RailItem(
+                  emoji: '📝',
+                  label: AppStrings.t('nav_assignments'),
+                  route: '/assignments'),
               const SizedBox(height: 28),
-              _RailItem(emoji: '🤖', label: AppStrings.t('nav_ai'), route: '/ai'),
+              _RailItem(
+                  emoji: '🤖', label: AppStrings.t('nav_ai'), route: '/ai'),
             ],
           ),
         ],
@@ -60,7 +74,8 @@ class _RailItem extends ConsumerWidget {
   final String emoji;
   final String label;
   final String route;
-  const _RailItem({required this.emoji, required this.label, required this.route});
+  const _RailItem(
+      {required this.emoji, required this.label, required this.route});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -80,15 +95,19 @@ class _RailItem extends ConsumerWidget {
               height: 48,
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: active ? AppColors.primary.withValues(alpha: 0.16) : Colors.transparent,
+                color: active
+                    ? AppColors.primary.withValues(alpha: 0.16)
+                    : Colors.transparent,
                 borderRadius: BorderRadius.circular(14),
-                border: active ? Border.all(color: AppColors.borderPrimary) : null,
+                border:
+                    active ? Border.all(color: AppColors.borderPrimary) : null,
               ),
               child: AnimatedScale(
                 scale: active ? 1.15 : 1.0,
                 duration: const Duration(milliseconds: 300),
                 curve: Curves.easeOutExpo,
-                child: Text(emoji, style: const TextStyle(fontSize: 22, height: 1)),
+                child: Text(emoji,
+                    style: const TextStyle(fontSize: 22, height: 1)),
               ),
             ),
             const SizedBox(height: 6),
