@@ -86,3 +86,8 @@ docs/hearing/
 
 # AI agent artifacts
 .artifacts/
+
+# AI assistant context files (local only)
+CLAUDE.md
+AGENTS.md
+GEMINI_CONTEXT.md
