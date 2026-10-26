@@ -15,14 +15,14 @@
 
 ### 概要
 時間割・課題・勉強のモチベーションを 1 つのアプリで管理できる学習プランナーです。
-生成 AI（Gemini API）を **Cloud Functions 経由** で呼び出し、API キーをアプリに埋め込まない安全な構成にしています。
+生成 AI（Gemini API）を **Cloud Functions 経由** で呼び出し、API キーはアプリに埋め込まず、サーバー側で保持します。
 
 ### 主な機能
 | 機能 | 内容 |
 |---|---|
 | 時間割 | 曜日ごとの授業 CRUD、週切り替え、休講などのステータス変更通知 |
 | 課題管理 | 締切・優先度・フィルター、期限が近い課題のバッジ表示 |
-| ホーム | 週ごとの進捗グラフ（`fl_chart`）、AI からのひとことアドバイス |
+| ホーム | 週ごとの進捗グラフ（`fl_chart`）、苦手分野カード |
 | AI チューター | Gemini と学習相談チャット（`chatWithTutor`） |
 | テスト問題生成 | 科目・範囲からクイズを自動生成（`generateQuiz`）、苦手分野の分析（`analyzeWeakArea`） |
 | 課題の AI フィードバック | 提出物を AI が分析（`analyzeAssignmentSubmission`） |
@@ -87,7 +87,7 @@ flutter test
 
 ## English
 
-**EduPlanner AI** is a Flutter study planner built as a graduation research project at a Japanese IT vocational school.
+**EduPlanner AI** is a Flutter study planner.
 It combines a timetable, assignment tracker, weekly progress charts and an AI tutor.
 All Gemini calls go through **Firebase Cloud Functions**, so the API key never ships inside the app.
 
@@ -96,7 +96,7 @@ All Gemini calls go through **Firebase Cloud Functions**, so the API key never s
 - AI tutor chat, quiz generation, weak-area analysis and AI feedback on submissions
 - Class groups via invite codes, FCM push notifications
 - 21 UI languages
-- Riverpod + go_router architecture, 118 automated tests, zero analyzer warnings
+- Riverpod + go_router architecture, 118 automated tests, no `flutter analyze` issues
 
 **Quick start:** see the *セットアップ* section above (same commands).
 
@@ -104,7 +104,7 @@ All Gemini calls go through **Firebase Cloud Functions**, so the API key never s
 
 ## O'zbekcha
 
-**EduPlanner AI** — yapon IT kasb-hunar maktabi talabalari uchun Flutter'da yozilgan o'quv rejalashtiruvchi ilova (bitiruv ishi).
+**EduPlanner AI** — Flutter'da yozilgan o'quv rejalashtiruvchi ilova.
 
 - Dars jadvali, topshiriqlar, haftalik progress grafigi
 - Gemini AI yordamchi: chat, test savollari generatsiyasi, zaif mavzularni tahlil qilish
@@ -115,4 +115,4 @@ O'rnatish buyruqlari yuqoridagi *セットアップ* bo'limida.
 
 ---
 
-© 2026 Okiljon Nabev — [Portfolio](https://okiljon04344.github.io) ・ [GitHub](https://github.com/okiljon04344)
+© 2026 Okiljon Nabiev — [Portfolio](https://okiljon04344.github.io) ・ [GitHub](https://github.com/okiljon04344)
