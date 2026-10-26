@@ -86,3 +86,12 @@ docs/hearing/
 
 # AI agent artifacts
 .artifacts/
+
+# AI agent / tool files
+CLAUDE.md
+AGENTS.md
+GEMINI_CONTEXT.md
+.claude/
+.artifacts/
+.gemini/
+graphify*
