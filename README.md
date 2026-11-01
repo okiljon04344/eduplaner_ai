@@ -5,7 +5,7 @@
 ![Dart](https://img.shields.io/badge/Dart-0175C2?logo=dart&logoColor=white)
 ![Firebase](https://img.shields.io/badge/Firebase-FFCA28?logo=firebase&logoColor=black)
 ![Gemini](https://img.shields.io/badge/Gemini_API-8E75B2?logo=googlegemini&logoColor=white)
-![Tests](https://img.shields.io/badge/tests-118_passed-brightgreen)
+![Tests](https://img.shields.io/badge/tests-119_passed-brightgreen)
 
 [日本語](#日本語) ・ [English](#english) ・ [O'zbekcha](#ozbekcha)
 
@@ -36,7 +36,7 @@
 - **バックエンド:** Firebase Auth, Cloud Firestore, Cloud Functions (v2), Firebase Cloud Messaging, Analytics
 - **AI:** Gemini API（`gemini-flash-latest`）— キーは Cloud Functions の Secret（`GEMINI_API_KEY`）で管理
 - **コード生成:** freezed, json_serializable, build_runner
-- **品質:** `flutter analyze` 警告 0 件、ウィジェット / ユニットテスト 118 件
+- **品質:** `flutter analyze` 警告 0 件、ウィジェット / ユニットテスト 119 件
 
 ### アーキテクチャ
 ```mermaid
@@ -96,7 +96,7 @@ All Gemini calls go through **Firebase Cloud Functions**, so the API key never s
 - AI tutor chat, quiz generation, weak-area analysis and AI feedback on submissions
 - Class groups via invite codes, FCM push notifications
 - 21 UI languages
-- Riverpod + go_router architecture, 118 automated tests, no `flutter analyze` issues
+- Riverpod + go_router architecture, 119 automated tests, no `flutter analyze` issues
 
 **Quick start:** see the *セットアップ* section above (same commands).
 
