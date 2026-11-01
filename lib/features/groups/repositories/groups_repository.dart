@@ -7,7 +7,9 @@ import '../../../core/services/functions_service.dart';
 import '../models/study_group_model.dart';
 
 class GroupsRepository {
-  final FirebaseFirestore _db = FirebaseFirestore.instance;
+  GroupsRepository({FirebaseFirestore? db}) : _db = db ?? FirebaseFirestore.instance;
+
+  final FirebaseFirestore _db;
   CollectionReference get _col => _db.collection('study_groups');
 
   static const _codeChars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';

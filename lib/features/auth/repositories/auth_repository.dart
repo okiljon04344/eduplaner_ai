@@ -9,9 +9,13 @@ import '../../../core/services/notification_service.dart';
 import '../models/user_model.dart';
 
 class AuthRepository {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  AuthRepository({FirebaseAuth? auth, FirebaseFirestore? db})
+      : _auth = auth ?? FirebaseAuth.instance,
+        _db = db ?? FirebaseFirestore.instance;
+
+  final FirebaseAuth _auth;
   final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
-  final FirebaseFirestore _db = FirebaseFirestore.instance;
+  final FirebaseFirestore _db;
   bool _googleSignInInitialized = false;
 
   /// Memoized so a re-emission of `userChanges()` for the *same already

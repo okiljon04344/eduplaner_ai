@@ -5,7 +5,9 @@ import '../../../core/services/functions_service.dart';
 import '../models/assignment_model.dart';
 
 class AssignmentsRepository {
-  final _db = FirebaseFirestore.instance;
+  AssignmentsRepository({FirebaseFirestore? db}) : _db = db ?? FirebaseFirestore.instance;
+
+  final FirebaseFirestore _db;
   CollectionReference get _col => _db.collection('assignments');
 
   Stream<List<AssignmentModel>> watch(String userId) =>

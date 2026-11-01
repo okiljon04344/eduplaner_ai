@@ -3,7 +3,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/class_model.dart';
 
 class TimetableRepository {
-  final FirebaseFirestore _db = FirebaseFirestore.instance;
+  TimetableRepository({FirebaseFirestore? db}) : _db = db ?? FirebaseFirestore.instance;
+
+  final FirebaseFirestore _db;
   CollectionReference get _col => _db.collection('timetables');
 
   List<ClassModel> _classes(QuerySnapshot s) => s.docs.map(ClassModel.fromFirestore).toList();

@@ -15,7 +15,9 @@ import '../models/message_model.dart';
 ///   - Persists messages to Firestore so history survives app restarts.
 ///   - Loads the last 50 messages on demand (capped to keep read costs low).
 class ChatRepository {
-  final FirebaseFirestore _db = FirebaseFirestore.instance;
+  ChatRepository({FirebaseFirestore? db}) : _db = db ?? FirebaseFirestore.instance;
+
+  final FirebaseFirestore _db;
 
   /// Reference to the messages sub-collection for a given user.
   CollectionReference _msgs(String userId) =>
