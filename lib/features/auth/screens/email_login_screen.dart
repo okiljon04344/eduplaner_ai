@@ -131,6 +131,8 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
                     obscureText: _obscurePassword,
                     textInputAction: TextInputAction.done,
                     validator: Validators.required,
+                    // Keyboard "done" signs in, as users expect.
+                    onSubmitted: (_) => _submit(),
                     suffix: IconButton(
                       icon: Icon(_obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: AppColors.textMuted),
                       onPressed: () => setState(() => _obscurePassword = !_obscurePassword),

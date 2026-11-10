@@ -5,6 +5,7 @@ import '../../../core/constants/subject_colors.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/utils/date_helper.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../shared/widgets/app_sheet.dart';
 import '../../../shared/widgets/confirm_dialog.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../models/class_model.dart';
@@ -12,11 +13,10 @@ import '../providers/timetable_provider.dart';
 import 'add_edit_class_sheet.dart';
 
 Future<void> showClassDetailSheet(BuildContext context, WidgetRef ref, ClassModel classModel) {
-  return showModalBottomSheet(
-    context: context,
+  return showAppSheet(
+    context,
+    (_) => _ClassDetailSheet(classModel: classModel),
     useRootNavigator: true,
-    // Inherits AppColors.bgLayer + rounded-top shape from bottomSheetTheme.
-    builder: (_) => _ClassDetailSheet(classModel: classModel),
   );
 }
 
@@ -59,11 +59,10 @@ class _ClassDetailSheet extends ConsumerWidget {
   }
 
   Future<void> _reportStatus(BuildContext context, WidgetRef ref) async {
-    final result = await showModalBottomSheet<_StatusReport>(
-      context: context,
+    final result = await showAppSheet<_StatusReport>(
+      context,
+      (_) => _StatusReportSheet(classModel: classModel),
       useRootNavigator: true,
-      isScrollControlled: true,
-      builder: (_) => _StatusReportSheet(classModel: classModel),
     );
     if (result == null || !context.mounted) return;
     final error = await ref.read(timetableNotifierProvider.notifier).setStatus(

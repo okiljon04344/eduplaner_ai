@@ -49,10 +49,10 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
     if (_subjectCtrl.text.trim().isEmpty) return;
     FocusScope.of(context).unfocus();
     await ref.read(quizNotifierProvider.notifier).generate(
-      subject: _subjectCtrl.text.trim(),
-      topic: _topicCtrl.text.trim(),
-      useSearch: _useSearch,
-    );
+          subject: _subjectCtrl.text.trim(),
+          topic: _topicCtrl.text.trim(),
+          useSearch: _useSearch,
+        );
   }
 
   @override
@@ -186,18 +186,22 @@ class _ConfigPanel extends StatelessWidget {
               borderRadius: BorderRadius.circular(14),
               border: Border.all(color: AppColors.border),
             ),
-            child: SwitchListTile.adaptive(
-              value: useSearch,
-              onChanged: isLoading ? null : onUseSearchChanged,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
-              activeThumbColor: AppColors.primary,
-              title: Text(
-                AppStrings.t('quiz_use_search'),
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
-              ),
-              subtitle: Text(
-                AppStrings.t('quiz_use_search_sub'),
-                style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+            // Own Material so the ListTile ink is not hidden by the box color.
+            child: Material(
+              type: MaterialType.transparency,
+              child: SwitchListTile.adaptive(
+                value: useSearch,
+                onChanged: isLoading ? null : onUseSearchChanged,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+                activeThumbColor: AppColors.primary,
+                title: Text(
+                  AppStrings.t('quiz_use_search'),
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+                ),
+                subtitle: Text(
+                  AppStrings.t('quiz_use_search_sub'),
+                  style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                ),
               ),
             ),
           ),
@@ -206,9 +210,7 @@ class _ConfigPanel extends StatelessWidget {
             height: 48,
             child: ElevatedButton.icon(
               onPressed: isLoading ? null : onGenerate,
-              icon: isLoading
-                  ? SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.textSecondary))
-                  : const Icon(Icons.auto_awesome, size: 18),
+              icon: isLoading ? SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.textSecondary)) : const Icon(Icons.auto_awesome, size: 18),
               label: Text(isLoading ? AppStrings.t('quiz_generating') : AppStrings.t('quiz_generate_btn')),
             ),
           ),

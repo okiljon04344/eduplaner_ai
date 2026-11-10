@@ -20,6 +20,7 @@ _$UserModelImpl _$$UserModelImplFromJson(Map<String, dynamic> json) =>
       faculty: json['faculty'] as String?,
       department: json['department'] as String?,
       course: json['course'] as String?,
+      schoolDomain: json['schoolDomain'] as String?,
       createdAt: DateTime.parse(json['createdAt'] as String),
     );
 
@@ -37,5 +38,6 @@ Map<String, dynamic> _$$UserModelImplToJson(_$UserModelImpl instance) =>
       'faculty': instance.faculty,
       'department': instance.department,
       'course': instance.course,
+      'schoolDomain': instance.schoolDomain,
       'createdAt': instance.createdAt.toIso8601String(),
     };

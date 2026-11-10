@@ -12,12 +12,11 @@ class UpcomingAssignmentsList extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final assignments = ref.watch(upcomingAssignmentsProvider);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
       decoration: BoxDecoration(
         color: AppColors.cardSurface,
         border: Border.all(color: AppColors.cardStroke),
-        borderRadius: BorderRadius.circular(AppColors.isDark ? 22 : 20),
-        boxShadow: AppColors.cardShadow,
+        borderRadius: BorderRadius.circular(20),
       ),
       child: assignments.isEmpty
           ? Center(

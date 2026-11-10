@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/providers/clock_provider.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/date_helper.dart';
+import '../../school/models/school.dart';
+import '../../school/school_providers.dart';
 import '../../timetable/providers/timetable_provider.dart';
+import '../../timetable/widgets/school_slot_card.dart';
 import 'home_class_card.dart';
 import '../../../core/l10n/app_strings.dart';
 
@@ -14,8 +19,14 @@ class TodayClassesRow extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final classes = ref.watch(todayClassesProvider);
-    if (classes.isEmpty) {
-      final isWeekend = (ref.watch(todayProvider).valueOrNull ?? DateTime.now()).weekday > 5;
+    final now = ref.watch(todayProvider).valueOrNull ?? DateTime.now();
+    final monday = DateTime(now.year, now.month, now.day - (now.weekday - 1));
+    // School lessons (with teacher changes) come first; personal classes follow.
+    final schoolSlots = ref.watch(schoolWeekProvider(monday)).valueOrNull?[DateHelper.dayKey(now)]?.slots ??
+        const <SchoolSlot>[];
+    final periods = ref.watch(schoolInfoProvider).valueOrNull?.periods ?? const <SchoolPeriod>[];
+    if (classes.isEmpty && schoolSlots.isEmpty) {
+      final isWeekend = now.weekday > 5;
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
         child: Text(
@@ -27,7 +38,17 @@ class TodayClassesRow extends ConsumerWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
-        children: [for (final c in classes) HomeClassCard(classModel: c)],
+        children: [
+          for (final slot in schoolSlots)
+            GestureDetector(
+              onTap: () => context.go('/timetable'),
+              child: SchoolSlotCard(
+                slot: slot,
+                period: periods.where((p) => p.key == slot.period).firstOrNull,
+              ),
+            ),
+          for (final c in classes) HomeClassCard(classModel: c),
+        ],
       ),
     );
   }

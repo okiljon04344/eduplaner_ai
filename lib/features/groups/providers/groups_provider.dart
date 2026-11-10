@@ -43,7 +43,8 @@ class GroupsNotifier extends AsyncNotifier<void> {
     state = await AsyncValue.guard(() async {
       error = await ref.read(groupsRepositoryProvider).joinGroupByCode(code);
     });
-    return error;
+    // A thrown error (network, timeout) leaves `error` null: report it too.
+    return state.hasError ? AppStrings.t('err_group_join_failed') : error;
   }
 
   /// Removes the current user from [group]: detaches their own classes, hands

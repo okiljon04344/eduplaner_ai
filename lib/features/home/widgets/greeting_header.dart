@@ -1,21 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
+import '../../../core/l10n/app_strings.dart';
+import '../../../core/providers/clock_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../assignments/providers/assignments_provider.dart';
 import '../../auth/providers/auth_provider.dart';
-import '../../../core/l10n/app_strings.dart';
 
+/// Home header: today's date, a time-of-day greeting, and one bell button
+/// (red dot while assignments are overdue or due within 3 days).
 class GreetingHeader extends ConsumerWidget {
   const GreetingHeader({super.key});
+
+  static String greetingKey(DateTime now) => now.hour < 11
+      ? 'home_greet_morning'
+      : now.hour < 17
+          ? 'home_greet_day'
+          : 'home_greet_evening';
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(currentUserProvider);
-    final urgentCount = ref.watch(urgentAssignmentsCountProvider);
-    final initial = (user?.name.isNotEmpty ?? false) ? user!.name.substring(0, 1) : 'U';
-    final onHero = AppColors.textOnHero;
-    final heroSub = AppColors.textSecondary;
+    final urgent = ref.watch(urgentAssignmentsCountProvider);
+    final now = ref.watch(minuteTickProvider).valueOrNull ?? DateTime.now();
+    final name = (user?.name.isNotEmpty ?? false) ? user!.name : AppStrings.t('home_guest');
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -24,150 +33,59 @@ class GreetingHeader extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.12),
-                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 6,
-                      height: 6,
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        shape: BoxShape.circle,
-                        boxShadow: [BoxShadow(color: AppColors.primary.withValues(alpha: 0.8), blurRadius: 6)],
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      AppStrings.t('home_online'),
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.8,
-                        color: AppColors.accentText,
-                        fontFamily: 'Plus Jakarta Sans',
-                        fontFamilyFallback: const ['NotoSansJP'],
-                      ),
-                    ),
-                  ],
-                ),
+              Text(
+                DateFormat.MMMEd(AppStrings.currentLocale).format(now),
+                style: TextStyle(fontSize: 13, height: 1.5, color: AppColors.textSecondary),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 2),
+              // One line; long names shrink instead of wrapping a lone 「ん」.
               FittedBox(
                 fit: BoxFit.scaleDown,
-                alignment: AlignmentDirectional.centerStart,
+                alignment: Alignment.centerLeft,
                 child: Text(
-                  AppStrings.t('home_greeting').replaceAll('{name}', (user?.name.isNotEmpty ?? false) ? user!.name : AppStrings.t('home_guest')),
+                  AppStrings.t(greetingKey(now), {'name': name}),
                   maxLines: 1,
-                  style: TextStyle(
-                    fontSize: 25,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.5,
-                    height: 1.1,
-                    color: onHero,
-                    fontFamily: 'Plus Jakarta Sans',
-                    fontFamilyFallback: const ['NotoSansJP'],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 5),
-              Text(
-                user?.school?.isNotEmpty == true
-                    ? user!.school!
-                    : AppStrings.t('home_greeting_sub'),
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: heroSub,
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontFamilyFallback: const ['NotoSansJP'],
+                  style: TextStyle(fontSize: 24, height: 1.4, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
                 ),
               ),
             ],
           ),
         ),
-        const SizedBox(width: 10),
-        GestureDetector(
-          onTap: () => context.push('/settings'),
-          child: Container(
-            width: 38,
-            height: 38,
-            decoration: BoxDecoration(
-              color: AppColors.iconButtonBg,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.settings_outlined,
-              size: 18,
-              color: AppColors.textOnHero,
-            ),
-          ),
-        ),
-        const SizedBox(width: 8),
-        Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Container(
-              width: 38,
-              height: 38,
+        const SizedBox(width: 12),
+        Tooltip(
+          message: AppStrings.t('home_notifications'),
+          child: InkWell(
+            customBorder: const CircleBorder(),
+            onTap: () => context.go('/assignments'),
+            child: Container(
+              width: 48,
+              height: 48,
               decoration: BoxDecoration(
-                color: AppColors.iconButtonBg,
+                color: AppColors.statGlassFill,
                 shape: BoxShape.circle,
+                border: Border.all(color: AppColors.statGlassBorder),
               ),
-              child: Icon(
-                Icons.notifications_outlined,
-                size: 18,
-                color: AppColors.textOnHero,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Icon(Icons.notifications_none_rounded, size: 22, color: AppColors.textPrimary),
+                  if (urgent > 0)
+                    Positioned(
+                      top: 11,
+                      right: 12,
+                      child: Container(
+                        key: const ValueKey('urgent-dot'),
+                        width: 9,
+                        height: 9,
+                        decoration: BoxDecoration(
+                          color: AppColors.danger,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: AppColors.statGlassFill, width: 2),
+                        ),
+                      ),
+                    ),
+                ],
               ),
-            ),
-            if (urgentCount > 0)
-              Positioned(
-                top: -2,
-                right: -2,
-                child: Container(
-                  width: 16,
-                  height: 16,
-                  decoration: BoxDecoration(
-                    color: AppColors.danger,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: AppColors.bgDeep, width: 1.5),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    urgentCount > 9 ? '9+' : '$urgentCount',
-                    style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w700, color: Colors.white),
-                  ),
-                ),
-              ),
-          ],
-        ),
-        const SizedBox(width: 10),
-        Container(
-          width: 46,
-          height: 46,
-          decoration: BoxDecoration(
-            gradient: AppColors.avatarGradient,
-            borderRadius: BorderRadius.circular(16),
-            border: AppColors.isDark ? null : Border.all(color: Colors.white, width: 2.5),
-            boxShadow: AppColors.isDark
-                ? [BoxShadow(color: AppColors.primaryMid.withValues(alpha: 0.5), blurRadius: 18)]
-                : [BoxShadow(color: Colors.black.withValues(alpha: 0.12), blurRadius: 12)],
-          ),
-          alignment: Alignment.center,
-          child: Text(
-            initial,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
-              color: Colors.white,
-              fontFamily: 'Plus Jakarta Sans',
-              fontFamilyFallback: ['NotoSansJP'],
             ),
           ),
         ),

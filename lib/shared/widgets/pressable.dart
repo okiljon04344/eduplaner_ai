@@ -1,0 +1,86 @@
+import 'package:flutter/widgets.dart';
+import '../../core/theme/app_motion.dart';
+
+/// A widget that scales to [scale] (default 0.97) in 120ms on pointer down,
+/// and bounces back on pointer up or cancel.
+///
+/// When [onTap] is provided:
+/// - Provides `Semantics(button: true)` and enforces a 44px minimum hit target.
+/// - Fires [onTap] on tap up.
+///
+/// When [onTap] is null (e.g. wrapping a child that contains an `InkWell`):
+/// - Uses a transparent [Listener] to detect pointer down/up purely for the visual scale effect.
+/// - Does not consume gesture arena events, allowing inner taps/ripples to function untouched.
+///
+/// If [reduceMotion] is true:
+/// - No scale transformation is applied (stays at 1.0).
+class Pressable extends StatefulWidget {
+  final Widget child;
+  final VoidCallback? onTap;
+  final double scale;
+  final Duration duration;
+  final Curve curve;
+  final HitTestBehavior behavior;
+
+  const Pressable({
+    super.key,
+    required this.child,
+    this.onTap,
+    this.scale = AppMotion.pressScale,
+    this.duration = AppMotion.pressDuration,
+    this.curve = AppMotion.strongEaseOut,
+    this.behavior = HitTestBehavior.opaque,
+  });
+
+  @override
+  State<Pressable> createState() => _PressableState();
+}
+
+class _PressableState extends State<Pressable> {
+  bool _pressed = false;
+
+  void _setPressed(bool value) {
+    if (_pressed != value && mounted) {
+      setState(() => _pressed = value);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isReduced = reduceMotion(context);
+    final targetScale = (isReduced || !_pressed) ? 1.0 : widget.scale;
+
+    final Widget content = AnimatedScale(
+      scale: targetScale,
+      duration: isReduced ? Duration.zero : widget.duration,
+      curve: widget.curve,
+      child: widget.child,
+    );
+
+    if (widget.onTap != null) {
+      return Semantics(
+        button: true,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+          child: GestureDetector(
+            behavior: widget.behavior,
+            onTapDown: (_) => _setPressed(true),
+            onTapUp: (_) => _setPressed(false),
+            onTapCancel: () => _setPressed(false),
+            onTap: widget.onTap,
+            child: content,
+          ),
+        ),
+      );
+    }
+
+    // Purely visual scaling for children that already handle their own tap (e.g. InkWell).
+    return Listener(
+      behavior: HitTestBehavior.translucent,
+      onPointerDown: (_) => _setPressed(true),
+      onPointerUp: (_) => _setPressed(false),
+      onPointerCancel: (_) => _setPressed(false),
+      child: content,
+    );
+  }
+}

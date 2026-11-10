@@ -319,6 +319,7 @@ class AuthRepository {
     String? faculty,
     String? department,
     String? course,
+    String? schoolDomain,
   }) async {
     final uid = _auth.currentUser?.uid;
     if (uid == null) throw Exception(AppStrings.t('err_user_info_unavailable'));
@@ -331,6 +332,8 @@ class AuthRepository {
       'faculty': blankToNull(faculty),
       'department': blankToNull(department),
       'course': blankToNull(course),
+      // Null clears it; the Firestore rule only accepts the verified-email domain.
+      'schoolDomain': schoolDomain,
     }, SetOptions(merge: true));
     // authStateStream memoizes the model per-uid (see field docs above) and
     // only re-reads Firestore when the uid changes — this write wouldn't

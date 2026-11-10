@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_text_styles.dart';
+import '../../../core/utils/date_helper.dart';
+import '../../../core/utils/responsive.dart';
+import '../../home/widgets/assignment_row_item.dart';
 import '../models/assignment_model.dart';
 import '../providers/assignments_provider.dart';
 import '../widgets/add_edit_assignment_sheet.dart';
@@ -28,8 +30,6 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
   @override
   Widget build(BuildContext context) {
     final all = ref.watch(assignmentsStreamProvider).valueOrNull ?? [];
-    final doneCount = all.where((a) => a.status == AssignmentStatus.completed).length;
-    final progressPct = all.isEmpty ? 0.0 : doneCount / all.length;
     final weekly = ref.watch(weeklyProgressProvider);
 
     final filtered = ref.watch(filteredAssignmentsProvider);
@@ -42,24 +42,64 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
             ? all.where((a) => _sameDay(a.dueDate, _selectedDay!)).toList()
             : all);
 
+    final overdue = all
+        .where((a) => a.status != AssignmentStatus.completed && DateHelper.daysUntil(a.dueDate) < 0)
+        .length;
+
     return Scaffold(
       backgroundColor: AppColors.background,
+      floatingActionButton: Padding(
+        padding: EdgeInsets.only(bottom: context.isTablet ? 0 : 84),
+        child: FloatingActionButton.extended(
+          heroTag: 'assignments-add',
+          onPressed: () => showAddEditAssignmentSheet(context, ref),
+          backgroundColor: AppColors.primary,
+          foregroundColor: AppColors.onPrimary,
+          elevation: 2,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+          icon: const Icon(Icons.add_rounded),
+          label: Text(AppStrings.t('home_add_assignment'), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+        ),
+      ),
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
             SliverToBoxAdapter(
-              child: _TasksHeader(
-                doneCount: doneCount,
-                totalCount: all.length,
-                progressPct: progressPct,
-                weekly: weekly,
-                calendarMode: _calendarMode,
-                onToggleCalendar: () => setState(() {
-                  _calendarMode = !_calendarMode;
-                  if (!_calendarMode) _selectedDay = null;
-                }),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(AppStrings.t('nav_assignments'),
+                          style: TextStyle(fontSize: 24, height: 1.4, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+                    ),
+                    Tooltip(
+                      message: AppStrings.t(_calendarMode ? 'as_view_list' : 'as_view_calendar'),
+                      child: InkWell(
+                        customBorder: const CircleBorder(),
+                        onTap: () => setState(() {
+                          _calendarMode = !_calendarMode;
+                          if (!_calendarMode) _selectedDay = null;
+                        }),
+                        child: Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: AppColors.cardSurface,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: AppColors.cardStroke),
+                          ),
+                          child: Icon(_calendarMode ? Icons.view_list_rounded : Icons.calendar_month_outlined,
+                              size: 20, color: AppColors.textPrimary),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
+            if (!_calendarMode)
+              SliverToBoxAdapter(child: _ProgressCard(weekly: weekly, overdue: overdue)),
             if (_calendarMode)
               SliverToBoxAdapter(
                 child: _AssignmentCalendar(
@@ -80,19 +120,13 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
             if (_calendarMode && _selectedDay != null)
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 4),
                   child: Text(
                     AppStrings.t('as_day_title')
                         .replaceAll('{month}', '${_selectedDay!.month}')
                         .replaceAll('{day}', '${_selectedDay!.day}')
                         .replaceAll('{n}', '${displayAssignments.length}'),
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.primaryMid.withValues(alpha: 0.8),
-                      fontFamily: 'Plus Jakarta Sans',
-                      fontFamilyFallback: const ['NotoSansJP'],
-                    ),
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textSecondary),
                   ),
                 ),
               ),
@@ -105,19 +139,14 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
                       _calendarMode && _selectedDay != null
                           ? AppStrings.t('as_empty_day')
                           : AppStrings.t('as_empty'),
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: AppColors.textMuted,
-                        fontFamily: 'Plus Jakarta Sans',
-                        fontFamilyFallback: const ['NotoSansJP'],
-                      ),
+                      style: TextStyle(fontSize: 13, color: AppColors.textMuted),
                     ),
                   ),
                 ),
               )
-            else
+            else if (_calendarMode)
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
                 sliver: SliverList.separated(
                   itemCount: displayAssignments.length,
                   separatorBuilder: (_, __) => const SizedBox(height: 10),
@@ -126,274 +155,122 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
                     assignment: displayAssignments[i],
                   ),
                 ),
+              )
+            else
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
+                sliver: SliverList.list(children: _dueGroups(displayAssignments)),
               ),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
-                child: _AddTaskButton(
-                  onTap: () => showAddEditAssignmentSheet(context, ref),
-                ),
-              ),
-            ),
+            // Room for the floating 課題を追加 button and bottom navigation bar.
+            SliverToBoxAdapter(child: SizedBox(height: context.isTablet ? 96 : 130)),
           ],
         ),
       ),
     );
   }
-}
 
-// ─── Header ─────────────────────────────────────────────────────────────────
+  /// Redesign grouping by due date: 期限切れ / 今日・明日 / 今週 / 来週以降,
+  /// then 完了 last (a finished assignment is never overdue).
+  List<Widget> _dueGroups(List<AssignmentModel> list) {
+    int bucket(AssignmentModel a) {
+      if (a.status == AssignmentStatus.completed) return 4;
+      final d = DateHelper.daysUntil(a.dueDate);
+      if (d < 0) return 0;
+      if (d <= 1) return 1;
+      if (d <= 6) return 2;
+      return 3;
+    }
 
-class _TasksHeader extends StatelessWidget {
-  final int doneCount;
-  final int totalCount;
-  final double progressPct;
-  final ({int completed, int total}) weekly;
-  final bool calendarMode;
-  final VoidCallback onToggleCalendar;
-
-  const _TasksHeader({
-    required this.doneCount,
-    required this.totalCount,
-    required this.progressPct,
-    required this.weekly,
-    required this.calendarMode,
-    required this.onToggleCalendar,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = AppColors.isDark;
-    final accent = AppColors.accentText;
-    return Container(
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
-      decoration: BoxDecoration(
-        gradient: isDark ? null : AppColors.heroTasksGradient,
-        border: isDark
-            ? const Border(bottom: BorderSide(color: Color(0x2606D6A0)))
-            : null,
-        borderRadius: isDark
-            ? null
-            : const BorderRadius.only(
-                bottomLeft: Radius.circular(28),
-                bottomRight: Radius.circular(28),
-              ),
-      ),
-      child: Stack(
-        children: [
-          Positioned(
-            top: -60,
-            right: -40,
-            child: Container(
-              width: 180,
-              height: 180,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: isDark
-                    ? const RadialGradient(
-                        colors: [Color(0x2E06D6A0), Color(0x0006D6A0)],
-                        stops: [0.0, 0.7],
-                      )
-                    : null,
-                color: isDark ? null : AppColors.primary.withValues(alpha: 0.06),
-              ),
+    final groups = [
+      (AppStrings.t('due_overdue'), AppColors.danger),
+      (AppStrings.t('as_group_soon'), AppColors.warning),
+      (AppStrings.t('as_group_week'), AppColors.textSecondary),
+      (AppStrings.t('as_group_later'), AppColors.textSecondary),
+      (AppStrings.t('status_completed'), AppColors.textMuted),
+    ];
+    return [
+      for (var g = 0; g < groups.length; g++)
+        if (list.where((a) => bucket(a) == g).toList() case final items when items.isNotEmpty) ...[
+          Padding(
+            padding: const EdgeInsets.fromLTRB(4, 14, 4, 6),
+            child: Text(groups[g].$1,
+                style: TextStyle(fontSize: 13, height: 1.4, fontWeight: FontWeight.w700, color: groups[g].$2)),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            decoration: BoxDecoration(
+              color: AppColors.cardSurface,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: AppColors.cardStroke),
+            ),
+            child: Column(
+              children: [
+                for (var i = 0; i < items.length; i++)
+                  AssignmentRowItem(key: ValueKey(items[i].id), assignment: items[i], showDivider: i < items.length - 1),
+              ],
             ),
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Overline + calendar toggle
-              Row(
-                children: [
-                  Text(
-                    AppStrings.t('as_overline'),
-                    style: AppTextStyles.overline.copyWith(color: accent),
-                  ),
-                  const Spacer(),
-                  GestureDetector(
-                    onTap: onToggleCalendar,
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 220),
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                      decoration: BoxDecoration(
-                        color: accent.withValues(alpha: calendarMode ? 0.25 : (isDark ? 0.05 : 0.12)),
-                        border: Border.all(
-                          color: accent.withValues(alpha: calendarMode ? 0.6 : 0.3),
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            calendarMode ? Icons.list_rounded : Icons.calendar_month_outlined,
-                            size: 13,
-                            color: accent,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            calendarMode ? AppStrings.t('as_list_view') : AppStrings.t('as_calendar_view'),
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                              color: accent,
-                              fontFamily: 'Plus Jakarta Sans',
-                              fontFamilyFallback: const ['NotoSansJP'],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 6),
-              Text(
-                '📝 ${AppStrings.t('as_title')}',
-                style: AppTextStyles.headLG.copyWith(fontSize: 24),
-              ),
-              const SizedBox(height: 5),
-              Text(
-                AppStrings.t('as_summary')
-                    .replaceAll('{done}', '$doneCount')
-                    .replaceAll('{total}', '$totalCount'),
-                style: TextStyle(
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontFamilyFallback: const ['NotoSansJP'],
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              const SizedBox(height: 14),
-
-              // Total progress bar
-              Container(
-                // Full width, or the track shrink-wraps the fill and is never visible.
-                width: double.infinity,
-                height: 8,
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0x12FFFFFF) : AppColors.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(4),
-                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.1)),
-                ),
-                clipBehavior: Clip.hardEdge,
-                // Isolate the 600ms tween's per-frame paint from the header's
-                // radial-gradient background so the whole header doesn't
-                // repaint 60x/s while the bar animates.
-                child: RepaintBoundary(
-                  child: AnimatedFractionallySizedBox(
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeOutCubic,
-                    alignment: AlignmentDirectional.centerStart,
-                    widthFactor: progressPct.clamp(0.0, 1.0),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        gradient: AppColors.gradientPrimary,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 14),
-
-              // Weekly progress graph
-              _WeeklyProgressBar(completed: weekly.completed, total: weekly.total),
-            ],
-          ),
         ],
-      ),
-    );
+    ];
   }
 }
 
-// ─── Weekly progress graph ───────────────────────────────────────────────────
-
-class _WeeklyProgressBar extends StatelessWidget {
-  final int completed;
-  final int total;
-  const _WeeklyProgressBar({required this.completed, required this.total});
+/// 今週の進捗: done / total this week, a bar, and an overdue nudge.
+class _ProgressCard extends StatelessWidget {
+  final ({int completed, int total}) weekly;
+  final int overdue;
+  const _ProgressCard({required this.weekly, required this.overdue});
 
   @override
   Widget build(BuildContext context) {
-    final pct = total == 0 ? 0.0 : completed / total;
-    final pctText = '${(pct * 100).round()}%';
-    final isDark = AppColors.isDark;
-    final labelColor = AppColors.isDark ? AppColors.primaryLight : AppColors.primaryIndigo;
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
-        color: AppColors.primaryMid.withValues(alpha: isDark ? 0.07 : 0.1),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.primaryMid.withValues(alpha: isDark ? 0.18 : 0.22)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Icon(
-                    Icons.bar_chart_rounded,
-                    size: 13,
-                    color: labelColor.withValues(alpha: 0.75),
-                  ),
-                  const SizedBox(width: 5),
-                  Text(
-                    AppStrings.t('as_week_progress'),
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: labelColor.withValues(alpha: 0.75),
-                      fontFamily: 'Plus Jakarta Sans',
-                      fontFamilyFallback: const ['NotoSansJP'],
-                    ),
-                  ),
-                ],
-              ),
-              Text(
-                '${AppStrings.t('as_progress_count').replaceAll('{done}', '$completed').replaceAll('{total}', '$total')}  $pctText',
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  color: labelColor,
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontFamilyFallback: const ['NotoSansJP'],
+    final pct = weekly.total == 0 ? 0.0 : weekly.completed / weekly.total;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 14),
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+        decoration: BoxDecoration(
+          color: AppColors.cardSurface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: AppColors.cardStroke),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
+              children: [
+                Expanded(
+                  child: Text(AppStrings.t('as_week_progress'),
+                      style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: Container(
-              width: double.infinity,
-              height: 6,
-              color: AppColors.primaryMid.withValues(alpha: isDark ? 0.15 : 0.12),
-              // Isolate the tween from the header's radial-gradient decoration
-              // so it repaints in its own layer during the 700ms animation.
-              child: RepaintBoundary(
-                child: AnimatedFractionallySizedBox(
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeOutCubic,
-                    alignment: AlignmentDirectional.centerStart,
-                    widthFactor: pct.clamp(0.0, 1.0),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        gradient: AppColors.gradientPrimary,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                  ),
+                Text('${weekly.completed}',
+                    style: TextStyle(
+                        fontFamily: 'Space Grotesk',
+                        fontFamilyFallback: const ['Plus Jakarta Sans'],
+                        fontSize: 22,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary)),
+                Text(' / ${weekly.total}', style: TextStyle(fontSize: 14, color: AppColors.textSecondary)),
+              ],
+            ),
+            const SizedBox(height: 10),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: LinearProgressIndicator(
+                value: pct,
+                minHeight: 8,
+                backgroundColor: AppColors.surfaceVar,
+                color: AppColors.primary,
               ),
             ),
-          ),
-        ],
+            if (overdue > 0) ...[
+              const SizedBox(height: 10),
+              Text(AppStrings.t('as_overdue_hint', {'n': overdue}),
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.danger)),
+            ],
+          ],
+        ),
       ),
     );
   }
@@ -527,57 +404,6 @@ class _AssignmentCalendar extends StatelessWidget {
             fontSize: 11,
             fontWeight: FontWeight.w600,
             fontFamily: 'Plus Jakarta Sans',
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ─── Add button ──────────────────────────────────────────────────────────────
-
-class _AddTaskButton extends StatelessWidget {
-  final VoidCallback onTap;
-  const _AddTaskButton({required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = AppColors.isDark;
-    return Semantics(
-      button: true,
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            gradient: isDark
-                ? LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [AppColors.primary.withValues(alpha: 0.2), AppColors.primaryDark.withValues(alpha: 0.1)],
-                  )
-                : AppColors.gradientAddTaskLight,
-            borderRadius: BorderRadius.circular(isDark ? 20 : 18),
-            border: isDark ? Border.all(color: AppColors.primary.withValues(alpha: 0.3)) : null,
-            boxShadow: [
-              BoxShadow(
-                color: isDark ? AppColors.primary.withValues(alpha: 0.15) : const Color(0x5900B894),
-                blurRadius: isDark ? 20 : 24,
-                offset: isDark ? Offset.zero : const Offset(0, 6),
-              ),
-            ],
-          ),
-          child: Text(
-            '＋ ${AppStrings.t('as_add_new')}',
-            style: TextStyle(
-              fontFamily: 'Plus Jakarta Sans',
-              fontFamilyFallback: const ['NotoSansJP'],
-              fontSize: 15,
-              fontWeight: FontWeight.w800,
-              color: isDark ? AppColors.accentText : AppColors.onPrimary,
-            ),
           ),
         ),
       ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
+import '../models/assignment_model.dart';
 import '../providers/assignments_provider.dart';
 
 class FilterChipsRow extends ConsumerWidget {
@@ -24,51 +25,73 @@ class FilterChipsRow extends ConsumerWidget {
     }
   }
 
+  static int _countFor(String id, List<AssignmentModel> assignments) {
+    switch (id) {
+      case 'notStarted':
+        return assignments.where((a) => a.status == AssignmentStatus.notStarted).length;
+      case 'inProgress':
+        return assignments.where((a) => a.status == AssignmentStatus.inProgress).length;
+      case 'completed':
+        return assignments.where((a) => a.status == AssignmentStatus.completed).length;
+      case 'all':
+      default:
+        return assignments.length;
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selected = ref.watch(selectedFilterProvider);
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
-      decoration: BoxDecoration(
-        color: AppColors.isDark ? const Color(0x05FFFFFF) : AppColors.background,
-        border: Border(bottom: BorderSide(color: AppColors.dividerSubtle)),
-      ),
+    final assignments = ref.watch(assignmentsStreamProvider).valueOrNull ?? const [];
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 4),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
           children: _filters.map((f) {
             final isSelected = f == selected;
-            final activeColor = AppColors.isDark ? AppColors.primaryMid : AppColors.primaryIndigo;
+            final textColor = isSelected ? AppColors.onPrimary : AppColors.textSecondary;
+
             return Padding(
               padding: const EdgeInsets.only(right: 8),
               child: GestureDetector(
                 onTap: () => ref.read(selectedFilterProvider.notifier).state = f,
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                  height: 40,
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: isSelected
-                        ? (AppColors.isDark ? activeColor.withValues(alpha: 0.15) : activeColor)
-                        : AppColors.surfaceVar,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: isSelected
-                          ? (AppColors.isDark ? activeColor.withValues(alpha: 0.3) : Colors.transparent)
-                          : AppColors.border,
-                    ),
+                    color: isSelected ? AppColors.primary : AppColors.cardSurface,
+                    borderRadius: BorderRadius.circular(999),
+                    border: isSelected ? null : Border.all(color: AppColors.cardStroke),
                   ),
-                  child: Text(
-                    _labelFor(f),
-                    style: TextStyle(
-                      fontFamily: 'Plus Jakarta Sans',
-                      fontFamilyFallback: const ['NotoSansJP'],
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
-                      color: isSelected
-                          ? (AppColors.isDark ? activeColor : Colors.white)
-                          : (AppColors.isDark ? AppColors.textSecondary : const Color(0xFF374151)),
-                    ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        _labelFor(f),
+                        style: TextStyle(
+                          fontFamily: 'Plus Jakarta Sans',
+                          fontFamilyFallback: const ['NotoSansJP'],
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: textColor,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        '${_countFor(f, assignments)}',
+                        style: TextStyle(
+                          fontFamily: 'Plus Jakarta Sans',
+                          fontFamilyFallback: const ['NotoSansJP'],
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: textColor.withValues(alpha: 0.8),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),

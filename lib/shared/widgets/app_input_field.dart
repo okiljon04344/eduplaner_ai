@@ -16,6 +16,7 @@ class AppInputField extends StatelessWidget {
   final TextInputAction? textInputAction;
   final FocusNode? focusNode;
   final bool expands;
+  final bool readOnly;
 
   /// Hard cap on typed/pasted characters (no visible counter). Null = unlimited.
   final int? maxLength;
@@ -35,6 +36,7 @@ class AppInputField extends StatelessWidget {
     this.textInputAction,
     this.focusNode,
     this.expands = false,
+    this.readOnly = false,
     this.maxLength,
   });
 
@@ -43,6 +45,7 @@ class AppInputField extends StatelessWidget {
     return TextFormField(
       controller: controller,
       focusNode: focusNode,
+      readOnly: readOnly,
       maxLines: expands ? null : maxLines,
       minLines: expands ? null : minLines,
       expands: expands,

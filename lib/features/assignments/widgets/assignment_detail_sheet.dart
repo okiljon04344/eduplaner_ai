@@ -9,6 +9,7 @@ import '../../../core/l10n/app_strings.dart';
 import '../../../core/services/functions_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/date_helper.dart';
+import '../../../shared/widgets/app_sheet.dart';
 import '../../../shared/widgets/confirm_dialog.dart';
 import '../../../shared/widgets/donut_chart.dart';
 import '../../../shared/widgets/star_rating.dart';
@@ -40,12 +41,10 @@ String? _mimeTypeForExtension(String? extension) {
 }
 
 Future<void> showAssignmentDetailSheet(BuildContext context, WidgetRef ref, AssignmentModel assignment) {
-  return showModalBottomSheet(
-    context: context,
-    isScrollControlled: true,
+  return showAppSheet(
+    context,
+    (_) => _AssignmentDetailSheet(assignment: assignment),
     useRootNavigator: true,
-    // backgroundColor/shape inherited from the app's dark bottomSheetTheme.
-    builder: (_) => _AssignmentDetailSheet(assignment: assignment),
   );
 }
 

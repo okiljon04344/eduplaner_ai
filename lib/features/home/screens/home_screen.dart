@@ -3,12 +3,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/providers/locale_provider.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../shared/widgets/ambient_grid_background.dart';
+import '../../../core/utils/responsive.dart';
+import '../../../shared/widgets/entrance.dart';
+import '../../../shared/widgets/glass_panel.dart';
+import '../../../shared/widgets/pressable.dart';
+import '../../timetable/widgets/school_changes_list.dart';
+import '../../school/widgets/school_notices_card.dart';
 import '../providers/home_provider.dart';
 import '../widgets/ai_study_tip_card.dart';
 import '../widgets/greeting_header.dart';
+import '../widgets/home_ambient_glow.dart';
+import '../widgets/notification_prompt_card.dart';
 import '../widgets/stats_row.dart';
-import '../widgets/today_classes_row.dart';
+import '../widgets/today_lessons.dart';
+import '../../assignments/widgets/add_edit_assignment_sheet.dart';
 import '../widgets/upcoming_assignments_list.dart';
 import '../widgets/weak_area_card.dart';
 import '../../../core/l10n/app_strings.dart';
@@ -20,59 +28,176 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: Stack(
-        children: [
-          const AmbientGridBackground(),
-          SafeArea(
-        bottom: false,
-        child: RefreshIndicator(
-          color: AppColors.accentText,
-          backgroundColor: AppColors.bgLayer,
-          onRefresh: () async {
-            // Explicit user refresh: drop today's cached AI results so the
-            // providers below actually fetch instead of re-serving the cache.
-            await clearTodaysAiCache(ref.read(localeProvider));
-            ref.invalidate(aiStudyTipProvider);
-            ref.invalidate(weakAreaProvider);
-          },
-          child: CustomScrollView(
-            slivers: [
-              SliverToBoxAdapter(child: KeyedSubtree(key: ValueKey(AppColors.brightness), child: const _HeroHeader())),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 14),
-                  child: _SectionLabel(
-                    text: AppStrings.t('home_today_classes'),
-                    tint: AppColors.isDark ? AppColors.primaryMid : AppColors.primaryIndigo,
-                    trailingLabel: AppStrings.t('home_view_all'),
-                    onTap: () => context.go('/timetable'),
-                  ),
-                ),
-              ),
-              const SliverToBoxAdapter(child: TodayClassesRow()),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
-                  child: _SectionLabel(
-                    text: AppStrings.t('home_upcoming'),
-                    tint: AppColors.isDark ? AppColors.primaryMid : AppColors.primaryIndigo,
-                    trailingLabel: AppStrings.t('home_view_all'),
-                    onTap: () => context.go('/assignments'),
-                  ),
-                ),
-              ),
-              const SliverToBoxAdapter(
-                child: Padding(padding: EdgeInsets.symmetric(horizontal: 16), child: UpcomingAssignmentsList()),
-              ),
-              const SliverToBoxAdapter(
-                child: Padding(padding: EdgeInsets.fromLTRB(16, 16, 16, 14), child: AiStudyTipCard()),
-              ),
-              const SliverToBoxAdapter(
-                child: Padding(padding: EdgeInsets.fromLTRB(16, 0, 16, 110), child: WeakAreaCard()),
-              ),
-            ],
+      floatingActionButton: Padding(
+        padding: EdgeInsets.only(bottom: context.isTablet ? 0 : 84),
+        child: Pressable(
+          child: FloatingActionButton.extended(
+            heroTag: 'home-add-assignment',
+            onPressed: () => showAddEditAssignmentSheet(context, ref),
+            backgroundColor: AppColors.primary,
+            foregroundColor: AppColors.onPrimary,
+            elevation: 2,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+            icon: const Icon(Icons.add_rounded),
+            label: Text(AppStrings.t('home_add_assignment'), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
           ),
         ),
+      ),
+      body: Stack(
+        children: [
+          const Positioned.fill(child: HomeAmbientGlow()),
+          SafeArea(
+            bottom: false,
+            child: RefreshIndicator(
+              color: AppColors.accentText,
+              backgroundColor: AppColors.bgLayer,
+              onRefresh: () async {
+                // Explicit user refresh: drop today's cached AI results so the
+                // providers below actually fetch instead of re-serving the cache.
+                await clearTodaysAiCache(ref.read(localeProvider));
+                ref.invalidate(aiStudyTipProvider);
+                ref.invalidate(weakAreaProvider);
+              },
+              child: LayoutBuilder(builder: (context, constraints) {
+                final classes = [
+                  _SectionLabel(
+                    text: AppStrings.t('home_today_classes'),
+                    linkLabel: AppStrings.t('home_open_timetable'),
+                    onTap: () => context.go('/timetable'),
+                  ),
+                  const TodayLessonsCard(),
+                ];
+                final dueSoon = [
+                  _SectionLabel(
+                    text: AppStrings.t('home_due_soon'),
+                    linkLabel: AppStrings.t('home_see_all'),
+                    onTap: () => context.go('/assignments'),
+                  ),
+                  const Padding(padding: EdgeInsets.symmetric(horizontal: 20), child: UpcomingAssignmentsList()),
+                ];
+                const aiTip = Padding(padding: EdgeInsets.fromLTRB(20, 20, 20, 12), child: AiStudyTipCard());
+                final weakArea = Padding(padding: EdgeInsets.fromLTRB(20, 0, 20, context.isTablet ? 110 : 130), child: const WeakAreaCard());
+
+                // Desktop: lessons on the left, assignments and AI on the right,
+                // so a wide window shows the whole day without scrolling.
+                final wide = constraints.maxWidth >= 900;
+                return CustomScrollView(
+                  slivers: [
+                    SliverToBoxAdapter(
+                      child: Entrance(
+                        index: 0,
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+                          child: KeyedSubtree(
+                            key: ValueKey(AppColors.brightness),
+                            child: GlassPanel(
+                              padding: const EdgeInsets.all(18),
+                              radius: 24,
+                              tint: AppColors.glassFill,
+                              borderColor: AppColors.glassBorder,
+                              shadows: AppColors.glassShadow,
+                              child: const Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  GreetingHeader(),
+                                  SizedBox(height: 16),
+                                  StatsRow(),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SliverToBoxAdapter(
+                      child: Entrance(
+                        index: 1,
+                        child: NowLessonCard(),
+                      ),
+                    ),
+                    const SliverToBoxAdapter(
+                      child: Entrance(
+                        index: 2,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            SchoolChangesBanner(),
+                            SchoolNoticesCard(),
+                            NotificationPromptCard(),
+                          ],
+                        ),
+                      ),
+                    ),
+                    if (wide)
+                      SliverToBoxAdapter(
+                        child: Center(
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 1280),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  flex: 6,
+                                  child: Column(
+                                    children: [
+                                      Entrance(
+                                        index: 3,
+                                        child: Column(mainAxisSize: MainAxisSize.min, children: classes),
+                                      ),
+                                      const SizedBox(height: 110),
+                                    ],
+                                  ),
+                                ),
+                                Expanded(
+                                  flex: 5,
+                                  child: Column(
+                                    children: [
+                                      Entrance(
+                                        index: 4,
+                                        child: Column(mainAxisSize: MainAxisSize.min, children: dueSoon),
+                                      ),
+                                      const Entrance(
+                                        index: 5,
+                                        child: aiTip,
+                                      ),
+                                      Entrance(
+                                        index: 6,
+                                        child: weakArea,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      )
+                    else
+                      SliverList(
+                        delegate: SliverChildListDelegate([
+                          Entrance(
+                            index: 3,
+                            child: Column(mainAxisSize: MainAxisSize.min, children: classes),
+                          ),
+                          const SizedBox(height: 8),
+                          Entrance(
+                            index: 4,
+                            child: Column(mainAxisSize: MainAxisSize.min, children: dueSoon),
+                          ),
+                          const Entrance(
+                            index: 5,
+                            child: aiTip,
+                          ),
+                          Entrance(
+                            index: 6,
+                            child: weakArea,
+                          ),
+                        ]),
+                      ),
+                  ],
+                );
+              }),
+            ),
           ),
         ],
       ),
@@ -80,148 +205,30 @@ class HomeScreen extends ConsumerWidget {
   }
 }
 
-class _HeroHeader extends StatelessWidget {
-  const _HeroHeader();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: AppColors.heroHomeGradient,
-        borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(32),
-          bottomRight: Radius.circular(32),
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            if (AppColors.isDark) ...[
-              Positioned(
-                top: -80,
-                right: -60,
-                child: IgnorePointer(
-                  child: Container(
-                    width: 260,
-                    height: 260,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: RadialGradient(
-                        colors: [AppColors.primaryMid.withValues(alpha: 0.28), Colors.transparent],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                bottom: -40,
-                left: -30,
-                child: IgnorePointer(
-                  child: Container(
-                    width: 180,
-                    height: 180,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: RadialGradient(
-                        colors: [AppColors.primaryMid.withValues(alpha: 0.15), Colors.transparent],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ] else ...[
-              Positioned(
-                top: -40,
-                right: -30,
-                child: IgnorePointer(
-                  child: Container(
-                    width: 160,
-                    height: 160,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.white.withValues(alpha: 0.06),
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                bottom: -20,
-                left: -20,
-                child: IgnorePointer(
-                  child: Container(
-                    width: 120,
-                    height: 120,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.white.withValues(alpha: 0.06),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-            const Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                GreetingHeader(),
-                SizedBox(height: 20),
-                StatsRow(),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
+/// Section title (17/700) with a plain text link on the right.
 class _SectionLabel extends StatelessWidget {
-  final String text;
-  final Color tint;
-  final String trailingLabel;
+  final String text, linkLabel;
   final VoidCallback onTap;
-  const _SectionLabel({required this.text, required this.tint, required this.trailingLabel, required this.onTap});
+  const _SectionLabel({required this.text, required this.linkLabel, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    final labelColor = AppColors.isDark ? tint.withValues(alpha: 0.6) : AppColors.textPrimary;
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          text,
-          style: TextStyle(
-            fontSize: AppColors.isDark ? 11 : 15,
-            fontWeight: FontWeight.w700,
-            letterSpacing: AppColors.isDark ? 0.5 : 0,
-            color: labelColor,
-            fontFamily: 'Plus Jakarta Sans',
-            fontFamilyFallback: const ['NotoSansJP'],
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 4, 12, 4),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(text,
+                style: TextStyle(fontSize: 17, height: 1.4, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
           ),
-        ),
-        GestureDetector(
-          onTap: onTap,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-            decoration: BoxDecoration(
-              color: tint.withValues(alpha: AppColors.isDark ? 0.12 : 0.08),
-              border: Border.all(color: tint.withValues(alpha: AppColors.isDark ? 0.22 : 0.15)),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              trailingLabel,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                color: tint,
-                fontFamily: 'Plus Jakarta Sans',
-                fontFamilyFallback: const ['NotoSansJP'],
-              ),
-            ),
+          TextButton(
+            onPressed: onTap,
+            style: TextButton.styleFrom(minimumSize: const Size(44, 44)),
+            child: Text(linkLabel,
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.accentText)),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

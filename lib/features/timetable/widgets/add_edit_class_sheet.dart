@@ -7,6 +7,7 @@ import '../../../core/l10n/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../shared/widgets/app_input_field.dart';
+import '../../../shared/widgets/app_sheet.dart';
 import '../../../shared/widgets/confirm_dialog.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../models/class_model.dart';
@@ -14,12 +15,10 @@ import '../providers/timetable_provider.dart';
 import 'day_tab_row.dart';
 
 Future<void> showAddEditClassSheet(BuildContext context, WidgetRef ref, {ClassModel? existing}) {
-  return showModalBottomSheet(
-    context: context,
-    isScrollControlled: true,
+  return showAppSheet(
+    context,
+    (_) => _AddEditClassSheet(existing: existing),
     useRootNavigator: true,
-    // Inherits AppColors.bgLayer + rounded-top shape from bottomSheetTheme.
-    builder: (_) => _AddEditClassSheet(existing: existing),
   );
 }
 

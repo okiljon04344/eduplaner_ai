@@ -26,7 +26,6 @@ abstract class AppColors {
   static Color cardBorder = darkCardBorder;
   static Color dividerSubtle = darkDividerSubtle;
   static Color glassBg = darkGlassBg;
-  static Color glassBorder = darkGlassBorder;
   static Color navBg = darkNavBg;
   static Color navBorder = darkNavBorder;
   static Color checkboxUnchecked = darkCheckboxUnchecked;
@@ -53,7 +52,7 @@ abstract class AppColors {
   static List<BoxShadow> get cardShadow => isDark ? darkCardShadow : lightCardShadow;
   static List<BoxShadow> get heroCardShadow => isDark ? darkHeroCardShadow : lightHeroCardShadow;
 
-  static Color get cardSurface => isDark ? surfaceVar : surface;
+  static Color get cardSurface => surface;
   static Color get cardStroke => border;
 
   static Brightness _brightness = Brightness.dark;
@@ -83,7 +82,6 @@ abstract class AppColors {
     cardBorder = isDarkMode ? darkCardBorder : lightCardBorder;
     dividerSubtle = isDarkMode ? darkDividerSubtle : lightDividerSubtle;
     glassBg = isDarkMode ? darkGlassBg : lightGlassBg;
-    glassBorder = isDarkMode ? darkGlassBorder : lightGlassBorder;
     navBg = isDarkMode ? darkNavBg : lightNavBg;
     navBorder = isDarkMode ? darkNavBorder : lightNavBorder;
     checkboxUnchecked = isDarkMode ? darkCheckboxUnchecked : lightCheckboxUnchecked;
@@ -104,26 +102,26 @@ abstract class AppColors {
   }
 
   // ---- Dark Mode Constants ----
-  static const darkBgDeep = Color(0xFF0C0A08);
-  static const darkBackground = Color(0xFF100C08);
-  static const darkSurface = Color(0xFF17120A);
-  static const darkSurfaceVar = Color(0x0AFFFFFF);
-  static const darkBgInput = Color(0xFF221A0E);
-  static const darkBgLayer = Color(0xFF241C10);
-  static const darkTextPrimary = Color(0xFFFFF3E8);
-  static const darkTextSecondary = Color(0x80D1FAE5);
-  static const darkTextMuted = Color(0x6ED1FAE5);
-  static const darkBorder = Color(0x12FFFFFF);
-  static const darkBorderLight = Color(0x0CFFFFFF);
-  static const darkCardBg = Color(0x0AFFFFFF);
-  static const darkCardBorder = Color(0x12FFFFFF);
-  static const darkDividerSubtle = Color(0x0AFFFFFF);
+  static const darkBgDeep = Color(0xFF080D0B);
+  static const darkBackground = Color(0xFF0B110F);
+  static const darkSurface = Color(0xFF131B18);
+  static const darkSurfaceVar = Color(0xFF1A2420);
+  static const darkBgInput = Color(0xFF1A2420);
+  static const darkBgLayer = Color(0xFF131B18);
+  static const darkTextPrimary = Color(0xFFEEF6F2);
+  static const darkTextSecondary = Color(0xFFA7B8B0);
+  static const darkTextMuted = Color(0xFF7B8D85);
+  static const darkBorder = Color(0xFF26332E);
+  static const darkBorderLight = Color(0xFF1A2420);
+  static const darkCardBg = Color(0xFF131B18);
+  static const darkCardBorder = Color(0xFF26332E);
+  static const darkDividerSubtle = Color(0xFF26332E);
   static const darkGlassBg = Color(0x21FFFFFF);
   static const darkGlassBorder = Color(0x26FFFFFF);
-  static const darkNavBg = Color(0xF508060F);
-  static const darkNavBorder = Color(0x0FFFFFFF);
-  static const darkCheckboxUnchecked = Color(0x26FFFFFF);
-  static const darkIconButtonBg = Color(0x14FFFFFF);
+  static const darkNavBg = Color(0xFF0F1613);
+  static const darkNavBorder = Color(0xFF26332E);
+  static const darkCheckboxUnchecked = Color(0xFF34443D);
+  static const darkIconButtonBg = Color(0xFF1A2420);
   static const darkProgText = Color(0xFFC084FC);
   static const darkProgDot = Color(0xFFA855F7);
   static const darkMathText = Color(0xFFFBBF24);
@@ -137,47 +135,35 @@ abstract class AppColors {
   static const darkHistText = Color(0xFFF87171);
   static const darkHistDot = Color(0xFFF87171);
 
-  static const darkHeroHomeGradient = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [Color(0xFF17120A), Color(0xFF1C1108), Color(0xFF100C08)],
-  );
-  static const darkHeroScheduleGradient = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [Color(0xFF17120A), Color(0xFF100C08)],
-  );
-  static const darkHeroTasksGradient = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [Color(0xFF0F1F19), Color(0xFF100C08)],
-  );
+  static const darkHeroHomeGradient = LinearGradient(colors: [darkBackground, darkBackground]);
+  static const darkHeroScheduleGradient = LinearGradient(colors: [darkBackground, darkBackground]);
+  static const darkHeroTasksGradient = LinearGradient(colors: [darkBackground, darkBackground]);
   static const darkCardShadow = <BoxShadow>[];
   static const darkHeroCardShadow = <BoxShadow>[
     BoxShadow(color: Color(0x4006D6A0), blurRadius: 20, offset: Offset(0, 4)),
   ];
 
   // ---- Light Mode Constants ----
-  static const lightBgDeep = Color(0xFFF7F6F3);
-  static const lightBackground = Color(0xFFFFFFFF);
+  static const lightBgDeep = Color(0xFFEEF2F0);
+  static const lightBackground = Color(0xFFF5F7F6);
   static const lightSurface = Color(0xFFFFFFFF);
-  static const lightSurfaceVar = Color(0xFFF3F4F6);
+  static const lightSurfaceVar = Color(0xFFEEF2F0);
   static const lightBgInput = Color(0xFFFFFFFF);
-  static const lightBgLayer = Color(0xFFF0FDF9);
-  static const lightTextPrimary = Color(0xFF1C1917);
-  static const lightTextSecondary = Color(0xFF6B7280);
-  static const lightTextMuted = Color(0xFF7A818D);
-  static const lightBorder = Color(0xFFE5E7EB);
-  static const lightBorderLight = Color(0xFFF3F4F6);
+  static const lightBgLayer = Color(0xFFFFFFFF);
+  static const lightTextPrimary = Color(0xFF0F1A16);
+  static const lightTextSecondary = Color(0xFF4A5A53);
+  static const lightTextMuted = Color(0xFF66756E);
+  static const lightBorder = Color(0xFFDFE6E2);
+  static const lightBorderLight = Color(0xFFEEF2F0);
   static const lightCardBg = Color(0xFFFFFFFF);
-  static const lightCardBorder = Color(0xFFE5E7EB);
-  static const lightDividerSubtle = Color(0xFFF3F4F6);
+  static const lightCardBorder = Color(0xFFDFE6E2);
+  static const lightDividerSubtle = Color(0xFFDFE6E2);
   static const lightGlassBg = Color(0x1406D6A0);
   static const lightGlassBorder = Color(0x2606D6A0);
-  static const lightNavBg = Color(0xEBFFFFFF);
-  static const lightNavBorder = Color(0x126B7280);
-  static const lightCheckboxUnchecked = Color(0xFFD1D5DB);
-  static const lightIconButtonBg = Color(0xFFF3F4F6);
+  static const lightNavBg = Color(0xFFFFFFFF);
+  static const lightNavBorder = Color(0xFFDFE6E2);
+  static const lightCheckboxUnchecked = Color(0xFFC8D3CE);
+  static const lightIconButtonBg = Color(0xFFEEF2F0);
   static const lightProgText = Color(0xFF6D28D9);
   static const lightProgDot = Color(0xFF6C5CE7);
   static const lightMathText = Color(0xFFB45309);
@@ -191,24 +177,10 @@ abstract class AppColors {
   static const lightHistText = Color(0xFF991B1B);
   static const lightHistDot = Color(0xFFEF4444);
 
-  static const lightHeroHomeGradient = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [Color(0xFFECFDF5), Color(0xFFD1FAE5), Color(0xFFFFFFFF)],
-  );
-  static const lightHeroScheduleGradient = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [Color(0xFFECFDF5), Color(0xFFFFFFFF)],
-  );
-  static const lightHeroTasksGradient = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [Color(0xFFD1FAE5), Color(0xFFFFFFFF)],
-  );
-  static const lightCardShadow = <BoxShadow>[
-    BoxShadow(color: Color(0x14000000), blurRadius: 16, offset: Offset(0, 2)),
-  ];
+  static const lightHeroHomeGradient = LinearGradient(colors: [lightBackground, lightBackground]);
+  static const lightHeroScheduleGradient = LinearGradient(colors: [lightBackground, lightBackground]);
+  static const lightHeroTasksGradient = LinearGradient(colors: [lightBackground, lightBackground]);
+  static const lightCardShadow = <BoxShadow>[];
   static const lightHeroCardShadow = <BoxShadow>[
     BoxShadow(color: Color(0x1A06D6A0), blurRadius: 24, offset: Offset(0, 4)),
   ];
@@ -337,4 +309,43 @@ abstract class AppColors {
   );
   static LinearGradient get brandPanelGradient =>
       isDark ? _darkBrandPanelGradient : _lightBrandPanelGradient;
+
+  // ==================== Glass tokens (mockup spec) ====================
+  // Top glass block & general panels
+  static Color get glassFill => isDark ? const Color(0x0DFFFFFF) : const Color(0x99FFFFFF);
+  static Color get glassBorder => isDark ? const Color(0x1AFFFFFF) : const Color(0xE6FFFFFF);
+  static Color get glassHighlight => isDark ? const Color(0x14FFFFFF) : const Color(0xFFFFFFFF);
+
+  // Background glow circles behind Home
+  static Color get glowGreen => isDark ? const Color(0x4D06D6A0) : const Color(0x4706D6A0);
+  static Color get glowBlue => isDark ? const Color(0x3360A5FA) : const Color(0x3860A5FA);
+  static Color get glowGreenSubtle => isDark ? const Color(0x2906D6A0) : const Color(0x2E06D6A0);
+
+  // Student bottom navigation
+  static Color get navGlassFill => isDark ? const Color(0x8C131B18) : const Color(0xA6FFFFFF);
+  static Color get navGlassBorder => isDark ? const Color(0x1AFFFFFF) : const Color(0xF2FFFFFF);
+  static List<BoxShadow> get navGlassShadow => isDark
+      ? const [BoxShadow(color: Color(0x73000000), blurRadius: 32, offset: Offset(0, 12))]
+      : const [BoxShadow(color: Color(0x1F0F1A16), blurRadius: 32, offset: Offset(0, 12))];
+
+  // NowLessonCard
+  static Color get nowGlassFill => isDark ? const Color(0x1F06D6A0) : const Color(0xBFE6FAF2);
+  static Color get nowGlassBorder => const Color(0x7306D6A0);
+  static List<BoxShadow> get nowGlow => isDark
+      ? const [BoxShadow(color: Color(0x3806D6A0), blurRadius: 32)]
+      : const [BoxShadow(color: Color(0x2E06D6A0), blurRadius: 30, offset: Offset(0, 10))];
+
+  // Translucent stat cards & bell chip button inside top hero panel
+  static Color get statGlassFill => isDark ? const Color(0x0FFFFFFF) : const Color(0xB3FFFFFF);
+  static Color get statGlassBorder => isDark ? const Color(0x1AFFFFFF) : const Color(0xF2FFFFFF);
+
+  // Top hero panel shadow in light theme
+  static List<BoxShadow> get glassShadow => isDark
+      ? const <BoxShadow>[]
+      : const [BoxShadow(color: Color(0x140F1A16), blurRadius: 30, offset: Offset(0, 8))];
+
+  // Floating Action Button shadow
+  static List<BoxShadow> get fabShadow => isDark
+      ? const [BoxShadow(color: Color(0x5906D6A0), blurRadius: 24, offset: Offset(0, 8))]
+      : const [BoxShadow(color: Color(0x4D06D6A0), blurRadius: 24, offset: Offset(0, 8))];
 }

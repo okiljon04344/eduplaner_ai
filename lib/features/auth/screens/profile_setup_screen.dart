@@ -6,6 +6,7 @@ import '../../../core/l10n/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/validators.dart';
 import '../../../shared/widgets/app_input_field.dart';
+import '../../school/school_providers.dart';
 import '../models/school_type.dart';
 import '../providers/auth_provider.dart';
 
@@ -41,6 +42,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   SchoolType? _selectedType;
   String? _program;
   int? _grade;
+  bool _namePrefilled = false;
 
   @override
   void initState() {
@@ -58,6 +60,13 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
     _facultyCtrl.text = user?.faculty ?? '';
     _departmentCtrl.text = user?.department ?? '';
     _courseCtrl.text = user?.course ?? '';
+    // Prefill once from the synced school name, never over what the user typed.
+    ref.listenManual(schoolInfoProvider, (_, next) {
+      final name = next.valueOrNull?.name ?? '';
+      if (_namePrefilled || name.isEmpty) return;
+      _namePrefilled = true;
+      if (_schoolNameCtrl.text.trim().isEmpty) _schoolNameCtrl.text = name;
+    }, fireImmediately: true);
   }
 
   @override
@@ -85,14 +94,28 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
         style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textSecondary),
       );
 
-  Widget _chip(String label, bool selected, VoidCallback onTap) => ChoiceChip(
+  /// A school-linked student's saved 学年/コース, locked unless the school
+  /// admin allows changes (mirrors firestore.rules users/{uid} update).
+  bool _classLocked() {
+    final user = ref.read(currentUserProvider);
+    final info = ref.read(schoolInfoProvider).valueOrNull;
+    // Only a student already saved under this school is locked (same as the
+    // rules); a first link, or a test account moving in, picks freely.
+    if (user == null || info == null || user.schoolDomain != info.domain) return false;
+    return info.locksStudentClass(grade: user.grade, course: user.course);
+  }
+
+  Widget _chip(String label, bool selected, VoidCallback onTap, {bool enabled = true}) => ChoiceChip(
         label: Text(label),
         selected: selected,
-        onSelected: (_) => setState(onTap),
+        onSelected: enabled ? (_) => setState(onTap) : null,
         selectedColor: AppColors.primary,
         checkmarkColor: AppColors.onPrimary,
         labelStyle: TextStyle(color: selected ? AppColors.onPrimary : AppColors.textPrimary, fontWeight: FontWeight.w500),
       );
+
+  List<String> _schoolCourses() =>
+      ref.read(schoolInfoProvider).valueOrNull?.courses ?? const [];
 
   Future<void> _submit() async {
     void errorToast(String key) => toastification.show(
@@ -106,16 +129,27 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
     if (type == null) return errorToast('school_type_required');
     if (type.maxGrade(_program) > 0 && _grade == null) return errorToast('school_grade_required');
     if (!(_formKey.currentState?.validate() ?? false)) return;
+    final courses = _schoolCourses();
+    // Locked: resend the stored strings untouched (a legacy "２年生" would
+    // otherwise come back as "2" and be refused by the rules).
+    final user = ref.read(currentUserProvider);
+    final locked = _classLocked();
 
     await ref.read(authNotifierProvider.notifier).saveSchoolProfile(
           schoolType: type.key,
           schoolName: _schoolNameCtrl.text,
           // Hidden fields are saved as null so they never keep stale values.
-          grade: _grade == null ? null : '$_grade',
+          grade: locked ? user?.grade : (_grade == null ? null : '$_grade'),
           program: type.programs.isEmpty ? null : _program,
           faculty: type.hasFaculty ? _facultyCtrl.text : null,
           department: type.hasDepartment ? _departmentCtrl.text : null,
-          course: type.hasCourse ? _courseCtrl.text : null,
+          // Synced school courses win: only a matching chip is saved.
+          course: locked
+              ? user?.course
+              : courses.isNotEmpty
+                  ? (courses.contains(_courseCtrl.text) ? _courseCtrl.text : null)
+                  : (type.hasCourse ? _courseCtrl.text : null),
+          schoolDomain: ref.read(schoolDomainProvider),
         );
 
     final state = ref.read(authNotifierProvider);
@@ -143,6 +177,11 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
     final loading = ref.watch(authNotifierProvider).isLoading;
     final type = _selectedType;
     final maxGrade = type?.maxGrade(_program) ?? 0;
+    final schoolCourses = ref.watch(schoolInfoProvider).valueOrNull?.courses ?? const <String>[];
+    final showCourseChips = schoolCourses.isNotEmpty;
+    final showCourseField = type != null && type.hasCourse && !showCourseChips;
+    ref.watch(currentUserProvider);
+    final locked = _classLocked();
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -210,13 +249,18 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                   if (maxGrade > 0) ...[
                     const SizedBox(height: 16),
                     _label('school_grade_label'),
+                    if (locked) ...[
+                      const SizedBox(height: 4),
+                      Text(AppStrings.t('school_edit_locked'),
+                          style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                    ],
                     const SizedBox(height: 8),
                     Wrap(
                       spacing: 8,
                       runSpacing: 8,
                       children: [
                         for (var i = 1; i <= maxGrade; i++)
-                          _chip(AppStrings.t('school_grade_n', {'n': i}), i == _grade, () => _grade = i),
+                          _chip(AppStrings.t('school_grade_n', {'n': i}), i == _grade, () => _grade = i, enabled: !locked),
                       ],
                     ),
                   ],
@@ -238,17 +282,36 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                     AppInputField(
                       controller: _departmentCtrl,
                       hintText: AppStrings.t(type.departmentHintKey),
-                      textInputAction: type.hasCourse ? TextInputAction.next : TextInputAction.done,
-                      onSubmitted: type.hasCourse ? null : (_) => loading ? null : _submit(),
+                      textInputAction: showCourseField ? TextInputAction.next : TextInputAction.done,
+                      onSubmitted: showCourseField ? null : (_) => loading ? null : _submit(),
                       maxLength: 100,
                     ),
                   ],
-                  if (type != null && type.hasCourse) ...[
+                  if (showCourseChips) ...[
+                    const SizedBox(height: 16),
+                    _label('school_course_label'),
+                    const SizedBox(height: 4),
+                    Text(
+                      AppStrings.t('school_course_from_school'),
+                      style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        for (final c in schoolCourses)
+                          _chip(c, c == _courseCtrl.text, () => _courseCtrl.text = c, enabled: !locked),
+                      ],
+                    ),
+                  ],
+                  if (showCourseField) ...[
                     const SizedBox(height: 16),
                     _label('school_course_label'),
                     const SizedBox(height: 8),
                     AppInputField(
                       controller: _courseCtrl,
+                      readOnly: locked,
                       hintText: AppStrings.t('school_course_hint'),
                       textInputAction: TextInputAction.done,
                       onSubmitted: (_) => loading ? null : _submit(),

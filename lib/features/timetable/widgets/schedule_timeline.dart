@@ -1,9 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/constants/periods.dart';
 import '../../../core/l10n/app_strings.dart';
+import '../../../core/providers/clock_provider.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/date_helper.dart';
+import '../../../core/utils/responsive.dart';
+import '../../school/models/school.dart';
+import '../../school/school_providers.dart';
 import '../models/class_model.dart';
 import '../providers/timetable_provider.dart';
+import 'school_changes_list.dart';
+import 'add_edit_class_sheet.dart';
+import 'school_slot_card.dart';
 import 'timeline_class_card.dart';
 
 /// Vertical timeline of classes for the currently selected day, with a
@@ -11,6 +20,10 @@ import 'timeline_class_card.dart';
 ///
 /// [weekStart] is the Monday of the displayed week; together with
 /// [selectedDay] it gives each card the exact date it is shown for.
+///
+/// When the user's school timetable is synced, that day's school lessons come
+/// first (in the school's period order), followed by the personal classes,
+/// each tagged 自分. Without school data it shows personal classes only.
 class ScheduleTimeline extends ConsumerWidget {
   final int selectedDay;
   final DateTime weekStart;
@@ -27,7 +40,95 @@ class ScheduleTimeline extends ConsumerWidget {
     final dayClasses = classes.where((c) => c.dayOfWeek == day).toList()
       ..sort((a, b) => a.period.compareTo(b.period));
 
-    return AnimatedSwitcher(
+    // Loading/error: no school lessons yet, keep showing the personal list.
+    final info = ref.watch(schoolInfoProvider).valueOrNull;
+    final hasSchool = ref.watch(schoolClassProvider) != null;
+    final week = hasSchool ? ref.watch(schoolWeekProvider(weekStart)).valueOrNull : null;
+    final schoolDay = week?[DateHelper.dayKey(date)];
+    final periods = info?.periods ?? const <SchoolPeriod>[];
+    int order(SchoolSlot s) {
+      final i = periods.indexWhere((p) => p.key == s.period);
+      return i == -1 ? periods.length : i;
+    }
+
+    // List.sort isn't stable; the index tiebreak keeps same-period slots in
+    // their sheet order.
+    final indexed = [...?schoolDay?.slots].indexed.toList()
+      ..sort((a, b) {
+        final c = order(a.$2).compareTo(order(b.$2));
+        return c != 0 ? c : a.$1.compareTo(b.$1);
+      });
+    final slots = [for (final (_, s) in indexed) s];
+    final tagPersonal = slots.isNotEmpty;
+    final now = ref.watch(minuteTickProvider).valueOrNull ?? DateTime.now();
+    DateTime at(Hm t) => DateTime(date.year, date.month, date.day, t.$1, t.$2);
+
+    final rows = <Widget>[];
+    if (hasSchool && periods.isNotEmpty) {
+      // One row per school period: the lesson, or a dashed 空きコマ to add one.
+      for (var i = 0; i < periods.length; i++) {
+        final p = periods[i];
+        final slot = slots.where((s) => s.period == p.key).firstOrNull;
+        final start = at(p.start), end = at(p.end);
+        rows.add(_TimeRow(
+          label: p.label,
+          time: formatHm(p.start),
+          past: !now.isBefore(end),
+          live: !now.isBefore(start) && now.isBefore(end) && slot?.status != SchoolSlotStatus.cancelled,
+          child: slot == null
+              ? _FreeSlot(onTap: () => showAddEditClassSheet(context, ref))
+              : _LessonTile(
+                  slot: slot,
+                  live: !now.isBefore(start) && now.isBefore(end) && slot.status != SchoolSlotStatus.cancelled,
+                  minutesLeft: end.difference(now).inMinutes + 1,
+                ),
+        ));
+        // A gap of 30+ minutes before the next period is the lunch break.
+        if (i < periods.length - 1) {
+          final next = at(periods[i + 1].start);
+          if (next.difference(end).inMinutes >= 30) {
+            rows.add(_BreakLine(text: AppStrings.t('tt_lunch', {'time': '${formatHm(p.end)}–${formatHm(periods[i + 1].start)}'})));
+          }
+        }
+      }
+    } else {
+      // Slots whose period key is unknown still show, after the periods.
+      for (final s in slots) {
+        rows.add(SchoolSlotCard(slot: s, period: periods.where((p) => p.key == s.period).firstOrNull));
+      }
+    }
+    for (final c in dayClasses) {
+      final t = periodTimeLabels(c.period);
+      final end = periodEndOn(date, c.period);
+      rows.add(_TimeRow(
+        label: AppStrings.t('tt_period', {'n': c.period}),
+        time: t.start,
+        past: end != null && !now.isBefore(end),
+        live: false,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (tagPersonal)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Text(AppStrings.t('school_label_personal'),
+                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.accentText)),
+              ),
+            TimelineClassCard(classModel: c, date: date),
+          ],
+        ),
+      ));
+    }
+
+    final body = (dayClasses.isEmpty && slots.isEmpty && !(hasSchool && periods.isNotEmpty))
+        ? _EmptyDay(key: ValueKey('empty-$selectedDay'))
+        : ListView(
+            key: ValueKey('list-$selectedDay'),
+            padding: EdgeInsets.fromLTRB(20, 4, 20, context.isTablet ? 24 : 110),
+            children: rows,
+          );
+
+    final switcher = AnimatedSwitcher(
       duration: const Duration(milliseconds: 350),
       switchInCurve: Curves.easeOutExpo,
       switchOutCurve: Curves.easeIn,
@@ -38,14 +139,14 @@ class ScheduleTimeline extends ConsumerWidget {
           child: child,
         ),
       ),
-      child: dayClasses.isEmpty
-          ? _EmptyDay(key: ValueKey('empty-$selectedDay'))
-          : ListView.builder(
-              key: ValueKey('list-$selectedDay'),
-              padding: const EdgeInsets.fromLTRB(16, 14, 16, 24),
-              itemCount: dayClasses.length,
-              itemBuilder: (context, index) => TimelineClassCard(classModel: dayClasses[index], date: date),
-            ),
+      child: body,
+    );
+    if (!hasSchool || info?.lastSyncAt == null) return switcher;
+    return Column(
+      children: [
+        Expanded(child: switcher),
+        SchoolLastSyncLine(padding: EdgeInsets.only(bottom: context.isTablet ? 10 : 96)),
+      ],
     );
   }
 }
@@ -61,7 +162,7 @@ class _EmptyDay extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('🌤️', style: TextStyle(fontSize: 40)),
+            Icon(Icons.wb_sunny_outlined, size: 40, color: AppColors.textMuted),
             const SizedBox(height: 12),
             Text(
               AppStrings.t('tt_no_classes_day'),
@@ -73,4 +174,184 @@ class _EmptyDay extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Redesign timeline row: period label + start time in a 52px column, the
+/// lesson card beside it. Finished periods fade to 60%.
+class _TimeRow extends StatelessWidget {
+  final String label, time;
+  final bool past, live;
+  final Widget child;
+  const _TimeRow({required this.label, required this.time, required this.past, required this.live, required this.child});
+
+  @override
+  Widget build(BuildContext context) => Opacity(
+        opacity: past ? 0.6 : 1,
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 10),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: 52,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(label,
+                          style: TextStyle(
+                              fontSize: 13, fontWeight: FontWeight.w700, color: live ? AppColors.accentText : AppColors.textPrimary)),
+                      Text(time, style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(child: child),
+            ],
+          ),
+        ),
+      );
+}
+
+/// One school lesson in the day view; the live one is tinted with 授業中.
+class _LessonTile extends StatelessWidget {
+  final SchoolSlot slot;
+  final bool live;
+  final int minutesLeft;
+  const _LessonTile({required this.slot, required this.live, required this.minutesLeft});
+
+  @override
+  Widget build(BuildContext context) {
+    final badge = schoolSlotBadge(slot);
+    final accent = schoolSlotAccent(slot);
+    final cancelled = slot.status == SchoolSlotStatus.cancelled;
+    final detail = [
+      if (slot.room.isNotEmpty) slot.room,
+      if (slot.teacher.isNotEmpty) slot.teacher,
+      if (live) AppStrings.t('home_now_remaining', {'n': minutesLeft}),
+      if (slot.note.isNotEmpty) slot.note,
+    ].join(' · ');
+    // A uniform border keeps the rounded corners legal; the 4px subject bar
+    // is a child clipped by the same radius.
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        decoration: BoxDecoration(
+          color: live ? AppColors.primary.withValues(alpha: AppColors.isDark ? 0.14 : 0.12) : AppColors.cardSurface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: live ? AppColors.primary : AppColors.cardStroke),
+        ),
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (!live) Container(width: 4, color: accent),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+                  child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  slot.status == SchoolSlotStatus.elective
+                      ? AppStrings.t('school_slot_elective', {'label': slot.subject})
+                      : slot.subject,
+                  style: TextStyle(
+                    fontSize: 15,
+                    height: 1.45,
+                    fontWeight: live ? FontWeight.w700 : FontWeight.w500,
+                    color: cancelled ? AppColors.textSecondary : AppColors.textPrimary,
+                    decoration: cancelled ? TextDecoration.lineThrough : null,
+                  ),
+                ),
+              ),
+              if (live)
+                _Pill(text: AppStrings.t('class_live'), fill: AppColors.primary, ink: AppColors.onPrimary)
+              else if (badge != null)
+                _Pill(text: badge, fill: accent.withValues(alpha: AppColors.isDark ? 0.18 : 0.12), ink: accent),
+            ],
+          ),
+          if (detail.isNotEmpty) ...[
+            const SizedBox(height: 2),
+            Text(detail, style: TextStyle(fontSize: 12, height: 1.5, color: AppColors.textSecondary)),
+          ],
+        ],
+      ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _Pill extends StatelessWidget {
+  final String text;
+  final Color fill, ink;
+  const _Pill({required this.text, required this.fill, required this.ink});
+
+  @override
+  Widget build(BuildContext context) => Container(
+        height: 24,
+        padding: const EdgeInsets.symmetric(horizontal: 9),
+        decoration: BoxDecoration(color: fill, borderRadius: BorderRadius.circular(999)),
+        alignment: Alignment.center,
+        child: Text(text, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: ink)),
+      );
+}
+
+/// Empty period: a dashed-look button that opens the add-class sheet.
+class _FreeSlot extends StatelessWidget {
+  final VoidCallback onTap;
+  const _FreeSlot({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) => InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 56),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.checkboxUnchecked, width: 1.5),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.add_rounded, size: 18, color: AppColors.textSecondary),
+              const SizedBox(width: 8),
+              Text(AppStrings.t('tt_free_slot'),
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textSecondary)),
+            ],
+          ),
+        ),
+      );
+}
+
+/// 昼休み divider between two periods.
+class _BreakLine extends StatelessWidget {
+  final String text;
+  const _BreakLine({required this.text});
+
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.fromLTRB(64, 0, 0, 10),
+        child: Row(
+          children: [
+            Expanded(child: Divider(color: AppColors.cardStroke, height: 1)),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              child: Text(text, style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
+            ),
+            Expanded(child: Divider(color: AppColors.cardStroke, height: 1)),
+          ],
+        ),
+      );
 }

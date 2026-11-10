@@ -19,6 +19,7 @@ class UserModel with _$UserModel {
     String? faculty,
     String? department,
     String? course,
+    String? schoolDomain,
     required DateTime createdAt,
   }) = _UserModel;
 
@@ -39,6 +40,7 @@ class UserModel with _$UserModel {
       faculty: data['faculty'] as String?,
       department: data['department'] as String?,
       course: data['course'] as String?,
+      schoolDomain: data['schoolDomain'] as String?,
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }
@@ -63,6 +65,7 @@ class UserModel with _$UserModel {
         'faculty': faculty,
         'department': department,
         'course': course,
+        'schoolDomain': schoolDomain,
         'createdAt': Timestamp.fromDate(createdAt),
       };
 }

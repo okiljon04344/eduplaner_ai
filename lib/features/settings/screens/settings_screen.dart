@@ -18,6 +18,8 @@ import '../../../shared/widgets/language_picker_button.dart';
 import '../../assignments/providers/assignments_provider.dart';
 import '../../auth/models/school_type.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../school/school_providers.dart';
+import '../../timetable/widgets/school_changes_list.dart';
 import '../../timetable/providers/timetable_provider.dart';
 import '../widgets/group_share_section.dart';
 
@@ -114,37 +116,36 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(title: Text(AppStrings.t('set_title')), backgroundColor: AppColors.background, elevation: 0),
+      // A bottom-nav tab now: no back arrow, title on the left like the other tabs.
+      appBar: AppBar(
+        title: Text(AppStrings.t('set_title'),
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+        centerTitle: false,
+        automaticallyImplyLeading: false,
+        backgroundColor: AppColors.background,
+        elevation: 0,
+      ),
       body: ResponsiveBody(
         maxWidth: 640,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 40),
+          padding: EdgeInsets.fromLTRB(20, 8, 20, context.isTablet ? 40 : 120),
           children: [
-            // Profile hero — gradient-tinted card so it reads as the top of the
-            // page, not just another row.
+            // Profile card: plain surface like the other cards (Redesign).
             Container(
-              padding: const EdgeInsets.all(18),
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [AppColors.primary.withValues(alpha: 0.16), AppColors.primary.withValues(alpha: 0.04)],
-                ),
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
+                color: AppColors.cardSurface,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: AppColors.cardStroke),
               ),
               child: Row(
                 children: [
                   Container(
                     width: 52,
                     height: 52,
-                    decoration: BoxDecoration(
-                      gradient: AppColors.avatarGradient,
-                      shape: BoxShape.circle,
-                      boxShadow: [BoxShadow(color: AppColors.primaryMid.withValues(alpha: 0.5), blurRadius: 18)],
-                    ),
+                    decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
                     alignment: Alignment.center,
-                    child: Text(initials, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: Colors.white)),
+                    child: Text(initials, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.onPrimary)),
                   ),
                   const SizedBox(width: 14),
                   Expanded(
@@ -181,6 +182,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   trailing: Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
                   onTap: () => context.push('/profile-setup'),
                 ),
+                const SchoolLastSyncLine(padding: EdgeInsets.fromLTRB(16, 0, 16, 12), textAlign: TextAlign.start),
+                if (ref.watch(schoolRoleProvider).teacher)
+                  _SettingsRow(
+                    icon: Icons.co_present_outlined,
+                    iconColor: AppColors.warning,
+                    title: AppStrings.t('teacher_title'),
+                    subtitle: AppStrings.t('teacher_entry_sub'),
+                    trailing: Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
+                    onTap: () => context.push('/teacher'),
+                  ),
+                if (ref.watch(schoolRoleProvider).admin)
+                  _SettingsRow(
+                    icon: Icons.admin_panel_settings_outlined,
+                    iconColor: AppColors.textSecondary,
+                    title: AppStrings.t('school_admin_title'),
+                    subtitle: AppStrings.t('school_admin_entry_sub'),
+                    trailing: Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
+                    onTap: () => context.push('/school-admin'),
+                  ),
               ],
             ),
             _SectionTitle(AppStrings.t('settings_section_ai')),

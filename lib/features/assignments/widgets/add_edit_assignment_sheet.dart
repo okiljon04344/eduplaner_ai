@@ -8,6 +8,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/date_helper.dart';
 import '../../../shared/widgets/app_input_field.dart';
+import '../../../shared/widgets/app_sheet.dart';
 import '../../../shared/widgets/confirm_dialog.dart';
 import '../../../shared/widgets/star_rating.dart';
 import '../../auth/providers/auth_provider.dart';
@@ -17,12 +18,10 @@ import '../providers/assignments_provider.dart';
 import 'assignment_actions.dart';
 
 Future<void> showAddEditAssignmentSheet(BuildContext context, WidgetRef ref, {AssignmentModel? existing}) {
-  // backgroundColor/shape are inherited from the app's dark bottomSheetTheme.
-  return showModalBottomSheet(
-    context: context,
-    isScrollControlled: true,
+  return showAppSheet(
+    context,
+    (_) => _AddEditAssignmentSheet(existing: existing),
     useRootNavigator: true,
-    builder: (_) => _AddEditAssignmentSheet(existing: existing),
   );
 }
 

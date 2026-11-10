@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/subject_colors.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../shared/widgets/pressable.dart';
 import '../models/assignment_model.dart';
+import 'animated_assignment_check.dart';
 import 'assignment_actions.dart';
 import 'assignment_detail_sheet.dart';
 import 'progress_bar_row.dart';
@@ -18,66 +20,71 @@ class AssignmentCard extends ConsumerWidget {
     final subjectStyle = SubjectColors.of(assignment.subject);
 
     // Entry tween removed: it replayed on every rebuild while scrolling (scroll jank).
-    return RepaintBoundary(child: GestureDetector(
-        onTap: () => showAssignmentDetailSheet(context, ref, assignment),
-        child: Container(
-          clipBehavior: Clip.hardEdge,
-          decoration: BoxDecoration(
-            color: AppColors.cardSurface,
-            borderRadius: BorderRadius.circular(AppColors.isDark ? 22 : 20),
-            border: Border.all(color: AppColors.cardStroke),
-            boxShadow: AppColors.cardShadow,
-          ),
-          child: Stack(
-            children: [
-              Positioned(
-                top: 0,
-                right: 0,
-                child: IgnorePointer(
-                  child: Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: RadialGradient(
-                        colors: [assignment.dueDateColor.withValues(alpha: 0.08), Colors.transparent],
+    return RepaintBoundary(
+      child: Pressable(
+        child: GestureDetector(
+          onTap: () => showAssignmentDetailSheet(context, ref, assignment),
+          child: Container(
+            clipBehavior: Clip.hardEdge,
+            decoration: BoxDecoration(
+              color: AppColors.cardSurface,
+              borderRadius: BorderRadius.circular(AppColors.isDark ? 22 : 20),
+              border: Border.all(color: AppColors.cardStroke),
+              boxShadow: AppColors.cardShadow,
+            ),
+            child: Stack(
+              children: [
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: IgnorePointer(
+                    child: Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: RadialGradient(
+                          colors: [assignment.dueDateColor.withValues(alpha: 0.08), Colors.transparent],
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    GestureDetector(
-                      onTap: () => toggleAssignmentDone(context, ref, assignment),
-                      child: Container(
-                        width: 28,
-                        height: 28,
-                        margin: const EdgeInsets.only(top: 1),
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: isCompleted
-                                ? AppColors.primaryMid
-                                : (AppColors.isDark
-                                    ? Colors.white.withValues(alpha: 0.15)
-                                    : AppColors.checkboxUnchecked),
-                            width: 2,
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Pressable(
+                        child: GestureDetector(
+                          onTap: () => toggleAssignmentDone(context, ref, assignment),
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 1),
+                            child: AnimatedAssignmentCheck(
+                              isCompleted: isCompleted,
+                              size: 28,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: isCompleted
+                                      ? AppColors.primaryMid
+                                      : (AppColors.isDark
+                                          ? Colors.white.withValues(alpha: 0.15)
+                                          : AppColors.checkboxUnchecked),
+                                  width: 2,
+                                ),
+                                color: isCompleted ? AppColors.primary : Colors.transparent,
+                                gradient: isCompleted ? AppColors.gradientPrimary : null,
+                                boxShadow: isCompleted && AppColors.isDark
+                                    ? [BoxShadow(color: AppColors.primaryMid.withValues(alpha: 0.6), blurRadius: 12)]
+                                    : null,
+                              ),
+                            ),
                           ),
-                          gradient: isCompleted ? AppColors.gradientPrimary : null,
-                          boxShadow: isCompleted && AppColors.isDark
-                              ? [BoxShadow(color: AppColors.primaryMid.withValues(alpha: 0.6), blurRadius: 12)]
-                              : null,
                         ),
-                        child: isCompleted ? const Icon(Icons.check, size: 14, color: AppColors.onPrimary) : null,
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
+                      const SizedBox(width: 12),
+                      Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -147,6 +154,7 @@ class AssignmentCard extends ConsumerWidget {
             ],
           ),
         ),
-      ));
+      ),
+    ));
   }
 }

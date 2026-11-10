@@ -75,6 +75,7 @@ class AuthNotifier extends AsyncNotifier<void> {
     String? faculty,
     String? department,
     String? course,
+    String? schoolDomain,
   }) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
@@ -86,6 +87,7 @@ class AuthNotifier extends AsyncNotifier<void> {
             faculty: faculty,
             department: department,
             course: course,
+            schoolDomain: schoolDomain,
           );
       ref.invalidate(authStateProvider);
     });

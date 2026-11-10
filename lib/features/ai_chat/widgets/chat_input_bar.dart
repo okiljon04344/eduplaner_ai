@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/responsive.dart';
 import '../providers/chat_provider.dart';
 
 class ChatInputBar extends ConsumerStatefulWidget {
@@ -42,8 +43,10 @@ class _ChatInputBarState extends ConsumerState<ChatInputBar> {
   @override
   Widget build(BuildContext context) {
     final borderColor = _isFocused ? AppColors.primaryMid.withValues(alpha: 0.6) : AppColors.primaryMid.withValues(alpha: 0.2);
+    final isKeyboardOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
+    final bottomNavPad = (!context.isTablet && !isKeyboardOpen) ? 84.0 : 0.0;
     return Container(
-      padding: EdgeInsets.fromLTRB(16, 10, 16, 16 + MediaQuery.viewInsetsOf(context).bottom),
+      padding: EdgeInsets.fromLTRB(16, 10, 16, 16 + bottomNavPad + MediaQuery.viewInsetsOf(context).bottom),
       decoration: BoxDecoration(
         // Theme-aware: was a hardcoded dark tone, which left a dark bar at the
         // bottom of the chat screen in light mode.
