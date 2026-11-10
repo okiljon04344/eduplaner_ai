@@ -16,6 +16,9 @@ import '../../features/auth/screens/profile_setup_screen.dart';
 import '../../features/onboarding/providers/onboarding_provider.dart';
 import '../../features/onboarding/screens/onboarding_screen.dart';
 import '../../features/quiz/screens/quiz_screen.dart';
+import '../../features/school/screens/teacher_home_screen.dart';
+import '../../features/school/screens/teacher_notices_screen.dart';
+import '../../features/school/screens/teacher_screen.dart';
 import '../../features/settings/screens/settings_screen.dart';
 import '../../features/timetable/screens/timetable_screen.dart';
 import '../../shared/widgets/app_shell.dart';
@@ -96,8 +99,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/login/reset', pageBuilder: (_, s) => _slideUp(s, const ResetPasswordScreen())),
       GoRoute(path: '/onboarding', pageBuilder: (_, s) => _fade(s, const OnboardingScreen())),
       GoRoute(path: '/profile-setup', pageBuilder: (_, s) => _fade(s, const ProfileSetupScreen())),
-      GoRoute(path: '/settings', pageBuilder: (_, s) => _slideRight(s, const SettingsScreen())),
       GoRoute(path: '/quiz', pageBuilder: (_, s) => _slideUp(s, const QuizScreen())),
+      GoRoute(path: '/teacher', pageBuilder: (_, s) => _slideRight(s, const TeacherHomeScreen())),
+      GoRoute(path: '/teacher/timetable', pageBuilder: (_, s) => _slideRight(s, const TeacherScreen())),
+      GoRoute(path: '/teacher/notices', pageBuilder: (_, s) => _slideRight(s, const TeacherNoticesScreen())),
+      GoRoute(path: '/school-admin', pageBuilder: (_, s) => _slideRight(s, const SchoolAdminScreen())),
       ShellRoute(
         builder: (context, state, child) => AppShell(child: child),
         routes: [
@@ -105,6 +111,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(path: '/timetable', builder: (_, __) => const TimetableScreen()),
           GoRoute(path: '/assignments', builder: (_, __) => const AssignmentsScreen()),
           GoRoute(path: '/ai', builder: (_, __) => const AiChatScreen()),
+          GoRoute(path: '/settings', builder: (_, __) => const SettingsScreen()),
         ],
       ),
     ],

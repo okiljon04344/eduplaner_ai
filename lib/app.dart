@@ -5,8 +5,10 @@ import 'package:toastification/toastification.dart';
 import 'core/providers/locale_provider.dart';
 import 'core/providers/theme_provider.dart';
 import 'core/router/app_router.dart';
+import 'core/services/notification_service.dart';
 import 'core/theme/app_colors.dart';
 import 'core/theme/app_theme.dart';
+import 'features/auth/models/user_model.dart';
 import 'features/auth/providers/auth_provider.dart';
 import 'features/onboarding/providers/onboarding_provider.dart';
 
@@ -21,11 +23,49 @@ import 'features/onboarding/providers/onboarding_provider.dart';
 ///      cheaper alternative to threading `Theme.of(context)` through ~370 call
 ///      sites.  GoRouter's navigation location is preserved across the remount;
 ///      in-progress scroll / animation / form state on the visible screen is not.
-class EduPlannerApp extends ConsumerWidget {
+class EduPlannerApp extends ConsumerStatefulWidget {
   const EduPlannerApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<EduPlannerApp> createState() => _EduPlannerAppState();
+}
+
+class _EduPlannerAppState extends ConsumerState<EduPlannerApp> {
+  @override
+  void initState() {
+    super.initState();
+    NotificationService.pendingRoute.addListener(_handlePendingRoute);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _handlePendingRoute());
+  }
+
+  @override
+  void dispose() {
+    NotificationService.pendingRoute.removeListener(_handlePendingRoute);
+    super.dispose();
+  }
+
+  void _handlePendingRoute() {
+    final route = NotificationService.pendingRoute.value;
+    if (route == null) return;
+    if (!NotificationService.isAllowedRoute(route)) {
+      NotificationService.pendingRoute.value = null;
+      return;
+    }
+    final user = ref.read(authStateProvider).valueOrNull;
+    if (user != null) {
+      NotificationService.pendingRoute.value = null;
+      ref.read(routerProvider).go(route);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    ref.listen<AsyncValue<UserModel?>>(authStateProvider, (prev, next) {
+      if (next.valueOrNull != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) => _handlePendingRoute());
+      }
+    });
+
     final themeMode = ref.watch(themeProvider);
     final locale = ref.watch(localeProvider);
     final resolvedBrightness = switch (themeMode) {

@@ -1,8 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show LicenseEntryWithLineBreaks, LicenseRegistry;
+import 'package:flutter/foundation.dart'
+    show LicenseEntryWithLineBreaks, LicenseRegistry, TargetPlatform, defaultTargetPlatform, kDebugMode, kIsWeb;
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -31,6 +34,29 @@ import 'firebase_options.dart';
 /// See the emulator block in `initFirebase` below.
 const kUseEmulator = bool.fromEnvironment('USE_EMULATOR');
 
+/// reCAPTCHA v3 site key for App Check on web (public, not a secret):
+/// `flutter build web --dart-define=RECAPTCHA_SITE_KEY=...`. Empty = web
+/// runs without App Check, so a build without the key still works.
+const kRecaptchaSiteKey = String.fromEnvironment('RECAPTCHA_SITE_KEY');
+
+/// App Check proves requests come from this app, not a script reusing the
+/// API key. Debug builds use the debug provider (its token is printed to the
+/// log once; register it in the console). Enforcement is switched on in the
+/// console / Cloud Functions only after the metrics show verified traffic.
+Future<void> activateAppCheck() async {
+  final mobile = defaultTargetPlatform == TargetPlatform.android || defaultTargetPlatform == TargetPlatform.iOS;
+  if (kIsWeb ? kRecaptchaSiteKey.isEmpty : !mobile) return;
+  try {
+    await FirebaseAppCheck.instance.activate(
+      providerWeb: kIsWeb ? ReCaptchaV3Provider(kRecaptchaSiteKey) : null,
+      providerAndroid: kDebugMode ? const AndroidDebugProvider() : const AndroidPlayIntegrityProvider(),
+      providerApple: kDebugMode ? const AppleDebugProvider() : const AppleAppAttestWithDeviceCheckFallbackProvider(),
+    );
+  } catch (e) {
+    debugPrint('App Check init error: $e');
+  }
+}
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   LicenseRegistry.addLicense(() async* {
@@ -48,8 +74,12 @@ Future<void> main() async {
       // and Firestore at `firebase emulators:start` so test accounts never
       // touch production. Off in every normal build.
       if (kUseEmulator) {
-        await FirebaseAuth.instance.useAuthEmulator('localhost', 9099);
-        FirebaseFirestore.instance.useFirestoreEmulator('localhost', 8085);
+        const host = String.fromEnvironment('EMULATOR_HOST', defaultValue: 'localhost');
+        await FirebaseAuth.instance.useAuthEmulator(host, 9099);
+        FirebaseFirestore.instance.useFirestoreEmulator(host, 8085);
+        FirebaseDatabase.instance.useDatabaseEmulator(host, 9000);
+      } else {
+        await activateAppCheck();
       }
     } catch (e) {
       debugPrint('Firebase init error: $e');

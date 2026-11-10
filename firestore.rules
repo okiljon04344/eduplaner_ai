@@ -36,6 +36,21 @@ service cloud.firestore {
         || withinLength(data[key], maxLen);
     }
 
+    /// Returns true when the caller's *verified* email belongs to domain [d].
+    function inDomain(d) {
+      return isAuth() && request.auth.token.email_verified == true
+        && (request.auth.token.email.split('@')[request.auth.token.email.split('@').size() - 1] == d
+            || isTester(d));
+    }
+
+    /// Pilot test account (e.g. Gmail) that a school admin let in as a
+    /// student of [d] (setSchoolTester writes school_testers/{email}).
+    function isTester(d) {
+      return isAuth() && request.auth.token.email_verified == true
+        && exists(/databases/$(database)/documents/school_testers/$(request.auth.token.email))
+        && get(/databases/$(database)/documents/school_testers/$(request.auth.token.email)).data.domain == d;
+    }
+
     /// 休講/変更 note: absent, null, or a string of at most 200 chars.
     function statusNoteOk(data) {
       return optStringWithin(data, 'statusNote', 200);
@@ -52,7 +67,32 @@ service cloud.firestore {
     // Field-length and key-count caps prevent storage abuse.
     match /users/{userId} {
       allow read: if isAuth() && isOwner(userId);
-      allow write: if isAuth() && isOwner(userId)
+      allow delete: if isAuth() && isOwner(userId);
+      allow create: if isAuth() && isOwner(userId) && userFieldsOk();
+      // A linked student's saved 学年/コース stay fixed unless the school
+      // admin turned on schools.allowStudentEdit (setSchoolStudentEdit).
+      allow update: if isAuth() && isOwner(userId) && userFieldsOk()
+        && (!classLocked()
+            || (request.resource.data.get('grade', null) == resource.data.get('grade', null)
+                && request.resource.data.get('course', null) == resource.data.get('course', null)));
+    }
+
+    function nonEmpty(v) {
+      return v is string && v.size() > 0;
+    }
+
+    function classLocked() {
+      let d = resource.data.get('schoolDomain', null);
+      return nonEmpty(d)
+        && exists(/databases/$(database)/documents/schools/$(d))
+        && nonEmpty(resource.data.get('grade', null))
+        && nonEmpty(resource.data.get('course', null))
+        && resource.data.course in get(/databases/$(database)/documents/schools/$(d)).data.get('courses', [])
+        && get(/databases/$(database)/documents/schools/$(d)).data.get('allowStudentEdit', false) != true;
+    }
+
+    function userFieldsOk() {
+      return true
         && request.resource.data.keys().size() <= 20
         && optStringWithin(request.resource.data, 'name',  200)
         && optStringWithin(request.resource.data, 'email', 320)
@@ -60,7 +100,44 @@ service cloud.firestore {
         && optStringWithin(request.resource.data, 'faculty', 200)
         && optStringWithin(request.resource.data, 'department', 200)
         && optStringWithin(request.resource.data, 'course', 200)
-        && optStringWithin(request.resource.data, 'fcmToken', 500);
+        && optStringWithin(request.resource.data, 'fcmToken', 500)
+        && optStringWithin(request.resource.data, 'language', 10)
+        && (!('schoolDomain' in request.resource.data)
+            || request.resource.data.schoolDomain == null
+            || request.resource.data.schoolDomain == request.auth.token.email.split('@')[request.auth.token.email.split('@').size() - 1]
+            || isTester(request.resource.data.schoolDomain));
+    }
+
+    // ── School timetable sync (server-written, Admin SDK only) ─────────────
+    // Clients get single documents only, and only for their own verified
+    // email domain. No list, no write. `school_secrets` deliberately has no
+    // rule at all (implicit deny).
+    match /schools/{domain} {
+      allow get: if inDomain(domain);
+    }
+    // Id-based so `get` on a missing day is allowed (the app listens to all
+    // 5 weekdays). Id format: {domain}_{grade}_{course}_{yyyymmdd}.
+    match /school_days/{dayId} {
+      allow get: if inDomain(dayId.split('_')[0]);
+    }
+    // Id format: {domain}_{grade}_{course}.
+    match /school_changes/{feedId} {
+      allow get: if inDomain(feedId.split('_')[0]);
+    }
+    // Teacher input per class-day, same id format as school_days. Written
+    // only by the publishSchoolOverride Cloud Function.
+    // Test-account mapping: each account may read only its own entry.
+    match /school_testers/{email} {
+      allow get: if isAuth() && request.auth.token.email == email;
+    }
+    match /school_overrides/{dayId} {
+      allow get: if inDomain(dayId.split('_')[0]);
+    }
+    // お知らせボード: written only by publishSchoolNotice. Any student or
+    // teacher of the school may list them (the app queries by domain and
+    // filters by its own class); the rule checks the domain of every doc.
+    match /school_notices/{noticeId} {
+      allow read: if inDomain(resource.data.domain);
     }
 
     // ── Study groups ───────────────────────────────────────────────────────

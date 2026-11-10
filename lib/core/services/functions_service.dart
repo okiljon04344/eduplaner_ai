@@ -13,7 +13,10 @@ abstract class FunctionsService {
     final f = FirebaseFunctions.instanceFor(region: 'asia-northeast1');
     // Emulator-auth tokens are rejected by production functions anyway;
     // route to a (possibly absent) local functions emulator instead.
-    if (const bool.fromEnvironment('USE_EMULATOR')) f.useFunctionsEmulator('localhost', 5001);
+    if (const bool.fromEnvironment('USE_EMULATOR')) {
+      const host = String.fromEnvironment('EMULATOR_HOST', defaultValue: 'localhost');
+      f.useFunctionsEmulator(host, 5001);
+    }
     return f;
   }();
   static const Duration timeout = Duration(seconds: 120);

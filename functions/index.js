@@ -20,13 +20,28 @@
 import {GoogleGenAI} from '@google/genai';
 import {initializeApp} from 'firebase-admin/app';
 import {getAuth} from 'firebase-admin/auth';
-import {FieldValue, getFirestore} from 'firebase-admin/firestore';
+import {getDatabase} from 'firebase-admin/database';
+import {FieldPath, FieldValue, getFirestore} from 'firebase-admin/firestore';
 import {getMessaging} from 'firebase-admin/messaging';
 import {HttpsError, onCall} from 'firebase-functions/https';
-import {defineSecret} from 'firebase-functions/params';
+import {defineSecret, defineString} from 'firebase-functions/params';
+import {onSchedule} from 'firebase-functions/v2/scheduler';
 import {onDocumentUpdated} from 'firebase-functions/v2/firestore';
 import {logger} from 'firebase-functions';
 import mammoth from 'mammoth';
+import {
+  exchangeCode, refreshAccessToken, getFileMeta, downloadXlsx,
+} from './school/google.js';
+import {
+  assertLinkAllowed, domainOf, notifyClass, sendAll, syncAllSchools, syncSchool, tokyoToday,
+} from './school/sync.js';
+import {
+  canEditSlot, isTeacher, normalizeEmail, normalizeTeacherEmail, publishOverride, readsPath, rtdbKey,
+  teacherProfileOf, validateOverride,
+} from './school/overrides.js';
+import {deleteNotice, publishNotice, validateNotice} from './school/notices.js';
+import {classSizes} from './school/class_sizes.js';
+import {pt, recipientOf, weekdayName} from './school/push_i18n.js';
 
 initializeApp();
 
@@ -41,6 +56,8 @@ let _db;
 let _messaging;
 let _ai;
 const db = () => (_db ??= getFirestore());
+// Realtime Database: only 既読 receipts (reads/) and the tester mirror (testers/).
+const rtdb = () => getDatabase();
 const messaging = () => (_messaging ??= getMessaging());
 const gemini = () => (_ai ??= new GoogleGenAI({apiKey: geminiApiKey.value()}));
 
@@ -51,30 +68,30 @@ const GEMINI_MODEL = 'gemini-flash-latest';
 // allow-list so an arbitrary client-supplied string can never be injected
 // into the prompt. Shared by every AI callable that replies in the user's
 // language; falls back to Japanese for an unrecognised/missing code.
-const LANGUAGE_NAMES = {
+export const LANGUAGE_NAMES = {
   ja: 'Japanese', en: 'English', uz: 'Uzbek', zh: 'Simplified Chinese',
   zh_TW: 'Traditional Chinese', ko: 'Korean', vi: 'Vietnamese', th: 'Thai',
   id: 'Indonesian', ms: 'Malay', hi: 'Hindi', ar: 'Arabic', es: 'Spanish',
   fr: 'French', de: 'German', pt: 'Portuguese', ru: 'Russian', it: 'Italian',
   tr: 'Turkish', nl: 'Dutch', fil: 'Filipino',
 };
-const replyLanguageOf = (language) => LANGUAGE_NAMES[language] ?? 'Japanese';
+export const replyLanguageOf = (language) => LANGUAGE_NAMES[language] ?? 'Japanese';
 
 /// Throws the standard `unauthenticated` error every callable function opens
 /// with. Centralised so the message/code stays identical across all six
 /// callables instead of being retyped at each one.
-function requireAuth(request) {
+export function requireAuth(request) {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'Login is required.');
   }
 }
 
-const AI_DAILY_LIMIT = 100;
+export const AI_DAILY_LIMIT = 100;
 
 /// Per-user daily cap on Gemini-backed calls, so one account can't run up
 /// the Gemini bill. Counter lives in `ai_usage/{uid}` (no client rule =
 /// implicit deny, so only the Admin SDK touches it) and resets per UTC day.
-async function enforceAiQuota(uid) {
+export async function enforceAiQuota(uid) {
   const ref = db().collection('ai_usage').doc(uid);
   const today = new Date().toISOString().slice(0, 10);
   await db().runTransaction(async (tx) => {
@@ -92,7 +109,7 @@ async function enforceAiQuota(uid) {
 /// no fault of the user (Gemini error, unparsable output). Only refunds when
 /// the counter is still on the same UTC day, so a call straddling midnight
 /// can't push tomorrow's counter negative.
-async function refundAiQuota(uid) {
+export async function refundAiQuota(uid) {
   const ref = db().collection('ai_usage').doc(uid);
   const today = new Date().toISOString().slice(0, 10);
   await db().runTransaction(async (tx) => {
@@ -106,7 +123,7 @@ async function refundAiQuota(uid) {
 
 /// `JSON.stringify` a value and cap it to [max] chars — the shared truncation
 /// idiom used everywhere untrusted/unbounded data is embedded in a prompt.
-function truncatedJson(value, max = 3000) {
+export function truncatedJson(value, max = 3000) {
   return JSON.stringify(value).slice(0, max);
 }
 
@@ -133,7 +150,7 @@ const UNAVAILABLE_ERROR_RE = /unavailable|timeout|deadline/i;
 /// Map any thrown Gemini SDK error into an `HttpsError` with a code the
 /// client can distinguish. Never let raw SDK error text (which may include
 /// prompt fragments, endpoint URLs, or stack traces) reach the client.
-function mapGeminiError(err, japaneseFallback) {
+export function mapGeminiError(err, japaneseFallback) {
   const status = err?.status ?? err?.response?.status ?? err?.code;
   const message = String(err?.message ?? '');
   logger.error('Gemini call failed', {status, message: message.slice(0, 500)});
@@ -168,7 +185,7 @@ async function callGemini(config, japaneseFallback) {
 /// Extract a JSON object from a Gemini text response. Handles ```json fences,
 /// ``` fences, leading/trailing prose ("Here's the JSON: {...}"), and stray
 /// backticks. Returns the first balanced `{...}` block found.
-function extractJson(raw) {
+export function extractJson(raw) {
   if (!raw) return null;
   let text = raw.trim();
   // Strip a leading ```json or ``` fence and a trailing ``` fence, if present.
@@ -276,7 +293,32 @@ export const deleteAccount = onCall({
     }
   };
 
+  // 既読 receipts live in RTDB under the school; find which school first.
+  // ponytail: reads the whole school subtree; fine at pilot size, index
+  // receipts per uid if a school grows to thousands of announcements.
+  const deleteReadReceipts = async () => {
+    const raw = request.auth.token.email;
+    const email = raw ? normalizeEmail(raw) : null;
+    const [userSnap, testerSnap] = await Promise.all([
+      firestore.collection('users').doc(uid).get(),
+      email ? firestore.collection('school_testers').doc(email).get() : null,
+    ]);
+    const domains = new Set([userSnap.data()?.schoolDomain, testerSnap?.data()?.domain].filter(Boolean));
+    for (const domain of domains) {
+      const root = rtdb().ref(`reads/${rtdbKey(domain)}`);
+      const updates = {};
+      (await root.get()).forEach((cls) => {
+        cls.forEach((slot) => {
+          if (slot.hasChild(uid)) updates[`${cls.key}/${slot.key}/${uid}`] = null;
+        });
+      });
+      if (Object.keys(updates).length) await root.update(updates);
+    }
+  };
+
   try {
+    await deleteReadReceipts().catch((err) =>
+      logger.warn('deleteAccount: read receipts delete failed', {uid, message: String(err?.message ?? '').slice(0, 300)}));
     await Promise.all([
       deleteQuery(firestore.collection('assignments').where('userId', '==', uid)),
       deleteQuery(firestore.collection('timetables').where('userId', '==', uid)),
@@ -312,13 +354,13 @@ export const deleteAccount = onCall({
   }
 });
 
-const GROUP_CODE_LENGTH = 6;
-const MAX_GROUP_MEMBERS = 60;
-const JOIN_DAILY_LIMIT = 15;
+export const GROUP_CODE_LENGTH = 6;
+export const MAX_GROUP_MEMBERS = 60;
+export const JOIN_DAILY_LIMIT = 15;
 
 /// Per-user daily cap on `joinGroupByCode` attempts to prevent brute-forcing
 /// 6-character group codes. Shares the admin-only `ai_usage/{uid}` doc.
-async function enforceJoinAttemptLimit(uid) {
+export async function enforceJoinAttemptLimit(uid) {
   const ref = db().collection('ai_usage').doc(uid);
   const today = new Date().toISOString().slice(0, 10);
   await db().runTransaction(async (tx) => {
@@ -395,7 +437,7 @@ export const joinGroupByCode = onCall({
   return {groupId: groupRef.id};
 });
 
-const CLASS_STATUS_PUSH_COOLDOWN_MS = 5 * 60 * 1000;
+export const CLASS_STATUS_PUSH_COOLDOWN_MS = 5 * 60 * 1000;
 
 /// 休講・変更のアラート — when a shared class's status flips to
 /// cancelled/changed, push-notify every other group member via FCM. Silent
@@ -435,19 +477,18 @@ export const onClassStatusChanged = onDocumentUpdated({
   // getAll is one round trip instead of N parallel doc reads.
   const userRefs = memberIds.map((id) => firestore.collection('users').doc(id));
   const userDocs = await firestore.getAll(...userRefs);
-  const tokens = userDocs.map((d) => d.data()?.fcmToken).filter(Boolean);
-  if (tokens.length === 0) return;
+  const recipients = userDocs.map((d) => recipientOf(d.data())).filter((r) => r.token);
+  if (recipients.length === 0) return;
 
-  const label = after.status === 'cancelled' ? '休講' : '変更';
   try {
-    await messaging().sendEachForMulticast({
-      tokens,
-      notification: {
-        title: `${after.subject}が${label}になりました`,
-        body: after.statusNote || `${after.dayOfWeek}曜日 ${after.period}限`,
-      },
-      android: {notification: {channelId: 'eduplanner_reminders'}},
-    });
+    await sendAll((m) => messaging().sendEachForMulticast(m), recipients, (lang) => ({
+      title: pt(lang, 'push_status_title', {
+        subject: after.subject,
+        status: pt(lang, after.status === 'cancelled' ? 'push_kind_cancelled' : 'push_kind_changed'),
+      }),
+      body: after.statusNote ||
+        pt(lang, 'push_status_body', {day: weekdayName(after.dayOfWeek, lang), n: after.period}),
+    }));
   } catch (err) {
     logger.error('FCM multicast failed', {groupId: after.groupId, message: String(err?.message ?? '').slice(0, 300)});
   }
@@ -594,15 +635,15 @@ export const analyzeWeakArea = onCall({
 // 10MB decoded ceiling — base64 inflates size by ~4/3, so this bounds the
 // request payload too. Chosen to comfortably fit a phone photo or a
 // multi-page scanned PDF while keeping Gemini's request size sane.
-const MAX_FILE_BYTES = 10 * 1024 * 1024;
-const MAX_DOCX_UNCOMPRESSED_BYTES = 25 * 1024 * 1024;
-const MAX_DOCX_ENTRIES = 200;
-const MAX_EXTRACTED_TEXT_CHARS = 6000;
+export const MAX_FILE_BYTES = 10 * 1024 * 1024;
+export const MAX_DOCX_UNCOMPRESSED_BYTES = 25 * 1024 * 1024;
+export const MAX_DOCX_ENTRIES = 200;
+export const MAX_EXTRACTED_TEXT_CHARS = 6000;
 
 /// Inspects the ZIP Central Directory of a `.docx` buffer before handing it
 /// to `mammoth` so a crafted zip-bomb cannot expand into gigabytes of heap
 /// and crash the function instance with OOM.
-function validateDocxZip(buf) {
+export function validateDocxZip(buf) {
   // Minimum ZIP with End of Central Directory (EOCD) record is 22 bytes;
   // starts with PK\x03\x04.
   if (!Buffer.isBuffer(buf) || buf.length < 22 || buf.readUInt32LE(0) !== 0x04034b50) {
@@ -769,4 +810,270 @@ export const analyzeAssignmentSubmission = onCall({
     await refundAiQuota(uid).catch(() => {});
     throw err;
   }
+});
+
+// ---------------------------------------------------------------------------
+// School timetable sync (logic lives in ./school/)
+// ---------------------------------------------------------------------------
+const googleClientId = defineString('GOOGLE_OAUTH_CLIENT_ID');
+const googleClientSecret = defineSecret('GOOGLE_OAUTH_CLIENT_SECRET');
+const SCHOOL_SYNC_OPTS = {
+  region: 'asia-northeast1',
+  memory: '512MiB',
+  timeoutSeconds: 300,
+  secrets: [googleClientSecret],
+};
+
+// Params/secrets are only readable inside a handler, so bind them lazily.
+const googleCreds = () => ({
+  clientId: googleClientId.value(),
+  clientSecret: googleClientSecret.value(),
+});
+
+function schoolSyncDeps() {
+  const creds = googleCreds();
+  return {
+    db: db(),
+    now: () => new Date(),
+    sendMulticast: (message) => messaging().sendEachForMulticast(message),
+    google: {
+      exchangeCode: (code) => exchangeCode(code, creds),
+      refreshAccessToken: (token) => refreshAccessToken(token, creds),
+      getFileMeta,
+      downloadXlsx,
+    },
+  };
+}
+
+/// Verified caller who is an admin of their email-domain school → its domain.
+async function requireSchoolAdmin(request) {
+  requireAuth(request);
+  const {email, email_verified: verified} = request.auth.token;
+  const domain = domainOf(email);
+  const school = (await db().collection('schools').doc(domain || '-').get()).data();
+  if (verified !== true || !domain || !school?.admins?.includes(request.auth.uid)) {
+    throw new HttpsError('permission-denied', 'Not a school admin.');
+  }
+  return domain;
+}
+
+export const linkSchoolStart = onCall({
+  region: 'asia-northeast1',
+  memory: '256MiB',
+  timeoutSeconds: 60,
+  secrets: [googleClientSecret],
+}, async (request) => {
+  requireAuth(request);
+  const {code} = request.data ?? {};
+  if (typeof code !== 'string' || !code || code.length > 2048) {
+    throw new HttpsError('invalid-argument', 'A valid auth code is required.');
+  }
+  const {uid, token} = request.auth;
+  const google = await exchangeCode(code, googleCreds()).catch(() => {
+    throw new HttpsError('permission-denied', 'Google authorization failed.');
+  });
+  const schoolRef = db().collection('schools').doc(domainOf(token.email) || '-');
+  const domain = assertLinkAllowed({
+    callerEmail: token.email,
+    callerVerified: token.email_verified === true,
+    tokenEmail: google.email,
+    hd: google.hd,
+    school: (await schoolRef.get()).data() ?? null,
+    uid,
+  });
+  if (!google.refreshToken) {
+    throw new HttpsError('failed-precondition', 'No refresh token; request offline access.');
+  }
+  await db().collection('school_secrets').doc(domain).set({
+    refreshToken: google.refreshToken,
+    linkedBy: uid,
+    linkedEmail: google.email,
+    linkedAt: FieldValue.serverTimestamp(),
+  });
+  await schoolRef.set({admins: FieldValue.arrayUnion(uid)}, {merge: true});
+  return {accessToken: google.accessToken};
+});
+
+export const linkSchoolFile = onCall(SCHOOL_SYNC_OPTS, async (request) => {
+  const domain = await requireSchoolAdmin(request);
+  const {fileId, schoolName} = request.data ?? {};
+  if (typeof fileId !== 'string' || !/^[\w-]{10,200}$/.test(fileId)) {
+    throw new HttpsError('invalid-argument', 'A valid file id is required.');
+  }
+  if (typeof schoolName !== 'string' || schoolName.length < 1 || schoolName.length > 100) {
+    throw new HttpsError('invalid-argument', 'schoolName must be 1-100 characters.');
+  }
+  await db().collection('schools').doc(domain)
+    .set({name: schoolName, file: {id: fileId}}, {merge: true});
+  const res = await syncSchool(domain, {force: true, notify: false}, schoolSyncDeps());
+  if (res.status === 'error') throw new HttpsError('failed-precondition', res.error);
+  return {weeks: res.weeks, classes: res.classes, periods: res.periods};
+});
+
+export const unlinkSchool = onCall(SCHOOL_SYNC_OPTS, async (request) => {
+  const domain = await requireSchoolAdmin(request);
+  await Promise.all([
+    db().collection('school_secrets').doc(domain).delete(),
+    db().collection('schools').doc(domain).set({
+      file: FieldValue.delete(),
+    }, {merge: true}),
+  ]);
+  return {ok: true};
+});
+
+const SCHOOL_TEACHER_OPTS = {region: 'asia-northeast1', memory: '256MiB', timeoutSeconds: 60};
+const MAX_SCHOOL_TEACHERS = 200;
+
+/// Verified caller registered as a teacher (or admin) of their school → {domain, school}.
+async function requireSchoolTeacher(request) {
+  requireAuth(request);
+  const {email, email_verified: verified} = request.auth.token;
+  const domain = domainOf(email);
+  const school = (await db().collection('schools').doc(domain || '-').get()).data();
+  if (verified !== true || !domain || !school || !isTeacher(school, request.auth.uid, email)) {
+    throw new HttpsError('permission-denied', 'Not a teacher of this school.');
+  }
+  return {domain, school};
+}
+
+// 教員入力 §9.2-2: 休講・教室変更・補講・メモ, pushed to the class at once.
+export const publishSchoolOverride = onCall(SCHOOL_TEACHER_OPTS, async (request) => {
+  const {domain, school} = await requireSchoolTeacher(request);
+  const ov = validateOverride(request.data, school, tokyoToday(new Date()));
+  const deps = {db: db(), sendMulticast: (m) => messaging().sendEachForMulticast(m)};
+  return publishOverride(domain, ov, request.auth.uid, {
+    db: deps.db,
+    now: () => new Date(),
+    canEdit: (base, daySlots) =>
+      canEditSlot(school, request.auth.uid, request.auth.token.email, ov, base, daySlots),
+    notifyClass: (grade, course, notification) =>
+      notifyClass(domain, grade, course, notification, deps),
+    // Best effort: a failed reset only leaves old 既読 counted.
+    resetReads: (o) => rtdb().ref(readsPath(domain, o.grade, o.course, o.date, o.period)).remove()
+      .catch((err) => logger.warn('resetReads failed', {message: String(err?.message ?? '').slice(0, 300)})),
+  });
+});
+
+// お知らせボード §9.2-4: any teacher of the school posts to a class or grade.
+export const publishSchoolNotice = onCall(SCHOOL_TEACHER_OPTS, async (request) => {
+  const {domain, school} = await requireSchoolTeacher(request);
+  const notice = validateNotice(request.data, school);
+  const email = String(request.auth.token.email ?? '').toLowerCase();
+  const deps = {db: db(), sendMulticast: (m) => messaging().sendEachForMulticast(m)};
+  return publishNotice(domain, notice, {
+    uid: request.auth.uid,
+    name: school.teacherProfiles?.[email]?.name ?? '',
+  }, {
+    db: deps.db,
+    now: () => new Date(),
+    notifyClass: (grade, course, message, route) =>
+      notifyClass(domain, grade, course, message, deps, route),
+  });
+});
+
+export const getSchoolClassSizes = onCall(SCHOOL_TEACHER_OPTS, async (request) => {
+  const {domain, school} = await requireSchoolTeacher(request);
+  const sizes = await classSizes(domain, school, {db: db()});
+  return {sizes};
+});
+
+export const deleteSchoolNotice = onCall(SCHOOL_TEACHER_OPTS, async (request) => {
+  const {domain, school} = await requireSchoolTeacher(request);
+  return deleteNotice(domain, request.data?.id, request.auth.uid,
+      (school.admins ?? []).includes(request.auth.uid), {
+        db: db(),
+        // Best effort: orphaned receipts are harmless and deleteAccount sweeps them.
+        removeReads: (path) => rtdb().ref(path).remove()
+          .catch((err) => logger.warn('remove notice reads failed', {message: String(err?.message ?? '').slice(0, 300)})),
+      });
+});
+
+// 教員の登録 §5.3: only a school admin adds or removes teacher emails.
+export const setSchoolTeacher = onCall(SCHOOL_TEACHER_OPTS, async (request) => {
+  const domain = await requireSchoolAdmin(request);
+  const {email, add} = request.data ?? {};
+  const e = normalizeTeacherEmail(email, domain);
+  const ref = db().collection('schools').doc(domain);
+  if (add !== true) {
+    // FieldPath, not a dotted string: the email itself contains dots.
+    await ref.update(
+        'teachers', FieldValue.arrayRemove(e),
+        new FieldPath('teacherProfiles', e), FieldValue.delete(),
+    );
+    return {ok: true};
+  }
+  const school = (await ref.get()).data() ?? {};
+  const teachers = school.teachers ?? [];
+  if (!teachers.includes(e) && teachers.length >= MAX_SCHOOL_TEACHERS) {
+    throw new HttpsError('resource-exhausted', 'Too many teachers.');
+  }
+  // Re-adding an email updates its name/homeroom (edit = add again).
+  await ref.set({
+    teachers: FieldValue.arrayUnion(e),
+    teacherProfiles: {[e]: teacherProfileOf(request.data, school)},
+  }, {merge: true});
+  return {ok: true};
+});
+
+const MAX_SCHOOL_TESTERS = 20;
+
+// Test accounts (e.g. a Gmail address) that the admin lets in as students of
+// this school during the pilot. firestore.rules reads school_testers/{email}.
+export const setSchoolTester = onCall(SCHOOL_TEACHER_OPTS, async (request) => {
+  const domain = await requireSchoolAdmin(request);
+  const {email, add} = request.data ?? {};
+  const e = normalizeEmail(email);
+  if (domainOf(e) === domain) {
+    throw new HttpsError('invalid-argument', 'This is already a school account.');
+  }
+  const store = db();
+  const testerRef = store.collection('school_testers').doc(e);
+  const schoolRef = store.collection('schools').doc(domain);
+  const [testerSnap, schoolSnap] = await Promise.all([testerRef.get(), schoolRef.get()]);
+  const other = testerSnap.exists ? testerSnap.data().domain : null;
+  const batch = store.batch();
+  if (add === true) {
+    if (other && other !== domain) {
+      throw new HttpsError('already-exists', 'This account is a tester of another school.');
+    }
+    const testers = schoolSnap.data()?.testers ?? [];
+    if (!testers.includes(e) && testers.length >= MAX_SCHOOL_TESTERS) {
+      throw new HttpsError('resource-exhausted', 'Too many test accounts.');
+    }
+    batch.set(testerRef, {domain, addedBy: request.auth.uid, addedAt: FieldValue.serverTimestamp()});
+    batch.set(schoolRef, {testers: FieldValue.arrayUnion(e)}, {merge: true});
+  } else {
+    if (other === domain) batch.delete(testerRef);
+    batch.set(schoolRef, {testers: FieldValue.arrayRemove(e)}, {merge: true});
+  }
+  await batch.commit();
+  // database.rules.json can't read Firestore, so testers are mirrored here
+  // for their 既読 writes.
+  const mirror = rtdb().ref(`testers/${rtdbKey(domain)}/${rtdbKey(e)}`);
+  await (add === true ? mirror.set(true) : mirror.remove());
+  return {ok: true};
+});
+
+// Whether linked students may change their saved 学年/コース (firestore.rules).
+export const setSchoolStudentEdit = onCall(SCHOOL_TEACHER_OPTS, async (request) => {
+  const domain = await requireSchoolAdmin(request);
+  const allow = request.data?.allow === true;
+  await db().collection('schools').doc(domain).set({allowStudentEdit: allow}, {merge: true});
+  return {ok: true, allow};
+});
+
+export const syncSchoolNow = onCall(SCHOOL_SYNC_OPTS, async (request) => {
+  const domain = await requireSchoolAdmin(request);
+  const {status, weeks, classes, changes} =
+    await syncSchool(domain, {force: true, notify: true}, schoolSyncDeps());
+  return {status, weeks, classes, changes};
+});
+
+export const syncSchoolTimetables = onSchedule({
+  ...SCHOOL_SYNC_OPTS,
+  timeoutSeconds: 540,
+  schedule: '0 8,17 * * *',
+  timeZone: 'Asia/Tokyo',
+}, async () => {
+  await syncAllSchools(schoolSyncDeps());
 });

@@ -1,3 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../l10n/app_strings.dart';
@@ -34,6 +37,20 @@ class LocaleNotifier extends Notifier<String> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_key, locale);
     state = locale;
+    await _syncPushLanguage(locale);
+  }
+
+  /// Server pushes use `users/{uid}.language`. `update`, not `set(merge)`, so a
+  /// deleted account's doc is never recreated. Best effort: a failure only
+  /// leaves pushes in the previous language until the next token refresh.
+  static Future<void> _syncPushLanguage(String locale) async {
+    try {
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid == null) return;
+      await FirebaseFirestore.instance.collection('users').doc(uid).update({'language': locale});
+    } catch (e) {
+      debugPrint('Push language sync failed: $e');
+    }
   }
 }
 

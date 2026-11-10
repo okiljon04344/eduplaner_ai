@@ -4,6 +4,7 @@ import '../../features/assignments/repositories/assignments_repository.dart';
 import '../../features/auth/repositories/auth_repository.dart';
 import '../../features/groups/repositories/groups_repository.dart';
 import '../../features/quiz/repositories/quiz_repository.dart';
+import '../../features/school/school_repository.dart';
 import '../../features/timetable/repositories/timetable_repository.dart';
 
 /// Tracks which bottom-nav / rail tab is currently visible.
@@ -41,3 +42,6 @@ final groupsRepositoryProvider = Provider<GroupsRepository>((_) => GroupsReposit
 /// Provides the singleton [QuizRepository] that calls the `generateQuiz`
 /// Cloud Function and returns typed [QuizQuestion] objects.
 final quizRepositoryProvider = Provider<QuizRepository>((_) => QuizRepository());
+
+/// Provides the [SchoolRepository] that reads server-synced school timetables.
+final schoolRepositoryProvider = Provider<SchoolRepository>((_) => SchoolRepository());

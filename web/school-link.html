@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>学校の時間割を連携 - EduPlanner AI</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="/favicon.png">
+<style>
+  :root { --fg:#1c1917; --muted:#57534e; --bg:#f0fdf9; --card:#fff; --line:#d6d3d1; --accent:#059669; --on-accent:#fff; --danger:#b91c1c; --warn-bg:#fef3c7; --warn-fg:#78350f; }
+  @media (prefers-color-scheme: dark) {
+    :root { --fg:#fff3e8; --muted:#d6d3d1; --bg:#100c08; --card:#17120a; --line:#44403c; --accent:#34d399; --on-accent:#04291f; --danger:#fca5a5; --warn-bg:#422006; --warn-fg:#fde68a; }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP",sans-serif; line-height:1.7; color:var(--fg); background:var(--bg); }
+  main { max-width:560px; margin:0 auto; padding:24px 16px 64px; }
+  h1 { font-size:22px; margin:0 0 4px; }
+  p { margin:0 0 12px; }
+  .lead { color:var(--muted); font-size:14px; }
+  section { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px; margin-top:16px; }
+  h2 { font-size:16px; margin:0 0 8px; }
+  button { min-height:44px; padding:10px 18px; border:0; border-radius:12px; font:inherit; font-weight:700; color:var(--on-accent); background:var(--accent); cursor:pointer; width:100%; }
+  button:disabled { opacity:.45; cursor:not-allowed; }
+  label { display:block; font-size:14px; font-weight:600; margin-bottom:4px; }
+  input { width:100%; min-height:44px; padding:8px 12px; font:inherit; color:var(--fg); background:var(--card); border:1px solid var(--line); border-radius:12px; margin-bottom:12px; }
+  :focus-visible { outline:3px solid var(--accent); outline-offset:2px; }
+  .notice { background:var(--warn-bg); color:var(--warn-fg); border-radius:12px; padding:12px 14px; margin-top:16px; font-size:14px; }
+  .error { color:var(--danger); font-size:14px; }
+  .result { font-weight:700; }
+  .muted { color:var(--muted); font-size:13px; }
+  footer { margin-top:32px; font-size:13px; }
+  a { color:var(--accent); }
+  [hidden] { display:none !important; }
+</style>
+</head>
+<body>
+<main>
+  <h1>学校の時間割を連携</h1>
+  <p class="lead">学校のGoogleアカウントで、時間割のスプレッドシートを選んで連携します。連携できるのは学校の管理担当者のみです。</p>
+
+  <div id="setup-notice" class="notice" role="alert" hidden>
+    設定が未完了です。OAuthクライアントIDまたはPicker APIキーが設定されていないため、現在は連携できません。
+  </div>
+
+  <section aria-labelledby="s1">
+    <h2 id="s1">1. ログイン</h2>
+    <button id="btn-login" type="button" disabled>学校のGoogleアカウントでログイン</button>
+    <p id="who" class="muted" role="status" hidden></p>
+  </section>
+
+  <section aria-labelledby="s2">
+    <h2 id="s2">2. 時間割ファイル</h2>
+    <button id="btn-pick" type="button" disabled>時間割ファイルを選ぶ</button>
+    <p id="picked" class="muted" role="status" hidden></p>
+  </section>
+
+  <section aria-labelledby="s3" id="step3" hidden>
+    <h2 id="s3">3. 連携</h2>
+    <label for="school-name">学校名</label>
+    <input id="school-name" type="text" maxlength="100" autocomplete="organization">
+    <button id="btn-link" type="button">連携する</button>
+  </section>
+
+  <p id="result" class="result" role="status" aria-live="polite"></p>
+  <p id="error" class="error" role="alert"></p>
+  <p id="hint" class="muted" hidden>
+    ヒント: 再連携できない場合は、<a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener">Googleアカウントの権限ページ</a>でEduPlanner AIのアクセスを削除してから、もう一度お試しください。
+  </p>
+
+  <footer><a href="/privacy-policy.html">プライバシーポリシー</a></footer>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/12.6.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.6.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.6.0/firebase-functions-compat.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://apis.google.com/js/api.js" async defer></script>
+<script>
+// ===== SETUP: paste the real values here (see the console checklist) =====
+const OAUTH_CLIENT_ID = '351731284172-4go4n8m5dbi72b260rektd34aci09ln8.apps.googleusercontent.com';   // Firebase auto-created Web client ID
+const PICKER_API_KEY = 'AIzaSyB8fPRA0puJ7RTaXpjMvDkC9zH9WhglbMs';    // Browser API key restricted to the Picker API
+// =========================================================================
+const GCP_PROJECT_NUMBER = '351731284172';
+
+firebase.initializeApp({
+  apiKey: 'AIzaSyCS2-ca8L6o-vm11EDGR4o1LI9k5A3Fsx0',
+  appId: '1:351731284172:web:7f379f1f8770a64e582a69',
+  messagingSenderId: '351731284172',
+  projectId: 'eduplannerai-97365',
+  authDomain: 'eduplannerai-97365.firebaseapp.com',
+});
+const auth = firebase.auth();
+const fns = firebase.app().functions('asia-northeast1');
+if (location.hostname === 'localhost' && new URLSearchParams(location.search).has('emulator')) {
+  // local testing only
+  auth.useEmulator('http://127.0.0.1:9099');
+  fns.useEmulator('127.0.0.1', 5001);
+}
+
+const $ = (id) => document.getElementById(id);
+const configured = OAUTH_CLIENT_ID !== '' && PICKER_API_KEY !== '';
+let user = null;
+let pickedId = null;
+let atStart = false; // true while the error came from the code exchange
+let loginPending = false;
+
+const AUTH_ERRORS = {
+  'auth/popup-closed-by-user': 'ログイン画面が閉じられました。',
+  'auth/popup-blocked': 'ポップアップがブロックされました。ブラウザの設定でポップアップを許可してください。',
+  'auth/cancelled-popup-request': '前回のログイン処理がキャンセルされました。',
+  'auth/network-request-failed': 'ネットワークエラーが発生しました。接続を確認してください。',
+};
+
+function showError(e, fromStart) {
+  const code = e && e.code;
+  $('error').textContent = AUTH_ERRORS[code] || (e && e.message) || String(e);
+  $('hint').hidden = !(fromStart && e && e.code === 'functions/failed-precondition');
+}
+function clearMsgs() {
+  $('error').textContent = '';
+  $('result').textContent = '';
+  $('hint').hidden = true;
+}
+function render() {
+  $('setup-notice').hidden = configured;
+  $('btn-login').disabled = !configured || loginPending;
+  $('btn-pick').disabled = !configured || !user;
+  $('who').hidden = !user;
+  if (user) $('who').textContent = user.email + ' でログイン中';
+  $('step3').hidden = !pickedId;
+}
+auth.onAuthStateChanged((u) => { user = u; render(); });
+render();
+
+$('btn-login').onclick = async () => {
+  if (loginPending) return;
+  loginPending = true;
+  $('btn-login').disabled = true;
+  clearMsgs();
+  try {
+    await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
+  } catch (e) {
+    showError(e);
+  } finally {
+    loginPending = false;
+    render();
+  }
+};
+
+function getCode() {
+  return new Promise((resolve, reject) => {
+    google.accounts.oauth2.initCodeClient({
+      client_id: OAUTH_CLIENT_ID,
+      scope: 'https://www.googleapis.com/auth/drive.file openid email',
+      ux_mode: 'popup',
+      login_hint: user.email,
+      hd: user.email.split('@')[1] || '',
+      callback: (r) => (r.code ? resolve(r.code) : reject(new Error(r.error || 'authorization failed'))),
+      error_callback: (e) => reject(new Error(e.type === 'popup_closed' ? 'ポップアップが閉じられました。' : (e.message || e.type))),
+    }).requestCode();
+  });
+}
+function openPicker(token) {
+  return new Promise((resolve, reject) => {
+    gapi.load('picker', {
+      callback: () => {
+        // DOCS view + MIME filter: native Sheets and uploaded .xlsx files
+        const view = new google.picker.DocsView(google.picker.ViewId.DOCS)
+          .setMimeTypes('application/vnd.google-apps.spreadsheet,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+          .setIncludeFolders(true)
+          .setMode(google.picker.DocsViewMode.LIST)
+          .setEnableDrives(true);
+        new google.picker.PickerBuilder()
+          .addView(view)
+          .setOAuthToken(token)
+          .setDeveloperKey(PICKER_API_KEY)
+          .setAppId(GCP_PROJECT_NUMBER)
+          .enableFeature(google.picker.Feature.SUPPORT_DRIVES)
+          .setCallback((d) => {
+            if (d.action === google.picker.Action.PICKED) resolve(d.docs[0]);
+            else if (d.action === google.picker.Action.CANCEL) resolve(null);
+          })
+          .build()
+          .setVisible(true);
+      },
+      onerror: () => reject(new Error('Google Picker の読み込みに失敗しました。')),
+    });
+  });
+}
+
+$('btn-pick').onclick = async () => {
+  clearMsgs();
+  const btn = $('btn-pick');
+  btn.disabled = true;
+  atStart = true;
+  try {
+    if (typeof google === 'undefined' || !google.accounts || typeof gapi === 'undefined') {
+      throw new Error('Googleのスクリプトを読み込めませんでした。再読み込みしてください。');
+    }
+    const code = await getCode();
+    const {data} = await fns.httpsCallable('linkSchoolStart')({code});
+    atStart = false;
+    const doc = await openPicker(data.accessToken);
+    if (doc) {
+      pickedId = doc.id;
+      $('picked').hidden = false;
+      $('picked').textContent = '選択中: ' + doc.name;
+      if (!$('school-name').value) $('school-name').value = user.email.split('@')[1] || '';
+    }
+  } catch (e) { showError(e, atStart); }
+  render();
+};
+
+$('btn-link').onclick = async () => {
+  clearMsgs();
+  const btn = $('btn-link');
+  const schoolName = $('school-name').value.trim();
+  if (schoolName.length < 1 || schoolName.length > 100) {
+    $('error').textContent = '学校名は1〜100文字で入力してください。';
+    $('school-name').focus();
+    return;
+  }
+  btn.disabled = true;
+  try {
+    const {data} = await fns.httpsCallable('linkSchoolFile')({fileId: pickedId, schoolName});
+    $('result').textContent = `${data.weeks}週 · ${data.classes}クラス · コマ ${data.periods}`;
+  } catch (e) { showError(e); }
+  btn.disabled = false;
+};
+</script>
+</body>
+</html>
