@@ -30,18 +30,55 @@ class SettingsScreen extends ConsumerStatefulWidget {
   ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-class _SettingsScreenState extends ConsumerState<SettingsScreen> {
+class _SettingsScreenState extends ConsumerState<SettingsScreen> with WidgetsBindingObserver {
   bool _notificationsEnabled = true;
   bool _deletingAccount = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _loadNotificationPref();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _onResumed();
+    }
+  }
+
+  Future<void> _onResumed() async {
+    final granted = await NotificationService.refreshExactAlarmPermission();
+    if (granted) {
+      await NotificationService.syncAllReminders(
+        classes: ref.read(timetableStreamProvider).valueOrNull ?? const [],
+        assignments: ref.read(assignmentsStreamProvider).valueOrNull ?? const [],
+      );
+    }
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _requestExactAlarm() async {
+    final granted = await NotificationService.requestExactAlarmPermission();
+    if (granted) {
+      await NotificationService.syncAllReminders(
+        classes: ref.read(timetableStreamProvider).valueOrNull ?? const [],
+        assignments: ref.read(assignmentsStreamProvider).valueOrNull ?? const [],
+      );
+    }
+    if (mounted) setState(() {});
   }
 
   Future<void> _loadNotificationPref() async {
     final prefs = await SharedPreferences.getInstance();
+    await NotificationService.refreshExactAlarmPermission();
     if (!mounted) return;
     setState(() => _notificationsEnabled = prefs.getBool('notifications_enabled') ?? true);
   }
@@ -232,6 +269,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     activeThumbColor: AppColors.primary,
                   ),
                 ),
+                if (NotificationService.needsExactAlarmPermission) ...[
+                  Divider(height: 1, color: AppColors.dividerSubtle),
+                  _SettingsRow(
+                    icon: Icons.access_time_outlined,
+                    iconColor: AppColors.warning,
+                    title: AppStrings.t('settings_exact_alarm'),
+                    subtitle: AppStrings.t('settings_exact_alarm_sub'),
+                    subtitleMaxLines: 3,
+                    trailing: FilledButton(
+                      onPressed: _requestExactAlarm,
+                      style: FilledButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        visualDensity: VisualDensity.compact,
+                      ),
+                      child: Text(AppStrings.t('settings_exact_alarm_btn')),
+                    ),
+                    onTap: _requestExactAlarm,
+                  ),
+                ],
               ],
             ),
             _SectionTitle(AppStrings.t('settings_section_display')),
@@ -349,6 +405,7 @@ class _SettingsRow extends StatelessWidget {
   final String title;
   final String? subtitle;
   final Color? subtitleColor;
+  final int? subtitleMaxLines;
   final Widget? trailing;
   final VoidCallback? onTap;
   const _SettingsRow({
@@ -357,6 +414,7 @@ class _SettingsRow extends StatelessWidget {
     required this.title,
     this.subtitle,
     this.subtitleColor,
+    this.subtitleMaxLines,
     this.trailing,
     this.onTap,
   });
@@ -391,7 +449,7 @@ class _SettingsRow extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       subtitle!,
-                      maxLines: 1,
+                      maxLines: subtitleMaxLines ?? 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(fontSize: 12, color: subtitleColor ?? AppColors.textSecondary),
                     ),

@@ -18,8 +18,65 @@ abstract class NotificationService {
   static final FlutterLocalNotificationsPlugin _plugin = FlutterLocalNotificationsPlugin();
   static bool _initialized = false;
   static bool _enabled = true;
+  static bool _exactAllowed = false;
 
   static bool get isEnabled => _enabled;
+
+  /// Whether exact alarms are currently allowed on this device.
+  static bool get isExactAllowed => _exactAllowed;
+
+  /// True when notifications are enabled on Android but exact alarms
+  /// are not currently allowed.
+  static bool get needsExactAlarmPermission =>
+      !kIsWeb &&
+      defaultTargetPlatform == TargetPlatform.android &&
+      _enabled &&
+      !_exactAllowed;
+
+  /// Refreshes the cached exact alarm permission flag using
+  /// [AndroidFlutterLocalNotificationsPlugin.canScheduleExactNotifications].
+  /// Returns `true` on non-Android platforms, and `false` on error.
+  static Future<bool> refreshExactAlarmPermission() async {
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
+      _exactAllowed = true;
+      return true;
+    }
+    try {
+      final android = _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+      final allowed = await android?.canScheduleExactNotifications() ?? false;
+      _exactAllowed = allowed;
+      return allowed;
+    } catch (e) {
+      debugPrint('Exact alarm permission check error: $e');
+      _exactAllowed = false;
+      return false;
+    }
+  }
+
+  /// Requests the permission to schedule exact alarms (opens the system
+  /// "Alarms & reminders" screen), then refreshes the flag.
+  static Future<bool> requestExactAlarmPermission() async {
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
+      _exactAllowed = true;
+      return true;
+    }
+    try {
+      final android = _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+      await android?.requestExactAlarmsPermission();
+    } catch (e) {
+      debugPrint('Request exact alarm permission error: $e');
+    }
+    return refreshExactAlarmPermission();
+  }
+
+  /// Pure helper: returns [AndroidScheduleMode.exactAllowWhileIdle] when
+  /// [exactAllowed] is true, else [AndroidScheduleMode.inexactAllowWhileIdle].
+  @visibleForTesting
+  static AndroidScheduleMode scheduleModeFor({required bool exactAllowed}) {
+    return exactAllowed
+        ? AndroidScheduleMode.exactAllowWhileIdle
+        : AndroidScheduleMode.inexactAllowWhileIdle;
+  }
 
   /// Whitelisted navigation routes that can be opened via notifications.
   static const Set<String> allowedRoutes = {
@@ -94,6 +151,7 @@ abstract class NotificationService {
           description: AppStrings.t('notif_channel_desc'),
           importance: Importance.high,
         ));
+    await refreshExactAlarmPermission();
 
     // Check cold start from local notification launch details.
     try {
@@ -283,6 +341,7 @@ abstract class NotificationService {
     Iterable<AssignmentModel> assignments = const [],
   }) async {
     if (!_initialized || !_enabled) return;
+    await refreshExactAlarmPermission();
     for (final c in classes) {
       try {
         await scheduleClassReminder(c);
@@ -432,7 +491,7 @@ abstract class NotificationService {
       time,
       _details,
       payload: payload,
-      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      androidScheduleMode: scheduleModeFor(exactAllowed: _exactAllowed),
       uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
       matchDateTimeComponents: matchComponents,
     );
@@ -616,3 +675,7 @@ abstract class NotificationService {
     ]);
   }
 }
+
+/// Pure helper matching [NotificationService.scheduleModeFor].
+AndroidScheduleMode scheduleModeFor({required bool exactAllowed}) =>
+    NotificationService.scheduleModeFor(exactAllowed: exactAllowed);

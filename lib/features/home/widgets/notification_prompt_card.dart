@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/l10n/app_strings.dart';
@@ -27,7 +28,13 @@ class _NotificationPromptCardState extends ConsumerState<NotificationPromptCard>
 
   Future<void> _turnOn() async {
     setState(() => _show = false);
-    await NotificationService.requestPermission(uid: ref.read(currentUserProvider)?.uid);
+    final granted = await NotificationService.requestPermission(uid: ref.read(currentUserProvider)?.uid);
+    if (granted && !kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+      final exactAllowed = await NotificationService.refreshExactAlarmPermission();
+      if (!exactAllowed) {
+        await NotificationService.requestExactAlarmPermission();
+      }
+    }
   }
 
   Future<void> _later() async {

@@ -37,6 +37,28 @@ class TodayLesson {
 
 DateTime _on(DateTime day, Hm t) => DateTime(day.year, day.month, day.day, t.$1, t.$2);
 
+/// Formats the time left for a lesson:
+/// - Under 60 minutes: "あと {n}分" (or "残り {n}分" when [live])
+/// - 60 minutes or more: "あと {h}時間{m}分" (or "残り {h}時間{m}分")
+/// - 60 minutes or more with m == 0: "あと {h}時間" (or "残り {h}時間")
+String formatLessonTimeRemaining(int minutes, {bool live = false}) {
+  if (minutes < 60) {
+    return AppStrings.t(live ? 'home_now_remaining' : 'home_next_in', {'n': minutes});
+  }
+  final h = minutes ~/ 60;
+  final m = minutes % 60;
+  if (m == 0) {
+    return AppStrings.t(
+      live ? 'home_now_remaining_hours_only' : 'home_next_in_hours_only',
+      {'h': h},
+    );
+  }
+  return AppStrings.t(
+    live ? 'home_now_remaining_hours' : 'home_next_in_hours',
+    {'h': h, 'm': m},
+  );
+}
+
 /// Today's school lessons (with teacher changes) and personal classes, by start.
 final todayLessonsProvider = Provider<List<TodayLesson>>((ref) {
   final now = ref.watch(todayProvider).valueOrNull ?? DateTime.now();
@@ -127,7 +149,7 @@ class NowLessonCard extends ConsumerWidget {
                   ),
                   const Spacer(),
                   Text(
-                    AppStrings.t(live ? 'home_now_remaining' : 'home_next_in', {'n': minutes}),
+                    formatLessonTimeRemaining(minutes, live: live),
                     style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.accentText),
                   ),
                 ],
