@@ -18,6 +18,10 @@ import '../providers/assignments_provider.dart';
 import 'assignment_actions.dart';
 
 Future<void> showAddEditAssignmentSheet(BuildContext context, WidgetRef ref, {AssignmentModel? existing}) {
+  if (existing != null && existing.isDistributed) {
+    showAssignmentErrorToast(context, AppStrings.t('sas_distributed_no_edit'));
+    return Future.value();
+  }
   return showAppSheet(
     context,
     (_) => _AddEditAssignmentSheet(existing: existing),
@@ -106,8 +110,12 @@ class _AddEditAssignmentSheetState extends ConsumerState<_AddEditAssignmentSheet
     setState(() => _triedSave = true);
     if (!(_formKey.currentState?.validate() ?? false)) return;
     if (_selectedDate == null) return;
-    setState(() => _saving = true);
     final existing = widget.existing;
+    if (existing != null && existing.isDistributed) {
+      showAssignmentErrorToast(context, AppStrings.t('sas_distributed_no_edit'));
+      return;
+    }
+    setState(() => _saving = true);
     final uid = existing?.userId ?? ref.read(currentUserProvider)?.uid ?? '';
     final model = AssignmentModel(
       id: existing?.id ?? const Uuid().v4(),
@@ -141,7 +149,7 @@ class _AddEditAssignmentSheetState extends ConsumerState<_AddEditAssignmentSheet
 
   Future<void> _delete() async {
     final existing = widget.existing;
-    if (existing == null || _saving) return;
+    if (existing == null || _saving || existing.isDistributed) return;
     final ok = await showConfirmDialog(context, title: AppStrings.t('as_delete_title'), message: AppStrings.t('as_delete_confirm', {'title': existing.title}));
     if (!ok || !mounted) return;
     setState(() => _saving = true);

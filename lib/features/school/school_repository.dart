@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'models/school.dart';
+import 'models/school_assignment.dart';
 import 'models/school_notice.dart';
 
 /// Read-only access to the server-synced school timetable. Rules allow only
@@ -154,6 +155,41 @@ class SchoolRepository {
   /// How many students opened notice [id]; 0 on error.
   Stream<int> watchNoticeReadCount({required String domain, required String id}) =>
       _watchReadCount(domain, noticeReadTarget(id));
+
+  /// Distributed assignments of the school, newest first. Empty on error.
+  Stream<List<SchoolAssignment>> watchAssignments(String domain, {int limit = 30}) async* {
+    try {
+      await for (final s in _db
+          .collection('school_assignments')
+          .where('domain', isEqualTo: domain)
+          .orderBy('createdAt', descending: true)
+          .limit(limit)
+          .snapshots()) {
+        yield s.docs.map(SchoolAssignment.fromFirestore).toList();
+      }
+    } catch (e) {
+      debugPrint('watchAssignments failed: $e');
+      yield const [];
+    }
+  }
+
+  /// Student progress list for distributed assignment [sourceId]. Empty on error.
+  /// Note: both 'domain' and 'sourceId' equality filters are strictly required
+  /// by the security rules on `school_assignment_progress`.
+  Stream<List<AssignmentProgress>> watchAssignmentProgress(String domain, String sourceId) async* {
+    try {
+      await for (final s in _db
+          .collection('school_assignment_progress')
+          .where('domain', isEqualTo: domain)
+          .where('sourceId', isEqualTo: sourceId)
+          .snapshots()) {
+        yield s.docs.map(AssignmentProgress.fromFirestore).toList();
+      }
+    } catch (e) {
+      debugPrint('watchAssignmentProgress failed: $e');
+      yield const [];
+    }
+  }
 
   /// Mon-Fri docs of the week starting [weekStart], keyed `YYYY-MM-DD`, with
   /// teacher inputs (`school_overrides`) applied; only days with lessons are

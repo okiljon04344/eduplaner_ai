@@ -8,6 +8,7 @@ import '../models/assignment_model.dart';
 import 'animated_assignment_check.dart';
 import 'assignment_actions.dart';
 import 'assignment_detail_sheet.dart';
+import 'distributed_badge.dart';
 import 'progress_bar_row.dart';
 
 class AssignmentCard extends ConsumerWidget {
@@ -98,13 +99,21 @@ class AssignmentCard extends ConsumerWidget {
                             ),
                           ),
                           const SizedBox(height: 3),
-                          Text(
-                            assignment.subject,
-                            style: TextStyle(
-                              fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP'],
-                              fontSize: 12, fontWeight: FontWeight.w500,
-                              color: AppColors.textSecondary,
-                            ),
+                          Row(
+                            children: [
+                              Text(
+                                assignment.subject,
+                                style: TextStyle(
+                                  fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP'],
+                                  fontSize: 12, fontWeight: FontWeight.w500,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                              if (assignment.isDistributed) ...[
+                                const SizedBox(width: 6),
+                                DistributedBadge(teacherName: assignment.sourceTeacher),
+                              ],
+                            ],
                           ),
                           const SizedBox(height: 10),
                           ProgressBarRow(progress: assignment.progress, color: subjectStyle.dot),

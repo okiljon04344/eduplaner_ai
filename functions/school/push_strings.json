@@ -1,5 +1,7 @@
 {
   "ar": {
+    "push_assignment_body": "{subject}: {title} (التسليم: {when})",
+    "push_assignment_title": "واجب جديد",
     "push_kind_added": "إضافة",
     "push_kind_cancelled": "ملغاة",
     "push_kind_changed": "تعديل",
@@ -21,6 +23,8 @@
     "push_tt_title_sync": "تغيير في الجدول"
   },
   "de": {
+    "push_assignment_body": "{subject}: {title} (Abgabe: {when})",
+    "push_assignment_title": "Neue Aufgabe",
     "push_kind_added": "Hinzugefügt",
     "push_kind_cancelled": "Entfällt",
     "push_kind_changed": "Geändert",
@@ -42,6 +46,8 @@
     "push_tt_title_sync": "Stundenplanänderung"
   },
   "en": {
+    "push_assignment_body": "{subject}: {title} (due {when})",
+    "push_assignment_title": "New assignment",
     "push_kind_added": "Added",
     "push_kind_cancelled": "Cancelled",
     "push_kind_changed": "Changed",
@@ -63,6 +69,8 @@
     "push_tt_title_sync": "Timetable change"
   },
   "es": {
+    "push_assignment_body": "{subject}: {title} (entrega: {when})",
+    "push_assignment_title": "Nueva tarea",
     "push_kind_added": "Añadida",
     "push_kind_cancelled": "Cancelada",
     "push_kind_changed": "Modificada",
@@ -84,6 +92,8 @@
     "push_tt_title_sync": "Cambio de horario"
   },
   "fil": {
+    "push_assignment_body": "{subject}: {title} (deadline: {when})",
+    "push_assignment_title": "Bagong assignment",
     "push_kind_added": "Idinagdag",
     "push_kind_cancelled": "Kanselado",
     "push_kind_changed": "Binago",
@@ -105,6 +115,8 @@
     "push_tt_title_sync": "Pagbabago sa iskedyul"
   },
   "fr": {
+    "push_assignment_body": "{subject} : {title} (à rendre : {when})",
+    "push_assignment_title": "Nouveau devoir",
     "push_kind_added": "Ajouté",
     "push_kind_cancelled": "Annulé",
     "push_kind_changed": "Modifié",
@@ -126,6 +138,8 @@
     "push_tt_title_sync": "Changement d'emploi du temps"
   },
   "hi": {
+    "push_assignment_body": "{subject}: {title} (जमा: {when})",
+    "push_assignment_title": "नया असाइनमेंट",
     "push_kind_added": "जोड़ा गया",
     "push_kind_cancelled": "रद्द",
     "push_kind_changed": "परिवर्तन",
@@ -147,6 +161,8 @@
     "push_tt_title_sync": "समय-सारणी में बदलाव"
   },
   "id": {
+    "push_assignment_body": "{subject}: {title} (tenggat: {when})",
+    "push_assignment_title": "Tugas baru",
     "push_kind_added": "Ditambahkan",
     "push_kind_cancelled": "Libur",
     "push_kind_changed": "Diubah",
@@ -168,6 +184,8 @@
     "push_tt_title_sync": "Perubahan jadwal"
   },
   "it": {
+    "push_assignment_body": "{subject}: {title} (consegna: {when})",
+    "push_assignment_title": "Nuovo compito",
     "push_kind_added": "Aggiunto",
     "push_kind_cancelled": "Annullata",
     "push_kind_changed": "Modificato",
@@ -189,6 +207,8 @@
     "push_tt_title_sync": "Modifica orario"
   },
   "ja": {
+    "push_assignment_body": "{subject}：{title}（期限: {when}）",
+    "push_assignment_title": "新しい課題",
     "push_kind_added": "追加",
     "push_kind_cancelled": "休講",
     "push_kind_changed": "変更",
@@ -210,6 +230,8 @@
     "push_tt_title_sync": "時間割の変更"
   },
   "ko": {
+    "push_assignment_body": "{subject}: {title} (마감: {when})",
+    "push_assignment_title": "새로운 과제",
     "push_kind_added": "추가",
     "push_kind_cancelled": "휴강",
     "push_kind_changed": "변경",
@@ -231,6 +253,8 @@
     "push_tt_title_sync": "시간표 변경"
   },
   "ms": {
+    "push_assignment_body": "{subject}: {title} (hantar: {when})",
+    "push_assignment_title": "Tugasan baharu",
     "push_kind_added": "Ditambah",
     "push_kind_cancelled": "Dibatalkan",
     "push_kind_changed": "Diubah",
@@ -252,6 +276,8 @@
     "push_tt_title_sync": "Perubahan jadual waktu"
   },
   "nl": {
+    "push_assignment_body": "{subject}: {title} (inleveren: {when})",
+    "push_assignment_title": "Nieuwe opdracht",
     "push_kind_added": "Toegevoegd",
     "push_kind_cancelled": "Vervalt",
     "push_kind_changed": "Gewijzigd",
@@ -273,6 +299,8 @@
     "push_tt_title_sync": "Roosterwijziging"
   },
   "pt": {
+    "push_assignment_body": "{subject}: {title} (entrega: {when})",
+    "push_assignment_title": "Nova tarefa",
     "push_kind_added": "Adicionada",
     "push_kind_cancelled": "Cancelada",
     "push_kind_changed": "Alterada",
@@ -294,6 +322,8 @@
     "push_tt_title_sync": "Alteração de horário"
   },
   "ru": {
+    "push_assignment_body": "{subject}: {title} (срок: {when})",
+    "push_assignment_title": "Новое задание",
     "push_kind_added": "Добавлено",
     "push_kind_cancelled": "Отменено",
     "push_kind_changed": "Изменено",
@@ -315,6 +345,8 @@
     "push_tt_title_sync": "Изменение расписания"
   },
   "th": {
+    "push_assignment_body": "{subject}: {title} (กำหนดส่ง: {when})",
+    "push_assignment_title": "การบ้านใหม่",
     "push_kind_added": "เพิ่ม",
     "push_kind_cancelled": "งดสอน",
     "push_kind_changed": "เปลี่ยนแปลง",
@@ -336,6 +368,8 @@
     "push_tt_title_sync": "การเปลี่ยนแปลงตารางเรียน"
   },
   "tr": {
+    "push_assignment_body": "{subject}: {title} (teslim: {when})",
+    "push_assignment_title": "Yeni ödev",
     "push_kind_added": "Eklendi",
     "push_kind_cancelled": "İptal",
     "push_kind_changed": "Değiştirildi",
@@ -357,6 +391,8 @@
     "push_tt_title_sync": "Ders programı değişikliği"
   },
   "uz": {
+    "push_assignment_body": "{subject}: {title} (muddat: {when})",
+    "push_assignment_title": "Yangi vazifa",
     "push_kind_added": "Qo'shildi",
     "push_kind_cancelled": "Dars bekor",
     "push_kind_changed": "O'zgartirildi",
@@ -378,6 +414,8 @@
     "push_tt_title_sync": "Dars jadvali o'zgarishi"
   },
   "vi": {
+    "push_assignment_body": "{subject}: {title} (hạn: {when})",
+    "push_assignment_title": "Bài tập mới",
     "push_kind_added": "Đã thêm",
     "push_kind_cancelled": "Nghỉ học",
     "push_kind_changed": "Đã thay đổi",
@@ -399,6 +437,8 @@
     "push_tt_title_sync": "Thay đổi thời khóa biểu"
   },
   "zh": {
+    "push_assignment_body": "{subject}：{title}（截止: {when}）",
+    "push_assignment_title": "新作业",
     "push_kind_added": "新增",
     "push_kind_cancelled": "停课",
     "push_kind_changed": "变更",
@@ -420,6 +460,8 @@
     "push_tt_title_sync": "课表变动"
   },
   "zh_TW": {
+    "push_assignment_body": "{subject}：{title}（截止: {when}）",
+    "push_assignment_title": "新作業",
     "push_kind_added": "新增",
     "push_kind_cancelled": "停課",
     "push_kind_changed": "變更",

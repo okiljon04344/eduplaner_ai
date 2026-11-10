@@ -98,6 +98,8 @@ class AssignmentModel with _$AssignmentModel {
     @Default([]) List<String> aiMissingParts,
     String? aiAdvice,
     DateTime? aiAnalyzedAt,
+    String? sourceId,
+    String? sourceTeacher,
   }) = _AssignmentModel;
 
   factory AssignmentModel.fromJson(Map<String, dynamic> json) => _$AssignmentModelFromJson(json);
@@ -119,10 +121,14 @@ class AssignmentModel with _$AssignmentModel {
       aiMissingParts: (d['aiMissingParts'] as List<dynamic>? ?? []).map((e) => e.toString()).toList(),
       aiAdvice: d['aiAdvice'] as String?,
       aiAnalyzedAt: (d['aiAnalyzedAt'] as Timestamp?)?.toDate(),
+      sourceId: d['sourceId'] as String?,
+      sourceTeacher: d['sourceTeacher'] as String?,
     );
   }
 
   const AssignmentModel._();
+
+  bool get isDistributed => sourceId != null;
 
   Map<String, dynamic> toFirestore() => {
         'userId': userId,

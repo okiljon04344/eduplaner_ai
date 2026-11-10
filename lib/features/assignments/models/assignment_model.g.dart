@@ -28,6 +28,8 @@ _$AssignmentModelImpl _$$AssignmentModelImplFromJson(
       aiAnalyzedAt: json['aiAnalyzedAt'] == null
           ? null
           : DateTime.parse(json['aiAnalyzedAt'] as String),
+      sourceId: json['sourceId'] as String?,
+      sourceTeacher: json['sourceTeacher'] as String?,
     );
 
 Map<String, dynamic> _$$AssignmentModelImplToJson(
@@ -47,6 +49,8 @@ Map<String, dynamic> _$$AssignmentModelImplToJson(
       'aiMissingParts': instance.aiMissingParts,
       'aiAdvice': instance.aiAdvice,
       'aiAnalyzedAt': instance.aiAnalyzedAt?.toIso8601String(),
+      'sourceId': instance.sourceId,
+      'sourceTeacher': instance.sourceTeacher,
     };
 
 const _$AssignmentStatusEnumMap = {

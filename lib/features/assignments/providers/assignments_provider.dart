@@ -147,6 +147,9 @@ class AssignmentsNotifier extends AsyncNotifier<void> {
   ///
   /// Returns `null` on success, otherwise an error message to show.
   Future<String?> updateAssignment(AssignmentModel model) async {
+    if (model.isDistributed) {
+      return AppStrings.t('sas_distributed_no_edit');
+    }
     final error = await _guarded(() => ref.read(assignmentsRepositoryProvider).update(model), 'Assignment update');
     if (error == null) {
       await _safeNotify(() => NotificationService.scheduleAssignmentReminders(model), 'Assignment reminder schedule');
@@ -158,6 +161,11 @@ class AssignmentsNotifier extends AsyncNotifier<void> {
   ///
   /// Returns `null` on success, otherwise an error message to show.
   Future<String?> delete(String id) async {
+    final all = ref.read(assignmentsStreamProvider).valueOrNull ?? [];
+    final match = all.where((a) => a.id == id).firstOrNull;
+    if (match != null && match.isDistributed) {
+      return AppStrings.t('sas_distributed_no_delete');
+    }
     final error = await _guarded(() => ref.read(assignmentsRepositoryProvider).delete(id), 'Assignment delete');
     if (error == null) {
       await _safeNotify(() => NotificationService.cancelAssignmentReminders(id), 'Assignment reminder cancel');

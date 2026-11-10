@@ -39,6 +39,9 @@ import {
   teacherProfileOf, validateOverride,
 } from './school/overrides.js';
 import {deleteNotice, publishNotice, validateNotice} from './school/notices.js';
+import {
+  deleteAssignment, mirrorProgress, publishAssignment, validateAssignment,
+} from './school/assignments.js';
 import {classSizes} from './school/class_sizes.js';
 import {pt, recipientOf, weekdayName} from './school/push_i18n.js';
 
@@ -300,6 +303,7 @@ export const deleteAccount = onCall({
   try {
     await Promise.all([
       deleteQuery(firestore.collection('school_reads').where('uid', '==', uid)),
+      deleteQuery(firestore.collection('school_assignment_progress').where('uid', '==', uid)),
       deleteQuery(firestore.collection('assignments').where('userId', '==', uid)),
       deleteQuery(firestore.collection('timetables').where('userId', '==', uid)),
       deleteQuery(firestore.collection('ai_reports').where('userId', '==', uid)),
@@ -962,6 +966,41 @@ export const deleteSchoolNotice = onCall(SCHOOL_TEACHER_OPTS, async (request) =>
         db: db(),
         removeReads: (target) => deleteReads(domain, target),
       });
+});
+
+// 課題配布 §9.2-3: any teacher of the school hands an assignment to a class or grade.
+export const publishSchoolAssignment = onCall(SCHOOL_TEACHER_OPTS, async (request) => {
+  const {domain, school} = await requireSchoolTeacher(request);
+  const assignment = validateAssignment(request.data, school, new Date());
+  const email = String(request.auth.token.email ?? '').toLowerCase();
+  const deps = {db: db(), sendMulticast: (m) => messaging().sendEachForMulticast(m)};
+  return publishAssignment(domain, assignment, {
+    uid: request.auth.uid,
+    name: school.teacherProfiles?.[email]?.name ?? '',
+  }, {
+    db: deps.db,
+    now: () => new Date(),
+    notifyClass: (grade, course, message, route) =>
+      notifyClass(domain, grade, course, message, deps, route),
+  });
+});
+
+export const deleteSchoolAssignment = onCall(SCHOOL_TEACHER_OPTS, async (request) => {
+  const {domain, school} = await requireSchoolTeacher(request);
+  return deleteAssignment(domain, request.data?.id, request.auth.uid,
+      (school.admins ?? []).includes(request.auth.uid), {db: db(), deleteQuery});
+});
+
+/// Mirrors a student's status/progress on a distributed assignment into the
+/// progress doc its teacher reads. No-op for personal assignments.
+export const onAssignmentProgress = onDocumentUpdated({
+  document: 'assignments/{assignmentId}',
+  region: 'asia-northeast1',
+  memory: '256MiB',
+  timeoutSeconds: 30,
+}, async (event) => {
+  await mirrorProgress(event.params.assignmentId, event.data?.before?.data(), event.data?.after?.data(),
+      {db: db(), now: () => new Date()});
 });
 
 // 教員の登録 §5.3: only a school admin adds or removes teacher emails.

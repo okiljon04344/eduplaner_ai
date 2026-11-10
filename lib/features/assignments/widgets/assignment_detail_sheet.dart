@@ -18,6 +18,7 @@ import '../models/assignment_model.dart';
 import '../providers/assignments_provider.dart';
 import 'add_edit_assignment_sheet.dart';
 import 'assignment_actions.dart';
+import 'distributed_badge.dart';
 
 const _kSupportedSubmissionExtensions = ['jpg', 'jpeg', 'png', 'pdf', 'docx', 'txt'];
 const _kMaxSubmissionBytes = 10 * 1024 * 1024;
@@ -218,6 +219,7 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
   }
 
   Future<void> _edit() async {
+    if (widget.assignment.isDistributed) return;
     // Hand the edit sheet the current state (not the sheet's initial snapshot)
     // so progress/status changed here aren't overwritten on save.
     final existing = _current.copyWith(progress: _progress, status: _status);
@@ -226,6 +228,7 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
   }
 
   Future<void> _delete() async {
+    if (widget.assignment.isDistributed) return;
     final ok = await showConfirmDialog(context, title: AppStrings.t('as_delete_title'), message: AppStrings.t('as_delete_confirm', {'title': widget.assignment.title}));
     if (!ok) return;
     final error = await ref.read(assignmentsNotifierProvider.notifier).delete(widget.assignment.id);
@@ -265,7 +268,16 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                SubjectPill(subject: assignment.subject),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SubjectPill(subject: assignment.subject),
+                    if (assignment.isDistributed) ...[
+                      const SizedBox(width: 8),
+                      DistributedBadge(teacherName: assignment.sourceTeacher, fontSize: 11),
+                    ],
+                  ],
+                ),
                 GestureDetector(
                   onTap: () => Navigator.pop(context),
                   child: Container(
@@ -371,19 +383,35 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
                   _AiCheckResult(assignment: assignment),
                 ],
                 const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(child: OutlinedButton(onPressed: _edit, child: Text(AppStrings.t('common_edit')))),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: _delete,
-                        style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.danger), foregroundColor: AppColors.danger),
-                        child: Text(AppStrings.t('common_delete')),
+                if (assignment.isDistributed)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Center(
+                      child: Text(
+                        AppStrings.t('sas_distributed_hint'),
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                     ),
-                  ],
-                ),
+                  )
+                else
+                  Row(
+                    children: [
+                      Expanded(child: OutlinedButton(onPressed: _edit, child: Text(AppStrings.t('common_edit')))),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: _delete,
+                          style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.danger), foregroundColor: AppColors.danger),
+                          child: Text(AppStrings.t('common_delete')),
+                        ),
+                      ),
+                    ],
+                  ),
               ],
             ),
           ),

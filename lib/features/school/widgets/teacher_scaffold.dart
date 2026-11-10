@@ -11,6 +11,7 @@ enum TeacherSection {
   overview,
   timetable,
   notices,
+  assignments,
   admin,
 }
 
@@ -80,6 +81,10 @@ class _NarrowTeacherScaffold extends ConsumerWidget {
         icon: const Icon(Icons.campaign_outlined),
         label: AppStrings.t('tov_nav_notices'),
       ),
+      NavigationDestination(
+        icon: const Icon(Icons.assignment_outlined),
+        label: AppStrings.t('sas_nav_assignments_mobile'),
+      ),
       if (role.admin)
         NavigationDestination(
           icon: const Icon(Icons.people_alt_outlined),
@@ -91,7 +96,8 @@ class _NarrowTeacherScaffold extends ConsumerWidget {
       TeacherSection.overview => 0,
       TeacherSection.timetable => 1,
       TeacherSection.notices => 2,
-      TeacherSection.admin => role.admin ? 3 : 0,
+      TeacherSection.assignments => 3,
+      TeacherSection.admin => role.admin ? 4 : 0,
     };
 
     return Scaffold(
@@ -135,6 +141,9 @@ class _NarrowTeacherScaffold extends ConsumerWidget {
               context.go('/teacher/notices');
               break;
             case 3:
+              context.go('/teacher/assignments');
+              break;
+            case 4:
               if (role.admin) context.go('/school-admin');
               break;
           }
@@ -329,14 +338,8 @@ class _DesktopTeacherScaffold extends ConsumerWidget {
                     _SidebarItem(
                       icon: Icons.assignment_outlined,
                       label: AppStrings.t('tov_nav_assignments'),
-                      disabled: true,
-                      badge: Text(
-                        AppStrings.t('tov_in_preparation'),
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: AppColors.textMuted,
-                        ),
-                      ),
+                      selected: section == TeacherSection.assignments,
+                      onTap: () => context.go('/teacher/assignments'),
                     ),
 
                     // Group: 管理
@@ -554,7 +557,6 @@ class _SidebarItem extends StatelessWidget {
   final bool selected;
   final VoidCallback? onTap;
   final Widget? badge;
-  final bool disabled;
 
   const _SidebarItem({
     required this.icon,
@@ -562,21 +564,20 @@ class _SidebarItem extends StatelessWidget {
     this.selected = false,
     this.onTap,
     this.badge,
-    this.disabled = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final fg = selected
         ? AppColors.accentText
-        : (disabled ? AppColors.textMuted : AppColors.textSecondary);
+        : AppColors.textSecondary;
     final bg = selected ? AppColors.primary.withValues(alpha: 0.14) : Colors.transparent;
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: disabled ? null : onTap,
+        onTap: onTap,
         child: Container(
           constraints: const BoxConstraints(minHeight: 40),
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),

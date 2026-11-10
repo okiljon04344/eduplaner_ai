@@ -34,6 +34,8 @@ mixin _$AssignmentModel {
   List<String> get aiMissingParts => throw _privateConstructorUsedError;
   String? get aiAdvice => throw _privateConstructorUsedError;
   DateTime? get aiAnalyzedAt => throw _privateConstructorUsedError;
+  String? get sourceId => throw _privateConstructorUsedError;
+  String? get sourceTeacher => throw _privateConstructorUsedError;
 
   /// Serializes this AssignmentModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -65,7 +67,9 @@ abstract class $AssignmentModelCopyWith<$Res> {
       double? aiCompletionPercent,
       List<String> aiMissingParts,
       String? aiAdvice,
-      DateTime? aiAnalyzedAt});
+      DateTime? aiAnalyzedAt,
+      String? sourceId,
+      String? sourceTeacher});
 }
 
 /// @nodoc
@@ -97,6 +101,8 @@ class _$AssignmentModelCopyWithImpl<$Res, $Val extends AssignmentModel>
     Object? aiMissingParts = null,
     Object? aiAdvice = freezed,
     Object? aiAnalyzedAt = freezed,
+    Object? sourceId = freezed,
+    Object? sourceTeacher = freezed,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -155,6 +161,14 @@ class _$AssignmentModelCopyWithImpl<$Res, $Val extends AssignmentModel>
           ? _value.aiAnalyzedAt
           : aiAnalyzedAt // ignore: cast_nullable_to_non_nullable
               as DateTime?,
+      sourceId: freezed == sourceId
+          ? _value.sourceId
+          : sourceId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      sourceTeacher: freezed == sourceTeacher
+          ? _value.sourceTeacher
+          : sourceTeacher // ignore: cast_nullable_to_non_nullable
+              as String?,
     ) as $Val);
   }
 }
@@ -181,7 +195,9 @@ abstract class _$$AssignmentModelImplCopyWith<$Res>
       double? aiCompletionPercent,
       List<String> aiMissingParts,
       String? aiAdvice,
-      DateTime? aiAnalyzedAt});
+      DateTime? aiAnalyzedAt,
+      String? sourceId,
+      String? sourceTeacher});
 }
 
 /// @nodoc
@@ -211,6 +227,8 @@ class __$$AssignmentModelImplCopyWithImpl<$Res>
     Object? aiMissingParts = null,
     Object? aiAdvice = freezed,
     Object? aiAnalyzedAt = freezed,
+    Object? sourceId = freezed,
+    Object? sourceTeacher = freezed,
   }) {
     return _then(_$AssignmentModelImpl(
       id: null == id
@@ -269,6 +287,14 @@ class __$$AssignmentModelImplCopyWithImpl<$Res>
           ? _value.aiAnalyzedAt
           : aiAnalyzedAt // ignore: cast_nullable_to_non_nullable
               as DateTime?,
+      sourceId: freezed == sourceId
+          ? _value.sourceId
+          : sourceId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      sourceTeacher: freezed == sourceTeacher
+          ? _value.sourceTeacher
+          : sourceTeacher // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }
@@ -290,7 +316,9 @@ class _$AssignmentModelImpl extends _AssignmentModel {
       this.aiCompletionPercent,
       final List<String> aiMissingParts = const [],
       this.aiAdvice,
-      this.aiAnalyzedAt})
+      this.aiAnalyzedAt,
+      this.sourceId,
+      this.sourceTeacher})
       : _aiMissingParts = aiMissingParts,
         super._();
 
@@ -334,10 +362,14 @@ class _$AssignmentModelImpl extends _AssignmentModel {
   final String? aiAdvice;
   @override
   final DateTime? aiAnalyzedAt;
+  @override
+  final String? sourceId;
+  @override
+  final String? sourceTeacher;
 
   @override
   String toString() {
-    return 'AssignmentModel(id: $id, userId: $userId, title: $title, subject: $subject, description: $description, dueDate: $dueDate, status: $status, difficulty: $difficulty, progress: $progress, createdAt: $createdAt, aiCompletionPercent: $aiCompletionPercent, aiMissingParts: $aiMissingParts, aiAdvice: $aiAdvice, aiAnalyzedAt: $aiAnalyzedAt)';
+    return 'AssignmentModel(id: $id, userId: $userId, title: $title, subject: $subject, description: $description, dueDate: $dueDate, status: $status, difficulty: $difficulty, progress: $progress, createdAt: $createdAt, aiCompletionPercent: $aiCompletionPercent, aiMissingParts: $aiMissingParts, aiAdvice: $aiAdvice, aiAnalyzedAt: $aiAnalyzedAt, sourceId: $sourceId, sourceTeacher: $sourceTeacher)';
   }
 
   @override
@@ -366,7 +398,11 @@ class _$AssignmentModelImpl extends _AssignmentModel {
             (identical(other.aiAdvice, aiAdvice) ||
                 other.aiAdvice == aiAdvice) &&
             (identical(other.aiAnalyzedAt, aiAnalyzedAt) ||
-                other.aiAnalyzedAt == aiAnalyzedAt));
+                other.aiAnalyzedAt == aiAnalyzedAt) &&
+            (identical(other.sourceId, sourceId) ||
+                other.sourceId == sourceId) &&
+            (identical(other.sourceTeacher, sourceTeacher) ||
+                other.sourceTeacher == sourceTeacher));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -386,7 +422,9 @@ class _$AssignmentModelImpl extends _AssignmentModel {
       aiCompletionPercent,
       const DeepCollectionEquality().hash(_aiMissingParts),
       aiAdvice,
-      aiAnalyzedAt);
+      aiAnalyzedAt,
+      sourceId,
+      sourceTeacher);
 
   /// Create a copy of AssignmentModel
   /// with the given fields replaced by the non-null parameter values.
@@ -420,7 +458,9 @@ abstract class _AssignmentModel extends AssignmentModel {
       final double? aiCompletionPercent,
       final List<String> aiMissingParts,
       final String? aiAdvice,
-      final DateTime? aiAnalyzedAt}) = _$AssignmentModelImpl;
+      final DateTime? aiAnalyzedAt,
+      final String? sourceId,
+      final String? sourceTeacher}) = _$AssignmentModelImpl;
   const _AssignmentModel._() : super._();
 
   factory _AssignmentModel.fromJson(Map<String, dynamic> json) =
@@ -454,6 +494,10 @@ abstract class _AssignmentModel extends AssignmentModel {
   String? get aiAdvice;
   @override
   DateTime? get aiAnalyzedAt;
+  @override
+  String? get sourceId;
+  @override
+  String? get sourceTeacher;
 
   /// Create a copy of AssignmentModel
   /// with the given fields replaced by the non-null parameter values.

@@ -162,6 +162,17 @@ service cloud.firestore {
         && d.at == request.time
         && readId == d.domain + '_' + d.target + '_' + d.uid;
     }
+    // 課題配布: written only by publishSchoolAssignment. The class's students
+    // get their own copy in `assignments`; this doc is the teacher's record.
+    match /school_assignments/{assignmentId} {
+      allow read: if inDomain(resource.data.domain);
+    }
+    // One per (assignment, student), written only by Cloud Functions. The
+    // student reads their own; teachers of the school list an assignment's.
+    match /school_assignment_progress/{progressId} {
+      allow get: if isAuth() && resource.data.uid == request.auth.uid;
+      allow list: if isSchoolTeacher(resource.data.domain);
+    }
     match /school_reads/{readId} {
       allow create, update: if isAuth() && readFieldsOk(readId);
       allow get: if isAuth() && resource.data.uid == request.auth.uid;
@@ -265,14 +276,25 @@ service cloud.firestore {
 
     // ── Assignments ────────────────────────────────────────────────────────
     // Strictly personal: each assignment belongs to exactly one user.
+    // A distributed copy (課題配布) carries server-set source* fields: the
+    // client can never set or change them, and cannot delete such a copy
+    // (its teacher's progress record would go stale).
+    function sourceUnchanged() {
+      return request.resource.data.get('sourceId', null) == resource.data.get('sourceId', null)
+        && request.resource.data.get('sourceDomain', null) == resource.data.get('sourceDomain', null)
+        && request.resource.data.get('sourceTeacher', null) == resource.data.get('sourceTeacher', null);
+    }
     match /assignments/{docId} {
-      allow read, delete: if isAuth() && resource.data.userId == request.auth.uid;
+      allow read: if isAuth() && resource.data.userId == request.auth.uid;
+      allow delete: if isAuth() && resource.data.userId == request.auth.uid
+        && resource.data.get('sourceId', null) == null;
       // Update must keep the same owner — otherwise a user could reassign
       // one of their own assignment docs onto another user's uid.
       allow update: if isAuth()
         && request.resource.data.keys().size() <= 18
         && resource.data.userId == request.auth.uid
         && request.resource.data.userId == resource.data.userId
+        && sourceUnchanged()
         && optStringWithin(request.resource.data, 'subject', 100)
         && optStringWithin(request.resource.data, 'title',   500)
         && optStringWithin(request.resource.data, 'description', 4000)
@@ -289,6 +311,7 @@ service cloud.firestore {
       allow create: if isAuth()
         && request.resource.data.keys().size() <= 18
         && request.resource.data.userId == request.auth.uid
+        && !request.resource.data.keys().hasAny(['sourceId', 'sourceDomain', 'sourceTeacher'])
         && optStringWithin(request.resource.data, 'subject', 100)
         && optStringWithin(request.resource.data, 'title',   500)
         && optStringWithin(request.resource.data, 'description', 4000);

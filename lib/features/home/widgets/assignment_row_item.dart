@@ -6,6 +6,7 @@ import '../../assignments/models/assignment_model.dart';
 import '../../assignments/widgets/animated_assignment_check.dart';
 import '../../assignments/widgets/assignment_actions.dart';
 import '../../assignments/widgets/assignment_detail_sheet.dart';
+import '../../assignments/widgets/distributed_badge.dart';
 
 /// One row in [UpcomingAssignmentsList]: a circular checkbox (tap toggles
 /// completion directly) and title + colored deadline text.
@@ -66,16 +67,24 @@ class AssignmentRowItem extends ConsumerWidget {
                               ),
                             ),
                             const SizedBox(height: 2),
-                            Text(
-                              assignment.subject,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: AppColors.textSecondary,
-                                fontFamily: 'Plus Jakarta Sans',
-                                fontFamilyFallback: const ['NotoSansJP'],
-                              ),
+                            Row(
+                              children: [
+                                Text(
+                                  assignment.subject,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: AppColors.textSecondary,
+                                    fontFamily: 'Plus Jakarta Sans',
+                                    fontFamilyFallback: const ['NotoSansJP'],
+                                  ),
+                                ),
+                                if (assignment.isDistributed) ...[
+                                  const SizedBox(width: 6),
+                                  DistributedBadge(teacherName: assignment.sourceTeacher),
+                                ],
+                              ],
                             ),
                           ],
                         ),

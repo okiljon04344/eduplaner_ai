@@ -9,9 +9,11 @@ import '../../../core/providers/clock_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/date_helper.dart';
 import '../models/school.dart';
+import '../models/school_assignment.dart';
 import '../school_providers.dart';
 import '../teacher_overview_providers.dart';
 import '../widgets/teacher_scaffold.dart';
+import 'teacher_assignments_screen.dart';
 import 'teacher_screen.dart';
 
 class TeacherHomeScreen extends ConsumerWidget {
@@ -467,6 +469,11 @@ class _PhoneTeacherHome extends StatelessWidget {
           weekChanges: weekChanges,
           isDesktop: false,
         ),
+
+        const SizedBox(height: 14),
+
+        // 課題配布
+        const _AssignmentsCard(),
       ],
     );
   }
@@ -1641,109 +1648,141 @@ class _ClassRowItem extends StatelessWidget {
 // 課題配布 Card (準備中)
 // ----------------------------------------------------------------------------
 
-class _AssignmentsCard extends StatelessWidget {
+class _AssignmentsCard extends ConsumerWidget {
   const _AssignmentsCard();
 
   @override
-  Widget build(BuildContext context) {
-    return CustomPaint(
-      painter: _DashedBorderPainter(
-        color: AppColors.cardStroke,
-        radius: 20,
+  Widget build(BuildContext context, WidgetRef ref) {
+    final assignments = ref.watch(schoolAssignmentsProvider).valueOrNull ?? const [];
+    final latest = assignments.isNotEmpty ? assignments.first : null;
+
+    final progressList = latest != null
+        ? (ref.watch(assignmentProgressProvider(latest.id)).valueOrNull ?? const [])
+        : const <AssignmentProgress>[];
+    final summary = summarizeProgress(progressList);
+    final total = summary.total > 0 ? summary.total : (latest?.total ?? 0);
+    final rate = total > 0 ? (summary.completed / total).clamp(0.0, 1.0) : 0.0;
+
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: AppColors.cardSurface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.cardStroke),
       ),
-      child: Container(
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          color: AppColors.background,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    AppStrings.t('tov_assignments_card'),
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.textPrimary,
-                    ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  AppStrings.t('tov_assignments_card'),
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textPrimary,
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 1),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: AppColors.cardStroke),
-                  ),
-                  child: Text(
-                    AppStrings.t('tov_in_preparation'),
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textMuted,
-                    ),
+              ),
+              InkWell(
+                onTap: () => context.go('/teacher/assignments'),
+                borderRadius: BorderRadius.circular(8),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        AppStrings.t('sas_view_all'),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                      const Icon(Icons.chevron_right, size: 16, color: AppColors.primary),
+                    ],
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 12),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          if (latest == null) ...[
             Text(
-              AppStrings.t('tov_assignments_desc'),
+              AppStrings.t('sas_empty_overview'),
               style: TextStyle(
                 fontSize: 13,
-                height: 1.6,
                 color: AppColors.textSecondary,
               ),
             ),
+          ] else ...[
+            InkWell(
+              onTap: () => context.go('/teacher/assignments'),
+              borderRadius: BorderRadius.circular(8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    latest.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    [
+                      latest.subject,
+                      assignmentTargetLabel(latest.grade, latest.course),
+                      '${AppStrings.t('sas_due_label')}: ${DateHelper.formatJapaneseDate(latest.dueAt)}',
+                    ].where((s) => s.isNotEmpty).join(' · '),
+                    style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                  ),
+                  const SizedBox(height: 12),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(6),
+                    child: LinearProgressIndicator(
+                      value: rate,
+                      minHeight: 6,
+                      backgroundColor: AppColors.border,
+                      valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        AppStrings.t('sas_progress_summary', {
+                          'done': summary.completed,
+                          'total': total,
+                        }),
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.accentText,
+                        ),
+                      ),
+                      Text(
+                        AppStrings.t('sas_progress_breakdown', {
+                          'inProgress': summary.inProgress,
+                          'notStarted': summary.notStarted,
+                        }),
+                        style: TextStyle(fontSize: 11, color: AppColors.textMuted),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
           ],
-        ),
+        ],
       ),
     );
   }
-}
-
-class _DashedBorderPainter extends CustomPainter {
-  final Color color;
-  final double radius;
-
-  const _DashedBorderPainter({
-    required this.color,
-    this.radius = 20,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    const strokeWidth = 1.0;
-    const dashWidth = 6.0;
-    const dashGap = 4.0;
-
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = strokeWidth
-      ..style = PaintingStyle.stroke;
-
-    final path = Path()
-      ..addRRect(RRect.fromRectAndRadius(
-        Rect.fromLTWH(0.5, 0.5, size.width - 1, size.height - 1),
-        Radius.circular(radius),
-      ));
-
-    final metrics = path.computeMetrics();
-    for (final metric in metrics) {
-      double distance = 0.0;
-      while (distance < metric.length) {
-        final len = (distance + dashWidth < metric.length) ? dashWidth : metric.length - distance;
-        final extract = metric.extractPath(distance, distance + len);
-        canvas.drawPath(extract, paint);
-        distance += dashWidth + dashGap;
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _DashedBorderPainter old) =>
-      old.color != color || old.radius != radius;
 }

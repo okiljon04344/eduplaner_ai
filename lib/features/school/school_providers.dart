@@ -9,6 +9,7 @@ import '../../core/services/notification_service.dart';
 import '../auth/models/school_type.dart';
 import '../auth/providers/auth_provider.dart';
 import 'models/school.dart';
+import 'models/school_assignment.dart';
 import 'models/school_notice.dart';
 import 'school_repository.dart';
 
@@ -91,6 +92,21 @@ final noticeReadCountProvider = StreamProvider.autoDispose.family<int, String>((
   final domain = ref.watch(schoolDomainProvider);
   if (domain == null) return Stream.value(0);
   return ref.watch(schoolRepositoryProvider).watchNoticeReadCount(domain: domain, id: id);
+});
+
+/// Every recent distributed assignment of the school (teacher screen).
+final schoolAssignmentsProvider = StreamProvider.autoDispose<List<SchoolAssignment>>((ref) {
+  final domain = ref.watch(schoolDomainProvider);
+  if (domain == null) return Stream.value(const []);
+  return ref.watch(schoolRepositoryProvider).watchAssignments(domain);
+});
+
+/// Student progress list for distributed assignment [sourceId] (teacher screen).
+final assignmentProgressProvider = StreamProvider.autoDispose
+    .family<List<AssignmentProgress>, String>((ref, sourceId) {
+  final domain = ref.watch(schoolDomainProvider);
+  if (domain == null) return Stream.value(const []);
+  return ref.watch(schoolRepositoryProvider).watchAssignmentProgress(domain, sourceId);
 });
 
 /// Ids of notices this device has opened (unread dot). Local only: the
