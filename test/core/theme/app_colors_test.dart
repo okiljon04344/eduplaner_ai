@@ -45,8 +45,8 @@ void main() {
       AppColors.applyBrightness(Brightness.dark);
 
       expect(AppColors.isDark, isTrue);
-      expect(AppColors.background, const Color(0xFF0B110F));
-      expect(AppColors.surface, const Color(0xFF131B18));
+      expect(AppColors.background, const Color(0xFF050807));
+      expect(AppColors.surface, const Color(0xFF0E1513));
       expect(AppColors.textPrimary, const Color(0xFFEEF6F2));
       expect(AppColors.mathText, const Color(0xFFFBBF24));
     });

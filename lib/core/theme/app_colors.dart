@@ -102,23 +102,23 @@ abstract class AppColors {
   }
 
   // ---- Dark Mode Constants ----
-  static const darkBgDeep = Color(0xFF080D0B);
-  static const darkBackground = Color(0xFF0B110F);
-  static const darkSurface = Color(0xFF131B18);
+  static const darkBgDeep = Color(0xFF030504);
+  static const darkBackground = Color(0xFF050807);
+  static const darkSurface = Color(0xFF0E1513);
   static const darkSurfaceVar = Color(0xFF1A2420);
   static const darkBgInput = Color(0xFF1A2420);
-  static const darkBgLayer = Color(0xFF131B18);
+  static const darkBgLayer = Color(0xFF0E1513);
   static const darkTextPrimary = Color(0xFFEEF6F2);
   static const darkTextSecondary = Color(0xFFA7B8B0);
   static const darkTextMuted = Color(0xFF7B8D85);
   static const darkBorder = Color(0xFF26332E);
   static const darkBorderLight = Color(0xFF1A2420);
-  static const darkCardBg = Color(0xFF131B18);
+  static const darkCardBg = Color(0xFF0E1513);
   static const darkCardBorder = Color(0xFF26332E);
   static const darkDividerSubtle = Color(0xFF26332E);
   static const darkGlassBg = Color(0x21FFFFFF);
   static const darkGlassBorder = Color(0x26FFFFFF);
-  static const darkNavBg = Color(0xFF0F1613);
+  static const darkNavBg = Color(0xFF0A100E);
   static const darkNavBorder = Color(0xFF26332E);
   static const darkCheckboxUnchecked = Color(0xFF34443D);
   static const darkIconButtonBg = Color(0xFF1A2420);
