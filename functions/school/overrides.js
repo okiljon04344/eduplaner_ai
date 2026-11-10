@@ -221,9 +221,14 @@ export async function reconcileOverrides(domain, daysById, changed, { db, now })
   return changed.filter((c) => c.changes.length);
 }
 
-/** RTDB keys can't hold . $ # [ ] /; the client encodes the same way. */
-export const rtdbKey = (s) => String(s).replace(/[.$#[\]/]/g, ',');
+// 既読 receipts: Firestore `school_reads/{domain}_{target}_{uid}`. `target`
+// names what was read; the client builds the same string (school_repository).
+// A doc id cannot hold '/', so it becomes ','.
+const readKey = (s) => String(s).replaceAll('/', ',');
 
-/** `reads/{domain}/{grade}_{course}/{date}_{period}` — one student uid per 既読. */
-export const readsPath = (domain, grade, course, date, period) =>
-  `reads/${rtdbKey(domain)}/${rtdbKey(`${grade}_${course}`)}/${rtdbKey(`${date}_${period}`)}`;
+/** Target of one announced lesson change. */
+export const readTarget = (grade, course, date, period) =>
+  readKey(`o_${grade}_${course}_${date}_${period}`);
+
+/** Target of one notice. */
+export const noticeReadTarget = (id) => readKey(`n_${id}`);

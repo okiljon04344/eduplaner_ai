@@ -1,17 +1,6 @@
 {
   "rules": {
-    "reads": {
-      "$domain": {
-        "$cls": {
-          "$slot": {
-            ".read": "auth != null && auth.token.email_verified === true && (auth.token.email.endsWith('@' + $domain.replace(',', '.')) || root.child('testers').child($domain).child(auth.token.email.replace('.', ',')).exists())",
-            "$uid": {
-              ".write": "auth != null && auth.uid === $uid && auth.token.email_verified === true && (auth.token.email.endsWith('@' + $domain.replace(',', '.')) || root.child('testers').child($domain).child(auth.token.email.replace('.', ',')).exists())",
-              ".validate": "newData.isNumber() && newData.val() === now"
-            }
-          }
-        }
-      }
-    }
+    ".read": false,
+    ".write": false
   }
 }

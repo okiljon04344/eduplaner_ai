@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart'
@@ -77,7 +76,6 @@ Future<void> main() async {
         const host = String.fromEnvironment('EMULATOR_HOST', defaultValue: 'localhost');
         await FirebaseAuth.instance.useAuthEmulator(host, 9099);
         FirebaseFirestore.instance.useFirestoreEmulator(host, 8085);
-        FirebaseDatabase.instance.useDatabaseEmulator(host, 9000);
       } else {
         await activateAppCheck();
       }

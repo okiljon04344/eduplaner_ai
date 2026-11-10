@@ -3,11 +3,11 @@ import assert from 'node:assert/strict';
 import {
   NOTICE_PRIORITIES,
   validateNotice,
-  noticeReadsPath,
   noticePush,
   publishNotice,
   deleteNotice,
 } from '../school/notices.js';
+import { noticeReadTarget } from '../school/overrides.js';
 
 // Minimal in-memory Firestore for notices tests (FakeDb pattern).
 class FakeDb {
@@ -152,11 +152,8 @@ test('validateNotice rejects bad priority', () => {
   );
 });
 
-test('noticeReadsPath builds RTDB-safe path', () => {
-  assert.equal(
-    noticeReadsPath('school.example.jp', 'notice123'),
-    'reads/school,example,jp/notices/notice123',
-  );
+test('noticeReadTarget names the notice', () => {
+  assert.equal(noticeReadTarget('notice123'), 'n_notice123');
 });
 
 test('noticePush formats urgent vs normal title in ja and en with notice title as body', () => {
@@ -297,7 +294,7 @@ test('deleteNotice rejects non-author non-admin user with permission-denied', as
   assert.ok(db.docs.has('school_notices/n1'));
 });
 
-test('deleteNotice allows author to delete and calls removeReads with noticeReadsPath', async () => {
+test('deleteNotice allows author to delete and calls removeReads with the notice target', async () => {
   const db = new FakeDb();
   db.seed('school_notices/n1', { domain: 'school.example.jp', createdBy: 'author_uid' });
   let removedPath = null;
@@ -308,7 +305,7 @@ test('deleteNotice allows author to delete and calls removeReads with noticeRead
   const res = await deleteNotice('school.example.jp', 'n1', 'author_uid', false, { db, removeReads });
   assert.deepEqual(res, { ok: true });
   assert.equal(db.docs.has('school_notices/n1'), false);
-  assert.equal(removedPath, 'reads/school,example,jp/notices/n1');
+  assert.equal(removedPath, 'n_n1');
 });
 
 test('deleteNotice allows admin to delete even if not the author', async () => {
@@ -322,5 +319,5 @@ test('deleteNotice allows admin to delete even if not the author', async () => {
   const res = await deleteNotice('school.example.jp', 'n2', 'admin_uid', true, { db, removeReads });
   assert.deepEqual(res, { ok: true });
   assert.equal(db.docs.has('school_notices/n2'), false);
-  assert.equal(removedPath, 'reads/school,example,jp/notices/n2');
+  assert.equal(removedPath, 'n_n2');
 });

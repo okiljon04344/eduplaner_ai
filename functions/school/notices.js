@@ -1,10 +1,10 @@
 import { HttpsError } from 'firebase-functions/https';
 import { pt } from './push_i18n.js';
-import { rtdbKey } from './overrides.js';
+import { noticeReadTarget } from './overrides.js';
 
 // お知らせボード (§9.2-4): a teacher's message to one class or a whole grade.
 // Written only by Cloud Functions; students of the school read it and mark
-// it read in RTDB (reads/{domain}/notices/{id}/{uid}, same rules as 既読).
+// it read in Firestore (school_reads, see readTarget in overrides.js).
 export const NOTICE_PRIORITIES = ['normal', 'urgent'];
 const MAX_TITLE = 60;
 const MAX_BODY = 1000;
@@ -26,9 +26,6 @@ export function validateNotice(input, school) {
   if (!NOTICE_PRIORITIES.includes(priority)) bad('Unknown priority.');
   return { grade, course, title, body, priority };
 }
-
-/** `reads/{domain}/notices/{id}` — one student uid per 既読. */
-export const noticeReadsPath = (domain, id) => `reads/${rtdbKey(domain)}/notices/${rtdbKey(id)}`;
 
 /** Push for one notice: urgent gets its own title; body is the teacher's title. */
 export const noticePush = (notice) => (lang) => ({
@@ -65,6 +62,6 @@ export async function deleteNotice(domain, id, uid, isAdmin, { db, removeReads }
     throw new HttpsError('permission-denied', 'Only the author or an admin can delete this notice.');
   }
   await ref.delete();
-  await removeReads?.(noticeReadsPath(domain, id));
+  await removeReads?.(noticeReadTarget(id));
   return { ok: true };
 }

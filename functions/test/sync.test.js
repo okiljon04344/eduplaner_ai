@@ -17,8 +17,7 @@ import {
   normalizeTeacherEmail,
   canEditSlot,
   teacherProfileOf,
-  readsPath,
-  rtdbKey,
+  readTarget,
 } from '../school/overrides.js';
 import {
   exchangeCode,
@@ -345,7 +344,7 @@ test('publishOverride saves, feeds and pushes; clear removes', async () => {
   const deps = {
     db, now: () => NOW,
     notifyClass: async (g, c, n) => { sent.push([g, c, n]); return 2; },
-    resetReads: async (o) => resets.push(readsPath(DOMAIN, o.grade, o.course, o.date, o.period)),
+    resetReads: async (o) => resets.push(readTarget(o.grade, o.course, o.date, o.period)),
   };
   const id = `school_overrides/${DOMAIN}_1_農業_20261029`;
 
@@ -353,7 +352,8 @@ test('publishOverride saves, feeds and pushes; clear removes', async () => {
   assert.equal(res.pushed, 2);
   assert.equal(sent.length, 1);
   // A new announcement resets its 既読; dots in the domain are RTDB-safe.
-  assert.equal(resets[0], `reads/${rtdbKey(DOMAIN)}/1_農業/2026-10-29_3-4`);
+  assert.equal(resets[0], 'o_1_農業_2026-10-29_3-4');
+  assert.equal(readTarget(1, 'a/b', '2026-10-29', '3-4'), 'o_1_a,b_2026-10-29_3-4');
   assert.doesNotMatch(resets[0], /\./);
   assert.match(sent[0][2]('ja').body, /^【休講】/);
   const doc = db.docs.get(id);

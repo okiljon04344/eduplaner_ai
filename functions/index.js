@@ -20,7 +20,6 @@
 import {GoogleGenAI} from '@google/genai';
 import {initializeApp} from 'firebase-admin/app';
 import {getAuth} from 'firebase-admin/auth';
-import {getDatabase} from 'firebase-admin/database';
 import {FieldPath, FieldValue, getFirestore} from 'firebase-admin/firestore';
 import {getMessaging} from 'firebase-admin/messaging';
 import {HttpsError, onCall} from 'firebase-functions/https';
@@ -36,7 +35,7 @@ import {
   assertLinkAllowed, domainOf, notifyClass, sendAll, syncAllSchools, syncSchool, tokyoToday,
 } from './school/sync.js';
 import {
-  canEditSlot, isTeacher, normalizeEmail, normalizeTeacherEmail, publishOverride, readsPath, rtdbKey,
+  canEditSlot, isTeacher, normalizeEmail, normalizeTeacherEmail, publishOverride, readTarget,
   teacherProfileOf, validateOverride,
 } from './school/overrides.js';
 import {deleteNotice, publishNotice, validateNotice} from './school/notices.js';
@@ -56,8 +55,25 @@ let _db;
 let _messaging;
 let _ai;
 const db = () => (_db ??= getFirestore());
-// Realtime Database: only 既読 receipts (reads/) and the tester mirror (testers/).
-const rtdb = () => getDatabase();
+
+/// Batched delete — 500 is the Firestore batch ceiling; loop until drained.
+async function deleteQuery(query) {
+  while (true) {
+    const snapshot = await query.limit(400).get();
+    if (snapshot.empty) return;
+    const batch = db().batch();
+    snapshot.docs.forEach((doc) => batch.delete(doc.ref));
+    await batch.commit();
+    if (snapshot.size < 400) return;
+  }
+}
+
+/// Drops every 既読 receipt of one target (a new announcement starts from
+/// zero; a deleted notice leaves none). Best effort: a failure only leaves
+/// old receipts counted.
+const deleteReads = (domain, target) =>
+  deleteQuery(db().collection('school_reads').where('domain', '==', domain).where('target', '==', target))
+    .catch((err) => logger.warn('deleteReads failed', {message: String(err?.message ?? '').slice(0, 300)}));
 const messaging = () => (_messaging ??= getMessaging());
 const gemini = () => (_ai ??= new GoogleGenAI({apiKey: geminiApiKey.value()}));
 
@@ -281,45 +297,9 @@ export const deleteAccount = onCall({
   const uid = request.auth.uid;
   const firestore = db();
 
-  // Batched delete — 500 is the Firestore batch ceiling; loop until drained.
-  const deleteQuery = async (query) => {
-    while (true) {
-      const snapshot = await query.limit(400).get();
-      if (snapshot.empty) return;
-      const batch = firestore.batch();
-      snapshot.docs.forEach((doc) => batch.delete(doc.ref));
-      await batch.commit();
-      if (snapshot.size < 400) return;
-    }
-  };
-
-  // 既読 receipts live in RTDB under the school; find which school first.
-  // ponytail: reads the whole school subtree; fine at pilot size, index
-  // receipts per uid if a school grows to thousands of announcements.
-  const deleteReadReceipts = async () => {
-    const raw = request.auth.token.email;
-    const email = raw ? normalizeEmail(raw) : null;
-    const [userSnap, testerSnap] = await Promise.all([
-      firestore.collection('users').doc(uid).get(),
-      email ? firestore.collection('school_testers').doc(email).get() : null,
-    ]);
-    const domains = new Set([userSnap.data()?.schoolDomain, testerSnap?.data()?.domain].filter(Boolean));
-    for (const domain of domains) {
-      const root = rtdb().ref(`reads/${rtdbKey(domain)}`);
-      const updates = {};
-      (await root.get()).forEach((cls) => {
-        cls.forEach((slot) => {
-          if (slot.hasChild(uid)) updates[`${cls.key}/${slot.key}/${uid}`] = null;
-        });
-      });
-      if (Object.keys(updates).length) await root.update(updates);
-    }
-  };
-
   try {
-    await deleteReadReceipts().catch((err) =>
-      logger.warn('deleteAccount: read receipts delete failed', {uid, message: String(err?.message ?? '').slice(0, 300)}));
     await Promise.all([
+      deleteQuery(firestore.collection('school_reads').where('uid', '==', uid)),
       deleteQuery(firestore.collection('assignments').where('userId', '==', uid)),
       deleteQuery(firestore.collection('timetables').where('userId', '==', uid)),
       deleteQuery(firestore.collection('ai_reports').where('userId', '==', uid)),
@@ -948,9 +928,7 @@ export const publishSchoolOverride = onCall(SCHOOL_TEACHER_OPTS, async (request)
       canEditSlot(school, request.auth.uid, request.auth.token.email, ov, base, daySlots),
     notifyClass: (grade, course, notification) =>
       notifyClass(domain, grade, course, notification, deps),
-    // Best effort: a failed reset only leaves old 既読 counted.
-    resetReads: (o) => rtdb().ref(readsPath(domain, o.grade, o.course, o.date, o.period)).remove()
-      .catch((err) => logger.warn('resetReads failed', {message: String(err?.message ?? '').slice(0, 300)})),
+    resetReads: (o) => deleteReads(domain, readTarget(o.grade, o.course, o.date, o.period)),
   });
 });
 
@@ -982,9 +960,7 @@ export const deleteSchoolNotice = onCall(SCHOOL_TEACHER_OPTS, async (request) =>
   return deleteNotice(domain, request.data?.id, request.auth.uid,
       (school.admins ?? []).includes(request.auth.uid), {
         db: db(),
-        // Best effort: orphaned receipts are harmless and deleteAccount sweeps them.
-        removeReads: (path) => rtdb().ref(path).remove()
-          .catch((err) => logger.warn('remove notice reads failed', {message: String(err?.message ?? '').slice(0, 300)})),
+        removeReads: (target) => deleteReads(domain, target),
       });
 });
 
@@ -1047,10 +1023,6 @@ export const setSchoolTester = onCall(SCHOOL_TEACHER_OPTS, async (request) => {
     batch.set(schoolRef, {testers: FieldValue.arrayRemove(e)}, {merge: true});
   }
   await batch.commit();
-  // database.rules.json can't read Firestore, so testers are mirrored here
-  // for their 既読 writes.
-  const mirror = rtdb().ref(`testers/${rtdbKey(domain)}/${rtdbKey(e)}`);
-  await (add === true ? mirror.set(true) : mirror.remove());
   return {ok: true};
 });
 

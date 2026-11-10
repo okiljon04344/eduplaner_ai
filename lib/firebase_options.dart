@@ -26,7 +26,6 @@ class DefaultFirebaseOptions {
     appId: '1:351731284172:android:a2de2152df881b89582a69',
     messagingSenderId: '351731284172',
     projectId: 'eduplannerai-97365',
-    databaseURL: 'https://eduplannerai-97365-default-rtdb.asia-southeast1.firebasedatabase.app',
     storageBucket: 'eduplannerai-97365.firebasestorage.app',
   );
 
@@ -35,7 +34,6 @@ class DefaultFirebaseOptions {
     appId: '1:351731284172:ios:30f0d6434d41f25a582a69',
     messagingSenderId: '351731284172',
     projectId: 'eduplannerai-97365',
-    databaseURL: 'https://eduplannerai-97365-default-rtdb.asia-southeast1.firebasedatabase.app',
     storageBucket: 'eduplannerai-97365.firebasestorage.app',
     iosBundleId: 'com.eduplanner.app',
   );
@@ -45,7 +43,6 @@ class DefaultFirebaseOptions {
     appId: '1:351731284172:web:7f379f1f8770a64e582a69',
     messagingSenderId: '351731284172',
     projectId: 'eduplannerai-97365',
-    databaseURL: 'https://eduplannerai-97365-default-rtdb.asia-southeast1.firebasedatabase.app',
     authDomain: 'eduplannerai-97365.firebaseapp.com',
     storageBucket: 'eduplannerai-97365.firebasestorage.app',
   );

@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'models/school.dart';
 import 'models/school_notice.dart';
 
@@ -10,23 +9,41 @@ import 'models/school_notice.dart';
 /// `get` on a doc, so every watch listens to single doc refs; a permission
 /// error (missing or foreign doc) is treated as "no data", never a stream error.
 class SchoolRepository {
-  SchoolRepository({FirebaseFirestore? firestore, FirebaseDatabase? database})
-      : _db = firestore ?? FirebaseFirestore.instance,
-        _rtdbOverride = database;
+  SchoolRepository({FirebaseFirestore? firestore}) : _db = firestore ?? FirebaseFirestore.instance;
 
   final FirebaseFirestore _db;
-  final FirebaseDatabase? _rtdbOverride;
 
-  /// Lazy so tests that only touch Firestore never need an RTDB instance.
-  FirebaseDatabase get _rtdb => _rtdbOverride ?? FirebaseDatabase.instance;
+  // 既読 receipts: `school_reads/{domain}_{target}_{uid}`. Rules let a student
+  // write and read only their own doc; teachers list a target's docs to count
+  // them. Targets must match `readTarget`/`noticeReadTarget` in overrides.js.
+  static String _readKey(String s) => s.replaceAll('/', ',');
 
-  /// RTDB keys can't hold `. $ # [ ] /`; must match `rtdbKey` in overrides.js.
-  static String rtdbKey(String s) => s.replaceAll(RegExp(r'[.$#\[\]/]'), ',');
+  /// Target of one announced lesson change ([date] is `YYYY-MM-DD`).
+  static String readTarget(int grade, String course, String date, String period) =>
+      _readKey('o_${grade}_${course}_${date}_$period');
 
-  /// 既読 receipts of one announced slot: `{uid: serverTime}`; must match
-  /// `readsPath` in overrides.js, which clears it on every new announcement.
-  static String readsPath(String domain, int grade, String course, String date, String period) =>
-      'reads/${rtdbKey(domain)}/${rtdbKey('${grade}_$course')}/${rtdbKey('${date}_$period')}';
+  /// Target of one notice.
+  static String noticeReadTarget(String id) => _readKey('n_$id');
+
+  Future<void> _markRead(String domain, String target, String uid) =>
+      _db.collection('school_reads').doc('${domain}_${target}_$uid').set(
+          {'domain': domain, 'target': target, 'uid': uid, 'at': FieldValue.serverTimestamp()});
+
+  /// Number of distinct readers of [target]; 0 on error (e.g. not a teacher).
+  Stream<int> _watchReadCount(String domain, String target) async* {
+    try {
+      await for (final s in _db
+          .collection('school_reads')
+          .where('domain', isEqualTo: domain)
+          .where('target', isEqualTo: target)
+          .snapshots()) {
+        yield s.size;
+      }
+    } catch (e) {
+      debugPrint('watchReadCount failed: $e');
+      yield 0;
+    }
+  }
 
   /// Lowercase part after the last '@' when [emailVerified] and non-empty.
   static String? domainFrom(String? email, bool emailVerified) {
@@ -91,9 +108,8 @@ class SchoolRepository {
       required String uid,
       required Iterable<SchoolChange> changes}) async {
     try {
-      await Future.wait(changes.map((c) => _rtdb
-          .ref('${readsPath(domain, grade, course, c.date, c.period)}/$uid')
-          .set(ServerValue.timestamp)));
+      await Future.wait(
+          changes.map((c) => _markRead(domain, readTarget(grade, course, c.date, c.period), uid)));
     } catch (e) {
       debugPrint('markRead failed: $e');
     }
@@ -105,21 +121,8 @@ class SchoolRepository {
       required int grade,
       required String course,
       required DateTime date,
-      required String period}) async* {
-    try {
-      await for (final e
-          in _rtdb.ref(readsPath(domain, grade, course, _ymd(date, '-'), period)).onValue) {
-        yield e.snapshot.children.length;
-      }
-    } catch (e) {
-      debugPrint('watchReadCount failed: $e');
-      yield 0;
-    }
-  }
-
-  /// `reads/{domain}/notices/{id}`; must match `noticeReadsPath` in notices.js.
-  static String noticeReadsPath(String domain, String id) =>
-      'reads/${rtdbKey(domain)}/notices/${rtdbKey(id)}';
+      required String period}) =>
+      _watchReadCount(domain, readTarget(grade, course, _ymd(date, '-'), period));
 
   /// The school's latest notices, newest first (rules check the domain of
   /// every doc, so the query must filter by it). Empty on error.
@@ -142,23 +145,15 @@ class SchoolRepository {
   /// Records that [uid] opened notice [id]. Best effort, like [markRead].
   Future<void> markNoticeRead({required String domain, required String id, required String uid}) async {
     try {
-      await _rtdb.ref('${noticeReadsPath(domain, id)}/$uid').set(ServerValue.timestamp);
+      await _markRead(domain, noticeReadTarget(id), uid);
     } catch (e) {
       debugPrint('markNoticeRead failed: $e');
     }
   }
 
   /// How many students opened notice [id]; 0 on error.
-  Stream<int> watchNoticeReadCount({required String domain, required String id}) async* {
-    try {
-      await for (final e in _rtdb.ref(noticeReadsPath(domain, id)).onValue) {
-        yield e.snapshot.children.length;
-      }
-    } catch (e) {
-      debugPrint('watchNoticeReadCount failed: $e');
-      yield 0;
-    }
-  }
+  Stream<int> watchNoticeReadCount({required String domain, required String id}) =>
+      _watchReadCount(domain, noticeReadTarget(id));
 
   /// Mon-Fri docs of the week starting [weekStart], keyed `YYYY-MM-DD`, with
   /// teacher inputs (`school_overrides`) applied; only days with lessons are
