@@ -1,3 +1,5 @@
+import 'package:edu_planner_ai/core/l10n/app_strings.dart';
+import 'package:edu_planner_ai/core/providers/clock_provider.dart';
 import 'package:edu_planner_ai/core/theme/app_colors.dart';
 import 'package:edu_planner_ai/features/assignments/models/assignment_model.dart';
 import 'package:edu_planner_ai/features/assignments/providers/assignments_provider.dart';
@@ -7,8 +9,14 @@ import 'package:edu_planner_ai/features/home/widgets/greeting_header.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 import '../../support/fakes.dart';
+
+final _now = DateTime(2026, 10, 29, 9);
+
+String _greeting(String name) =>
+    AppStrings.t('home_greet_morning', {'name': name});
 
 Widget _harness({
   required UserModel? user,
@@ -22,6 +30,8 @@ Widget _harness({
       // Short-circuit the assignments stream: no Firestore call, and no need
       // to fake the repository at all for the count-based badge.
       assignmentsStreamProvider.overrideWith((_) => Stream.value(assignments)),
+      // Fixed 09:00 so the greeting key is deterministic (morning).
+      minuteTickProvider.overrideWith((_) => Stream.value(_now)),
     ],
     child: const MaterialApp(
       home: Scaffold(
@@ -37,49 +47,31 @@ Widget _harness({
 }
 
 void main() {
+  setUpAll(() => initializeDateFormatting());
   setUp(() => AppColors.applyBrightness(Brightness.dark));
   tearDown(() => AppColors.applyBrightness(Brightness.dark));
 
-  testWidgets('renders "やあ、<name>さん 👋" greeting for the current user', (tester) async {
-    await tester.pumpWidget(_harness(
-      user: buildUser(name: '田中太郎'),
-      assignments: const [],
-    ));
-    await tester.pumpAndSettle();
-
-    expect(find.text('やあ、田中太郎さん 👋'), findsOneWidget);
-    expect(find.text('オンライン'), findsOneWidget);
+  test('greetingKey follows the time of day', () {
+    expect(GreetingHeader.greetingKey(DateTime(2026, 1, 1, 9)), 'home_greet_morning');
+    expect(GreetingHeader.greetingKey(DateTime(2026, 1, 1, 13)), 'home_greet_day');
+    expect(GreetingHeader.greetingKey(DateTime(2026, 1, 1, 19)), 'home_greet_evening');
   });
 
-  testWidgets('falls back to "ゲスト" when no user is signed in', (tester) async {
+  testWidgets('greets the current user by name', (tester) async {
+    await tester.pumpWidget(_harness(user: buildUser(name: '田中太郎'), assignments: const []));
+    await tester.pumpAndSettle();
+
+    expect(find.text(_greeting('田中太郎')), findsOneWidget);
+  });
+
+  testWidgets('falls back to the guest name when no user is signed in', (tester) async {
     await tester.pumpWidget(_harness(user: null, assignments: const []));
     await tester.pumpAndSettle();
 
-    expect(find.text('やあ、ゲストさん 👋'), findsOneWidget);
+    expect(find.text(_greeting(AppStrings.t('home_guest'))), findsOneWidget);
   });
 
-  testWidgets('shows school name as subtitle when the user has one', (tester) async {
-    await tester.pumpWidget(_harness(
-      user: buildUser(name: '山田花子', school: '東京専門学校'),
-      assignments: const [],
-    ));
-    await tester.pumpAndSettle();
-
-    expect(find.text('東京専門学校'), findsOneWidget);
-    expect(find.text('今日も一日、頑張ろう！'), findsNothing);
-  });
-
-  testWidgets('falls back to encouragement message when school is empty', (tester) async {
-    await tester.pumpWidget(_harness(
-      user: buildUser(name: '山田花子'),
-      assignments: const [],
-    ));
-    await tester.pumpAndSettle();
-
-    expect(find.text('今日も一日、頑張ろう！'), findsOneWidget);
-  });
-
-  testWidgets('shows no urgent badge when there are 0 urgent assignments', (tester) async {
+  testWidgets('bell has no dot when nothing is urgent', (tester) async {
     await tester.pumpWidget(_harness(
       user: buildUser(),
       assignments: [
@@ -89,64 +81,27 @@ void main() {
     ));
     await tester.pumpAndSettle();
 
-    // Only digits/9+ text appears in the badge; none should be present.
-    expect(find.text('9+'), findsNothing);
-    for (final n in ['1', '2', '3', '4', '5', '6', '7', '8', '9']) {
-      expect(find.text(n), findsNothing, reason: 'no badge digit "$n" when urgent count is 0');
-    }
+    expect(find.byIcon(Icons.notifications_none_rounded), findsOneWidget);
+    expect(find.byKey(const ValueKey('urgent-dot')), findsNothing);
   });
 
-  testWidgets('shows the urgent badge with the correct number when >0', (tester) async {
-    final today = DateTime.now();
+  testWidgets('bell shows a dot when an assignment is due soon', (tester) async {
     await tester.pumpWidget(_harness(
       user: buildUser(),
-      assignments: [
-        buildAssignment(id: 'a', dueDate: today),
-        buildAssignment(id: 'b', dueDate: today.add(const Duration(days: 1))),
-      ],
+      assignments: [buildAssignment(dueDate: DateTime.now().add(const Duration(days: 1)))],
     ));
     await tester.pumpAndSettle();
 
-    expect(find.text('2'), findsOneWidget, reason: 'badge shows the raw count');
-  });
-
-  testWidgets('caps the urgent badge at "9+"', (tester) async {
-    final today = DateTime.now();
-    await tester.pumpWidget(_harness(
-      user: buildUser(),
-      assignments: List.generate(
-        12,
-        (i) => buildAssignment(
-          id: 'a$i',
-          dueDate: today.add(Duration(days: i % 4)),
-        ),
-      ),
-    ));
-    await tester.pumpAndSettle();
-
-    expect(find.text('9+'), findsOneWidget);
-  });
-
-  testWidgets('shows the user\'s first-character initial in the avatar', (tester) async {
-    await tester.pumpWidget(_harness(
-      user: buildUser(name: 'Alice'),
-      assignments: const [],
-    ));
-    await tester.pumpAndSettle();
-
-    expect(find.text('A'), findsOneWidget);
+    expect(find.byKey(const ValueKey('urgent-dot')), findsOneWidget);
   });
 
   testWidgets('renders cleanly in both dark and light themes', (tester) async {
     for (final brightness in [Brightness.dark, Brightness.light]) {
       AppColors.applyBrightness(brightness);
-      await tester.pumpWidget(_harness(
-        user: buildUser(name: 'テスト'),
-        assignments: const [],
-      ));
+      await tester.pumpWidget(_harness(user: buildUser(name: 'テスト'), assignments: const []));
       await tester.pumpAndSettle();
 
-      expect(find.text('やあ、テストさん 👋'), findsOneWidget, reason: 'theme=$brightness');
+      expect(find.text(_greeting('テスト')), findsOneWidget, reason: 'theme=$brightness');
       expect(tester.takeException(), isNull);
     }
   });

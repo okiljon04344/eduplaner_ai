@@ -17,20 +17,20 @@ void main() {
       expect(AppColors.brightness, Brightness.light);
 
       // Surface family
-      expect(AppColors.background, const Color(0xFFFFFFFF));
+      expect(AppColors.background, const Color(0xFFF5F7F6));
       expect(AppColors.surface, const Color(0xFFFFFFFF));
-      expect(AppColors.bgDeep, const Color(0xFFF7F6F3));
+      expect(AppColors.bgDeep, const Color(0xFFEEF2F0));
       expect(AppColors.bgInput, const Color(0xFFFFFFFF));
-      expect(AppColors.bgLayer, const Color(0xFFF0FDF9));
+      expect(AppColors.bgLayer, const Color(0xFFFFFFFF));
 
       // Text family
-      expect(AppColors.textPrimary, const Color(0xFF1C1917));
-      expect(AppColors.textSecondary, const Color(0xFF6B7280));
-      expect(AppColors.textMuted, const Color(0xFF7A818D));
+      expect(AppColors.textPrimary, const Color(0xFF0F1A16));
+      expect(AppColors.textSecondary, const Color(0xFF4A5A53));
+      expect(AppColors.textMuted, const Color(0xFF66756E));
 
       // Borders / dividers
-      expect(AppColors.border, const Color(0xFFE5E7EB));
-      expect(AppColors.borderLight, const Color(0xFFF3F4F6));
+      expect(AppColors.border, const Color(0xFFDFE6E2));
+      expect(AppColors.borderLight, const Color(0xFFEEF2F0));
 
       // Subject text/dot pairs (only text/dot flip; fills stay constant)
       expect(AppColors.mathText, const Color(0xFFB45309));
@@ -45,9 +45,9 @@ void main() {
       AppColors.applyBrightness(Brightness.dark);
 
       expect(AppColors.isDark, isTrue);
-      expect(AppColors.background, const Color(0xFF100C08));
-      expect(AppColors.surface, const Color(0xFF17120A));
-      expect(AppColors.textPrimary, const Color(0xFFFFF3E8));
+      expect(AppColors.background, const Color(0xFF0B110F));
+      expect(AppColors.surface, const Color(0xFF131B18));
+      expect(AppColors.textPrimary, const Color(0xFFEEF6F2));
       expect(AppColors.mathText, const Color(0xFFFBBF24));
     });
 
@@ -76,6 +76,37 @@ void main() {
       expect(AppColors.success, brandSuccess);
       expect(AppColors.mathFill, const Color(0x1FFBBF24));
       expect(AppColors.progFill, const Color(0x26A855F7));
+    });
+
+    test('glass tokens return correct values for dark and light themes', () {
+      AppColors.applyBrightness(Brightness.dark);
+      expect(AppColors.glassFill, const Color(0x0DFFFFFF));
+      expect(AppColors.glassBorder, const Color(0x1AFFFFFF));
+      expect(AppColors.glassHighlight, const Color(0x14FFFFFF));
+      expect(AppColors.glowGreen, const Color(0x4D06D6A0));
+      expect(AppColors.glowBlue, const Color(0x3360A5FA));
+      expect(AppColors.navGlassFill, const Color(0x8C131B18));
+      expect(AppColors.navGlassBorder, const Color(0x1AFFFFFF));
+      expect(AppColors.nowGlassFill, const Color(0x1F06D6A0));
+      expect(AppColors.nowGlassBorder, const Color(0x7306D6A0));
+      expect(AppColors.nowGlow.length, 1);
+      expect(AppColors.nowGlow.first.color, const Color(0x3806D6A0));
+      expect(AppColors.nowGlow.first.blurRadius, 32);
+
+      AppColors.applyBrightness(Brightness.light);
+      expect(AppColors.glassFill, const Color(0x99FFFFFF));
+      expect(AppColors.glassBorder, const Color(0xE6FFFFFF));
+      expect(AppColors.glassHighlight, const Color(0xFFFFFFFF));
+      expect(AppColors.glowGreen, const Color(0x4706D6A0));
+      expect(AppColors.glowBlue, const Color(0x3860A5FA));
+      expect(AppColors.navGlassFill, const Color(0xA6FFFFFF));
+      expect(AppColors.navGlassBorder, const Color(0xF2FFFFFF));
+      expect(AppColors.nowGlassFill, const Color(0xBFE6FAF2));
+      expect(AppColors.nowGlassBorder, const Color(0x7306D6A0));
+      expect(AppColors.nowGlow.length, 1);
+      expect(AppColors.nowGlow.first.color, const Color(0x2E06D6A0));
+      expect(AppColors.nowGlow.first.blurRadius, 30);
+      expect(AppColors.nowGlow.first.offset, const Offset(0, 10));
     });
   });
 

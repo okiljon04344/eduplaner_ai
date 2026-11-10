@@ -31,11 +31,11 @@ void main() {
       DayTabRow(selectedDay: 2, weekStart: weekStart, onSelect: (_) {}),
     ));
 
-    expect(find.text('8/3'), findsOneWidget);
-    expect(find.text('8/4'), findsOneWidget);
-    expect(find.text('8/5'), findsOneWidget);
-    expect(find.text('8/6'), findsOneWidget);
-    expect(find.text('8/7'), findsOneWidget);
+    expect(find.text('3'), findsOneWidget);
+    expect(find.text('4'), findsOneWidget);
+    expect(find.text('5'), findsOneWidget);
+    expect(find.text('6'), findsOneWidget);
+    expect(find.text('7'), findsOneWidget);
   });
 
   testWidgets('tapping a tab fires onSelect with that index', (tester) async {
@@ -63,11 +63,11 @@ void main() {
       ),
     ));
 
-    // The active tab background is AppColors.primary at 22% alpha (see
+    // The active tab is filled with solid AppColors.primary (see
     // day_tab_row.dart); no other tab uses that colour. Finding exactly one
     // such container proves that (a) some tab is selected, and (b) only one
     // is — no state leak across tabs.
-    final activeBg = AppColors.primary.withValues(alpha: 0.22);
+    const activeBg = AppColors.primary;
     final activeContainers = find.byWidgetPredicate((w) {
       if (w is! AnimatedContainer) return false;
       final deco = w.decoration;
