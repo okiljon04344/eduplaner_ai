@@ -53,6 +53,7 @@ app.*.map.json
 functions/node_modules/
 firebase-debug.log*
 firestore-debug.log*
+database-debug.log
 pubsub-debug.log*
 ui-debug.log*
 
@@ -93,3 +94,6 @@ GEMINI_CONTEXT.md
 .artifacts/
 .gemini/
 graphify*
+.cache/
+.remotion/
+promo_video/

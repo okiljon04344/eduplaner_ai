@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>プライバシーポリシー - EduPlanner AI</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans JP", sans-serif; line-height: 1.7; max-width: 720px; margin: 0 auto; padding: 32px 20px 80px; color: #1a1a1a; background: #fff; }
+  h1 { font-size: 24px; margin-bottom: 4px; }
+  .updated { color: #666; font-size: 13px; margin-bottom: 32px; }
+  h2 { font-size: 17px; margin-top: 32px; border-left: 4px solid #7C3AED; padding-left: 10px; }
+  ul { padding-left: 20px; }
+  li { margin-bottom: 6px; }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0; }
+  th, td { border: 1px solid #ddd; padding: 8px 10px; text-align: left; font-size: 14px; }
+  th { background: #f5f3ff; }
+  a { color: #7C3AED; }
+  footer { margin-top: 48px; font-size: 12px; color: #888; }
+</style>
+</head>
+<body>
+  <h1>プライバシーポリシー</h1>
+  <p class="updated">最終更新日: 2026年11月10日</p>
+
+  <p>EduPlanner AI（以下「本アプリ」）は、学生の学習管理を支援するモバイルアプリケーションです。本ポリシーは、本アプリが収集する情報の種類、利用目的、第三者提供の有無、およびユーザーの権利について説明します。</p>
+
+  <h2>1. 収集する情報</h2>
+  <table>
+    <tr><th>情報の種類</th><th>内容</th><th>取得方法</th></tr>
+    <tr><td>アカウント情報</td><td>氏名、メールアドレス、プロフィール画像URL</td><td>Google サインインまたはメールアドレス/パスワード登録（Firebase Authentication）</td></tr>
+    <tr><td>プロフィール・学校情報</td><td>学校名、学校種別、課程、学年、学部・学科・コース、認証済みメールアドレスの学校ドメイン（学校の時間割連携に使用）</td><td>ユーザーによる入力およびメール認証</td></tr>
+    <tr><td>学習データ</td><td>課題（タイトル、詳細、科目、期限、難易度、進捗、ステータス、AIチェック結果）、時間割授業（科目、入力された教員名、教室、曜日、時限、休講・変更ステータスおよびメモ）、学習グループ（グループ名、メンバー一覧、招待コード。グループのメンバーはそのグループの共有授業を閲覧可能）</td><td>ユーザーがアプリ内で入力・作成</td></tr>
+    <tr><td>AIチャット内容・報告</td><td>ユーザーがAIアシスタントに送信したメッセージと回答（ユーザーごとに保存）。ユーザーによるAI回答の通報内容（回答の最大1,000文字および通報理由）</td><td>アプリ内のAIチャット機能および通報機能</td></tr>
+    <tr><td>AI利用カウンター</td><td>不正利用制限のための、ユーザーごとの1日のAIリクエスト数およびグループ参加試行回数</td><td>アプリ利用時に自動カウント</td></tr>
+    <tr><td>プッシュ通知トークンおよび表示言語</td><td>端末を識別するための通知用トークン（FCMトークン）、通知を該当言語で届けるためのアプリ表示言語</td><td>Firebase Cloud Messaging / アプリ設定</td></tr>
+    <tr><td>学校機能データ</td><td>学校管理者によって登録された教員の学校メールアドレス・時間割上の表示名・担当クラス、教員が投稿したお知らせ（教員名を含む）、教員が入力した授業変更情報（休講・教室変更・補講・メモ）</td><td>学校管理者および教員による入力</td></tr>
+    <tr><td>既読情報</td><td>生徒が教員のお知らせまたは授業変更通知を開いた際、生徒のユーザーID（氏名は含みません）および閲覧日時が記録されます。教員側には閲覧者数（例: 既読 22 / 28人）およびクラス人数のみが表示され、誰が読んだかは教員には表示されません。[OWNER TO CONFIRM: other users of the same school can technically read the list of user IDs, not names.]</td><td>お知らせ・通知の閲覧時に自動記録</td></tr>
+    <tr><td>利用状況データ</td><td>画面閲覧、操作イベントなどの匿名化された分析データ（自動収集イベント）</td><td>Firebase Analytics</td></tr>
+    <tr><td>アプリ完全性確認データ</td><td>不正利用を防止するための端末・アプリの真正性証明情報（Android Play Integrity、Apple App Attest/DeviceCheck、Web reCAPTCHA v3を通じてGoogleに送信）</td><td>Firebase App Check</td></tr>
+    <tr><td>端末内にのみ保存される情報</td><td>設定情報（テーマ、言語、通知のオン/オフ）、閲覧済みお知らせの記録、キャッシュされた今日のAIアドバイス（ローカルリマインダー通知は端末上でスケジュールされます）</td><td>端末内のローカルストレージ</td></tr>
+  </table>
+
+  <h2>2. 情報の利用目的</h2>
+  <ul>
+    <li>アカウントの認証およびユーザー識別のため</li>
+    <li>課題・時間割の保存、同期、リマインダー通知の送信のため</li>
+    <li>AI学習アシスタント機能の提供（入力内容をもとにした回答生成）のため</li>
+    <li>アプリの不具合修正および品質改善のため</li>
+  </ul>
+
+  <h2>3. 第三者への提供</h2>
+  <p>本アプリは以下の外部サービスを利用しており、上記情報の一部がこれらのサービス提供者に送信されます。</p>
+  <ul>
+    <li><strong>Google Firebase</strong>（Authentication、Cloud Firestore、Realtime Database、Cloud Functions、Cloud Messaging、Analytics、App Check、Hosting）— <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Googleプライバシーポリシー</a></li>
+    <li><strong>Google Gemini API</strong>
+      <ul>
+        <li>AIチャット: 送信メッセージ、および課題ごとの{科目、期限、ステータス、進捗状況}と授業ごとの{科目、曜日、時限}のみ。課題のタイトル・詳細、および教員名はチャットでは送信されません。</li>
+        <li>AI課題チェック: アップロードされたファイル（画像、PDF、Word、テキスト、最大10MB）、課題のタイトルおよび詳細。ファイルはサーバーのメモリ上でのみ処理され、保存やログ記録は一切行われません。処理結果（完了率%、不足部分、アドバイス）のみが保存されます。</li>
+        <li>クイズ生成: ユーザーが入力した科目・トピック（回答の根拠付けのために任意でGoogle検索が使用される場合があります）。</li>
+        <li>苦手分析: 科目ごとの数値データ（件数、平均値）のみで、タイトルなどは送信されません。</li>
+        <li>[OWNER TO CONFIRM: Gemini API is used on a paid plan, so Google does not use this data to train its models. If the free tier is used, Google may use it to improve its products.]</li>
+      </ul>
+    </li>
+    <li><strong>Google Drive API</strong>（学校管理者によって選択された時間割ファイル1件のみ。<code>drive.file</code> 権限を使用し、他のファイルにはアクセスしません）</li>
+  </ul>
+  <p>本アプリは、個人情報の販売を行いません。また、上記以外の目的で第三者に個人情報を提供することはありません。</p>
+
+  <h2>4. 学校の時間割連携</h2>
+  <p>学校の管理担当者は、任意で学校の時間割ファイルを本アプリに連携できます。</p>
+  <ul>
+    <li>学校のメンバーが時間割ファイルを1つ選択し、本アプリは選択されたそのファイルのみを読み取ります（Google Drive の <code>drive.file</code> 権限）。Google Drive 内のその他のファイルにはアクセスしません。</li>
+    <li>サーバーは、選択されたファイルのみを読み取れるトークンを保存し、毎日8時と17時に時間割の更新を確認します。</li>
+    <li>学生の学校ドメインのメールアドレスは、その学校の時間割を表示するためだけに使用します。</li>
+    <li>時間割に含まれる教員名は、同じ学校ドメインのユーザーにのみ表示され、AIには送信されません。</li>
+    <li>教員による入力情報（休講・教室変更・補講・メモ）およびお知らせは、同じ学校ドメインのユーザーにのみ表示されます。これらに関するプッシュ通知は対象クラスのユーザーに送信されます。</li>
+    <li>アクセスは、<a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener">https://myaccount.google.com/permissions</a> で本アプリのアクセスを削除するか、学校の管理担当者に依頼することで取り消せます。学校の連携を解除すると、保存されたトークンは削除されます。</li>
+  </ul>
+
+  <h2>5. データの保存期間</h2>
+  <p>ユーザーのデータは、アカウントが存在する限り保存されます。</p>
+  <p>「設定」→「アカウントを削除」を実行すると、以下のアカウントおよび関連データが削除されます。</p>
+  <ul>
+    <li>削除されるデータ: アカウント情報、プロフィール、課題、時間割授業、AIチャット履歴、AI回答の通報内容、AI利用カウンター、既読情報。また、学習グループから退会処理されます（唯一のメンバーが退会したグループは削除され、他にメンバーがいる場合は別のメンバーにオーナー権限が移譲されます）。</li>
+    <li>自動的には削除されないデータ: 教員が投稿したお知らせおよび教員が入力した授業変更情報（学校に帰属するため）、学校管理者が登録した教員/テスターのエントリ（学校管理者による削除が必要です）。</li>
+    <li>Googleの各種サービスで保持されるログは、Google独自の保持ポリシーに従います。</li>
+  </ul>
+
+  <h2>6. ユーザーの権利</h2>
+  <ul>
+    <li>アプリ内の「設定」画面からいつでも自分のデータを編集・削除できます。</li>
+    <li>「設定」→「アカウントを削除」から、アカウントとすべての関連データ（第5項に記載）を完全に削除できます。</li>
+    <li>データの取り扱いに関するお問い合わせは、下記の連絡先までご連絡ください。</li>
+  </ul>
+
+  <h2>7. 子供のプライバシー</h2>
+  <p>本アプリは主に学生を対象としていますが、13歳未満のお子様が保護者の同意なく本アプリを利用することは想定していません。13歳未満のお子様の情報を不適切に収集したと思われる場合は、下記までご連絡ください。速やかに削除いたします。</p>
+
+  <h2>8. セキュリティ</h2>
+  <p>本アプリは、Google Firebaseのセキュリティ基盤を利用し、ユーザーは自分のデータにのみアクセスできるようアクセス制御を行っています。通信中のデータは暗号化されています。</p>
+  <p>データは以下の Firebase / Google Cloud リージョンに保管されます。</p>
+  <ul>
+    <li>メインデータベース（Cloud Firestore）: 米国（nam5 マルチリージョン）</li>
+    <li>既読情報（Realtime Database）: シンガポール</li>
+    <li>サーバー機能（Cloud Functions）: 東京（asia-northeast1）</li>
+  </ul>
+
+  <h2>9. 本ポリシーの変更</h2>
+  <p>本ポリシーは、法令の変更や機能追加に応じて更新される場合があります。重要な変更がある場合は、アプリ内でお知らせします。</p>
+
+  <h2>10. お問い合わせ</h2>
+  <p>本ポリシーに関するご質問は、以下のメールアドレスまでご連絡ください。</p>
+  <p><a href="mailto:okiljonnabev@gmail.com">okiljonnabev@gmail.com</a></p>
+
+  <footer>EduPlanner AI</footer>
+</body>
+</html>
