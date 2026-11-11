@@ -152,8 +152,8 @@ class ChatBubble extends StatelessWidget {
                           color: AppColors.danger,
                         ),
                       )
-                    : SelectableText(
-                        message.content,
+                    : SelectableText.rich(
+                        boldMarkdown(message.content),
                         // SelectableText owns long-press (text selection), so the
                         // report action is also offered in its context menu.
                         contextMenuBuilder: (ctx, state) => AdaptiveTextSelectionToolbar.buttonItems(
@@ -183,4 +183,20 @@ class ChatBubble extends StatelessWidget {
       ],
     );
   }
+}
+
+/// Gemini replies use `**bold**`; render it instead of showing the stars.
+/// ponytail: bold only — add a markdown package if replies need lists/headings.
+TextSpan boldMarkdown(String text) {
+  final parts = text.split('**');
+  // An odd count of `**` leaves one unmatched marker: keep it as plain text.
+  if (parts.length.isEven) return TextSpan(text: text);
+  return TextSpan(children: [
+    for (var i = 0; i < parts.length; i++)
+      if (parts[i].isNotEmpty)
+        TextSpan(
+          text: parts[i],
+          style: i.isOdd ? const TextStyle(fontWeight: FontWeight.w700) : null,
+        ),
+  ]);
 }

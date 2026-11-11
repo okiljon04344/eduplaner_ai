@@ -244,7 +244,7 @@ abstract class AppColors {
   static const gradientDark = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF1C1108), Color(0xFF2A1B0C), Color(0xFF1C1108)],
+    colors: [Color(0xFF0B1714), Color(0xFF10221C), Color(0xFF0B1714)],
   );
   static const gradientUserBubble = LinearGradient(
     begin: Alignment.topLeft,
@@ -287,8 +287,8 @@ abstract class AppColors {
   /// AI banner/header gradient stops (`ai-grad-1`/`ai-grad-2` in the design
   /// tokens) — exposed individually for headers that need just the two
   /// stops rather than the full 3-stop [aiBannerGradient].
-  static Color get aiGrad1 => isDark ? const Color(0xFF1C1108) : const Color(0xFFECFDF5);
-  static Color get aiGrad2 => isDark ? const Color(0xFF2A1B0C) : const Color(0xFFD1FAE5);
+  static Color get aiGrad1 => isDark ? const Color(0xFF0B1714) : const Color(0xFFECFDF5);
+  static Color get aiGrad2 => isDark ? const Color(0xFF10221C) : const Color(0xFFD1FAE5);
 
   /// Small accent links/timestamps needing extra pop (`accent-text` token).
   static Color get accentText => isDark ? const Color(0xFF06D6A0) : const Color(0xFF047857);
@@ -322,7 +322,7 @@ abstract class AppColors {
   static Color get glowGreenSubtle => isDark ? const Color(0x2906D6A0) : const Color(0x2E06D6A0);
 
   // Student bottom navigation
-  static Color get navGlassFill => isDark ? const Color(0x8C131B18) : const Color(0xA6FFFFFF);
+  static Color get navGlassFill => isDark ? const Color(0xD90E1513) : const Color(0xD9FFFFFF);
   static Color get navGlassBorder => isDark ? const Color(0x1AFFFFFF) : const Color(0xF2FFFFFF);
   static List<BoxShadow> get navGlassShadow => isDark
       ? const [BoxShadow(color: Color(0x73000000), blurRadius: 32, offset: Offset(0, 12))]

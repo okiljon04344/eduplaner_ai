@@ -58,6 +58,7 @@
   "bot_programming": "Programming",
   "btn_save": "Save",
   "btn_update": "Update",
+  "chat_ai_disclaimer": "AI can make mistakes. Check important info.",
   "chat_clear_msg": "Do you want to delete all chat history?",
   "chat_clear_title": "Clear Chat",
   "chat_empty_title": "Ask me anything, anytime",

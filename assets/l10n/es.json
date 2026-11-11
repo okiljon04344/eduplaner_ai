@@ -58,6 +58,7 @@
   "bot_programming": "Programación",
   "btn_save": "Guardar",
   "btn_update": "Actualizar",
+  "chat_ai_disclaimer": "La IA puede cometer errores. Verifica la información importante.",
   "chat_clear_msg": "¿Quieres eliminar todo el historial del chat?",
   "chat_clear_title": "Borrar chat",
   "chat_empty_title": "Pregúntame lo que quieras",
