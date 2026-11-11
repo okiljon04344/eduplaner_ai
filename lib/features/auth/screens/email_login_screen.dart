@@ -85,6 +85,75 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
   @override
   Widget build(BuildContext context) {
     final loading = ref.watch(authNotifierProvider).isLoading;
+    final isDesktop = context.isTablet;
+
+    final formContent = Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            AppStrings.t('login_welcome_back'),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.textPrimary, fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP']),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            AppStrings.t('login_email_pass_prompt'),
+            style: TextStyle(fontSize: 13, color: AppColors.textSecondary, fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP']),
+          ),
+          const SizedBox(height: 28),
+          AppInputField(
+            controller: _emailController,
+            hintText: AppStrings.t('login_email_hint'),
+            textInputAction: TextInputAction.next,
+            validator: Validators.email,
+          ),
+          const SizedBox(height: 14),
+          AppInputField(
+            controller: _passwordController,
+            hintText: AppStrings.t('login_pass_hint'),
+            obscureText: _obscurePassword,
+            textInputAction: TextInputAction.done,
+            validator: Validators.required,
+            // Keyboard "done" signs in, as users expect.
+            onSubmitted: (_) => _submit(),
+            suffix: IconButton(
+              icon: Icon(_obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: AppColors.textMuted),
+              onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              onPressed: _sendingReset ? null : _forgotPassword,
+              child: Text(AppStrings.t('login_forgot_pass')),
+            ),
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: loading ? null : _submit,
+            child: loading
+                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2.5, color: AppColors.onPrimary))
+                : Text(AppStrings.t('login_title')),
+          ),
+          const SizedBox(height: 16),
+          Center(
+            child: TextButton(
+              onPressed: () => context.pushReplacement('/login/signup'),
+              child: Text(AppStrings.t('login_no_account')),
+            ),
+          ),
+          Center(
+            child: TextButton(
+              onPressed: () => context.push('/login/reset'),
+              child: Text(AppStrings.t('login_have_reset_code')),
+            ),
+          ),
+        ],
+      ),
+    );
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -99,78 +168,32 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
         ],
       ),
       body: SafeArea(
-        child: ResponsiveBody(
-          maxWidth: 480,
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    AppStrings.t('login_welcome_back'),
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.textPrimary, fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP']),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    AppStrings.t('login_email_pass_prompt'),
-                    style: TextStyle(fontSize: 13, color: AppColors.textSecondary, fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP']),
-                  ),
-                  const SizedBox(height: 28),
-                  AppInputField(
-                    controller: _emailController,
-                    hintText: AppStrings.t('login_email_hint'),
-                    textInputAction: TextInputAction.next,
-                    validator: Validators.email,
-                  ),
-                  const SizedBox(height: 14),
-                  AppInputField(
-                    controller: _passwordController,
-                    hintText: AppStrings.t('login_pass_hint'),
-                    obscureText: _obscurePassword,
-                    textInputAction: TextInputAction.done,
-                    validator: Validators.required,
-                    // Keyboard "done" signs in, as users expect.
-                    onSubmitted: (_) => _submit(),
-                    suffix: IconButton(
-                      icon: Icon(_obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: AppColors.textMuted),
-                      onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+        child: isDesktop
+            ? Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 440),
+                    child: Container(
+                      padding: const EdgeInsets.all(32),
+                      decoration: BoxDecoration(
+                        color: AppColors.cardSurface,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: AppColors.cardStroke),
+                        boxShadow: AppColors.cardShadow,
+                      ),
+                      child: formContent,
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      onPressed: _sendingReset ? null : _forgotPassword,
-                      child: Text(AppStrings.t('login_forgot_pass')),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: loading ? null : _submit,
-                    child: loading
-                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white))
-                        : Text(AppStrings.t('login_title')),
-                  ),
-                  const SizedBox(height: 16),
-                  Center(
-                    child: TextButton(
-                      onPressed: () => context.pushReplacement('/login/signup'),
-                      child: Text(AppStrings.t('login_no_account')),
-                    ),
-                  ),
-                  Center(
-                    child: TextButton(
-                      onPressed: () => context.push('/login/reset'),
-                      child: Text(AppStrings.t('login_have_reset_code')),
-                    ),
-                  ),
-                ],
+                ),
+              )
+            : ResponsiveBody(
+                maxWidth: 480,
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+                  child: formContent,
+                ),
               ),
-            ),
-          ),
-        ),
       ),
     );
   }

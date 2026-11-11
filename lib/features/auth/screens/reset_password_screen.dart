@@ -114,6 +114,9 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = context.isTablet;
+    final stepContent = _verifiedCode == null ? _buildCodeStep() : _buildPasswordStep();
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -122,13 +125,32 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
         title: Text(AppStrings.t('reset_code_title'), style: const TextStyle(fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: ['NotoSansJP'])),
       ),
       body: SafeArea(
-        child: ResponsiveBody(
-          maxWidth: 480,
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
-            child: _verifiedCode == null ? _buildCodeStep() : _buildPasswordStep(),
-          ),
-        ),
+        child: isDesktop
+            ? Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 440),
+                    child: Container(
+                      padding: const EdgeInsets.all(32),
+                      decoration: BoxDecoration(
+                        color: AppColors.cardSurface,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: AppColors.cardStroke),
+                        boxShadow: AppColors.cardShadow,
+                      ),
+                      child: stepContent,
+                    ),
+                  ),
+                ),
+              )
+            : ResponsiveBody(
+                maxWidth: 480,
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+                  child: stepContent,
+                ),
+              ),
       ),
     );
   }

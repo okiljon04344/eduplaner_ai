@@ -85,7 +85,7 @@ void main() {
       expect(AppColors.glassHighlight, const Color(0x14FFFFFF));
       expect(AppColors.glowGreen, const Color(0x4D06D6A0));
       expect(AppColors.glowBlue, const Color(0x3360A5FA));
-      expect(AppColors.navGlassFill, const Color(0x8C131B18));
+      expect(AppColors.navGlassFill, const Color(0xD90E1513));
       expect(AppColors.navGlassBorder, const Color(0x1AFFFFFF));
       expect(AppColors.nowGlassFill, const Color(0x1F06D6A0));
       expect(AppColors.nowGlassBorder, const Color(0x7306D6A0));
@@ -99,14 +99,14 @@ void main() {
       expect(AppColors.glassHighlight, const Color(0xFFFFFFFF));
       expect(AppColors.glowGreen, const Color(0x4706D6A0));
       expect(AppColors.glowBlue, const Color(0x3860A5FA));
-      expect(AppColors.navGlassFill, const Color(0xA6FFFFFF));
+      expect(AppColors.navGlassFill, const Color(0xD9FFFFFF));
       expect(AppColors.navGlassBorder, const Color(0xF2FFFFFF));
       expect(AppColors.nowGlassFill, const Color(0xBFE6FAF2));
       expect(AppColors.nowGlassBorder, const Color(0x7306D6A0));
       expect(AppColors.nowGlow.length, 1);
       expect(AppColors.nowGlow.first.color, const Color(0x2E06D6A0));
       expect(AppColors.nowGlow.first.blurRadius, 30);
-      expect(AppColors.nowGlow.first.offset, const Offset(0, 10));
+      expect(AppColors.nowGlow.first.offset, Offset.zero);
     });
   });
 

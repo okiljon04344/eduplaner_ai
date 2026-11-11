@@ -24,11 +24,9 @@ class AppShell extends ConsumerWidget {
           ? Row(
               children: [
                 const AppNavRail(),
-                Expanded(
-                  child: ResponsiveBody(
-                    child: _DirectionalTab(child: child),
-                  ),
-                ),
+                // Each tab clamps its own content column, so glows and
+                // full-bleed headers can span the whole area.
+                Expanded(child: _DirectionalTab(child: child)),
               ],
             )
           : _DirectionalTab(child: child),

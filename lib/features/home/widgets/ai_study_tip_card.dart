@@ -107,8 +107,23 @@ class _AiStudyTipCardState extends ConsumerState<AiStudyTipCard> with SingleTick
                   ),
                   const SizedBox(height: 4),
                   tip.when(
-                    data: (text) => Text(
-                      text,
+                    data: (text) {
+                      final content = text.trim().isEmpty || text.trim() == '・'
+                          ? AppStrings.t('home_ai_fallback')
+                          : text;
+                      return Text(
+                        content,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 12, fontWeight: FontWeight.w500, height: 1.4,
+                          color: AppColors.textSecondary,
+                          fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP'],
+                        ),
+                      );
+                    },
+                    loading: () => Text(
+                      AppStrings.t('home_ai_fallback'),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -116,11 +131,6 @@ class _AiStudyTipCardState extends ConsumerState<AiStudyTipCard> with SingleTick
                         color: AppColors.textSecondary,
                         fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP'],
                       ),
-                    ),
-                    loading: () => SizedBox(
-                      width: 14,
-                      height: 14,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.textSecondary),
                     ),
                     error: (_, __) => Text(
                       AppStrings.t('home_ai_fallback'),

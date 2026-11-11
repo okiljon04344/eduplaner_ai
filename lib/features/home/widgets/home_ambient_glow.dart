@@ -13,42 +13,31 @@ class HomeAmbientGlow extends StatelessWidget {
   Widget build(BuildContext context) {
     return RepaintBoundary(
       child: IgnorePointer(
-        child: OverflowBox(
-          alignment: Alignment.topCenter,
-          minWidth: 0,
-          minHeight: 0,
-          maxWidth: double.infinity,
-          maxHeight: double.infinity,
-          child: SizedBox(
-            width: MediaQuery.sizeOf(context).width,
-            height: MediaQuery.sizeOf(context).height,
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Positioned(
-                  left: -120,
-                  top: -140,
-                  width: 420,
-                  height: 420,
-                  child: _GlowCircle(color: AppColors.glowGreen),
-                ),
-                Positioned(
-                  right: -160,
-                  top: 220,
-                  width: 380,
-                  height: 380,
-                  child: _GlowCircle(color: AppColors.glowBlue),
-                ),
-                Positioned(
-                  left: -100,
-                  top: 760,
-                  width: 360,
-                  height: 360,
-                  child: _GlowCircle(color: AppColors.glowGreenSubtle),
-                ),
-              ],
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Positioned(
+              left: -120,
+              top: -140,
+              width: 420,
+              height: 420,
+              child: _GlowCircle(color: AppColors.glowGreen),
             ),
-          ),
+            Positioned(
+              right: -160,
+              top: 220,
+              width: 380,
+              height: 380,
+              child: _GlowCircle(color: AppColors.glowBlue),
+            ),
+            Positioned(
+              left: -100,
+              top: 760,
+              width: 360,
+              height: 360,
+              child: _GlowCircle(color: AppColors.glowGreenSubtle),
+            ),
+          ],
         ),
       ),
     );

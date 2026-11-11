@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/responsive.dart';
 import '../providers/onboarding_provider.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
@@ -73,110 +74,33 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = context.isTablet;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: Column(
-          children: [
-            // Skip button row
-            SizedBox(
-              height: 52,
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 16),
-                  child: AnimatedOpacity(
-                    opacity: _page < _pages.length - 1 ? 1.0 : 0.0,
-                    duration: const Duration(milliseconds: 200),
-                    child: TextButton(
-                      onPressed: _page < _pages.length - 1 ? _finish : null,
-                      child: Text(
-                        AppStrings.t('onboard_skip'),
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: AppColors.textMuted,
-                          fontFamily: 'Plus Jakarta Sans',
-                          fontFamilyFallback: const ['NotoSansJP'],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-
-            // Page content
-            Expanded(
-              child: PageView.builder(
-                controller: _controller,
-                itemCount: _pages.length,
-                onPageChanged: (i) => setState(() => _page = i),
-                itemBuilder: (context, i) => _PageContent(
-                  data: _pages[i],
-                  key: ValueKey(i),
-                ),
-              ),
-            ),
-
-            // Bottom controls
-            Padding(
-              padding: const EdgeInsets.fromLTRB(32, 20, 32, 44),
-              child: Column(
-                children: [
-                  // Page dots
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(_pages.length, (i) {
-                      final active = i == _page;
-                      return AnimatedContainer(
-                        duration: const Duration(milliseconds: 280),
-                        margin: const EdgeInsets.symmetric(horizontal: 4),
-                        width: active ? 28 : 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: active
-                              ? _pages[_page].color
-                              : AppColors.border,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                      );
-                    }),
-                  ),
-                  const SizedBox(height: 28),
-
-                  // Action button
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 280),
-                    width: double.infinity,
-                    height: 54,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [_pages[_page].color, _pages[_page].accentColor],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: _pages[_page].color.withValues(alpha: 0.4),
-                          blurRadius: 20,
-                          offset: const Offset(0, 6),
-                        ),
-                      ],
-                    ),
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(16),
-                        onTap: _next,
-                        child: Center(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: isDesktop ? 480 : double.infinity),
+            child: Column(
+              children: [
+                // Skip button row
+                SizedBox(
+                  height: 52,
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 16),
+                      child: AnimatedOpacity(
+                        opacity: _page < _pages.length - 1 ? 1.0 : 0.0,
+                        duration: const Duration(milliseconds: 200),
+                        child: TextButton(
+                          onPressed: _page < _pages.length - 1 ? _finish : null,
                           child: Text(
-                            _page < _pages.length - 1 ? AppStrings.t('onboard_next') : AppStrings.t('onboard_start'),
+                            AppStrings.t('onboard_skip'),
                             style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: _onColor(_pages[_page].accentColor),
-                              letterSpacing: 0.3,
+                              fontSize: 13,
+                              color: AppColors.textMuted,
                               fontFamily: 'Plus Jakarta Sans',
                               fontFamilyFallback: const ['NotoSansJP'],
                             ),
@@ -185,10 +109,95 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       ),
                     ),
                   ),
-                ],
-              ),
+                ),
+
+                // Page content
+                Expanded(
+                  child: PageView.builder(
+                    controller: _controller,
+                    itemCount: _pages.length,
+                    onPageChanged: (i) => setState(() => _page = i),
+                    itemBuilder: (context, i) => _PageContent(
+                      data: _pages[i],
+                      isDesktop: isDesktop,
+                      key: ValueKey(i),
+                    ),
+                  ),
+                ),
+
+                // Bottom controls
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(32, 20, 32, 44),
+                  child: Column(
+                    children: [
+                      // Page dots
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: List.generate(_pages.length, (i) {
+                          final active = i == _page;
+                          return AnimatedContainer(
+                            duration: const Duration(milliseconds: 280),
+                            margin: const EdgeInsets.symmetric(horizontal: 4),
+                            width: active ? 28 : 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: active
+                                  ? _pages[_page].color
+                                  : AppColors.border,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          );
+                        }),
+                      ),
+                      const SizedBox(height: 28),
+
+                      // Action button
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 280),
+                        width: double.infinity,
+                        height: 54,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [_pages[_page].color, _pages[_page].accentColor],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: _pages[_page].color.withValues(alpha: 0.4),
+                              blurRadius: 20,
+                              offset: const Offset(0, 6),
+                            ),
+                          ],
+                        ),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(16),
+                            onTap: _next,
+                            child: Center(
+                              child: Text(
+                                _page < _pages.length - 1 ? AppStrings.t('onboard_next') : AppStrings.t('onboard_start'),
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: _onColor(_pages[_page].accentColor),
+                                  letterSpacing: 0.3,
+                                  fontFamily: 'Plus Jakarta Sans',
+                                  fontFamilyFallback: const ['NotoSansJP'],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -216,10 +225,18 @@ class _PageData {
 
 class _PageContent extends StatelessWidget {
   final _PageData data;
-  const _PageContent({super.key, required this.data});
+  final bool isDesktop;
+  const _PageContent({super.key, required this.data, this.isDesktop = false});
 
   @override
   Widget build(BuildContext context) {
+    final outerGlowSize = isDesktop ? 220.0 : 180.0;
+    final midRingSize = isDesktop ? 150.0 : 120.0;
+    final iconBoxSize = isDesktop ? 104.0 : 84.0;
+    final iconSize = isDesktop ? 52.0 : 42.0;
+    final titleFontSize = isDesktop ? 28.0 : 22.0;
+    final subtitleFontSize = isDesktop ? 16.0 : 15.0;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 36),
       child: Column(
@@ -231,8 +248,8 @@ class _PageContent extends StatelessWidget {
             children: [
               // Outer glow
               Container(
-                width: 180,
-                height: 180,
+                width: outerGlowSize,
+                height: outerGlowSize,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
@@ -245,8 +262,8 @@ class _PageContent extends StatelessWidget {
               ),
               // Mid ring
               Container(
-                width: 120,
-                height: 120,
+                width: midRingSize,
+                height: midRingSize,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
@@ -263,8 +280,8 @@ class _PageContent extends StatelessWidget {
               ),
               // Icon box
               Container(
-                width: 84,
-                height: 84,
+                width: iconBoxSize,
+                height: iconBoxSize,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
@@ -274,16 +291,16 @@ class _PageContent extends StatelessWidget {
                       data.accentColor,
                     ],
                   ),
-                  borderRadius: BorderRadius.circular(26),
+                  borderRadius: BorderRadius.circular(isDesktop ? 32 : 26),
                   boxShadow: [
                     BoxShadow(
                       color: data.color.withValues(alpha: 0.55),
-                      blurRadius: 28,
+                      blurRadius: isDesktop ? 34 : 28,
                       offset: const Offset(0, 8),
                     ),
                   ],
                 ),
-                child: Icon(data.icon, size: 42, color: _onColor(data.accentColor)),
+                child: Icon(data.icon, size: iconSize, color: _onColor(data.accentColor)),
               ),
             ],
           )
@@ -296,14 +313,14 @@ class _PageContent extends StatelessWidget {
               )
               .fadeIn(duration: 400.ms),
 
-          const SizedBox(height: 44),
+          SizedBox(height: isDesktop ? 48 : 44),
 
           // Title
           Text(
             data.title,
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 22,
+              fontSize: titleFontSize,
               fontWeight: FontWeight.w800,
               color: AppColors.textPrimary,
               height: 1.3,
@@ -329,7 +346,7 @@ class _PageContent extends StatelessWidget {
             data.subtitle,
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 15,
+              fontSize: subtitleFontSize,
               height: 1.7,
               color: AppColors.textSecondary,
               fontFamily: 'Plus Jakarta Sans',

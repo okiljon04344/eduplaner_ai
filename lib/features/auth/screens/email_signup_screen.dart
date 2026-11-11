@@ -58,6 +58,79 @@ class _EmailSignupScreenState extends ConsumerState<EmailSignupScreen> {
   @override
   Widget build(BuildContext context) {
     final loading = ref.watch(authNotifierProvider).isLoading;
+    final isDesktop = context.isTablet;
+
+    final formContent = Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            AppStrings.t('login_signup_title'),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.textPrimary, fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP']),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            AppStrings.t('login_signup_subtitle'),
+            style: TextStyle(fontSize: 13, color: AppColors.textSecondary, fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP']),
+          ),
+          const SizedBox(height: 28),
+          AppInputField(
+            controller: _nameController,
+            hintText: AppStrings.t('login_name_hint'),
+            textInputAction: TextInputAction.next,
+            validator: Validators.required,
+          ),
+          const SizedBox(height: 14),
+          AppInputField(
+            controller: _emailController,
+            hintText: AppStrings.t('login_email_hint'),
+            textInputAction: TextInputAction.next,
+            validator: Validators.email,
+          ),
+          const SizedBox(height: 14),
+          AppInputField(
+            controller: _passwordController,
+            hintText: AppStrings.t('login_pass_hint_min'),
+            obscureText: _obscurePassword,
+            textInputAction: TextInputAction.next,
+            validator: Validators.minLength(6),
+            suffix: IconButton(
+              icon: Icon(_obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: AppColors.textMuted),
+              onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+            ),
+          ),
+          const SizedBox(height: 14),
+          AppInputField(
+            controller: _confirmController,
+            hintText: AppStrings.t('login_pass_confirm_hint'),
+            obscureText: _obscureConfirm,
+            textInputAction: TextInputAction.done,
+            validator: (v) => v != _passwordController.text ? AppStrings.t('val_pass_mismatch') : null,
+            suffix: IconButton(
+              icon: Icon(_obscureConfirm ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: AppColors.textMuted),
+              onPressed: () => setState(() => _obscureConfirm = !_obscureConfirm),
+            ),
+            onChanged: (_) => _formKey.currentState?.validate(),
+          ),
+          const SizedBox(height: 28),
+          ElevatedButton(
+            onPressed: loading ? null : _submit,
+            child: loading
+                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2.5, color: AppColors.onPrimary))
+                : Text(AppStrings.t('login_signup_btn')),
+          ),
+          const SizedBox(height: 16),
+          Center(
+            child: TextButton(
+              onPressed: () => context.pushReplacement('/login/email'),
+              child: Text(AppStrings.t('login_have_account')),
+            ),
+          ),
+        ],
+      ),
+    );
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -72,82 +145,32 @@ class _EmailSignupScreenState extends ConsumerState<EmailSignupScreen> {
         ],
       ),
       body: SafeArea(
-        child: ResponsiveBody(
-          maxWidth: 480,
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    AppStrings.t('login_signup_title'),
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.textPrimary, fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP']),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    AppStrings.t('login_signup_subtitle'),
-                    style: TextStyle(fontSize: 13, color: AppColors.textSecondary, fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP']),
-                  ),
-                  const SizedBox(height: 28),
-                  AppInputField(
-                    controller: _nameController,
-                    hintText: AppStrings.t('login_name_hint'),
-                    textInputAction: TextInputAction.next,
-                    validator: Validators.required,
-                  ),
-                  const SizedBox(height: 14),
-                  AppInputField(
-                    controller: _emailController,
-                    hintText: AppStrings.t('login_email_hint'),
-                    textInputAction: TextInputAction.next,
-                    validator: Validators.email,
-                  ),
-                  const SizedBox(height: 14),
-                  AppInputField(
-                    controller: _passwordController,
-                    hintText: AppStrings.t('login_pass_hint_min'),
-                    obscureText: _obscurePassword,
-                    textInputAction: TextInputAction.next,
-                    validator: Validators.minLength(6),
-                    suffix: IconButton(
-                      icon: Icon(_obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: AppColors.textMuted),
-                      onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+        child: isDesktop
+            ? Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 440),
+                    child: Container(
+                      padding: const EdgeInsets.all(32),
+                      decoration: BoxDecoration(
+                        color: AppColors.cardSurface,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: AppColors.cardStroke),
+                        boxShadow: AppColors.cardShadow,
+                      ),
+                      child: formContent,
                     ),
                   ),
-                  const SizedBox(height: 14),
-                  AppInputField(
-                    controller: _confirmController,
-                    hintText: AppStrings.t('login_pass_confirm_hint'),
-                    obscureText: _obscureConfirm,
-                    textInputAction: TextInputAction.done,
-                    validator: (v) => v != _passwordController.text ? AppStrings.t('val_pass_mismatch') : null,
-                    suffix: IconButton(
-                      icon: Icon(_obscureConfirm ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: AppColors.textMuted),
-                      onPressed: () => setState(() => _obscureConfirm = !_obscureConfirm),
-                    ),
-                    onChanged: (_) => _formKey.currentState?.validate(),
-                  ),
-                  const SizedBox(height: 28),
-                  ElevatedButton(
-                    onPressed: loading ? null : _submit,
-                    child: loading
-                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2.5, color: AppColors.onPrimary))
-                        : Text(AppStrings.t('login_signup_btn')),
-                  ),
-                  const SizedBox(height: 16),
-                  Center(
-                    child: TextButton(
-                      onPressed: () => context.pushReplacement('/login/email'),
-                      child: Text(AppStrings.t('login_have_account')),
-                    ),
-                  ),
-                ],
+                ),
+              )
+            : ResponsiveBody(
+                maxWidth: 480,
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+                  child: formContent,
+                ),
               ),
-            ),
-          ),
-        ),
       ),
     );
   }

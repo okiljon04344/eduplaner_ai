@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/responsive.dart';
 import '../models/ai_bot.dart';
 import '../providers/chat_provider.dart';
 
@@ -13,24 +14,29 @@ class QuickReplyChips extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final selected = ref.watch(selectedBotIdProvider);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      width: double.infinity,
       decoration: BoxDecoration(
         color: const Color(0x05FFFFFF),
         border: Border(bottom: BorderSide(color: AppColors.borderLight, width: 1)),
       ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: aiBots.map((bot) {
-            return Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: _BotChip(
-                bot: bot,
-                selected: bot.id == selected,
-                onTap: () => ref.read(selectedBotIdProvider.notifier).state = bot.id,
-              ),
-            );
-          }).toList(),
+      child: ResponsiveBody(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: aiBots.map((bot) {
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: _BotChip(
+                    bot: bot,
+                    selected: bot.id == selected,
+                    onTap: () => ref.read(selectedBotIdProvider.notifier).state = bot.id,
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
         ),
       ),
     );

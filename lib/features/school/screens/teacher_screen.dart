@@ -134,7 +134,7 @@ class _TeacherScreenState extends ConsumerState<TeacherScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(
-              width: 220,
+              width: 200,
               child: _ClassList(
                 info: info,
                 mine: mine,
@@ -143,12 +143,14 @@ class _TeacherScreenState extends ConsumerState<TeacherScreen> {
                 onPick: pickClass,
               ),
             ),
+            const SizedBox(width: 16),
             Expanded(
-              child: ListView(padding: const EdgeInsets.fromLTRB(16, 8, 16, 32), children: weekColumn),
+              child: ListView(padding: const EdgeInsets.fromLTRB(0, 8, 0, 32), children: weekColumn),
             ),
+            const SizedBox(width: 20),
             Container(
-              width: 360,
-              margin: const EdgeInsets.fromLTRB(0, 8, 16, 16),
+              width: 340,
+              margin: const EdgeInsets.fromLTRB(0, 8, 20, 16),
               decoration: BoxDecoration(
                 color: AppColors.cardSurface,
                 borderRadius: BorderRadius.circular(20),
@@ -204,7 +206,7 @@ class _TeacherScreenState extends ConsumerState<TeacherScreen> {
     return TeacherScaffold(
       section: TeacherSection.timetable,
       title: AppStrings.t('teacher_title'),
-      body: ResponsiveBody(maxWidth: 1600, child: body),
+      body: body,
     );
   }
 
@@ -712,15 +714,16 @@ class _SlotTile extends StatelessWidget {
         child: s != null
             ? SchoolSlotCard(slot: s, period: period, compact: compact)
             : Container(
+                constraints: const BoxConstraints(minHeight: 44),
                 margin: EdgeInsets.only(bottom: compact ? 4 : 14),
-                padding: EdgeInsets.symmetric(horizontal: 12, vertical: compact ? 10 : 16),
+                padding: EdgeInsets.symmetric(horizontal: 12, vertical: compact ? 8 : 12),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(compact ? 10 : 18),
                   border: Border.all(color: AppColors.cardStroke),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.add, size: 16, color: AppColors.textMuted),
+                    Icon(Icons.add, size: 16, color: AppColors.textSecondary),
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
@@ -729,7 +732,11 @@ class _SlotTile extends StatelessWidget {
                             : '${period.label} · ${AppStrings.t('teacher_empty_slot')}',
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 12, color: AppColors.textMuted),
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                     ),
                   ],

@@ -50,49 +50,101 @@ class TeacherAssignmentsScreen extends ConsumerWidget {
     final info = ref.watch(schoolInfoProvider).valueOrNull;
     final role = ref.watch(schoolRoleProvider);
     final assignments = ref.watch(schoolAssignmentsProvider).valueOrNull ?? const <SchoolAssignment>[];
+    final isDesktop = MediaQuery.sizeOf(context).width >= 1100;
+
+    final sentList = <Widget>[
+      Text(
+        AppStrings.t('sas_sent_list'),
+        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.textPrimary),
+      ),
+      const SizedBox(height: 8),
+      if (assignments.isEmpty)
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Text(
+            AppStrings.t('sas_empty_list'),
+            style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+          ),
+        ),
+      for (final a in assignments)
+        _DistributedAssignmentCard(
+          assignment: a,
+          canDelete: role.admin || a.createdBy == FirebaseAuth.instance.currentUser?.uid,
+        ),
+    ];
+
+    Widget body;
+    if (info == null || !role.teacher) {
+      body = Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Text(
+            AppStrings.t('teacher_no_access'),
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+          ),
+        ),
+      );
+    } else if (isDesktop) {
+      body = Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1000),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  AppStrings.t('sas_screen_title'),
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        width: 460,
+                        child: SingleChildScrollView(
+                          child: _AssignmentForm(info: info),
+                        ),
+                      ),
+                      const SizedBox(width: 24),
+                      Expanded(
+                        child: ListView(
+                          children: sentList,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    } else {
+      body = ResponsiveBody(
+        maxWidth: 720,
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+          children: [
+            _AssignmentForm(info: info),
+            const SizedBox(height: 24),
+            ...sentList,
+          ],
+        ),
+      );
+    }
 
     return TeacherScaffold(
       section: TeacherSection.assignments,
       title: AppStrings.t('sas_screen_title'),
-      body: info == null || !role.teacher
-          ? Center(
-              child: Padding(
-                padding: const EdgeInsets.all(32),
-                child: Text(
-                  AppStrings.t('teacher_no_access'),
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
-                ),
-              ),
-            )
-          : ResponsiveBody(
-              maxWidth: 720,
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-                children: [
-                  _AssignmentForm(info: info),
-                  const SizedBox(height: 24),
-                  Text(
-                    AppStrings.t('sas_sent_list'),
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.textPrimary),
-                  ),
-                  const SizedBox(height: 8),
-                  if (assignments.isEmpty)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      child: Text(
-                        AppStrings.t('sas_empty_list'),
-                        style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
-                      ),
-                    ),
-                  for (final a in assignments)
-                    _DistributedAssignmentCard(
-                      assignment: a,
-                      canDelete: role.admin || a.createdBy == FirebaseAuth.instance.currentUser?.uid,
-                    ),
-                ],
-              ),
-            ),
+      body: body,
     );
   }
 }

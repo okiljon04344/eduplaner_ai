@@ -117,24 +117,24 @@ class SchoolWeekGrid extends ConsumerWidget {
           const SizedBox(height: 8),
           for (var row = 0; row < periods.length; row++)
             Padding(
-              padding: const EdgeInsets.only(bottom: 6),
+              padding: const EdgeInsets.only(bottom: 8),
               child: IntrinsicHeight(
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     gutter(Padding(
-                      padding: const EdgeInsets.only(right: 6, top: 4),
+                      padding: const EdgeInsets.only(right: 6, top: 6),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(periods[row].label,
                               style: TextStyle(
-                                  fontSize: 11,
+                                  fontSize: 12,
                                   fontWeight: FontWeight.w700,
                                   color: AppColors.accentText)),
                           Text(schoolPeriodTimes(periods[row]),
                               style: TextStyle(
-                                  fontSize: 9, color: AppColors.textSecondary)),
+                                  fontSize: 10, color: AppColors.textSecondary)),
                         ],
                       ),
                     )),
@@ -223,14 +223,104 @@ class _Cell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        for (final s in slots)
-          SchoolSlotCard(slot: s, period: period, compact: true),
-        for (final c in personal)
-          _PersonalChip(c, label: c.subject, marked: true),
-      ],
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 56),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          for (final s in slots)
+            _SchoolSlotGridItem(slot: s, period: period),
+          for (final c in personal)
+            _PersonalChip(c, label: c.subject, marked: true),
+        ],
+      ),
+    );
+  }
+}
+
+class _SchoolSlotGridItem extends StatelessWidget {
+  final SchoolSlot slot;
+  final SchoolPeriod period;
+  const _SchoolSlotGridItem({required this.slot, required this.period});
+
+  @override
+  Widget build(BuildContext context) {
+    final elective = slot.status == SchoolSlotStatus.elective;
+    final subject = elective
+        ? AppStrings.t('school_slot_elective', {'label': slot.subject})
+        : slot.subject;
+    final accent = schoolSlotAccent(slot);
+    final badge = schoolSlotBadge(slot);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 4),
+      constraints: const BoxConstraints(minHeight: 56),
+      decoration: BoxDecoration(
+        color: AppColors.cardSurface,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppColors.cardStroke),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(width: 3, color: accent),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      subject,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.textPrimary,
+                        decoration: slot.status == SchoolSlotStatus.cancelled
+                            ? TextDecoration.lineThrough
+                            : null,
+                      ),
+                    ),
+                    if (slot.room.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        slot.room,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                    if (badge != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: accent.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            badge,
+                            style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: accent),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -250,32 +340,51 @@ class _PersonalChip extends ConsumerWidget {
       onTap: () => showClassDetailSheet(context, ref, classModel),
       child: Container(
         margin: const EdgeInsets.only(bottom: 4),
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        constraints: BoxConstraints(minHeight: marked ? 56 : 0),
         decoration: BoxDecoration(
           color: style.fill,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(color: style.dot.withValues(alpha: 0.25)),
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            if (marked) ...[
-              Text(AppStrings.t('school_label_personal'),
-                  style: TextStyle(
-                      fontSize: 9,
-                      fontWeight: FontWeight.w800,
-                      color: style.text)),
-              const SizedBox(width: 6),
-            ],
-            Flexible(
-              child: Text(label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: style.text)),
+            Row(
+              children: [
+                if (marked) ...[
+                  Text(AppStrings.t('school_label_personal'),
+                      style: TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w800,
+                          color: style.text)),
+                  const SizedBox(width: 4),
+                ],
+                Expanded(
+                  child: Text(label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: style.text)),
+                ),
+              ],
             ),
+            if (classModel.room.isNotEmpty) ...[
+              const SizedBox(height: 2),
+              Text(
+                classModel.room,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                  color: style.text.withValues(alpha: 0.85),
+                ),
+              ),
+            ],
           ],
         ),
       ),

@@ -293,7 +293,7 @@ class _DesktopTeacherHome extends StatelessWidget {
                     isDesktop: true,
                   ),
                   const SizedBox(height: 16),
-                  const _AssignmentsCard(),
+                  const _AssignmentsCard(isDesktop: true),
                 ],
               ),
             ),
@@ -693,6 +693,7 @@ class _MyLessonsCard extends StatelessWidget {
         : DateHelper.getDayOfWeek(nextDay);
 
     return Container(
+      constraints: isDesktop ? const BoxConstraints(minHeight: 476) : null,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: AppColors.cardSurface,
@@ -837,7 +838,7 @@ class _MyLessonsCard extends StatelessWidget {
           // Empty state when no lessons today
           if (todayLessons.isEmpty) ...[
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 20),
+              padding: EdgeInsets.symmetric(vertical: isDesktop ? 60 : 20),
               child: Center(
                 child: Text(
                   AppStrings.t('tov_empty_no_lessons_today'),
@@ -1059,6 +1060,7 @@ class _NoticesReadCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      constraints: isDesktop ? const BoxConstraints(minHeight: 220) : null,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: AppColors.cardSurface,
@@ -1230,6 +1232,7 @@ class _WeekChangesCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      constraints: isDesktop ? const BoxConstraints(minHeight: 220) : null,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: AppColors.cardSurface,
@@ -1482,6 +1485,7 @@ class _MyClassesCard extends StatelessWidget {
     }
 
     return Container(
+      constraints: isDesktop ? const BoxConstraints(minHeight: 240) : null,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: AppColors.cardSurface,
@@ -1649,7 +1653,8 @@ class _ClassRowItem extends StatelessWidget {
 // ----------------------------------------------------------------------------
 
 class _AssignmentsCard extends ConsumerWidget {
-  const _AssignmentsCard();
+  final bool isDesktop;
+  const _AssignmentsCard({this.isDesktop = false});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -1664,6 +1669,7 @@ class _AssignmentsCard extends ConsumerWidget {
     final rate = total > 0 ? (summary.completed / total).clamp(0.0, 1.0) : 0.0;
 
     return Container(
+      constraints: isDesktop ? const BoxConstraints(minHeight: 240) : null,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: AppColors.cardSurface,
@@ -1710,11 +1716,16 @@ class _AssignmentsCard extends ConsumerWidget {
           ),
           const SizedBox(height: 12),
           if (latest == null) ...[
-            Text(
-              AppStrings.t('sas_empty_overview'),
-              style: TextStyle(
-                fontSize: 13,
-                color: AppColors.textSecondary,
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: isDesktop ? 36 : 0),
+              child: Center(
+                child: Text(
+                  AppStrings.t('sas_empty_overview'),
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
               ),
             ),
           ] else ...[

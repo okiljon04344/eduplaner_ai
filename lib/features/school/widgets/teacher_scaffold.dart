@@ -519,7 +519,9 @@ class _DesktopTeacherScaffold extends ConsumerWidget {
 
           // Main area
           Expanded(
-            child: section == TeacherSection.overview
+            child: (section == TeacherSection.overview ||
+                    section == TeacherSection.notices ||
+                    section == TeacherSection.assignments)
                 ? body
                 : Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

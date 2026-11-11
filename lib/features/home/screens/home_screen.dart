@@ -58,7 +58,9 @@ class HomeScreen extends ConsumerWidget {
                 ref.invalidate(aiStudyTipProvider);
                 ref.invalidate(weakAreaProvider);
               },
-              child: LayoutBuilder(builder: (context, constraints) {
+              child: ResponsiveBody(
+                maxWidth: 900,
+                child: LayoutBuilder(builder: (context, constraints) {
                 final classes = [
                   _SectionLabel(
                     text: AppStrings.t('home_today_classes'),
@@ -199,10 +201,11 @@ class HomeScreen extends ConsumerWidget {
               }),
             ),
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
+}
 }
 
 /// Section title (17/700) with a plain text link on the right.

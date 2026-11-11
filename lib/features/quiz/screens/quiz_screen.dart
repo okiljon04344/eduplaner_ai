@@ -4,6 +4,7 @@ import '../../../core/constants/subject_colors.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/utils/responsive.dart';
 import '../../../shared/widgets/app_input_field.dart';
 import '../../../shared/widgets/lottie_helpers.dart';
 import '../../assignments/providers/assignments_provider.dart';
@@ -58,6 +59,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
   @override
   Widget build(BuildContext context) {
     final quizState = ref.watch(quizNotifierProvider);
+    final canPop = Navigator.of(context).canPop();
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -65,6 +67,12 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
         title: Text(AppStrings.t('quiz_title')),
         backgroundColor: AppColors.background,
         elevation: 0,
+        leading: canPop
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => Navigator.of(context).maybePop(),
+              )
+            : null,
         actions: [
           if ((quizState.valueOrNull ?? const <QuizQuestion>[]).isNotEmpty)
             IconButton(
@@ -79,40 +87,45 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
         ],
       ),
       body: SafeArea(
-        child: Column(
-          children: [
-            _ConfigPanel(
-              subjectCtrl: _subjectCtrl,
-              subjectSuggestions: _subjectSuggestions(),
-              topicCtrl: _topicCtrl,
-              useSearch: _useSearch,
-              isLoading: quizState.isLoading,
-              onUseSearchChanged: (v) => setState(() => _useSearch = v),
-              onGenerate: _generate,
-            ),
-            const Divider(height: 1),
-            Expanded(
-              child: quizState.when(
-                loading: () => const _LoadingState(),
-                error: (e, __) => _ErrorState(
-                  message: e.toString().replaceFirst('Exception: ', ''),
-                  onRetry: _generate,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: context.isTablet ? 720 : double.infinity),
+            child: Column(
+              children: [
+                _ConfigPanel(
+                  subjectCtrl: _subjectCtrl,
+                  subjectSuggestions: _subjectSuggestions(),
+                  topicCtrl: _topicCtrl,
+                  useSearch: _useSearch,
+                  isLoading: quizState.isLoading,
+                  onUseSearchChanged: (v) => setState(() => _useSearch = v),
+                  onGenerate: _generate,
                 ),
-                data: (questions) {
-                  if (questions.isEmpty) return const _EmptyState();
-                  return ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
-                    itemCount: questions.length,
-                    // Keyed by question identity: without this, regenerating a
-                    // quiz reuses the old _QuizCardState at each position, so
-                    // answers from the previous quiz appear pre-selected on the
-                    // new questions.
-                    itemBuilder: (context, i) => _QuizCard(key: ObjectKey(questions[i]), index: i, question: questions[i]),
-                  );
-                },
-              ),
+                const Divider(height: 1),
+                Expanded(
+                  child: quizState.when(
+                    loading: () => const _LoadingState(),
+                    error: (e, __) => _ErrorState(
+                      message: e.toString().replaceFirst('Exception: ', ''),
+                      onRetry: _generate,
+                    ),
+                    data: (questions) {
+                      if (questions.isEmpty) return const _EmptyState();
+                      return ListView.builder(
+                        padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+                        itemCount: questions.length,
+                        // Keyed by question identity: without this, regenerating a
+                        // quiz reuses the old _QuizCardState at each position, so
+                        // answers from the previous quiz appear pre-selected on the
+                        // new questions.
+                        itemBuilder: (context, i) => _QuizCard(key: ObjectKey(questions[i]), index: i, question: questions[i]),
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

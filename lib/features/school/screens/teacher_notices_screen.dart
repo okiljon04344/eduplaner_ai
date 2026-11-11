@@ -47,37 +47,94 @@ class TeacherNoticesScreen extends ConsumerWidget {
     final info = ref.watch(schoolInfoProvider).valueOrNull;
     final role = ref.watch(schoolRoleProvider);
     final notices = ref.watch(schoolNoticesProvider).valueOrNull ?? const <SchoolNotice>[];
+    final isDesktop = MediaQuery.sizeOf(context).width >= 1100;
+
+    final sentList = <Widget>[
+      Text(AppStrings.t('notice_sent_list'),
+          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
+      const SizedBox(height: 8),
+      if (notices.isEmpty)
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Text(AppStrings.t('notice_empty'),
+              style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+        ),
+      for (final n in notices)
+        _SentNotice(
+          notice: n,
+          canDelete: role.admin || n.createdBy == FirebaseAuth.instance.currentUser?.uid,
+        ),
+    ];
+
+    Widget body;
+    if (info == null || !role.teacher) {
+      body = Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Text(AppStrings.t('teacher_no_access'),
+              textAlign: TextAlign.center, style: TextStyle(fontSize: 14, color: AppColors.textSecondary)),
+        ),
+      );
+    } else if (isDesktop) {
+      body = Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1000),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  AppStrings.t('notice_board_title'),
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        width: 460,
+                        child: SingleChildScrollView(
+                          child: _NoticeForm(info: info),
+                        ),
+                      ),
+                      const SizedBox(width: 24),
+                      Expanded(
+                        child: ListView(
+                          children: sentList,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    } else {
+      body = ResponsiveBody(
+        maxWidth: 720,
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+          children: [
+            _NoticeForm(info: info),
+            const SizedBox(height: 24),
+            ...sentList,
+          ],
+        ),
+      );
+    }
+
     return TeacherScaffold(
       section: TeacherSection.notices,
       title: AppStrings.t('notice_board_title'),
-      body: info == null || !role.teacher
-          ? Center(
-              child: Padding(
-                padding: const EdgeInsets.all(32),
-                child: Text(AppStrings.t('teacher_no_access'),
-                    textAlign: TextAlign.center, style: TextStyle(fontSize: 14, color: AppColors.textSecondary)),
-              ),
-            )
-          : ResponsiveBody(
-              maxWidth: 720,
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-                children: [
-                  _NoticeForm(info: info),
-                  const SizedBox(height: 24),
-                  Text(AppStrings.t('notice_sent_list'),
-                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
-                  const SizedBox(height: 8),
-                  if (notices.isEmpty)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      child: Text(AppStrings.t('notice_empty'),
-                          style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
-                    ),
-                  for (final n in notices) _SentNotice(notice: n, canDelete: role.admin || n.createdBy == FirebaseAuth.instance.currentUser?.uid),
-                ],
-              ),
-            ),
+      body: body,
     );
   }
 }

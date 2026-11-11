@@ -75,9 +75,11 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
       body: Stack(
         children: [
           const Positioned.fill(child: HomeAmbientGlow()),
-          SafeArea(
-            child: Column(
-              children: [
+          ResponsiveBody(
+            maxWidth: 900,
+            child: SafeArea(
+              child: Column(
+                children: [
                 Entrance(
                   index: 0,
                   child: _Header(classCount: classCount),
@@ -137,9 +139,10 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
               ],
             ),
           ),
-        ],
-      ),
-    );
+        ),
+      ],
+    ),
+  );
   }
 }
 
@@ -153,19 +156,23 @@ class _SchoolWeekBody extends StatelessWidget {
     final grid = SchoolWeekGrid(weekStart: weekStart);
     if (context.screenWidth < Breakpoints.expanded) return grid;
     // stretch: a centered Row would float the short grid mid-screen.
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Expanded(child: grid),
-        Container(
-          width: 320,
-          decoration: BoxDecoration(border: Border(left: BorderSide(color: AppColors.dividerSubtle))),
-          child: const SingleChildScrollView(
-            padding: EdgeInsets.fromLTRB(16, 14, 16, 24),
-            child: SchoolChangesList(compact: true),
+    // Padding 20 on the right ensures the sidebar aligns with the glass header panel above.
+    return Padding(
+      padding: const EdgeInsets.only(right: 20),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(child: grid),
+          Container(
+            width: 320,
+            decoration: BoxDecoration(border: Border(left: BorderSide(color: AppColors.dividerSubtle))),
+            child: const SingleChildScrollView(
+              padding: EdgeInsets.fromLTRB(16, 14, 16, 24),
+              child: SchoolChangesList(compact: true),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

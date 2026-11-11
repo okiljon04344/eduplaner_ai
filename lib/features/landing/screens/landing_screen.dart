@@ -56,7 +56,7 @@ class _LandingScreenState extends State<LandingScreen>
     final isDesktop = width >= 860;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF100C08),
+      backgroundColor: AppColors.darkBackground,
       body: Stack(
         children: [
           // Animated background orbs

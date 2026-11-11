@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/utils/responsive.dart';
 import '../../../shared/widgets/confirm_dialog.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../models/ai_bot.dart';
@@ -61,24 +62,26 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
             Expanded(
               child: ColoredBox(
                 color: AppColors.background,
-                child: messages.isEmpty
-                    ? _ChatEmptyState(
-                        bot: selectedBot,
-                        onPick: (text) => ref
-                            .read(chatProvider.notifier)
-                            .sendMessage(text, botId: selectedBot.id),
-                      )
-                    : ListView.builder(
-                        reverse: true,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 14),
-                        itemCount: messages.length,
-                        itemBuilder: (context, i) => ChatBubble(
-                            message: messages[messages.length - 1 - i]),
-                      ),
+                child: ResponsiveBody(
+                  child: messages.isEmpty
+                      ? _ChatEmptyState(
+                          bot: selectedBot,
+                          onPick: (text) => ref
+                              .read(chatProvider.notifier)
+                              .sendMessage(text, botId: selectedBot.id),
+                        )
+                      : ListView.builder(
+                          reverse: true,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 14),
+                          itemCount: messages.length,
+                          itemBuilder: (context, i) => ChatBubble(
+                              message: messages[messages.length - 1 - i]),
+                        ),
+                ),
               ),
             ),
-            const ChatInputBar(),
+            const ResponsiveBody(child: ChatInputBar()),
           ],
         ),
       ),
@@ -157,6 +160,7 @@ class _AiChatHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      width: double.infinity,
       clipBehavior: Clip.hardEdge,
       decoration: BoxDecoration(
         gradient: AppColors.aiBannerGradient,
@@ -183,46 +187,48 @@ class _AiChatHeader extends StatelessWidget {
               ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 24, 16, 18),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        AppStrings.t('ai_badge'),
-                        style: TextStyle(
-                          fontFamily: 'Plus Jakarta Sans',
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 0.8,
-                          color: AppColors.accentText,
+          ResponsiveBody(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 24, 16, 18),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          AppStrings.t('ai_badge'),
+                          style: TextStyle(
+                            fontFamily: 'Plus Jakarta Sans',
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.8,
+                            color: AppColors.accentText,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text('${bot.emoji} ${bot.label}',
-                          style: AppTextStyles.headLG),
-                      const SizedBox(height: 4),
-                      Text(
-                        AppStrings.t('ai_subtitle'),
-                        style: TextStyle(
-                          fontFamily: 'Plus Jakarta Sans',
-                          fontFamilyFallback: const ['NotoSansJP'],
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.textSecondary,
+                        const SizedBox(height: 6),
+                        Text('${bot.emoji} ${bot.label}',
+                            style: AppTextStyles.headLG),
+                        const SizedBox(height: 4),
+                        Text(
+                          AppStrings.t('ai_subtitle'),
+                          style: TextStyle(
+                            fontFamily: 'Plus Jakarta Sans',
+                            fontFamilyFallback: const ['NotoSansJP'],
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.textSecondary,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-                _QuizButton(onTap: () => context.push('/quiz')),
-                const SizedBox(width: 8),
-                _ClearButton(onTap: onClear),
-              ],
+                  _QuizButton(onTap: () => context.push('/quiz')),
+                  const SizedBox(width: 8),
+                  _ClearButton(onTap: onClear),
+                ],
+              ),
             ),
           ),
         ],

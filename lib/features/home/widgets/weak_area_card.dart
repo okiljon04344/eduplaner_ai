@@ -111,12 +111,21 @@ class WeakAreaCard extends ConsumerWidget {
               ),
               // Refresh icon — tap to re-run analysis for today.
               if (hasAssignments)
-                GestureDetector(
-                  onTap: () => ref.invalidate(weakAreaProvider),
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 8),
-                    child: Icon(Icons.refresh_rounded, size: 18, color: AppColors.textMuted),
-                  ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 8),
+                  child: analysis.isLoading
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppColors.primaryMid,
+                          ),
+                        )
+                      : GestureDetector(
+                          onTap: () => ref.invalidate(weakAreaProvider),
+                          child: Icon(Icons.refresh_rounded, size: 18, color: AppColors.textMuted),
+                        ),
                 ),
             ],
           ),
@@ -197,21 +206,9 @@ class _AnalysisText extends StatelessWidget {
       ),
       loading: () => localSummary.isNotEmpty
           // Show locally computed summary immediately while AI loads.
-          ? Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Text(
-                    localSummary,
-                    style: TextStyle(fontSize: 12, color: AppColors.textSecondary, height: 1.4),
-                  ),
-                ),
-                const SizedBox(width: 6),
-                const SizedBox(
-                  width: 12, height: 12,
-                  child: CircularProgressIndicator(strokeWidth: 1.5, color: AppColors.primaryMid),
-                ),
-              ],
+          ? Text(
+              localSummary,
+              style: TextStyle(fontSize: 12, color: AppColors.textSecondary, height: 1.4),
             )
           : Text(
               AppStrings.t('weak_analyze_loading'),

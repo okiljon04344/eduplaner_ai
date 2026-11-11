@@ -70,9 +70,12 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
       body: Stack(
         children: [
           const Positioned.fill(child: HomeAmbientGlow()),
-          SafeArea(
-            bottom: false,
-            child: CustomScrollView(
+          ResponsiveBody(
+            maxWidth: 920,
+            expandedMaxWidth: 920,
+            child: SafeArea(
+              bottom: false,
+              child: CustomScrollView(
               slivers: [
                 SliverToBoxAdapter(
                   child: Entrance(
@@ -205,14 +208,15 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
                     ]),
                   ),
                 // Room for the floating 課題を追加 button and bottom navigation bar.
-                SliverToBoxAdapter(child: SizedBox(height: context.isTablet ? 96 : 130)),
+                SliverToBoxAdapter(child: SizedBox(height: context.isTablet ? 150 : 130)),
               ],
             ),
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
+}
 
   /// Redesign grouping by due date: 期限切れ / 今日・明日 / 今週 / 来週以降,
   /// then 完了 last (a finished assignment is never overdue).

@@ -157,10 +157,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with WidgetsBin
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      // A bottom-nav tab now: no back arrow, title on the left like the other tabs.
+      // A bottom-nav tab now: no back arrow, title aligned with the cards column.
       appBar: AppBar(
-        title: Text(AppStrings.t('set_title'),
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+        title: ResponsiveBody(
+          maxWidth: 640,
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Text(AppStrings.t('set_title'),
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+          ),
+        ),
+        titleSpacing: 0,
         centerTitle: false,
         automaticallyImplyLeading: false,
         backgroundColor: Colors.transparent,
