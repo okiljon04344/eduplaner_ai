@@ -6,6 +6,10 @@ import '../../../core/providers/clock_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/date_helper.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../shared/widgets/entrance.dart';
+import '../../../shared/widgets/glass_panel.dart';
+import '../../../shared/widgets/pressable.dart';
+import '../../home/widgets/home_ambient_glow.dart';
 import '../../school/models/school.dart';
 import '../../school/school_providers.dart';
 import '../providers/timetable_provider.dart';
@@ -68,30 +72,72 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _Header(classCount: classCount),
-            _WeekNavigator(
-              weekStart: weekStart,
-              isCurrentWeek: _weekOffset == 0,
-              onPrevious: () => setState(() => _weekOffset -= 1),
-              onNext: () => setState(() => _weekOffset += 1),
-              onResetToday: () => setState(() => _weekOffset = 0),
+      body: Stack(
+        children: [
+          const Positioned.fill(child: HomeAmbientGlow()),
+          SafeArea(
+            child: Column(
+              children: [
+                Entrance(
+                  index: 0,
+                  child: _Header(classCount: classCount),
+                ),
+                Entrance(
+                  index: 1,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                    child: KeyedSubtree(
+                      key: ValueKey(AppColors.brightness),
+                      child: GlassPanel(
+                        padding: const EdgeInsets.all(14),
+                        radius: 24,
+                        tint: AppColors.glassFill,
+                        borderColor: AppColors.glassBorder,
+                        shadows: AppColors.glassShadow,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            _WeekNavigator(
+                              weekStart: weekStart,
+                              isCurrentWeek: _weekOffset == 0,
+                              onPrevious: () => setState(() => _weekOffset -= 1),
+                              onNext: () => setState(() => _weekOffset += 1),
+                              onResetToday: () => setState(() => _weekOffset = 0),
+                            ),
+                            if (!showGrid) ...[
+                              const SizedBox(height: 10),
+                              DayTabRow(
+                                selectedDay: _selectedDay,
+                                weekStart: weekStart,
+                                alertDays: _alertDays(ref, weekStart),
+                                onSelect: (index) => setState(() => _selectedDay = index),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                if (showGrid)
+                  Expanded(
+                    child: Entrance(
+                      index: 2,
+                      child: _SchoolWeekBody(weekStart: weekStart),
+                    ),
+                  )
+                else ...[
+                  Expanded(
+                    child: Entrance(
+                      index: 2,
+                      child: ScheduleTimeline(selectedDay: _selectedDay, weekStart: weekStart),
+                    ),
+                  ),
+                ],
+              ],
             ),
-            if (showGrid)
-              Expanded(child: _SchoolWeekBody(weekStart: weekStart))
-            else ...[
-              DayTabRow(
-                selectedDay: _selectedDay,
-                weekStart: weekStart,
-                alertDays: _alertDays(ref, weekStart),
-                onSelect: (index) => setState(() => _selectedDay = index),
-              ),
-              Expanded(child: ScheduleTimeline(selectedDay: _selectedDay, weekStart: weekStart)),
-            ],
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -142,12 +188,11 @@ class _WeekNavigator extends StatelessWidget {
   Widget build(BuildContext context) {
     final weekEnd = weekStart.add(const Duration(days: 4));
     final range = '${weekStart.month}/${weekStart.day} – ${weekEnd.month}/${weekEnd.day}';
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-      child: Row(
-        children: [
-          _RoundButton(icon: Icons.chevron_left_rounded, tooltip: AppStrings.t('teacher_prev_week'), onTap: onPrevious),
-          Expanded(
+    return Row(
+      children: [
+        _RoundButton(icon: Icons.chevron_left_rounded, tooltip: AppStrings.t('teacher_prev_week'), onTap: onPrevious),
+        Expanded(
+          child: Pressable(
             child: InkWell(
               onTap: isCurrentWeek ? null : onResetToday,
               borderRadius: BorderRadius.circular(12),
@@ -176,9 +221,9 @@ class _WeekNavigator extends StatelessWidget {
               ),
             ),
           ),
-          _RoundButton(icon: Icons.chevron_right_rounded, tooltip: AppStrings.t('teacher_next_week'), onTap: onNext),
-        ],
-      ),
+        ),
+        _RoundButton(icon: Icons.chevron_right_rounded, tooltip: AppStrings.t('teacher_next_week'), onTap: onNext),
+      ],
     );
   }
 }
@@ -192,18 +237,20 @@ class _RoundButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Tooltip(
         message: tooltip,
-        child: InkWell(
-          customBorder: const CircleBorder(),
-          onTap: onTap,
-          child: Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: AppColors.cardSurface,
-              shape: BoxShape.circle,
-              border: Border.all(color: AppColors.cardStroke),
+        child: Pressable(
+          child: InkWell(
+            customBorder: const CircleBorder(),
+            onTap: onTap,
+            child: Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: AppColors.statGlassFill,
+                shape: BoxShape.circle,
+                border: Border.all(color: AppColors.statGlassBorder),
+              ),
+              child: Icon(icon, size: 22, color: AppColors.textPrimary),
             ),
-            child: Icon(icon, size: 22, color: AppColors.textPrimary),
           ),
         ),
       );
@@ -251,14 +298,16 @@ class _Header extends ConsumerWidget {
           const SizedBox(width: 12),
           Tooltip(
             message: AppStrings.t('cls_add_title'),
-            child: InkWell(
-              customBorder: const CircleBorder(),
-              onTap: () => showAddEditClassSheet(context, ref),
-              child: Container(
-                width: 48,
-                height: 48,
-                decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
-                child: const Icon(Icons.add_rounded, color: AppColors.onPrimary, size: 24),
+            child: Pressable(
+              child: InkWell(
+                customBorder: const CircleBorder(),
+                onTap: () => showAddEditClassSheet(context, ref),
+                child: Container(
+                  width: 48,
+                  height: 48,
+                  decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
+                  child: const Icon(Icons.add_rounded, color: AppColors.onPrimary, size: 24),
+                ),
               ),
             ),
           ),

@@ -331,9 +331,11 @@ abstract class AppColors {
   // NowLessonCard
   static Color get nowGlassFill => isDark ? const Color(0x1F06D6A0) : const Color(0xBFE6FAF2);
   static Color get nowGlassBorder => const Color(0x7306D6A0);
+  // Outer-only: these cards have translucent fills, and a normal shadow would
+  // show through them as a hard band.
   static List<BoxShadow> get nowGlow => isDark
-      ? const [BoxShadow(color: Color(0x3806D6A0), blurRadius: 32)]
-      : const [BoxShadow(color: Color(0x2E06D6A0), blurRadius: 30, offset: Offset(0, 10))];
+      ? const [BoxShadow(color: Color(0x3806D6A0), blurRadius: 32, blurStyle: BlurStyle.outer)]
+      : const [BoxShadow(color: Color(0x2E06D6A0), blurRadius: 30, blurStyle: BlurStyle.outer)];
 
   // Translucent stat cards & bell chip button inside top hero panel
   static Color get statGlassFill => isDark ? const Color(0x0FFFFFFF) : const Color(0xB3FFFFFF);

@@ -5,7 +5,11 @@ import '../../../core/l10n/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/date_helper.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../shared/widgets/entrance.dart';
+import '../../../shared/widgets/glass_panel.dart';
+import '../../../shared/widgets/pressable.dart';
 import '../../home/widgets/assignment_row_item.dart';
+import '../../home/widgets/home_ambient_glow.dart';
 import '../models/assignment_model.dart';
 import '../providers/assignments_provider.dart';
 import '../widgets/add_edit_assignment_sheet.dart';
@@ -50,121 +54,162 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
       backgroundColor: AppColors.background,
       floatingActionButton: Padding(
         padding: EdgeInsets.only(bottom: context.isTablet ? 0 : 84),
-        child: FloatingActionButton.extended(
-          heroTag: 'assignments-add',
-          onPressed: () => showAddEditAssignmentSheet(context, ref),
-          backgroundColor: AppColors.primary,
-          foregroundColor: AppColors.onPrimary,
-          elevation: 2,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-          icon: const Icon(Icons.add_rounded),
-          label: Text(AppStrings.t('home_add_assignment'), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+        child: Pressable(
+          child: FloatingActionButton.extended(
+            heroTag: 'assignments-add',
+            onPressed: () => showAddEditAssignmentSheet(context, ref),
+            backgroundColor: AppColors.primary,
+            foregroundColor: AppColors.onPrimary,
+            elevation: 2,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+            icon: const Icon(Icons.add_rounded),
+            label: Text(AppStrings.t('home_add_assignment'), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+          ),
         ),
       ),
-      body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(AppStrings.t('nav_assignments'),
-                          style: TextStyle(fontSize: 24, height: 1.4, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
-                    ),
-                    Tooltip(
-                      message: AppStrings.t(_calendarMode ? 'as_view_list' : 'as_view_calendar'),
-                      child: InkWell(
-                        customBorder: const CircleBorder(),
-                        onTap: () => setState(() {
-                          _calendarMode = !_calendarMode;
-                          if (!_calendarMode) _selectedDay = null;
-                        }),
-                        child: Container(
-                          width: 48,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            color: AppColors.cardSurface,
-                            shape: BoxShape.circle,
-                            border: Border.all(color: AppColors.cardStroke),
+      body: Stack(
+        children: [
+          const Positioned.fill(child: HomeAmbientGlow()),
+          SafeArea(
+            bottom: false,
+            child: CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(
+                  child: Entrance(
+                    index: 0,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(AppStrings.t('nav_assignments'),
+                                style: TextStyle(fontSize: 24, height: 1.4, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
                           ),
-                          child: Icon(_calendarMode ? Icons.view_list_rounded : Icons.calendar_month_outlined,
-                              size: 20, color: AppColors.textPrimary),
+                          Tooltip(
+                            message: AppStrings.t(_calendarMode ? 'as_view_list' : 'as_view_calendar'),
+                            child: Pressable(
+                              child: InkWell(
+                                customBorder: const CircleBorder(),
+                                onTap: () => setState(() {
+                                  _calendarMode = !_calendarMode;
+                                  if (!_calendarMode) _selectedDay = null;
+                                }),
+                                child: Container(
+                                  width: 48,
+                                  height: 48,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.cardSurface,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: AppColors.cardStroke),
+                                  ),
+                                  child: Icon(_calendarMode ? Icons.view_list_rounded : Icons.calendar_month_outlined,
+                                      size: 20, color: AppColors.textPrimary),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                if (!_calendarMode)
+                  SliverToBoxAdapter(
+                    child: Entrance(
+                      index: 1,
+                      child: _ProgressCard(weekly: weekly, overdue: overdue),
+                    ),
+                  ),
+                if (_calendarMode)
+                  SliverToBoxAdapter(
+                    child: Entrance(
+                      index: 1,
+                      child: _AssignmentCalendar(
+                        assignments: all,
+                        focusedDay: _focusedDay,
+                        selectedDay: _selectedDay,
+                        onDaySelected: (selected, focused) => setState(() {
+                          _selectedDay = _sameDay(selected, _selectedDay ?? DateTime(0))
+                              ? null // tap same day to deselect
+                              : selected;
+                          _focusedDay = focused;
+                        }),
+                        onFocusedDayChanged: (focused) =>
+                            setState(() => _focusedDay = focused),
+                      ),
+                    ),
+                  ),
+                if (!_calendarMode)
+                  const SliverToBoxAdapter(
+                    child: Entrance(
+                      index: 2,
+                      child: FilterChipsRow(),
+                    ),
+                  ),
+                if (_calendarMode && _selectedDay != null)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 4),
+                      child: Text(
+                        AppStrings.t('as_day_title')
+                            .replaceAll('{month}', '${_selectedDay!.month}')
+                            .replaceAll('{day}', '${_selectedDay!.day}')
+                            .replaceAll('{n}', '${displayAssignments.length}'),
+                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textSecondary),
+                      ),
+                    ),
+                  ),
+                if (displayAssignments.isEmpty)
+                  SliverToBoxAdapter(
+                    child: Entrance(
+                      index: 3,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 40),
+                        child: Center(
+                          child: Text(
+                            _calendarMode && _selectedDay != null
+                                ? AppStrings.t('as_empty_day')
+                                : AppStrings.t('as_empty'),
+                            style: TextStyle(fontSize: 13, color: AppColors.textMuted),
+                          ),
                         ),
                       ),
                     ),
-                  ],
-                ),
-              ),
-            ),
-            if (!_calendarMode)
-              SliverToBoxAdapter(child: _ProgressCard(weekly: weekly, overdue: overdue)),
-            if (_calendarMode)
-              SliverToBoxAdapter(
-                child: _AssignmentCalendar(
-                  assignments: all,
-                  focusedDay: _focusedDay,
-                  selectedDay: _selectedDay,
-                  onDaySelected: (selected, focused) => setState(() {
-                    _selectedDay = _sameDay(selected, _selectedDay ?? DateTime(0))
-                        ? null // tap same day to deselect
-                        : selected;
-                    _focusedDay = focused;
-                  }),
-                  onFocusedDayChanged: (focused) =>
-                      setState(() => _focusedDay = focused),
-                ),
-              ),
-            if (!_calendarMode) const SliverToBoxAdapter(child: FilterChipsRow()),
-            if (_calendarMode && _selectedDay != null)
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 4),
-                  child: Text(
-                    AppStrings.t('as_day_title')
-                        .replaceAll('{month}', '${_selectedDay!.month}')
-                        .replaceAll('{day}', '${_selectedDay!.day}')
-                        .replaceAll('{n}', '${displayAssignments.length}'),
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textSecondary),
-                  ),
-                ),
-              ),
-            if (displayAssignments.isEmpty)
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 40),
-                  child: Center(
-                    child: Text(
-                      _calendarMode && _selectedDay != null
-                          ? AppStrings.t('as_empty_day')
-                          : AppStrings.t('as_empty'),
-                      style: TextStyle(fontSize: 13, color: AppColors.textMuted),
+                  )
+                else if (_calendarMode)
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                    sliver: SliverList.separated(
+                      itemCount: displayAssignments.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 10),
+                      itemBuilder: (_, i) => Entrance(
+                        key: ValueKey(displayAssignments[i].id),
+                        index: 3,
+                        child: AssignmentCard(
+                          assignment: displayAssignments[i],
+                        ),
+                      ),
                     ),
+                  )
+                else
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
+                    sliver: SliverList.list(children: [
+                      Entrance(
+                        index: 3,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: _dueGroups(displayAssignments),
+                        ),
+                      ),
+                    ]),
                   ),
-                ),
-              )
-            else if (_calendarMode)
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-                sliver: SliverList.separated(
-                  itemCount: displayAssignments.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 10),
-                  itemBuilder: (_, i) => AssignmentCard(
-                    key: ValueKey(displayAssignments[i].id),
-                    assignment: displayAssignments[i],
-                  ),
-                ),
-              )
-            else
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
-                sliver: SliverList.list(children: _dueGroups(displayAssignments)),
-              ),
-            // Room for the floating 課題を追加 button and bottom navigation bar.
-            SliverToBoxAdapter(child: SizedBox(height: context.isTablet ? 96 : 130)),
-          ],
-        ),
+                // Room for the floating 課題を追加 button and bottom navigation bar.
+                SliverToBoxAdapter(child: SizedBox(height: context.isTablet ? 96 : 130)),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -226,14 +271,15 @@ class _ProgressCard extends StatelessWidget {
     final pct = weekly.total == 0 ? 0.0 : weekly.completed / weekly.total;
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 14),
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-        decoration: BoxDecoration(
-          color: AppColors.cardSurface,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColors.cardStroke),
-        ),
-        child: Column(
+      child: KeyedSubtree(
+        key: ValueKey(AppColors.brightness),
+        child: GlassPanel(
+          padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+          radius: 24,
+          tint: AppColors.glassFill,
+          borderColor: AppColors.glassBorder,
+          shadows: AppColors.glassShadow,
+          child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
@@ -272,7 +318,7 @@ class _ProgressCard extends StatelessWidget {
           ],
         ),
       ),
-    );
+    ));
   }
 }
 

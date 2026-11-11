@@ -6,6 +6,7 @@ import '../../../core/providers/clock_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/date_helper.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../shared/widgets/pressable.dart';
 import '../../school/models/school.dart';
 import '../../school/school_providers.dart';
 import '../models/class_model.dart';
@@ -99,12 +100,14 @@ class ScheduleTimeline extends ConsumerWidget {
     }
     for (final c in dayClasses) {
       final t = periodTimeLabels(c.period);
+      final start = periodStartOn(date, c.period);
       final end = periodEndOn(date, c.period);
+      final isLive = start != null && end != null && !now.isBefore(start) && now.isBefore(end) && c.status != ClassStatus.cancelled;
       rows.add(_TimeRow(
         label: AppStrings.t('tt_period', {'n': c.period}),
         time: t.start,
         past: end != null && !now.isBefore(end),
-        live: false,
+        live: isLive,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -114,7 +117,7 @@ class ScheduleTimeline extends ConsumerWidget {
                 child: Text(AppStrings.t('school_label_personal'),
                     style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.accentText)),
               ),
-            TimelineClassCard(classModel: c, date: date),
+            TimelineClassCard(classModel: c, date: date, isLive: isLive),
           ],
         ),
       ));
@@ -235,56 +238,62 @@ class _LessonTile extends StatelessWidget {
     ].join(' · ');
     // A uniform border keeps the rounded corners legal; the 4px subject bar
     // is a child clipped by the same radius.
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        decoration: BoxDecoration(
-          color: live ? AppColors.primary.withValues(alpha: AppColors.isDark ? 0.14 : 0.12) : AppColors.cardSurface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: live ? AppColors.primary : AppColors.cardStroke),
-        ),
-        child: IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              if (!live) Container(width: 4, color: accent),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-                  child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  slot.status == SchoolSlotStatus.elective
-                      ? AppStrings.t('school_slot_elective', {'label': slot.subject})
-                      : slot.subject,
-                  style: TextStyle(
-                    fontSize: 15,
-                    height: 1.45,
-                    fontWeight: live ? FontWeight.w700 : FontWeight.w500,
-                    color: cancelled ? AppColors.textSecondary : AppColors.textPrimary,
-                    decoration: cancelled ? TextDecoration.lineThrough : null,
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: live ? AppColors.nowGlow : null,
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          decoration: BoxDecoration(
+            color: live ? AppColors.primary.withValues(alpha: AppColors.isDark ? 0.14 : 0.12) : AppColors.cardSurface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: live ? AppColors.primary : AppColors.cardStroke),
+          ),
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (!live) Container(width: 4, color: accent),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+                    child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    slot.status == SchoolSlotStatus.elective
+                        ? AppStrings.t('school_slot_elective', {'label': slot.subject})
+                        : slot.subject,
+                    style: TextStyle(
+                      fontSize: 15,
+                      height: 1.45,
+                      fontWeight: live ? FontWeight.w700 : FontWeight.w500,
+                      color: cancelled ? AppColors.textSecondary : AppColors.textPrimary,
+                      decoration: cancelled ? TextDecoration.lineThrough : null,
+                    ),
                   ),
                 ),
-              ),
-              if (live)
-                _Pill(text: AppStrings.t('class_live'), fill: AppColors.primary, ink: AppColors.onPrimary)
-              else if (badge != null)
-                _Pill(text: badge, fill: accent.withValues(alpha: AppColors.isDark ? 0.18 : 0.12), ink: accent),
+                if (live)
+                  _Pill(text: AppStrings.t('class_live'), fill: AppColors.primary, ink: AppColors.onPrimary)
+                else if (badge != null)
+                  _Pill(text: badge, fill: accent.withValues(alpha: AppColors.isDark ? 0.18 : 0.12), ink: accent),
+              ],
+            ),
+            if (detail.isNotEmpty) ...[
+              const SizedBox(height: 2),
+              Text(detail, style: TextStyle(fontSize: 12, height: 1.5, color: AppColors.textSecondary)),
             ],
-          ),
-          if (detail.isNotEmpty) ...[
-            const SizedBox(height: 2),
-            Text(detail, style: TextStyle(fontSize: 12, height: 1.5, color: AppColors.textSecondary)),
           ],
-        ],
-      ),
+        ),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -313,23 +322,25 @@ class _FreeSlot extends StatelessWidget {
   const _FreeSlot({required this.onTap});
 
   @override
-  Widget build(BuildContext context) => InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          constraints: const BoxConstraints(minHeight: 56),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.checkboxUnchecked, width: 1.5),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.add_rounded, size: 18, color: AppColors.textSecondary),
-              const SizedBox(width: 8),
-              Text(AppStrings.t('tt_free_slot'),
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textSecondary)),
-            ],
+  Widget build(BuildContext context) => Pressable(
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            constraints: const BoxConstraints(minHeight: 56),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.checkboxUnchecked, width: 1.5),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.add_rounded, size: 18, color: AppColors.textSecondary),
+                const SizedBox(width: 8),
+                Text(AppStrings.t('tt_free_slot'),
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textSecondary)),
+              ],
+            ),
           ),
         ),
       );

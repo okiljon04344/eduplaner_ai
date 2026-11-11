@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_motion.dart';
+import '../../../shared/widgets/pressable.dart';
 
 class DayTabRow extends StatelessWidget {
   /// Localized weekday labels (Mon–Fri), resolved at read time.
@@ -19,39 +21,44 @@ class DayTabRow extends StatelessWidget {
   /// Day indexes (0 = Mon) that carry a cancellation or change: red dot.
   final Set<int> alertDays;
 
+  /// Outer padding, defaults to zero when rendered inside the top glass panel.
+  final EdgeInsetsGeometry padding;
+
   const DayTabRow({
     super.key,
     required this.selectedDay,
     required this.onSelect,
     required this.weekStart,
     this.alertDays = const {},
+    this.padding = EdgeInsets.zero,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
-      child: Row(
-        children: List.generate(days.length, (index) {
-          final active = index == selectedDay;
-          final date = weekStart.add(Duration(days: index));
-          final fg = active ? AppColors.onPrimary : AppColors.textPrimary;
-          return Expanded(
-            child: Padding(
-              padding: EdgeInsets.only(right: index == days.length - 1 ? 0 : 8),
-              child: Semantics(
-                button: true,
-                selected: active,
+    final isReduced = reduceMotion(context);
+    final row = Row(
+      children: List.generate(days.length, (index) {
+        final active = index == selectedDay;
+        final date = weekStart.add(Duration(days: index));
+        final fg = active ? AppColors.onPrimary : AppColors.textPrimary;
+        return Expanded(
+          child: Padding(
+            padding: EdgeInsets.only(right: index == days.length - 1 ? 0 : 8),
+            child: Semantics(
+              button: true,
+              selected: active,
+              child: Pressable(
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTap: () => onSelect(index),
                   child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
+                    duration: isReduced ? Duration.zero : const Duration(milliseconds: 200),
+                    curve: AppMotion.strongEaseOut,
                     height: 64,
                     decoration: BoxDecoration(
-                      color: active ? AppColors.primary : AppColors.cardSurface,
+                      color: active ? AppColors.primary : AppColors.statGlassFill,
                       borderRadius: BorderRadius.circular(16),
-                      border: active ? null : Border.all(color: AppColors.cardStroke),
+                      border: Border.all(color: active ? AppColors.primary : AppColors.statGlassBorder),
                     ),
                     child: Stack(
                       children: [
@@ -91,9 +98,14 @@ class DayTabRow extends StatelessWidget {
                 ),
               ),
             ),
-          );
-        }),
-      ),
+          ),
+        );
+      }),
     );
+
+    if (padding != EdgeInsets.zero) {
+      return Padding(padding: padding, child: row);
+    }
+    return row;
   }
 }
