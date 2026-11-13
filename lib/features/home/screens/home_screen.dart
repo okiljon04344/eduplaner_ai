@@ -6,7 +6,6 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../shared/widgets/entrance.dart';
 import '../../../shared/widgets/glass_panel.dart';
-import '../../../shared/widgets/pressable.dart';
 import '../../timetable/widgets/school_changes_list.dart';
 import '../../school/widgets/school_notices_card.dart';
 import '../providers/home_provider.dart';
@@ -17,7 +16,6 @@ import '../widgets/notification_prompt_card.dart';
 import '../widgets/verify_email_card.dart';
 import '../widgets/stats_row.dart';
 import '../widgets/today_lessons.dart';
-import '../../assignments/widgets/add_edit_assignment_sheet.dart';
 import '../widgets/upcoming_assignments_list.dart';
 import '../widgets/weak_area_card.dart';
 import '../../../core/l10n/app_strings.dart';
@@ -29,21 +27,6 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      floatingActionButton: Padding(
-        padding: EdgeInsets.only(bottom: context.isTablet ? 0 : 84),
-        child: Pressable(
-          child: FloatingActionButton.extended(
-            heroTag: 'home-add-assignment',
-            onPressed: () => showAddEditAssignmentSheet(context, ref),
-            backgroundColor: AppColors.primary,
-            foregroundColor: AppColors.onPrimary,
-            elevation: 2,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-            icon: const Icon(Icons.add_rounded),
-            label: Text(AppStrings.t('home_add_assignment'), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
-          ),
-        ),
-      ),
       body: Stack(
         children: [
           const Positioned.fill(child: HomeAmbientGlow()),

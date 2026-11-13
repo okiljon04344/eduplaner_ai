@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/constants/periods.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/providers/clock_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/date_helper.dart';
 import '../../../core/utils/responsive.dart';
-import '../../../shared/widgets/pressable.dart';
 import '../../school/models/school.dart';
 import '../../school/school_providers.dart';
 import '../models/class_model.dart';
 import '../providers/timetable_provider.dart';
 import 'school_changes_list.dart';
-import 'add_edit_class_sheet.dart';
 import 'school_slot_card.dart';
 import 'timeline_class_card.dart';
 
@@ -66,7 +65,7 @@ class ScheduleTimeline extends ConsumerWidget {
 
     final rows = <Widget>[];
     if (hasSchool && periods.isNotEmpty) {
-      // One row per school period: the lesson, or a dashed 空きコマ to add one.
+      // One row per school period: the lesson, or a dashed 空きコマ.
       for (var i = 0; i < periods.length; i++) {
         final p = periods[i];
         final slot = slots.where((s) => s.period == p.key).firstOrNull;
@@ -77,7 +76,7 @@ class ScheduleTimeline extends ConsumerWidget {
           past: !now.isBefore(end),
           live: !now.isBefore(start) && now.isBefore(end) && slot?.status != SchoolSlotStatus.cancelled,
           child: slot == null
-              ? _FreeSlot(onTap: () => showAddEditClassSheet(context, ref))
+              ? const _FreeSlot()
               : _LessonTile(
                   slot: slot,
                   live: !now.isBefore(start) && now.isBefore(end) && slot.status != SchoolSlotStatus.cancelled,
@@ -251,6 +250,13 @@ class _LessonTile extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: live ? AppColors.primary : AppColors.cardStroke),
           ),
+          child: Material(
+            type: MaterialType.transparency,
+            child: InkWell(
+              // 掲示板 filtered to this lesson's subject.
+              onTap: slot.subject.isEmpty
+                  ? null
+                  : () => context.push(Uri(path: '/board', queryParameters: {'subject': slot.subject}).toString()),
           child: IntrinsicHeight(
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -295,6 +301,8 @@ class _LessonTile extends StatelessWidget {
               ],
             ),
           ),
+            ),
+          ),
         ),
       ),
     );
@@ -317,16 +325,12 @@ class _Pill extends StatelessWidget {
 }
 
 /// Empty period: a dashed-look button that opens the add-class sheet.
+/// Display only: the school timetable is not edited by students.
 class _FreeSlot extends StatelessWidget {
-  final VoidCallback onTap;
-  const _FreeSlot({required this.onTap});
+  const _FreeSlot();
 
   @override
-  Widget build(BuildContext context) => Pressable(
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
-          child: Container(
+  Widget build(BuildContext context) => Container(
             constraints: const BoxConstraints(minHeight: 56),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
@@ -335,14 +339,10 @@ class _FreeSlot extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.add_rounded, size: 18, color: AppColors.textSecondary),
-                const SizedBox(width: 8),
                 Text(AppStrings.t('tt_free_slot'),
                     style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textSecondary)),
               ],
             ),
-          ),
-        ),
       );
 }
 

@@ -19,6 +19,7 @@ import '../../features/onboarding/screens/onboarding_screen.dart';
 import '../../features/quiz/screens/quiz_screen.dart';
 import '../../features/school/screens/teacher_assignments_screen.dart';
 import '../../features/school/screens/teacher_home_screen.dart';
+import '../../features/school/screens/board_screen.dart';
 import '../../features/school/screens/teacher_notices_screen.dart';
 import '../../features/school/screens/teacher_screen.dart';
 import '../../features/settings/screens/settings_screen.dart';
@@ -136,6 +137,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/onboarding', pageBuilder: (_, s) => _fade(s, const OnboardingScreen())),
       GoRoute(path: '/profile-setup', pageBuilder: (_, s) => _fade(s, const ProfileSetupScreen())),
       GoRoute(path: '/quiz', pageBuilder: (_, s) => _slideUp(s, const QuizScreen())),
+      GoRoute(
+          path: '/board',
+          pageBuilder: (_, s) => _slideRight(s, BoardScreen(subject: s.uri.queryParameters['subject']))),
       GoRoute(path: '/teacher', pageBuilder: (_, s) => _slideRight(s, const TeacherHomeScreen())),
       GoRoute(path: '/teacher/timetable', pageBuilder: (_, s) => _slideRight(s, const TeacherScreen())),
       GoRoute(path: '/teacher/notices', pageBuilder: (_, s) => _slideRight(s, const TeacherNoticesScreen())),

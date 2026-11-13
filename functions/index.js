@@ -38,7 +38,7 @@ import {
   canEditSlot, isTeacher, normalizeEmail, normalizeTeacherEmail, publishOverride, readTarget,
   teacherProfileOf, validateOverride,
 } from './school/overrides.js';
-import {deleteNotice, publishNotice, validateNotice} from './school/notices.js';
+import {deleteNotice, publishNotice, updateNotice, validateNotice} from './school/notices.js';
 import {
   deleteAssignment, mirrorProgress, publishAssignment, validateAssignment,
 } from './school/assignments.js';
@@ -972,6 +972,13 @@ export const getSchoolClassSizes = onCall(SCHOOL_TEACHER_OPTS, async (request) =
   const {domain, school} = await requireSchoolTeacher(request);
   const sizes = await classSizes(domain, school, {db: db()});
   return {sizes};
+});
+
+export const updateSchoolNotice = onCall(SCHOOL_TEACHER_OPTS, async (request) => {
+  const {domain, school} = await requireSchoolTeacher(request);
+  const notice = validateNotice(request.data, school);
+  return updateNotice(domain, request.data?.id, notice, request.auth.uid,
+      (school.admins ?? []).includes(request.auth.uid), {db: db(), now: () => new Date()});
 });
 
 export const deleteSchoolNotice = onCall(SCHOOL_TEACHER_OPTS, async (request) => {

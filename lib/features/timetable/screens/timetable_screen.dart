@@ -302,8 +302,10 @@ class _Header extends ConsumerWidget {
               ],
             ),
           ),
-          const SizedBox(width: 12),
-          Tooltip(
+          // A linked student's timetable comes from the school file: adding
+          // classes by hand would mix made-up lessons into the official one.
+          if (schoolName == null) const SizedBox(width: 12),
+          if (schoolName == null) Tooltip(
             message: AppStrings.t('cls_add_title'),
             child: Pressable(
               child: InkWell(

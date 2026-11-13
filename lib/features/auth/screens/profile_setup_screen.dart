@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:toastification/toastification.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_motion.dart';
 import '../../../core/utils/validators.dart';
 import '../../../shared/widgets/app_input_field.dart';
+import '../../../shared/widgets/pressable.dart';
 import '../../school/school_providers.dart';
 import '../models/school_type.dart';
 import '../providers/auth_provider.dart';
@@ -177,11 +180,14 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
     final loading = ref.watch(authNotifierProvider).isLoading;
     final type = _selectedType;
     final maxGrade = type?.maxGrade(_program) ?? 0;
-    final schoolCourses = ref.watch(schoolInfoProvider).valueOrNull?.courses ?? const <String>[];
+    final schoolInfo = ref.watch(schoolInfoProvider).valueOrNull;
+    final schoolCourses = schoolInfo?.courses ?? const <String>[];
     final showCourseChips = schoolCourses.isNotEmpty;
     final showCourseField = type != null && type.hasCourse && !showCourseChips;
     ref.watch(currentUserProvider);
     final locked = _classLocked();
+    // Warn before the first save too: once saved, the choice sticks.
+    final showLockNote = locked || (schoolInfo != null && !schoolInfo.allowStudentEdit && schoolCourses.isNotEmpty);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -237,6 +243,14 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                     validator: Validators.required,
                     maxLength: 100,
                   ),
+                  // Fields depend on the school type: fade the new set in
+                  // instead of letting it pop.
+                  Animate(
+                    key: ValueKey(type),
+                    effects: const [FadeEffect(duration: AppMotion.fadeDuration)],
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
                   if (type != null && type.programs.isNotEmpty) ...[
                     const SizedBox(height: 16),
                     _label('school_program_label'),
@@ -255,7 +269,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                   if (maxGrade > 0) ...[
                     const SizedBox(height: 16),
                     _label('school_grade_label'),
-                    if (locked) ...[
+                    if (showLockNote) ...[
                       const SizedBox(height: 4),
                       Text(AppStrings.t('school_edit_locked'),
                           style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
@@ -324,12 +338,17 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                       maxLength: 100,
                     ),
                   ],
+                      ],
+                    ),
+                  ),
                   const SizedBox(height: 28),
-                  ElevatedButton(
+                  Pressable(
+                    child: ElevatedButton(
                     onPressed: loading ? null : _submit,
                     child: loading
                         ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2.5, color: AppColors.onPrimary))
                         : Text(_isEditing ? AppStrings.t('btn_save') : AppStrings.t('school_setup_save_btn')),
+                    ),
                   ),
                 ],
               ),

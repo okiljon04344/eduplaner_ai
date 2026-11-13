@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_colors.dart';
@@ -47,9 +49,8 @@ class SchoolNoticesCard extends ConsumerWidget {
                     child: Text(AppStrings.t('notice_title'),
                         style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
                   ),
-                  if (notices.length > _shown)
-                    TextButton(
-                      onPressed: () => _openAll(context, notices),
+                  TextButton(
+                      onPressed: () => context.push('/board'),
                       style: TextButton.styleFrom(minimumSize: const Size(44, 44)),
                       child: Text(AppStrings.t('home_see_all'),
                           style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.accentText)),
@@ -65,24 +66,14 @@ class SchoolNoticesCard extends ConsumerWidget {
     );
   }
 
-  void _openAll(BuildContext context, List<SchoolNotice> notices) {
-    showAppSheet<void>(
-      context,
-      (_) => SafeArea(
-        child: Consumer(builder: (context, ref, _) {
-          final seen = ref.watch(seenNoticesProvider);
-          return ListView(
-            shrinkWrap: true,
-            padding: const EdgeInsets.fromLTRB(4, 16, 4, 16),
-            children: [
-              for (final n in notices) NoticeRow(notice: n, unread: !seen.contains(n.id)),
-            ],
-          );
-        }),
-      ),
-    );
-  }
 }
+
+/// "連絡 · 数学 · 訂正": category, subject tag and the correction stamp.
+String noticeTags(SchoolNotice n) => [
+      n.category.label,
+      if (n.subject.isNotEmpty) n.subject,
+      if (n.editedAt != null) AppStrings.t('board_edited'),
+    ].join(' · ');
 
 /// One notice line: urgent badge, unread dot, title, time · author.
 class NoticeRow extends ConsumerWidget {
@@ -133,10 +124,9 @@ class NoticeRow extends ConsumerWidget {
                         ),
                       ],
                     ),
-                    if (meta.isNotEmpty) ...[
-                      const SizedBox(height: 2),
-                      Text(meta, style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-                    ],
+                    const SizedBox(height: 2),
+                    Text([noticeTags(notice), meta].where((s) => s.isNotEmpty).join(' · '),
+                        style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
                   ],
                 ),
               ),
@@ -190,14 +180,23 @@ class NoticeDetail extends StatelessWidget {
           if (notice.urgent) ...[const UrgentBadge(), const SizedBox(height: 8)],
           SelectableText(notice.title,
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
-          if (meta.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(meta, style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-          ],
+          const SizedBox(height: 4),
+          Text([noticeTags(notice), meta].where((s) => s.isNotEmpty).join(' · '),
+              style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
           if (notice.body.isNotEmpty) ...[
             const SizedBox(height: 16),
             SelectableText(notice.body,
                 style: TextStyle(fontSize: 15, height: 1.6, color: AppColors.textPrimary)),
+          ],
+          if (notice.safeLink case final link?) ...[
+            const SizedBox(height: 16),
+            OutlinedButton.icon(
+              onPressed: () => launchUrl(link, mode: LaunchMode.externalApplication),
+              icon: const Icon(Icons.open_in_new_rounded, size: 18),
+              label: Text(AppStrings.t('board_open_link')),
+            ),
+            const SizedBox(height: 4),
+            SelectableText(link.host, style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
           ],
         ],
       ),
