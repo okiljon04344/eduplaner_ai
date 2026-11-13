@@ -115,8 +115,6 @@ class SchoolInfo {
   /// Admin switch: may students change their own 学年/コース once set?
   final bool allowStudentEdit;
 
-  /// Pilot test accounts (non-school emails) let in as students.
-  final List<String> testers;
   const SchoolInfo({
     required this.domain,
     required this.name,
@@ -128,7 +126,6 @@ class SchoolInfo {
     this.teachers = const [],
     this.teacherProfiles = const {},
     this.allowStudentEdit = false,
-    this.testers = const [],
   });
 
   bool isAdmin(String? uid) => uid != null && admins.contains(uid);
@@ -186,7 +183,6 @@ class SchoolInfo {
             }
           : const {},
       allowStudentEdit: m['allowStudentEdit'] == true,
-      testers: _strings(m['testers']),
     );
   }
 

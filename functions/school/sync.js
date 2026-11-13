@@ -24,7 +24,7 @@ const mondayOf = (iso) => {
 };
 
 /** Pure link gate; returns the school domain or throws permission-denied. */
-export function assertLinkAllowed({ callerEmail, callerVerified, tokenEmail, hd, school, uid }) {
+export function assertLinkAllowed({ callerEmail, callerVerified, tokenEmail, hd, school, uid, firstAdmins = [] }) {
   const deny = (m) => { throw new HttpsError('permission-denied', m); };
   const domain = domainOf(callerEmail);
   if (callerVerified !== true || !domain) deny('Verified email required.');
@@ -32,7 +32,13 @@ export function assertLinkAllowed({ callerEmail, callerVerified, tokenEmail, hd,
     deny('Google account does not match the signed-in account.');
   }
   if (String(hd ?? '').toLowerCase() !== domain) deny('Not a Google Workspace account of this domain.');
-  if (school && !(school.admins ?? []).includes(uid)) deny('Not a school admin.');
+  // A school with no admin yet may be claimed only by an email the operator
+  // listed (SCHOOL_FIRST_ADMIN_EMAILS): students of the domain hold
+  // Workspace accounts too and would otherwise win by linking first.
+  const admins = school?.admins ?? [];
+  if (admins.length ? !admins.includes(uid) : !firstAdmins.includes(String(callerEmail).toLowerCase())) {
+    deny('Not a school admin.');
+  }
   return domain;
 }
 

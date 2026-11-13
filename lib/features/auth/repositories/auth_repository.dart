@@ -197,6 +197,8 @@ class AuthRepository {
       await user.updateDisplayName(name);
       final newUser = UserModel(uid: user.uid, name: name, email: email, createdAt: DateTime.now());
       await _db.collection('users').doc(user.uid).set(newUser.toFirestore());
+      // Best effort: Home shows VerifyEmailCard with a resend button.
+      await user.sendEmailVerification().catchError((_) {});
       return newUser;
     } on FirebaseAuthException catch (e) {
       if (e.code == 'email-already-in-use') {
@@ -208,6 +210,18 @@ class AuthRepository {
       }
       throw Exception(_authErrorMessage(e.code));
     }
+  }
+
+  Future<void> sendEmailVerification() async => _auth.currentUser?.sendEmailVerification();
+
+  /// Reloads the user and, once verified, refreshes the ID token so Firestore
+  /// rules (`email_verified`) see it without a re-login.
+  Future<bool> refreshEmailVerified() async {
+    await _auth.currentUser?.reload();
+    final user = _auth.currentUser;
+    if (user == null || !user.emailVerified) return false;
+    await user.getIdToken(true);
+    return true;
   }
 
   Future<UserModel> signInWithEmail(String email, String password) async {

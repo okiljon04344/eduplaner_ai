@@ -14,6 +14,7 @@ import '../widgets/ai_study_tip_card.dart';
 import '../widgets/greeting_header.dart';
 import '../widgets/home_ambient_glow.dart';
 import '../widgets/notification_prompt_card.dart';
+import '../widgets/verify_email_card.dart';
 import '../widgets/stats_row.dart';
 import '../widgets/today_lessons.dart';
 import '../../assignments/widgets/add_edit_assignment_sheet.dart';
@@ -125,6 +126,7 @@ class HomeScreen extends ConsumerWidget {
                           children: [
                             SchoolChangesBanner(),
                             SchoolNoticesCard(),
+                            VerifyEmailCard(),
                             NotificationPromptCard(),
                           ],
                         ),

@@ -30,6 +30,13 @@ final schoolDomainProvider = Provider<String?>((ref) {
       SchoolRepository.domainOf(FirebaseAuth.instance.currentUser);
 });
 
+/// Pilot test accounts of the school (admin screen only).
+final schoolTestersProvider = StreamProvider<List<String>>((ref) {
+  final domain = ref.watch(schoolDomainProvider);
+  if (domain == null || !ref.watch(schoolRoleProvider).admin) return Stream.value(const []);
+  return ref.watch(schoolRepositoryProvider).watchTesters(domain);
+});
+
 final schoolInfoProvider = StreamProvider<SchoolInfo?>((ref) {
   final domain = ref.watch(schoolDomainProvider);
   if (domain == null) return Stream.value(null);

@@ -801,6 +801,9 @@ export const analyzeAssignmentSubmission = onCall({
 // ---------------------------------------------------------------------------
 const googleClientId = defineString('GOOGLE_OAUTH_CLIENT_ID');
 const googleClientSecret = defineSecret('GOOGLE_OAUTH_CLIENT_SECRET');
+// Comma-separated emails allowed to claim a school that has no admin yet.
+// Empty (the default) means no new school can be linked.
+const firstAdminEmails = defineString('SCHOOL_FIRST_ADMIN_EMAILS', {default: ''});
 const SCHOOL_SYNC_OPTS = {
   region: 'asia-northeast1',
   memory: '512MiB',
@@ -864,6 +867,7 @@ export const linkSchoolStart = onCall({
     hd: google.hd,
     school: (await schoolRef.get()).data() ?? null,
     uid,
+    firstAdmins: firstAdminEmails.value().toLowerCase().split(',').map((e) => e.trim()).filter(Boolean),
   });
   if (!google.refreshToken) {
     throw new HttpsError('failed-precondition', 'No refresh token; request offline access.');
@@ -1044,23 +1048,29 @@ export const setSchoolTester = onCall(SCHOOL_TEACHER_OPTS, async (request) => {
   const store = db();
   const testerRef = store.collection('school_testers').doc(e);
   const schoolRef = store.collection('schools').doc(domain);
-  const [testerSnap, schoolSnap] = await Promise.all([testerRef.get(), schoolRef.get()]);
+  // Tester emails are personal addresses: they live in the admin-only
+  // school_admin doc, not in schools/{domain}, which every student reads.
+  const adminRef = store.collection('school_admin').doc(domain);
+  const [testerSnap, schoolSnap, adminSnap] =
+    await Promise.all([testerRef.get(), schoolRef.get(), adminRef.get()]);
+  // Carries over a list written to the school doc before this split.
+  const testers = [...new Set([...(schoolSnap.data()?.testers ?? []), ...(adminSnap.data()?.testers ?? [])])];
   const other = testerSnap.exists ? testerSnap.data().domain : null;
   const batch = store.batch();
   if (add === true) {
     if (other && other !== domain) {
       throw new HttpsError('already-exists', 'This account is a tester of another school.');
     }
-    const testers = schoolSnap.data()?.testers ?? [];
     if (!testers.includes(e) && testers.length >= MAX_SCHOOL_TESTERS) {
       throw new HttpsError('resource-exhausted', 'Too many test accounts.');
     }
     batch.set(testerRef, {domain, addedBy: request.auth.uid, addedAt: FieldValue.serverTimestamp()});
-    batch.set(schoolRef, {testers: FieldValue.arrayUnion(e)}, {merge: true});
+    batch.set(adminRef, {testers: [...new Set([...testers, e])]});
   } else {
     if (other === domain) batch.delete(testerRef);
-    batch.set(schoolRef, {testers: FieldValue.arrayRemove(e)}, {merge: true});
+    batch.set(adminRef, {testers: testers.filter((t) => t !== e)});
   }
+  batch.set(schoolRef, {testers: FieldValue.delete()}, {merge: true});
   await batch.commit();
   return {ok: true};
 });

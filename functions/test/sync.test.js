@@ -242,7 +242,11 @@ test('linkSchoolStart rejects tokens without matching hd', () => {
   const ok = {
     callerEmail: 'T@School.example.jp', callerVerified: true, tokenEmail: 't@school.example.jp',
     hd: 'school.example.jp', school: null, uid: 'u1',
+    firstAdmins: ['t@school.example.jp'],
   };
+  // No admin yet: only an operator-listed email may claim the school.
+  assert.throws(() => assertLinkAllowed({ ...ok, firstAdmins: [] }), { code: 'permission-denied' });
+  assert.throws(() => assertLinkAllowed({ ...ok, firstAdmins: [], school: { name: 'x' } }), { code: 'permission-denied' });
   assert.equal(assertLinkAllowed(ok), 'school.example.jp');
   const denied = (o) => assert.throws(() => assertLinkAllowed({ ...ok, ...o }), { code: 'permission-denied' });
   denied({ hd: undefined });

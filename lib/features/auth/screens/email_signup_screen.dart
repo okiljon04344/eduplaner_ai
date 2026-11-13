@@ -1,3 +1,4 @@
+import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -34,6 +35,8 @@ class _EmailSignupScreenState extends ConsumerState<EmailSignupScreen> {
     _confirmController.dispose();
     super.dispose();
   }
+
+  bool _agreed = false;
 
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
@@ -113,9 +116,31 @@ class _EmailSignupScreenState extends ConsumerState<EmailSignupScreen> {
             ),
             onChanged: (_) => _formKey.currentState?.validate(),
           ),
-          const SizedBox(height: 28),
+          const SizedBox(height: 14),
+          CheckboxListTile(
+            value: _agreed,
+            onChanged: (v) => setState(() => _agreed = v ?? false),
+            controlAffinity: ListTileControlAffinity.leading,
+            contentPadding: EdgeInsets.zero,
+            dense: true,
+            title: Text(AppStrings.t('signup_consent'),
+                style: TextStyle(fontSize: 13, height: 1.4, color: AppColors.textSecondary)),
+          ),
+          Wrap(
+            children: [
+              TextButton(
+                onPressed: () => launchUrl(Uri.parse('https://okiljon04344.github.io/eduplaner_ai/privacy-policy.html')),
+                child: Text(AppStrings.t('set_privacy')),
+              ),
+              TextButton(
+                onPressed: () => launchUrl(Uri.parse('https://okiljon04344.github.io/eduplaner_ai/terms-of-service.html')),
+                child: Text(AppStrings.t('set_terms')),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
           ElevatedButton(
-            onPressed: loading ? null : _submit,
+            onPressed: loading || !_agreed ? null : _submit,
             child: loading
                 ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2.5, color: AppColors.onPrimary))
                 : Text(AppStrings.t('login_signup_btn')),

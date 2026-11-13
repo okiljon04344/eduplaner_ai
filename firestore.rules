@@ -104,8 +104,10 @@ service cloud.firestore {
         && optStringWithin(request.resource.data, 'language', 10)
         && (!('schoolDomain' in request.resource.data)
             || request.resource.data.schoolDomain == null
-            || request.resource.data.schoolDomain == request.auth.token.email.split('@')[request.auth.token.email.split('@').size() - 1]
-            || isTester(request.resource.data.schoolDomain));
+            // inDomain requires a verified email: an unverified sign-up with a
+            // made-up school address must not be able to enrol in a class
+            // (publishSchoolAssignment / notifyClass select by schoolDomain).
+            || inDomain(request.resource.data.schoolDomain));
     }
 
     // ── School timetable sync (server-written, Admin SDK only) ─────────────
@@ -129,6 +131,13 @@ service cloud.firestore {
     // Test-account mapping: each account may read only its own entry.
     match /school_testers/{email} {
       allow get: if isAuth() && request.auth.token.email == email;
+    }
+    // Admin-only school data (pilot tester emails). Written only by Cloud
+    // Functions; kept apart from schools/{domain}, which every student reads.
+    match /school_admin/{domain} {
+      allow get: if isAuth() && request.auth.token.email_verified == true
+        && exists(/databases/$(database)/documents/schools/$(domain))
+        && request.auth.uid in get(/databases/$(database)/documents/schools/$(domain)).data.get('admins', []);
     }
     match /school_overrides/{dayId} {
       allow get: if inDomain(dayId.split('_')[0]);

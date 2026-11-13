@@ -334,15 +334,15 @@ class SchoolAdminScreen extends ConsumerWidget {
 
 /// Pilot test accounts: non-school emails (e.g. Gmail) that act as students
 /// of this school until removed (setSchoolTester).
-class _TesterSection extends StatefulWidget {
+class _TesterSection extends ConsumerStatefulWidget {
   final SchoolInfo info;
   const _TesterSection({required this.info});
 
   @override
-  State<_TesterSection> createState() => _TesterSectionState();
+  ConsumerState<_TesterSection> createState() => _TesterSectionState();
 }
 
-class _TesterSectionState extends State<_TesterSection> {
+class _TesterSectionState extends ConsumerState<_TesterSection> {
   final _email = TextEditingController();
   bool _busy = false;
 
@@ -369,7 +369,7 @@ class _TesterSectionState extends State<_TesterSection> {
 
   @override
   Widget build(BuildContext context) {
-    final testers = widget.info.testers;
+    final testers = ref.watch(schoolTestersProvider).valueOrNull ?? const <String>[];
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(

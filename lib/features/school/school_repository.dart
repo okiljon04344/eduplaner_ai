@@ -84,6 +84,13 @@ class SchoolRepository {
       (s) => (s.data() as Map?)?['domain'] as String?,
       null);
 
+  /// Pilot test accounts of [domain]. Admin-only doc: these are personal
+  /// addresses, so they are kept out of the student-readable school doc.
+  Stream<List<String>> watchTesters(String domain) => _watchDoc<List<String>>(
+      _db.collection('school_admin').doc(domain),
+      (s) => (((s.data() as Map?)?['testers'] as List?) ?? const []).whereType<String>().toList(),
+      const []);
+
   Stream<SchoolInfo?> watchSchool(String domain) => _watchDoc<SchoolInfo?>(
       _db.collection('schools').doc(domain), SchoolInfo.fromFirestore, null);
 
