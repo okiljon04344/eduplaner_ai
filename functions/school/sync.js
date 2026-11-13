@@ -46,6 +46,25 @@ export function assertLinkAllowed({ callerEmail, callerVerified, tokenEmail, hd,
  * Sends one push per recipient language. [message] is a {title, body} object
  * or `(lang) => {title, body}`; `route` tells the app which screen to open.
  */
+/// Account deletion: drop [uid] from every school's admins, and where the
+/// school's Drive link is this user's, remove their refresh token and the
+/// file link so the server stops reading their Drive.
+// ponytail: scans all schools; query by admins array-contains if there are ever many.
+export async function releaseSchoolAdmin(db, uid, deleteField) {
+  const schools = (await db.collection('schools').get()).docs
+    .filter((d) => (d.data().admins ?? []).includes(uid));
+  for (const doc of schools) {
+    const secretRef = db.collection('school_secrets').doc(doc.id);
+    const mine = (await secretRef.get()).data()?.linkedBy === uid;
+    if (mine) await secretRef.delete();
+    await doc.ref.set({
+      admins: doc.data().admins.filter((a) => a !== uid),
+      ...(mine ? {file: deleteField} : {}),
+    }, {merge: true});
+  }
+  return schools.length;
+}
+
 export async function sendAll(sendMulticast, recipients, message, route = '/timetable') {
   const build = typeof message === 'function' ? message : () => message;
   for (const { lang, tokens } of groupByLang(recipients)) {

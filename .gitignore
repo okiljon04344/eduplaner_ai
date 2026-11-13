@@ -81,6 +81,8 @@ ios/Flutter/App.framework.dSYM
 .env
 .env.local
 .env.local.json
+.env.*
+!.env.example
 
 graphify-out/
 docs/hearing/

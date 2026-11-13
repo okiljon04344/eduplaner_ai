@@ -32,7 +32,7 @@ import {
   exchangeCode, refreshAccessToken, getFileMeta, downloadXlsx,
 } from './school/google.js';
 import {
-  assertLinkAllowed, domainOf, notifyClass, sendAll, syncAllSchools, syncSchool, tokyoToday,
+  assertLinkAllowed, domainOf, notifyClass, releaseSchoolAdmin, sendAll, syncAllSchools, syncSchool, tokyoToday,
 } from './school/sync.js';
 import {
   canEditSlot, isTeacher, normalizeEmail, normalizeTeacherEmail, publishOverride, readTarget,
@@ -193,9 +193,19 @@ export function mapGeminiError(err, japaneseFallback) {
 /// single, directly-awaited `generateContent` call and translate any
 /// failure via [mapGeminiError]. Not used by `generateQuiz`'s grounding
 /// stage, which intentionally catches-and-falls-back instead of throwing.
+// The users are school students: block at the strictest standard threshold
+// instead of the API default. A blocked reply comes back with empty text,
+// which every caller already treats as a failed generation.
+const SAFETY_SETTINGS = [
+  'HARM_CATEGORY_HARASSMENT', 'HARM_CATEGORY_HATE_SPEECH',
+  'HARM_CATEGORY_SEXUALLY_EXPLICIT', 'HARM_CATEGORY_DANGEROUS_CONTENT',
+].map((category) => ({category, threshold: 'BLOCK_LOW_AND_ABOVE'}));
+export const withSafety = (config) =>
+  ({...config, config: {...config.config, safetySettings: SAFETY_SETTINGS}});
+
 async function callGemini(config, japaneseFallback) {
   try {
-    return await gemini().models.generateContent(config);
+    return await gemini().models.generateContent(withSafety(config));
   } catch (err) {
     throw mapGeminiError(err, japaneseFallback);
   }
@@ -302,6 +312,7 @@ export const deleteAccount = onCall({
 
   try {
     await Promise.all([
+      releaseSchoolAdmin(firestore, uid, FieldValue.delete()),
       deleteQuery(firestore.collection('school_reads').where('uid', '==', uid)),
       deleteQuery(firestore.collection('school_assignment_progress').where('uid', '==', uid)),
       deleteQuery(firestore.collection('assignments').where('userId', '==', uid)),
@@ -515,11 +526,11 @@ export const generateQuiz = onCall({
         `Reply in ${replyLanguage}, plain text, no markdown, under 800 characters.`
       ].join('\n');
       try {
-        const groundResp = await gemini().models.generateContent({
+        const groundResp = await gemini().models.generateContent(withSafety({
           model: GEMINI_MODEL,
           contents: groundingPrompt,
           config: {tools: [{googleSearch: {}}]},
-        });
+        }));
         context = String(groundResp.text ?? '').slice(0, 2000);
       } catch (err) {
         // Grounding is best-effort. Fall back to model knowledge on failure
