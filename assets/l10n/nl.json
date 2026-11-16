@@ -406,6 +406,7 @@
   "school_graduate_school_label": "Graduate school",
   "school_label_personal": "Van mij",
   "school_last_sync": "Schoolrooster · bijgewerkt {time}",
+  "school_load_error": "Kon schoolgegevens niet laden. Controleer je verbinding en of je school-e-mailadres is geverifieerd.",
   "school_major_hint": "bijv. Informatietechniek",
   "school_major_label": "Studierichting",
   "school_name_hint": "Bijv: Erasmus College",

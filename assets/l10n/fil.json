@@ -406,6 +406,7 @@
   "school_graduate_school_label": "Graduate School",
   "school_label_personal": "Akin",
   "school_last_sync": "Iskedyul ng paaralan · na-update {time}",
+  "school_load_error": "Hindi ma-load ang data ng paaralan. Suriin ang iyong koneksyon at tiyaking na-verify ang iyong email sa paaralan.",
   "school_major_hint": "hal. Information Engineering",
   "school_major_label": "Major / larangan ng pag-aaral",
   "school_name_hint": "Hal: Rizal High School",

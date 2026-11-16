@@ -407,6 +407,7 @@
   "school_graduate_school_label": "研究科",
   "school_label_personal": "自分",
   "school_last_sync": "学校の時間割 · {time} 更新",
+  "school_load_error": "学校のデータを読み込めませんでした。通信状況と、学校メールの確認が済んでいるかをご確認ください。",
   "school_major_hint": "例：情報工学専攻",
   "school_major_label": "専攻",
   "school_name_hint": "例：○○高等学校",

@@ -406,6 +406,7 @@
   "school_graduate_school_label": "Graduate School / Division",
   "school_label_personal": "Mine",
   "school_last_sync": "School timetable · updated {time}",
+  "school_load_error": "Could not load school data. Check your connection and that your school email is verified.",
   "school_major_hint": "e.g. Information Engineering",
   "school_major_label": "Major / Field of study",
   "school_name_hint": "e.g. Springfield High School",

@@ -406,6 +406,7 @@
   "school_graduate_school_label": "स्नातकोत्तर विद्यालय/विभाग",
   "school_label_personal": "मेरी",
   "school_last_sync": "स्कूल की समय-सारणी · {time} को अपडेट",
+  "school_load_error": "स्कूल डेटा लोड नहीं किया जा सका। अपना कनेक्शन और स्कूल ईमेल सत्यापित होना जांचें।",
   "school_major_hint": "उदा. सूचना इंजीनियरिंग",
   "school_major_label": "विशेषज्ञता",
   "school_name_hint": "उदा: सेंट्रल हाई स्कूल",

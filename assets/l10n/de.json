@@ -406,6 +406,7 @@
   "school_graduate_school_label": "Graduiertenschule",
   "school_label_personal": "Eigene",
   "school_last_sync": "Stundenplan der Schule · aktualisiert {time}",
+  "school_load_error": "Schuldaten konnten nicht geladen werden. Bitte Verbindung prüfen und sicherstellen, dass deine Schul-E-Mail bestätigt ist.",
   "school_major_hint": "z. B. Informationstechnik",
   "school_major_label": "Studienrichtung",
   "school_name_hint": "z. B. Goethe-Gymnasium",

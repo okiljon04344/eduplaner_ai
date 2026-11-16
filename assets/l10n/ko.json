@@ -406,6 +406,7 @@
   "school_graduate_school_label": "대학원/연구과",
   "school_label_personal": "내 수업",
   "school_last_sync": "학교 시간표 · {time} 업데이트",
+  "school_load_error": "학교 데이터를 불러올 수 없습니다. 네트워크 연결 및 학교 이메일 인증 여부를 확인해 주세요.",
   "school_major_hint": "예: 정보공학 전공",
   "school_major_label": "전공",
   "school_name_hint": "예: 서울고등학교",

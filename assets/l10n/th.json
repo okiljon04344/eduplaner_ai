@@ -406,6 +406,7 @@
   "school_graduate_school_label": "บัณฑิตวิทยาลัย/คณะ",
   "school_label_personal": "ของฉัน",
   "school_last_sync": "ตารางเรียนของโรงเรียน · อัปเดต {time}",
+  "school_load_error": "ไม่สามารถโหลดข้อมูลโรงเรียนได้ โปรดตรวจสอบการเชื่อมต่อและการยืนยันอีเมลโรงเรียนของคุณ",
   "school_major_hint": "เช่น สาขาวิศวกรรมสารสนเทศ",
   "school_major_label": "สาขาวิชาเอก",
   "school_name_hint": "เช่น โรงเรียนสวนกุหลาบ",

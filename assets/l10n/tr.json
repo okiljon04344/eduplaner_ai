@@ -406,6 +406,7 @@
   "school_graduate_school_label": "Lisansüstü okul/enstitü",
   "school_label_personal": "Benim",
   "school_last_sync": "Okul programı · {time} güncellendi",
+  "school_load_error": "Okul verileri yüklenemedi. Bağlantınızı ve okul e-postanızın doğrulandığını kontrol edin.",
   "school_major_hint": "örn. Bilişim Mühendisliği",
   "school_major_label": "Uzmanlık alanı",
   "school_name_hint": "Örn: Atatürk Lisesi",

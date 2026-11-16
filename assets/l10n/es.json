@@ -406,6 +406,7 @@
   "school_graduate_school_label": "Escuela de posgrado",
   "school_label_personal": "Mía",
   "school_last_sync": "Horario escolar · actualizado {time}",
+  "school_load_error": "No se pudieron cargar los datos de la escuela. Comprueba tu conexión y que tu correo escolar esté verificado.",
   "school_major_hint": "p. ej. Ingeniería Informática",
   "school_major_label": "Especialidad",
   "school_name_hint": "Ej: Instituto San Martín",

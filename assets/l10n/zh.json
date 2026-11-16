@@ -406,6 +406,7 @@
   "school_graduate_school_label": "研究生院/研究科",
   "school_label_personal": "我的",
   "school_last_sync": "学校课表 · {time} 更新",
+  "school_load_error": "无法加载学校数据。请检查网络连接以及学校邮箱是否已验证。",
   "school_major_hint": "例如：信息工程专业",
   "school_major_label": "专业方向",
   "school_name_hint": "例如：第一高级中学",

@@ -14,9 +14,34 @@ import 'models/school_notice.dart';
 /// faqat `get` ga ruxsat beradi, shuning uchun har bir kuzatuv bitta hujjat havolalarini tinglaydi;
 /// ruxsat xatosi (yetishmayotgan yoki begona hujjat) hech qachon oqim xatosi emas, "ma'lumot yo'q" deb qaraladi.
 class SchoolRepository {
-  SchoolRepository({FirebaseFirestore? firestore}) : _db = firestore ?? FirebaseFirestore.instance;
+  SchoolRepository({FirebaseFirestore? firestore}) : _firestore = firestore;
 
-  final FirebaseFirestore _db;
+  final FirebaseFirestore? _firestore;
+  FirebaseFirestore get _db => _firestore ?? FirebaseFirestore.instance;
+
+  /// True while at least one student-facing school stream is failing. The
+  /// streams still yield an empty value so the app keeps working; this lets
+  /// the UI say why the screen is empty.
+  ///
+  /// UZ: O'quvchiga ko'rinadigan maktab oqimlaridan kamida bittasi ishlamayotgan paytda true.
+  /// Oqimlar baribir bo'sh qiymat beradi va ilova ishlashda davom etadi; bu esa ekran nega
+  /// bo'shligini UI'da aytish imkonini beradi.
+  final ValueNotifier<bool> loadFailed = ValueNotifier(false);
+
+  // Failing sources by collection name, so one stream recovering does not
+  // hide another that is still failing.
+  // ponytail: a source that fails and is never listened to again (another
+  // user signs in on the same run) stays set; clear on auth change if seen.
+  // UZ: Ishlamayotgan manbalar kolleksiya nomi bo'yicha saqlanadi, shunda bitta oqim tiklanishi
+  // hali ishlamayotgan boshqasini yashirib qo'ymaydi.
+  // ponytail: xato bergan va qayta tinglanmagan manba (shu ishga tushirishda boshqa foydalanuvchi
+  // kirsa) belgilanganicha qoladi; kuzatilsa, auth o'zgarganda tozalash kerak.
+  final _failedSources = <String>{};
+
+  void _track(String source, bool failed) {
+    failed ? _failedSources.add(source) : _failedSources.remove(source);
+    loadFailed.value = _failedSources.isNotEmpty;
+  }
 
   // 既読 receipts: `school_reads/{domain}_{target}_{uid}`. Rules let a student
   // write and read only their own doc; teachers list a target's docs to count
@@ -84,12 +109,15 @@ class SchoolRepository {
   ///
   /// UZ: Hujjat xaritaga kiritilganini chiqaradi, yoki yetishmayotgan hujjat yoki har qanday xatolik uchun [empty] chiqaradi.
   Stream<T> _watchDoc<T>(
-      DocumentReference<Map<String, dynamic>> ref, T Function(DocumentSnapshot) map, T empty) async* {
+      DocumentReference<Map<String, dynamic>> ref, T Function(DocumentSnapshot) map, T empty,
+      {bool trackFailure = false}) async* {
     try {
       await for (final s in ref.snapshots()) {
+        if (trackFailure) _track(ref.parent.id, false);
         yield s.exists ? map(s) : empty;
       }
     } catch (e) {
+      if (trackFailure) _track(ref.parent.id, true);
       debugPrint('School doc ${ref.path} unreadable: $e');
       yield empty;
     }
@@ -114,7 +142,8 @@ class SchoolRepository {
       const []);
 
   Stream<SchoolInfo?> watchSchool(String domain) => _watchDoc<SchoolInfo?>(
-      _db.collection('schools').doc(domain), SchoolInfo.fromFirestore, null);
+      _db.collection('schools').doc(domain), SchoolInfo.fromFirestore, null,
+      trackFailure: true);
 
   Stream<List<SchoolChange>> watchChanges(
           {required String domain, required int grade, required String course}) =>
@@ -127,6 +156,7 @@ class SchoolRepository {
               : const <SchoolChange>[];
         },
         const [],
+        trackFailure: true,
       );
 
   /// Records that [uid] opened these changes. Best effort: a failure only
@@ -172,9 +202,11 @@ class SchoolRepository {
           .orderBy('createdAt', descending: true)
           .limit(limit)
           .snapshots()) {
+        _track('school_notices', false);
         yield s.docs.map(SchoolNotice.fromFirestore).toList();
       }
     } catch (e) {
+      _track('school_notices', true);
       debugPrint('watchNotices failed: $e');
       yield const [];
     }
@@ -208,9 +240,11 @@ class SchoolRepository {
           .orderBy('createdAt', descending: true)
           .limit(limit)
           .snapshots()) {
+        _track('school_assignments', false);
         yield s.docs.map(SchoolAssignment.fromFirestore).toList();
       }
     } catch (e) {
+      _track('school_assignments', true);
       debugPrint('watchAssignments failed: $e');
       yield const [];
     }
@@ -277,6 +311,7 @@ class SchoolRepository {
             _db.collection('school_days').doc(id),
             SchoolDay.fromFirestore,
             null,
+            trackFailure: true,
           ).listen((day) {
             latest[key] = day;
             emit();
@@ -285,6 +320,7 @@ class SchoolRepository {
             _db.collection('school_overrides').doc(id),
             SchoolOverride.itemsFromFirestore,
             const {},
+            trackFailure: true,
           ).listen((items) {
             overrides[key] = items;
             emit();

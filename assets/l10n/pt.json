@@ -406,6 +406,7 @@
   "school_graduate_school_label": "Escola de pós-graduação",
   "school_label_personal": "Minha",
   "school_last_sync": "Horário da escola · atualizado {time}",
+  "school_load_error": "Não foi possível carregar os dados da escola. Verifique sua conexão e se seu e-mail escolar está verificado.",
   "school_major_hint": "ex.: Engenharia da Informação",
   "school_major_label": "Área de estudo",
   "school_name_hint": "Ex: Colégio São Paulo",

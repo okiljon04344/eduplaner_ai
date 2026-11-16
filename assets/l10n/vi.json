@@ -406,6 +406,7 @@
   "school_graduate_school_label": "Trường/Khoa sau đại học",
   "school_label_personal": "Của tôi",
   "school_last_sync": "Thời khóa biểu trường · cập nhật {time}",
+  "school_load_error": "Không thể tải dữ liệu của trường. Hãy kiểm tra kết nối và đảm bảo email trường học đã được xác minh.",
   "school_major_hint": "VD: Chuyên ngành Kỹ thuật thông tin",
   "school_major_label": "Chuyên ngành",
   "school_name_hint": "Ví dụ: THPT Nguyễn Trãi",

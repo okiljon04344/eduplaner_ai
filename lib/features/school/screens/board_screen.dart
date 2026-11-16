@@ -6,6 +6,7 @@ import '../../../core/utils/responsive.dart';
 import '../../timetable/widgets/school_changes_list.dart';
 import '../models/school_notice.dart';
 import '../school_providers.dart';
+import '../widgets/school_load_error_banner.dart';
 import '../widgets/school_notices_card.dart';
 
 /// Urgent notices first (pinned), then newest first. Notices whose server
@@ -65,6 +66,7 @@ class _BoardScreenState extends ConsumerState<BoardScreen> {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(16, 4, 16, 32),
             children: [
+              const SchoolLoadErrorBanner(margin: EdgeInsets.only(bottom: 12)),
               Wrap(
                 spacing: 8,
                 runSpacing: 4,

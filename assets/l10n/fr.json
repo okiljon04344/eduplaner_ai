@@ -406,6 +406,7 @@
   "school_graduate_school_label": "École doctorale / Faculté d'études supérieures",
   "school_label_personal": "Perso",
   "school_last_sync": "Emploi du temps de l'école · mis à jour {time}",
+  "school_load_error": "Impossible de charger les données de l'école. Vérifiez votre connexion et que votre adresse e-mail scolaire est vérifiée.",
   "school_major_hint": "ex. Génie informatique",
   "school_major_label": "Spécialité",
   "school_name_hint": "Ex : Lycée Victor Hugo",

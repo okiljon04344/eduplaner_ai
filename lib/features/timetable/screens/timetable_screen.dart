@@ -12,6 +12,7 @@ import '../../../shared/widgets/pressable.dart';
 import '../../home/widgets/home_ambient_glow.dart';
 import '../../school/models/school.dart';
 import '../../school/school_providers.dart';
+import '../../school/widgets/school_load_error_banner.dart';
 import '../providers/timetable_provider.dart';
 import '../widgets/add_edit_class_sheet.dart';
 import '../widgets/day_tab_row.dart';
@@ -81,6 +82,7 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
     // UZ: Faqat maktab ma'lumotlari + kenglik bo'yicha cheklash (hafta yuklanganligiga emas), shunda
     // oldingi/keyingi hafta yuklanayotganda jadval (grid) va kun tablari o'rtasida o'zgarib ketmaydi.
     final showGrid = context.isTablet && ref.watch(schoolClassProvider) != null;
+    final isSchoolLinked = ref.watch(schoolClassProvider) != null;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -133,6 +135,8 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
                     ),
                   ),
                 ),
+                if (isSchoolLinked)
+                  const SchoolLoadErrorBanner(margin: EdgeInsets.fromLTRB(20, 0, 20, 12)),
                 if (showGrid)
                   Expanded(
                     child: Entrance(

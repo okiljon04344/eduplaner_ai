@@ -406,6 +406,7 @@
   "school_graduate_school_label": "كلية الدراسات العليا",
   "school_label_personal": "خاص بي",
   "school_last_sync": "جدول المدرسة · تم التحديث {time}",
+  "school_load_error": "تعذر تحميل بيانات المدرسة. تحقق من اتصالك وتأكد من تأكيد بريدك الإلكتروني المدرسي.",
   "school_major_hint": "مثال: هندسة المعلومات",
   "school_major_label": "التخصص",
   "school_name_hint": "مثال: مدرسة النور الثانوية",

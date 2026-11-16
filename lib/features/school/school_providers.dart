@@ -239,3 +239,16 @@ final schoolReminderSyncProvider = Provider<void>((ref) {
     fireImmediately: true,
   );
 });
+
+/// True while a student-facing school stream is failing to load; drives
+/// [SchoolLoadErrorBanner].
+///
+/// UZ: O'quvchiga ko'rinadigan maktab oqimlaridan biri yuklanmayotgan paytda true;
+/// [SchoolLoadErrorBanner] shunga qarab ko'rinadi.
+final schoolLoadFailedProvider = Provider<bool>((ref) {
+  final repo = ref.watch(schoolRepositoryProvider);
+  void listener() => ref.invalidateSelf();
+  repo.loadFailed.addListener(listener);
+  ref.onDispose(() => repo.loadFailed.removeListener(listener));
+  return repo.loadFailed.value;
+});

@@ -406,6 +406,7 @@
   "school_graduate_school_label": "Sekolah Pascasarjana",
   "school_label_personal": "Milikku",
   "school_last_sync": "Jadwal sekolah · diperbarui {time}",
+  "school_load_error": "Tidak dapat memuat data sekolah. Periksa koneksi Anda dan pastikan email sekolah telah diverifikasi.",
   "school_major_hint": "mis. Teknik Informatika",
   "school_major_label": "Bidang studi",
   "school_name_hint": "Contoh: SMA Negeri 1",

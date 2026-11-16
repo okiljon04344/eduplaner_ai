@@ -406,6 +406,7 @@
   "school_graduate_school_label": "研究所／研究科",
   "school_label_personal": "我的",
   "school_last_sync": "學校課表 · {time} 更新",
+  "school_load_error": "無法載入學校資料。請檢查網路連線以及學校信箱是否已驗證。",
   "school_major_hint": "例如：資訊工程專攻",
   "school_major_label": "專攻",
   "school_name_hint": "例如：第一高級中學",

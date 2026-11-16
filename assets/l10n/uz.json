@@ -407,6 +407,7 @@
   "school_graduate_school_label": "Magistratura bo'limi",
   "school_label_personal": "Menikim",
   "school_last_sync": "Maktab jadvali · {time} yangilangan",
+  "school_load_error": "Maktab ma'lumotlarini yuklab bo'lmadi. Internet aloqasini va maktab emailingiz tasdiqlanganini tekshiring.",
   "school_major_hint": "Masalan: Axborot muhandisligi",
   "school_major_label": "Mutaxassislik",
   "school_name_hint": "Masalan: 15-maktab",

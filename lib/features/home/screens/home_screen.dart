@@ -7,6 +7,7 @@ import '../../../core/utils/responsive.dart';
 import '../../../shared/widgets/entrance.dart';
 import '../../../shared/widgets/glass_panel.dart';
 import '../../timetable/widgets/school_changes_list.dart';
+import '../../school/widgets/school_load_error_banner.dart';
 import '../../school/widgets/school_notices_card.dart';
 import '../providers/home_provider.dart';
 import '../widgets/ai_study_tip_card.dart';
@@ -118,6 +119,7 @@ class HomeScreen extends ConsumerWidget {
                           children: [
                             SchoolChangesBanner(),
                             SchoolNoticesCard(),
+                            SchoolLoadErrorBanner(margin: EdgeInsets.fromLTRB(16, 4, 16, 12)),
                             VerifyEmailCard(),
                             NotificationPromptCard(),
                           ],

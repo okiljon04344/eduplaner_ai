@@ -406,6 +406,7 @@
   "school_graduate_school_label": "Scuola di specializzazione",
   "school_label_personal": "Mia",
   "school_last_sync": "Orario scolastico · aggiornato {time}",
+  "school_load_error": "Impossibile caricare i dati della scuola. Controlla la connessione e verifica che l'e-mail della scuola sia confermata.",
   "school_major_hint": "es. Ingegneria informatica",
   "school_major_label": "Indirizzo",
   "school_name_hint": "Es: Liceo Dante Alighieri",

@@ -406,6 +406,7 @@
   "school_graduate_school_label": "Sekolah Siswazah",
   "school_label_personal": "Saya",
   "school_last_sync": "Jadual sekolah · dikemas kini {time}",
+  "school_load_error": "Tidak dapat memuatkan data sekolah. Periksa sambungan anda dan pastikan e-mel sekolah telah disahkan.",
   "school_major_hint": "cth: Kejuruteraan Maklumat",
   "school_major_label": "Bidang pengajian",
   "school_name_hint": "Cth: Sekolah Menengah Kebangsaan",

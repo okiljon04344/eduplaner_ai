@@ -406,6 +406,7 @@
   "school_graduate_school_label": "Аспирантская школа / факультет",
   "school_label_personal": "Моё",
   "school_last_sync": "Расписание школы · обновлено {time}",
+  "school_load_error": "Не удалось загрузить данные школы. Проверьте подключение к сети и подтверждение школьной почты.",
   "school_major_hint": "напр.: Информационная инженерия",
   "school_major_label": "Специализация",
   "school_name_hint": "Например: Школа №15",
