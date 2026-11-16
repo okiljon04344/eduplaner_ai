@@ -4,6 +4,9 @@ import '../../../core/theme/app_colors.dart';
 
 /// Small badge indicating an assignment was handed out by a teacher
 /// ("先生から" or "{name}先生から").
+///
+/// UZ: Topshiriq o'qituvchi tomonidan berilganligini bildiruvchi kichik nishon
+/// ("先生から" yoki "{name}先生から").
 class DistributedBadge extends StatelessWidget {
   final String? teacherName;
   final double fontSize;

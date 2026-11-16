@@ -12,6 +12,12 @@ import '../../auth/providers/auth_provider.dart';
 ///
 /// Reads providers through [ProviderScope.containerOf] so it works from plain
 /// stateless widgets.
+///
+/// UZ: Foydalanuvchidan tasdiqlashni so'raydi, so'ngra sun'iy intellekt tomonidan yaratilgan kontent uchun
+/// `ai_reports` hujjatini topshiradi (Google Play sun'iy intellekt yaratgan kontent siyosati).
+/// [kind] bu `'chat'` yoki `'quiz'`; [botId]/[refId] faqat chat uchun.
+///
+/// Oddiy stateless vidjetlardan ishlashi uchun provayderlarni [ProviderScope.containerOf] orqali o'qiydi.
 Future<void> confirmAndReportAiContent(
   BuildContext context, {
   required String kind,

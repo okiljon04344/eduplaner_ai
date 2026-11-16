@@ -7,6 +7,9 @@ import '../providers/chat_provider.dart';
 
 /// Bot picker — mirrors the 10 subject bots defined server-side in
 /// `functions/index.js` (`chatWithTutor`'s `botPrompts`).
+///
+/// UZ: Bot tanlagich — server tomonidagi `functions/index.js` (`chatWithTutor` ning `botPrompts`) da
+/// belgilangan 10 ta fan botlarini aks ettiradi.
 class QuickReplyChips extends ConsumerWidget {
   const QuickReplyChips({super.key});
 

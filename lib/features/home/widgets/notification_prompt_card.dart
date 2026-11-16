@@ -8,6 +8,9 @@ import '../../auth/providers/auth_provider.dart';
 
 /// Asks for notification permission on Home, after sign-in, with the reason
 /// in view — instead of a bare OS dialog at first launch. Shown once.
+///
+/// UZ: Ilk ishga tushirilgandagi quruq OT muloqot oynasi o'rniga, sababi ko'rsatilgan holda
+/// tizimga kirgandan keyin Asosiy ekranda bildirishnoma ruxsatini so'raydi. Bir marta ko'rsatiladi.
 class NotificationPromptCard extends ConsumerStatefulWidget {
   const NotificationPromptCard({super.key});
 

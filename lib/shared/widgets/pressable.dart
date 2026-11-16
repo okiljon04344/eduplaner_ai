@@ -14,6 +14,20 @@ import '../../core/theme/app_motion.dart';
 ///
 /// If [reduceMotion] is true:
 /// - No scale transformation is applied (stays at 1.0).
+///
+/// UZ: Ko'rsatkich bosilganda 120ms ichida [scale] ga (standart 0.97) qisqaradigan va ko'rsatkich
+/// ko'tarilganda yoki bekor qilinganda orqaga qaytadigan vidjet.
+///
+/// [onTap] berilganda:
+/// - `Semantics(button: true)` ni ta'minlaydi va 44px minimal bosish sohasini majburiy qiladi.
+/// - Bosib qo'yib yuborilganda [onTap] ni chaqiradi.
+///
+/// [onTap] null bo'lganda (masalan, `InkWell` ni o'z ichiga olgan vidjetni o'rashda):
+/// - Faqat vizual masshtab effekti uchun bosish/qo'yib yuborishni sezishda shaffof [Listener] ishlatadi.
+/// - Imo-ishoralar (gesture arena) hodisalarini yutmaydi, ichki bosishlar/to'lqinlar o'zgarishsiz ishlashiga imkon beradi.
+///
+/// Agar [reduceMotion] true bo'lsa:
+/// - Hech qanday masshtab transformatsiyasi qo'llanilmaydi (1.0 da qoladi).
 class Pressable extends StatefulWidget {
   final Widget child;
   final VoidCallback? onTap;
@@ -75,6 +89,7 @@ class _PressableState extends State<Pressable> {
     }
 
     // Purely visual scaling for children that already handle their own tap (e.g. InkWell).
+    // UZ: O'z bosilishini allaqachon boshqaradigan vidjetlar uchun faqat vizual masshtablash (masalan, InkWell).
     return Listener(
       behavior: HitTestBehavior.translucent,
       onPointerDown: (_) => _setPressed(true),

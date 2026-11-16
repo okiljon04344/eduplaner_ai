@@ -23,6 +23,18 @@ import 'features/onboarding/providers/onboarding_provider.dart';
 ///      cheaper alternative to threading `Theme.of(context)` through ~370 call
 ///      sites.  GoRouter's navigation location is preserved across the remount;
 ///      in-progress scroll / animation / form state on the visible screen is not.
+///
+/// UZ: EduPlanner AI uchun ildiz vidjeti.
+///
+/// [themeProvider] va [localeProvider]ni kuzatadi, amaldagi [Brightness]ni
+/// (shu jumladan [ThemeMode.system] uchun tizim qiymatini) aniqlaydi, so'ngra:
+///   1. [AppColors.applyBrightness] orqali [AppColors] statik tokenlarini o'zgartiradi,
+///      natijada ushbu tokenlarni o'qiydigan har bir vidjet yangi palitrani qabul qiladi.
+///   2. [MaterialApp.router]ni `ValueKey('${resolvedBrightness}_$locale')` bilan kalitlaydi,
+///      bu mavzu yoki lokal o'zgarganda to'liq daraxt ostini qayta o'rnatishga (remount) majbur qiladi —
+///      bu ~370 ta chaqiruv joyi orqali `Theme.of(context)`ni uzatishning arzonroq alternativasi.
+///      GoRouter navigatsiya joylashuvi qayta o'rnatishda saqlanadi; ko'rinadigan ekrandagi
+///      bajarilayotgan siljitish / animatsiya / forma holati saqlanmaydi.
 class EduPlannerApp extends ConsumerStatefulWidget {
   const EduPlannerApp({super.key});
 
@@ -79,6 +91,10 @@ class _EduPlannerAppState extends ConsumerState<EduPlannerApp> {
     // Material widgets (date pickers, etc.) resolve their own localizations.
     // The full locale code (e.g. 'zh_TW') is still passed to AppStrings
     // separately so we can serve the correct JSON translation file.
+    // UZ: MaterialApp lokali uchun faqat asosiy til subtégidan foydalaning, shunda standart
+    // Material vidjetlari (sana tanlagichlar va boshqalar) o'z mahalliylashtirishlarini aniqlaydi.
+    // To'liq lokal kodi (masalan, 'zh_TW') to'g'ri JSON tarjima faylini taqdim etishimiz uchun
+    // hali ham AppStrings'ga alohida uzatiladi.
     final flutterLocale = Locale(locale.split('_').first);
 
     // Until auth/onboarding are known, paint a splash over the router instead
@@ -86,6 +102,11 @@ class _EduPlannerAppState extends ConsumerState<EduPlannerApp> {
     // from it). The router itself must exist from the first frame — swapping
     // in a plain MaterialApp first resets the browser URL to '/', which loses
     // web deep links such as /login/reset?oobCode=...
+    // UZ: Autentifikatsiya/onboarding ma'lum bo'lmaguncha, marshrutlangan sahifa o'rniga router ustiga
+    // splash chizing: Home sahifasining miltillashi bo'lmaydi (va undan autentifikatsiyadan o'tmagan
+    // AI chaqiruvlari bo'lmaydi). Routerning o'zi birinchi freymdan mavjud bo'lishi kerak — avval oddiy
+    // MaterialApp'ni almashtirish brauzer URL manzilini '/' ga qaytaradi, bu esa /login/reset?oobCode=...
+    // kabi veb deep linklarini yo'qotadi.
     final authState = ref.watch(authStateProvider);
     final onboardingState = ref.watch(onboardingProvider);
     final booting = (authState.isLoading && !authState.hasValue) ||
@@ -121,6 +142,8 @@ class _EduPlannerAppState extends ConsumerState<EduPlannerApp> {
 }
 
 /// Shown while auth/onboarding state is still loading.
+///
+/// UZ: Autentifikatsiya/onboarding holati hali yuklanayotganda ko'rsatiladi.
 class _SplashScreen extends StatelessWidget {
   const _SplashScreen();
 

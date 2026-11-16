@@ -39,6 +39,10 @@ String _callError(Object e) => switch (e) {
 /// 教員メニュー (§9): pick a class and week, tap a lesson to publish a
 /// 休講・教室変更・補講・メモ that reaches the class at once. Admins also
 /// register teacher emails here.
+///
+/// UZ: 教員メニュー (§9): sinf va haftani tanlang, bir zumda butun sinfga yetib boradigan
+/// 休講・教室変更・補講・メモ ni e'lon qilish uchun darsni bosing. Shuningdek administratorlar
+/// bu yerda o'qituvchi elektron pochtalarini ro'yxatdan o'tkazadilar.
 class TeacherScreen extends ConsumerStatefulWidget {
   const TeacherScreen({super.key});
 
@@ -52,6 +56,8 @@ class _TeacherScreenState extends ConsumerState<TeacherScreen> {
   int _weekOffset = 0;
 
   /// Desktop: the lesson shown in the side panel.
+  ///
+  /// UZ: Ish stoli: yon panelda ko'rsatilgan dars.
   ({DateTime date, SchoolPeriod period, SchoolSlot? slot})? _sel;
 
   @override
@@ -68,6 +74,7 @@ class _TeacherScreenState extends ConsumerState<TeacherScreen> {
       final me = FirebaseAuth.instance.currentUser;
       final mine = info.profileOf(me?.email);
       // Homeroom teachers start on their own class.
+      // UZ: Rahbar (homeroom) o'qituvchilar o'z sinflaridan boshlaydilar.
       final grade = info.grades.contains(_grade)
           ? _grade!
           : (info.grades.contains(mine?.homeroomGrade) ? mine!.homeroomGrade! : info.grades.first);
@@ -225,6 +232,9 @@ class _TeacherScreenState extends ConsumerState<TeacherScreen> {
 
 /// First-run guide: three steps the first time, then the one-line hint with
 /// a button to see the steps again.
+///
+/// UZ: Birinchi marta ishga tushirish qo'llanmasi: birinchi marta uchta qadam,
+/// so'ngra qadamlarni qayta ko'rish tugmasi bilan bir qatorli ishora.
 class _TeacherGuide extends StatefulWidget {
   const _TeacherGuide();
 
@@ -264,6 +274,7 @@ class _TeacherGuideState extends State<_TeacherGuide> {
       );
     }
     // Align: a ListView child gets tight width, which ConstrainedBox alone can't narrow.
+    // UZ: Align: ListView farzandi qat'iy kenglikka ega bo'ladi, uni faqat ConstrainedBox ning o'zi toraytira olmaydi.
     return Align(
       alignment: Alignment.centerLeft,
       child: ConstrainedBox(
@@ -309,6 +320,9 @@ class _TeacherGuideState extends State<_TeacherGuide> {
 
 /// 学校の管理 (admin only): teacher registry, the student-edit switch and
 /// the file-link page, kept off the teachers' daily screen.
+///
+/// UZ: 学校の管理 (faqat admin): o'qituvchilar ro'yxati, talabalar tahrirlash kaliti va
+/// faylga havola sahifasi, o'qituvchilarning kunlik ekranidan alohida saqlanadi.
 class SchoolAdminScreen extends ConsumerWidget {
   const SchoolAdminScreen({super.key});
 
@@ -334,6 +348,9 @@ class SchoolAdminScreen extends ConsumerWidget {
 
 /// Pilot test accounts: non-school emails (e.g. Gmail) that act as students
 /// of this school until removed (setSchoolTester).
+///
+/// UZ: Sinov (pilot) hisoblari: o'chirilmaguncha ushbu maktab o'quvchilari kabi harakat
+/// qiladigan maktabga tegishli bo'lmagan elektron pochtalar (masalan, Gmail) (setSchoolTester).
 class _TesterSection extends ConsumerStatefulWidget {
   final SchoolInfo info;
   const _TesterSection({required this.info});
@@ -424,6 +441,8 @@ class _TesterSectionState extends ConsumerState<_TesterSection> {
 }
 
 /// Desktop class picker: the homeroom class first, marked 担任.
+///
+/// UZ: Ish stoli sinf tanlagichi: birinchi navbatda 担任 deb belgilangan rahbarlik sinfi.
 class _ClassList extends StatelessWidget {
   final SchoolInfo info;
   final TeacherProfile? mine;
@@ -541,6 +560,7 @@ class _WeekBar extends StatelessWidget {
             icon: const Icon(Icons.chevron_right),
             tooltip: AppStrings.t('teacher_next_week')),
         // Hidden on this week, so the bar doesn't jump while browsing it.
+        // UZ: Ko'rib chiqish paytida panel sakrab ketmasligi uchun joriy haftada yashiringan.
         Visibility.maintain(
           visible: !isCurrent,
           child: TextButton(onPressed: onToday, child: Text(AppStrings.t('teacher_today'))),
@@ -551,6 +571,8 @@ class _WeekBar extends StatelessWidget {
 }
 
 /// Five day columns side by side on wide screens, stacked on phones.
+///
+/// UZ: Keng ekranlarda yonma-yon besh kunlik ustunlar, telefonlarda ustma-ust taxlangan.
 class _WeekView extends StatelessWidget {
   final SchoolInfo info;
   final Map<String, SchoolDay> week;
@@ -588,6 +610,7 @@ class _WeekView extends StatelessWidget {
     }
 
     // Wide: periods as rows so every lesson lines up with its 限 label.
+    // UZ: Keng: har bir dars o'zining 限 yorlig'i bilan bir qatorda turishi uchun dars soatlari qatorlar ko'rinishida.
     const gutter = 84.0;
     return Column(
       children: [
@@ -749,6 +772,8 @@ class _SlotTile extends StatelessWidget {
 }
 
 /// Live 既読 count of the announcement already published for this slot.
+///
+/// UZ: Ushbu dars soati uchun allaqachon e'lon qilingan xabarning jonli 既読 soni.
 class _ReadCount extends ConsumerStatefulWidget {
   final int grade;
   final String course, period;
@@ -790,6 +815,8 @@ class _ReadCountState extends ConsumerState<_ReadCount> {
 }
 
 /// Public entry point to open the override sheet for a slot (§9.2-2).
+///
+/// UZ: Dars soati uchun o'zgarishlar varag'ini ochish uchun ochiq kirish nuqtasi (§9.2-2).
 Future<void> showOverrideSheet(
   BuildContext context, {
   required int grade,
@@ -819,6 +846,8 @@ Future<void> showOverrideSheet(
 }
 
 /// 休講・教室変更・補講・メモ input for one slot (§9.2-2).
+///
+/// UZ: Bitta dars soati uchun 休講・教室変更・補講・メモ kiritmasi (§9.2-2).
 class _OverrideSheet extends StatefulWidget {
   final int grade;
   final String course;
@@ -828,6 +857,8 @@ class _OverrideSheet extends StatefulWidget {
   final SchoolOverrideKind? initialKind;
 
   /// Desktop side panel: called after a publish instead of popping a sheet.
+  ///
+  /// UZ: Ish stoli yon paneli: varaqni yopish o'rniga e'lon qilingandan so'ng chaqiriladi.
   final VoidCallback? onDone;
   const _OverrideSheet({
     super.key,
@@ -857,6 +888,7 @@ class _OverrideSheetState extends State<_OverrideSheet> {
   void initState() {
     super.initState();
     // The preview below repeats the typed room/subject live.
+    // UZ: Quyidagi oldindan ko'rish terilgan xona/fanni jonli ravishda takrorlaydi.
     for (final c in [_room, _subject, _note]) {
       c.addListener(() => setState(() {}));
     }
@@ -864,6 +896,9 @@ class _OverrideSheetState extends State<_OverrideSheet> {
 
   /// Mirrors the server's push body (describeOverride in overrides.js), which
   /// is Japanese-only, so the preview is too.
+  ///
+  /// UZ: Serverning faqat yaponcha bo'lgan push matnini (overrides.js dagi describeOverride)
+  /// aks ettiradi, shuning uchun oldindan ko'rish ham yaponcha.
   String _previewLine() {
     final d = widget.date;
     final slot = widget.slot;
@@ -892,6 +927,8 @@ class _OverrideSheetState extends State<_OverrideSheet> {
     if (_busy) return;
     // Same required fields as validateOverride on the server, checked here so
     // the teacher sees a clear message instead of the server's English one.
+    // UZ: Serverdagi validateOverride bilan bir xil majburiy maydonlar, o'qituvchi serverning
+    // inglizcha xabari o'rniga aniq xabarni ko'rishi uchun shu yerda tekshiriladi.
     final missing = switch (kind) {
       'room' when _room.text.trim().isEmpty => 'teacher_field_room',
       'makeup' when _subject.text.trim().isEmpty => 'teacher_field_subject',
@@ -1036,6 +1073,8 @@ class _OverrideSheetState extends State<_OverrideSheet> {
 }
 
 /// Admin-only teacher registration (§5.3) plus a link to the file-link page.
+///
+/// UZ: Faqat admin uchun o'qituvchilarni ro'yxatdan o'tkazish (§5.3) va faylga havola sahifasiga havola.
 class _TeacherRegistry extends StatefulWidget {
   final SchoolInfo info;
   const _TeacherRegistry({required this.info});
@@ -1087,6 +1126,8 @@ class _TeacherRegistryState extends State<_TeacherRegistry> {
   }
 
   /// Tapping a registered teacher loads them into the form to edit.
+  ///
+  /// UZ: Ro'yxatdan o'tgan o'qituvchini bosish ularni tahrirlash uchun shaklga yuklaydi.
   void _edit(String email, TeacherProfile? p) => setState(() {
         _email.text = email;
         _name.text = p?.name ?? '';
@@ -1138,6 +1179,7 @@ class _TeacherRegistryState extends State<_TeacherRegistry> {
               Expanded(
                 child: DropdownButtonFormField<({int grade, String course})?>(
                   // Keyed by value: the form field keeps its own state otherwise.
+                  // UZ: Qiymat bo'yicha kalitlangan: aks holda shakl maydoni o'z holatini saqlab qoladi.
                   key: ValueKey(_homeroom),
                   initialValue: _homeroom,
                   isExpanded: true,

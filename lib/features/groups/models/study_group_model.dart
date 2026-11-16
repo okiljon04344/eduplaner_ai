@@ -4,6 +4,11 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'study_group_model.freezed.dart';
 part 'study_group_model.g.dart';
 
+/// Represents a collaborative study group stored in Firestore, including join code,
+/// owner identifier, and participating member list.
+///
+/// UZ: Qo'shilish kodi, egasining identifikatori va ishtirok etuvchi a'zolar ro'yxatini o'z ichiga olgan,
+/// Firestore'da saqlanadigan hamkorlikdagi o'quv guruhini ifodalaydi.
 @freezed
 class StudyGroupModel with _$StudyGroupModel {
   const factory StudyGroupModel({

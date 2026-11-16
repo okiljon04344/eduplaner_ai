@@ -15,9 +15,18 @@ import '../repositories/chat_repository.dart';
 /// in flight, then replaces it with the real AI reply (or an error message)
 /// once the result arrives.  This ensures the UI never shows an empty gap
 /// between the user's message and the bot's reply.
+///
+/// UZ: Faol bot sessiyasi uchun chat xabarlarining xotiradagi ro'yxatini boshqaradi.
+///
+/// Cloud Function chaqiruvi bajarilayotgan paytda yuklanish xabarini optimistik tarzda qo'shadi,
+/// so'ngra natija kelgach, uni haqiqiy AI javobi (yoki xato xabari) bilan almashtiradi. Bu UI da
+/// foydalanuvchi xabari va bot javobi o'rtasida bo'sh joy ko'rinmasligini ta'minlaydi.
 class ChatNotifier extends Notifier<List<MessageModel>> {
   /// Watches the signed-in uid so the in-memory conversation is reset (and
   /// can never leak) when a different account signs in on this device.
+  ///
+  /// UZ: Ushbu qurilmada boshqa hisob tizimga kirganda xotiradagi suhbat qayta tiklanishi (va hech
+  /// qachon sizib chiqmasligi) uchun tizimga kirgan uid ni kuzatib boradi.
   @override
   List<MessageModel> build() {
     ref.watch(currentUserProvider.select((u) => u?.uid));
@@ -33,6 +42,11 @@ class ChatNotifier extends Notifier<List<MessageModel>> {
   /// empty timetable/assignment context). Context is optional, so timeout
   /// and error (e.g. signed-out empty stream) fall back to an empty list
   /// instead of failing the send.
+  ///
+  /// UZ: Oqim hali qiymat chiqarmaganida [whenLoaded] ni qisqa kutib, [current] dan AI kontekstini
+  /// aniqlaydi (sovuq ochilish: chat ekrani o'rnatilgandan so'ng darhol yuborilgan xabar aks holda
+  /// AI ga bo'sh dars jadvali/topshiriq kontekstini bergan bo'lardi). Kontekst ixtiyoriy, shuning uchun
+  /// taymout va xatolik yuborishni to'xtatmasdan bo'sh ro'yxatga qaytadi.
   Future<List<T>> _contextOf<T>(AsyncValue<List<T>> current, Future<List<T>> whenLoaded) async {
     final value = current.valueOrNull;
     if (value != null) return value;
@@ -50,6 +64,12 @@ class ChatNotifier extends Notifier<List<MessageModel>> {
   /// the loaded history (an in-flight loading placeholder, unsaved or error
   /// messages) are kept, so remounting mid-reply doesn't drop the answer.
   /// No-op when not signed in.
+  ///
+  /// UZ: Firestore'dan oxirgi 50 ta xabarni yuklaydi va ularni joriy holatga birlashtiradi.
+  ///
+  /// Chat ekrani o'rnatilganda chaqiriladi. Yuklangan tarixda bo'lmagan mahalliy xabarlar
+  /// (yuklanish to'ldiruvchisi, saqlanmagan yoki xato xabarlari) saqlab qolinadi, shuning uchun
+  /// javob paytida qayta o'rnatish javobni yo'qotmaydi. Tizimga kirmagan bo'lsa hech narsa qilmaydi.
   Future<void> loadHistory() async {
     final uid = _uid;
     if (uid.isEmpty) return;
@@ -60,6 +80,7 @@ class ChatNotifier extends Notifier<List<MessageModel>> {
       ..sort((a, b) {
         final byTime = a.timestamp.compareTo(b.timestamp);
         // Coarse clocks can tie a user message and its placeholder: user first.
+        // UZ: Noaniq soatlar foydalanuvchi xabari va uning to'ldiruvchisini tenglashtirishi mumkin: avval foydalanuvchi.
         return byTime != 0 ? byTime : a.role.index.compareTo(b.role.index);
       });
     state = merged;
@@ -72,11 +93,19 @@ class ChatNotifier extends Notifier<List<MessageModel>> {
   /// Both the user message and the eventual AI reply are persisted to
   /// Firestore.  On error the placeholder is replaced with a visible error
   /// message rather than being removed.
+  ///
+  /// UZ: [content] ni foydalanuvchi xabari sifatida qo'shadi, so'ng uni AI ga yuboradi.
+  ///
+  /// Yozish indikatori tarmoq aylanishini kutmasdan paydo bo'lishi uchun darhol yuklanish xabari
+  /// kiritiladi. Foydalanuvchi xabari ham, yakuniy AI javobi ham Firestore'da saqlanadi. Xatolik
+  /// yuz berganda to'ldiruvchi olib tashlanmasdan, ko'rinadigan xato xabari bilan almashtiriladi.
   Future<void> sendMessage(String content, {required String botId}) async {
     final trimmed = content.trim();
     if (trimmed.isEmpty) return;
     // Captured once: both saves below must go to the account that sent the
     // message, even if another account signs in while the reply is in flight.
+    // UZ: Bir marta olinadi: quyidagi ikkala saqlash ham, javob yo'lda bo'lganida boshqa hisob
+    // tizimga kirgan taqdirda ham, xabarni yuborgan hisobga tegishli bo'lishi kerak.
     final uid = _uid;
     final userMsg = MessageModel(
       id: const Uuid().v4(),
@@ -97,6 +126,9 @@ class ChatNotifier extends Notifier<List<MessageModel>> {
     // saveMessage swallows its own errors (see ChatRepository), so the user
     // message write can safely run concurrently with the AI round-trip
     // instead of delaying it by one Firestore write.
+    // UZ: saveMessage o'z xatolarini yutadi (ChatRepository ga qarang), shuning uchun foydalanuvchi
+    // xabarini yozish AI so'rovi bilan parallel ravishda xavfsiz bajarilishi mumkin, bu esa uni bitta
+    // Firestore yozuvi bilan kechiktirmaydi.
     final userMsgSave = uid.isNotEmpty ? _repo.saveMessage(uid, userMsg) : Future<void>.value();
     try {
       final (classes, assignments) = await (
@@ -128,6 +160,11 @@ class ChatNotifier extends Notifier<List<MessageModel>> {
   ///
   /// Firestore deletion failures are logged and swallowed — the local state
   /// is cleared regardless so the user always gets a fresh-looking chat.
+  ///
+  /// UZ: Holatdagi barcha xabarlarni tozalaydi va ularni Firestore'dan o'chiradi.
+  ///
+  /// Firestore o'chirishdagi nosozliklar jurnallanadi va yutiladi — mahalliy holat baribir
+  /// tozalanadi, shuning uchun foydalanuvchi har doim toza chatni ko'radi.
   Future<void> clearHistory() async {
     state = [];
     if (_uid.isNotEmpty) {
@@ -141,6 +178,8 @@ class ChatNotifier extends Notifier<List<MessageModel>> {
 }
 
 /// Global provider for the active chat message list.
+///
+/// UZ: Faol chat xabarlari ro'yxati uchun global provider.
 final chatProvider = NotifierProvider<ChatNotifier, List<MessageModel>>(ChatNotifier.new);
 
 /// Tracks which AI bot is currently selected (defaults to the planner bot).
@@ -148,4 +187,10 @@ final chatProvider = NotifierProvider<ChatNotifier, List<MessageModel>>(ChatNoti
 /// Changed by the bot picker at the top of [AiChatScreen].
 /// The selected id is passed into every [ChatNotifier.sendMessage] call so
 /// each message is stored and rendered with the correct bot identity.
+///
+/// UZ: Hozirda qaysi AI bot tanlanganligini kuzatib boradi (standart bo'yicha planner boti).
+///
+/// [AiChatScreen] yuqorisidagi bot tanlagich orqali o'zgartiriladi. Har bir xabar to'g'ri bot
+/// identifikatori bilan saqlanishi va chizilishi uchun tanlangan id har bir
+/// [ChatNotifier.sendMessage] chaqiruviga uzatiladi.
 final selectedBotIdProvider = StateProvider<String>((_) => 'planner');

@@ -4,6 +4,9 @@ import 'nav_destinations.dart';
 
 /// Tablet/desktop side navigation rail — same five destinations as
 /// [AppBottomNav], laid out vertically.
+///
+/// UZ: Planshet/desktop yon navigatsiya paneli (rail) — [AppBottomNav] kabi bir xil beshta
+/// yo'nalish, vertikal ravishda joylashtirilgan.
 class AppNavRail extends StatelessWidget {
   const AppNavRail({super.key});
 

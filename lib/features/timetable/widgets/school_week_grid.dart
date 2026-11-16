@@ -18,6 +18,9 @@ int _minutes(Hm t) => t.$1 * 60 + t.$2;
 
 /// Row index of the school period whose `[start, end)` contains the start of
 /// the personal class's period, or -1.
+///
+/// UZ: `[start, end)` oralig'ida shaxsiy dars vaqtining boshlanishi joylashgan maktab darsi
+/// qatorining indeksi, yoki -1.
 int _rowOf(ClassModel c, List<SchoolPeriod> periods) {
   final start = kPeriodTimes[c.period]?.start;
   if (start == null) return -1;
@@ -29,6 +32,10 @@ int _rowOf(ClassModel c, List<SchoolPeriod> periods) {
 /// Week view for wide screens: school periods as rows, 月-金 as columns.
 /// Each cell holds the school lesson plus any personal class that starts
 /// inside the period; personal classes that fit no row are listed below.
+///
+/// UZ: Keng ekranlar uchun hafta ko'rinishi: maktab darslari qatorlar sifatida, 月-金 ustunlar
+/// sifatida. Har bir katak maktab darsi va ushbu davr ichida boshlanadigan shaxsiy darslarni
+/// saqlaydi; hech qaysi qatorga sig'magan shaxsiy darslar pastda ko'rsatiladi.
 class SchoolWeekGrid extends ConsumerWidget {
   final DateTime weekStart;
   const SchoolWeekGrid({super.key, required this.weekStart});
@@ -67,11 +74,14 @@ class SchoolWeekGrid extends ConsumerWidget {
     ];
 
     // Narrower time gutter so the five day columns keep room at 600-720dp.
+    // UZ: 600-720dp kenglikda besh kunlik ustunlar uchun joy yetarli bo'lishi maqsadida torroq vaqt maydoni.
     final gutterWidth = MediaQuery.sizeOf(context).width < 720 ? 56.0 : 76.0;
     Widget gutter(Widget child) => SizedBox(width: gutterWidth, child: child);
 
     // Slots whose period key isn't a grid row (e.g. a 休講 with an unknown
     // key) must not vanish; they are listed below the grid.
+    // UZ: Period kaliti jadval qatori bo'lmagan slotlar (masalan, noma'lum kalitli 休講)
+    // yo'qolib ketmasligi kerak; ular setkaning pastida ko'rsatiladi.
     final rowKeys = {for (final p in periods) p.key};
     final orphans = <(int, SchoolSlot)>[
       for (var col = 0; col < 5; col++)
@@ -326,6 +336,8 @@ class _SchoolSlotGridItem extends StatelessWidget {
 }
 
 /// A personal class in the grid; tapping opens its detail sheet.
+///
+/// UZ: Jadvaldagi shaxsiy dars; bosilganda batafsil ma'lumot varaqasini ochadi.
 class _PersonalChip extends ConsumerWidget {
   final ClassModel classModel;
   final String label;

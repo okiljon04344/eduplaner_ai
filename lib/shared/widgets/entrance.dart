@@ -10,14 +10,27 @@ import '../../core/theme/app_motion.dart';
 ///
 /// When [reduceMotion] is true:
 /// - No movement (no Transform offset), only a 150ms opacity fade.
+///
+/// UZ: Yuqori darajadagi bo'limlar (Home) uchun kirish animatsiyasi.
+///
+/// `index * 50ms` pog'onali kechikish bilan 280ms davomida asta paydo bo'ladi (fade in) va 10px yuqoriga siljiydi.
+/// Ilova har bir ishga tushirilganda BIR MARTA ijro etiladi. Keyingi tashriflar yoki tab almashishlar yakuniy
+/// holatni chiquvchi animatsiyalarsiz yoki o'rab turuvchi qatlamlarsiz darhol ko'rsatadi.
+///
+/// [reduceMotion] rost (true) bo'lganda:
+/// - Harakat yo'q (Transform ofseti yo'q), faqat 150ms xiralik o'zgarishi (fade).
 class Entrance extends StatefulWidget {
   final Widget child;
   final int index;
 
   /// Global flag: whether the home entrance has already played.
+  ///
+  /// UZ: Global bayroq: asosiy kirish animatsiyasi allaqachon ijro etilganmi yoki yo'qmi.
   static bool hasPlayed = false;
 
   /// Resets the flag (useful for testing or replay).
+  ///
+  /// UZ: Bayroqni qayta tiklaydi (testlash yoki qayta ijro etish uchun foydali).
   static void reset() {
     hasPlayed = false;
   }
@@ -89,6 +102,8 @@ class _EntranceState extends State<Entrance> with SingleTickerProviderStateMixin
   Widget build(BuildContext context) {
     // Not `Entrance.hasPlayed` here: it flips when the first section lands,
     // and a parent rebuild would snap the later, still-staggering sections.
+    // UZ: Bu yerda `Entrance.hasPlayed` emas: birinchi bo'lim tushganda u qiymatini o'zgartiradi
+    // va ota vidjet qayta qurilishi keyingi, hali ham kechikayotgan bo'limlarni birdaniga uzib qo'yishi mumkin.
     if (_isFinished || _controller == null) {
       return widget.child;
     }
@@ -101,6 +116,7 @@ class _EntranceState extends State<Entrance> with SingleTickerProviderStateMixin
 
     if (isReduced) {
       // With disableAnimations there is no Transform offset, only a fade.
+      // UZ: disableAnimations bilan Transform ofseti bo'lmaydi, faqat fade bo'ladi.
       return FadeTransition(
         opacity: curved,
         child: widget.child,

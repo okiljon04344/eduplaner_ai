@@ -11,6 +11,11 @@ import 'assignment_detail_sheet.dart';
 import 'distributed_badge.dart';
 import 'progress_bar_row.dart';
 
+/// Card widget presenting assignment metadata, due date indicators, and completion progress,
+/// opening a detail sheet when tapped.
+///
+/// UZ: Topshiriq metama'lumotlari, topshirish muddati ko'rsatkichlari va bajarilish progressini
+/// ko'rsatuvchi, bosilganda tafsilotlar varag'ini ochuvchi karta vidjeti.
 class AssignmentCard extends ConsumerWidget {
   final AssignmentModel assignment;
   const AssignmentCard({super.key, required this.assignment});
@@ -21,6 +26,8 @@ class AssignmentCard extends ConsumerWidget {
     final subjectStyle = SubjectColors.of(assignment.subject);
 
     // Entry tween removed: it replayed on every rebuild while scrolling (scroll jank).
+    // UZ: Kirish tween animatsiyasi olib tashlandi: u aylantirish paytida har bir qayta qurishda
+    // qayta ijro etilardi (aylantirishdagi to'xtab qolish / scroll jank).
     return RepaintBoundary(
       child: Pressable(
         child: GestureDetector(

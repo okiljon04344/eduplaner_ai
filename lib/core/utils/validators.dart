@@ -1,5 +1,8 @@
 import '../l10n/app_strings.dart';
 
+/// Common form validation functions returning localized error strings or null when valid.
+///
+/// UZ: To'g'ri bo'lganda null, aks holda mahalliylashtirilgan xatolik satrlarini qaytaruvchi umumiy forma tekshirish funksiyalari.
 abstract class Validators {
   static final RegExp _emailPattern = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
 

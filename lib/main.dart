@@ -31,17 +31,43 @@ import 'firebase_options.dart';
 ///   8. Pre-load saved locale into [AppStrings] so the first frame is never
 ///      rendered with untranslated strings
 /// See the emulator block in `initFirebase` below.
+///
+/// UZ: Ilovaning kirish nuqtasi.
+///
+/// Boshqaruvni [EduPlannerApp] ga topshirishdan oldin barcha bir martalik sozlashlarni tartib bilan
+/// amalga oshiradi:
+///   1. Flutter engine bog'lanishi
+///   2. Faqat portret orientatsiyasini qulflash
+///   3. Tizim UI overlay ranglari (tungi rejim uchun xavfsiz shaffof status bar)
+///   4. Vaqt mintaqasi ma'lumotlari + standart Asia/Tokyo (maktab jadvali konteksti)
+///   5. [intl] formatlash uchun yaponcha sana belgilari va Firebase (xatoliklar qayd etiladi
+///      va yutiladi — ilova oflayn holatda ham ishga tushadi) — parallel ishga tushadi, hech biri
+///      boshqasiga bog'liq emas
+///   7. Mahalliy push-bildirishnoma kanallari
+///   8. Birinchi kadr hech qachon tarjima qilinmagan satrlar bilan chizilmasligi uchun saqlangan
+///      lokalni [AppStrings] ga oldindan yuklash
+/// Quyidagi `initFirebase` dagi emulyator blokiga qarang.
 const kUseEmulator = bool.fromEnvironment('USE_EMULATOR');
 
 /// reCAPTCHA v3 site key for App Check on web (public, not a secret):
 /// `flutter build web --dart-define=RECAPTCHA_SITE_KEY=...`. Empty = web
 /// runs without App Check, so a build without the key still works.
+///
+/// UZ: Vebda App Check uchun reCAPTCHA v3 sayt kaliti (ommaviy, sir emas):
+/// `flutter build web --dart-define=RECAPTCHA_SITE_KEY=...`. Bo'sh = veb App Check'siz ishlaydi,
+/// shuning uchun kalitsiz tuzilma ham ishlayveradi.
 const kRecaptchaSiteKey = String.fromEnvironment('RECAPTCHA_SITE_KEY');
 
 /// App Check proves requests come from this app, not a script reusing the
 /// API key. Debug builds use the debug provider (its token is printed to the
 /// log once; register it in the console). Enforcement is switched on in the
 /// console / Cloud Functions only after the metrics show verified traffic.
+///
+/// UZ: App Check so'rovlar API kalitidan qayta foydalanayotgan skriptdan emas, aynan shu
+/// ilovadan kelayotganini tasdiqlaydi. Debug tuzilmalari debug provayderidan foydalanadi
+/// (uning tokeni jurnalga bir marta chop etiladi; uni konsolda ro'yxatdan o'tkazing).
+/// Majburiy tekshirish faqat metrikalar tasdiqlangan trafikni ko'rsatgandan keyin konsolda /
+/// Cloud Functions da yoqiladi.
 Future<void> activateAppCheck() async {
   final mobile = defaultTargetPlatform == TargetPlatform.android || defaultTargetPlatform == TargetPlatform.iOS;
   if (kIsWeb ? kRecaptchaSiteKey.isEmpty : !mobile) return;
@@ -72,6 +98,9 @@ Future<void> main() async {
       // Local UI testing only: `--dart-define=USE_EMULATOR=true` points Auth
       // and Firestore at `firebase emulators:start` so test accounts never
       // touch production. Off in every normal build.
+      // UZ: Faqat lokal UI testlash uchun: `--dart-define=USE_EMULATOR=true` Auth va Firestore ni
+      // `firebase emulators:start` ga yo'naltiradi, shunda test hisoblari hech qachon production ga
+      // tegmaydi. Barcha odatiy build larda o'chiq bo'ladi.
       if (kUseEmulator) {
         const host = String.fromEnvironment('EMULATOR_HOST', defaultValue: 'localhost');
         await FirebaseAuth.instance.useAuthEmulator(host, 9099);
@@ -86,6 +115,8 @@ Future<void> main() async {
 
   // intl date symbols and Firebase are independent subsystems — initialise
   // them concurrently instead of one after another.
+  // UZ: intl sana belgilari va Firebase mustaqil quyi tizimlardir — ularni ketma-ket emas,
+  // bir vaqtning o'zida parallel ishga tushiring.
   await Future.wait([initializeDateFormatting(null), initFirebase()]);
   try {
     await NotificationService.initialize();

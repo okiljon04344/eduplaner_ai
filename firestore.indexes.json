@@ -35,14 +35,6 @@
       ]
     },
     {
-      "collectionGroup": "assignments",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "userId", "order": "ASCENDING" },
-        { "fieldPath": "dueDate", "order": "ASCENDING" }
-      ]
-    },
-    {
       "collectionGroup": "school_notices",
       "queryScope": "COLLECTION",
       "fields": [

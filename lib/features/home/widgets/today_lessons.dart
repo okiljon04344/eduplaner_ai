@@ -17,9 +17,18 @@ import '../../timetable/providers/timetable_provider.dart';
 import '../../timetable/widgets/school_slot_card.dart';
 
 /// One lesson today, from the school timetable or the student's own list.
+///
+/// UZ: Maktab dars jadvalidan yoki talabaning shaxsiy ro'yxatidan bugungi bitta dars.
 class TodayLesson {
   final DateTime start, end;
   final String periodLabel, title, detail;
+
+  /// The school's or teacher's remark on this lesson (what changed, what an
+  /// 行事 is about). Empty for personal classes and unremarked lessons.
+  ///
+  /// UZ: Maktabning yoki o'qituvchining ushbu dars bo'yicha izohi (nima o'zgargani, 行事 nima haqidaligi).
+  /// Shaxsiy darslar va izohsiz darslar uchun bo'sh.
+  final String note;
   final String? badge;
   final Color accent;
   final bool cancelled;
@@ -29,6 +38,7 @@ class TodayLesson {
     required this.periodLabel,
     required this.title,
     required this.detail,
+    this.note = '',
     required this.badge,
     required this.accent,
     required this.cancelled,
@@ -41,6 +51,11 @@ DateTime _on(DateTime day, Hm t) => DateTime(day.year, day.month, day.day, t.$1,
 /// - Under 60 minutes: "あと {n}分" (or "残り {n}分" when [live])
 /// - 60 minutes or more: "あと {h}時間{m}分" (or "残り {h}時間{m}分")
 /// - 60 minutes or more with m == 0: "あと {h}時間" (or "残り {h}時間")
+///
+/// UZ: Dars uchun qolgan vaqtni formatlaydi:
+/// - 60 daqiqadan kam: "あと {n}分" (yoki [live] bo'lganda "残り {n}分")
+/// - 60 daqiqa yoki undan ko'p: "あと {h}時間{m}分" (yoki "残り {h}時間{m}分")
+/// - 60 daqiqa yoki undan ko'p va m == 0: "あと {h}時間" (yoki "残り {h}時間")
 String formatLessonTimeRemaining(int minutes, {bool live = false}) {
   if (minutes < 60) {
     return AppStrings.t(live ? 'home_now_remaining' : 'home_next_in', {'n': minutes});
@@ -60,6 +75,8 @@ String formatLessonTimeRemaining(int minutes, {bool live = false}) {
 }
 
 /// Today's school lessons (with teacher changes) and personal classes, by start.
+///
+/// UZ: Boshlanish vaqti bo'yicha bugungi maktab darslari (o'qituvchi o'zgarishlari bilan) va shaxsiy darslar.
 final todayLessonsProvider = Provider<List<TodayLesson>>((ref) {
   final now = ref.watch(todayProvider).valueOrNull ?? DateTime.now();
   final day = DateTime(now.year, now.month, now.day);
@@ -76,6 +93,7 @@ final todayLessonsProvider = Provider<List<TodayLesson>>((ref) {
           periodLabel: p.label,
           title: s.subject,
           detail: [formatHm(p.start), if (s.room.isNotEmpty) s.room, if (s.teacher.isNotEmpty) s.teacher].join(' · '),
+          note: s.note,
           badge: schoolSlotBadge(s),
           accent: schoolSlotAccent(s),
           cancelled: s.status == SchoolSlotStatus.cancelled,
@@ -97,6 +115,8 @@ final todayLessonsProvider = Provider<List<TodayLesson>>((ref) {
 });
 
 /// The lesson in progress, or else the next one today; nothing after the last.
+///
+/// UZ: Hozir davom etayotgan dars yoki bugungi navbatdagi dars; oxirgisidan keyin hech narsa yo'q.
 class NowLessonCard extends ConsumerWidget {
   const NowLessonCard({super.key});
 
@@ -164,6 +184,11 @@ class NowLessonCard extends ConsumerWidget {
                 [lesson.periodLabel, '${formatHm((lesson.start.hour, lesson.start.minute))}–${formatHm((lesson.end.hour, lesson.end.minute))}', ...lesson.detail.split(' · ').skip(1)].join(' · '),
                 style: TextStyle(fontSize: 13, height: 1.5, color: AppColors.textSecondary),
               ),
+              if (lesson.note.isNotEmpty)
+                Text(lesson.note,
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 13, height: 1.5, color: AppColors.textSecondary)),
               if (lesson.badge != null) ...[
                 const SizedBox(height: 8),
                 _Badge(text: lesson.badge!, color: lesson.accent),
@@ -181,6 +206,8 @@ class NowLessonCard extends ConsumerWidget {
 }
 
 /// Small 8px pulsing dot next to the 授業中 badge (opacity 0.55 -> 1 over 2.4s).
+///
+/// UZ: 授業中 nishoni yonidagi kichik 8px li pulsatsiyalanuvchi nuqta (2.4 soniya davomida shaffoflik 0.55 -> 1).
 class _LiveDot extends StatefulWidget {
   const _LiveDot();
 
@@ -260,6 +287,8 @@ class _LiveDotState extends State<_LiveDot> with SingleTickerProviderStateMixin 
 }
 
 /// Lesson progress bar that animates from 0 to [progress] over 600ms on first entrance.
+///
+/// UZ: Birinchi kirishda 600ms davomida 0 dan [progress] gacha animatsiya qilinadigan dars progress paneli.
 class _LessonProgressBar extends StatelessWidget {
   final double progress;
   const _LessonProgressBar({required this.progress});
@@ -309,6 +338,8 @@ class _LessonProgressBar extends StatelessWidget {
 }
 
 /// Today's lessons as rows in one card: colour bar, subject, time · room, badge.
+///
+/// UZ: Bitta kartada qatorlar ko'rinishidagi bugungi darslar: rangli chiziq, fan, vaqt · xona, nishon.
 class TodayLessonsCard extends ConsumerWidget {
   const TodayLessonsCard({super.key});
 
@@ -391,6 +422,15 @@ class _LessonRow extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(fontSize: 12, height: 1.5, color: muted ? AppColors.textMuted : AppColors.textSecondary),
                   ),
+                  // Same remark the timetable shows under the lesson.
+                  // UZ: Dars jadvalida dars ostida ko'rsatiladigan bir xil izoh.
+                  if (lesson.note.isNotEmpty)
+                    Text(
+                      lesson.note,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 12, height: 1.5, color: muted ? AppColors.textMuted : AppColors.textSecondary),
+                    ),
                 ],
               ),
             ),

@@ -1,3 +1,8 @@
+/// Represents a multiple-choice quiz question with answer options,
+/// a zero-based correct choice index, and an explanatory review.
+///
+/// UZ: Javob variantlari, noldan boshlanuvchi to'g'ri javob indeksi va tushuntirish
+/// sharhiga ega bo'lgan ko'p variantli test savolini ifodalaydi.
 class QuizQuestion {
   final String question;
   final List<String> choices;

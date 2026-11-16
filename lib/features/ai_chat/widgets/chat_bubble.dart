@@ -9,6 +9,11 @@ import 'typing_indicator.dart';
 
 const _kAiBorderColorDark = Color(0x3306D6A0); // rgba(6,214,160,.2)
 
+/// Renders a chat message bubble for either the user or the AI assistant,
+/// including markdown parsing, timestamps, and report actions.
+///
+/// UZ: Foydalanuvchi yoki AI yordamchisi uchun chat xabari pufakchasini, jumladan markdown
+/// tahlili, vaqt tamg'alari va shikoyat qilish amallarini chizadi.
 class ChatBubble extends StatelessWidget {
   final MessageModel message;
   const ChatBubble({super.key, required this.message});
@@ -58,6 +63,8 @@ class ChatBubble extends StatelessWidget {
       ),
     );
     // Replaying the entry animation on rebuild/scroll-back causes scroll jank; animate only fresh messages.
+    // UZ: Qayta qurish/orqaga aylantirishda kirish animatsiyasini qayta ijro etish aylantirishda
+    // qotishlarga (jank) olib keladi; faqat yangi xabarlarni animatsiya qiling.
     if (DateTime.now().difference(message.timestamp) >= const Duration(seconds: 3)) return bubble;
     return bubble
         .animate()
@@ -156,6 +163,8 @@ class ChatBubble extends StatelessWidget {
                         boldMarkdown(message.content),
                         // SelectableText owns long-press (text selection), so the
                         // report action is also offered in its context menu.
+                        // UZ: SelectableText uzoq bosishga (matn tanlash) egalik qiladi, shuning
+                        // uchun xabar berish amali uning kontekst menyusida ham taklif etiladi.
                         contextMenuBuilder: (ctx, state) => AdaptiveTextSelectionToolbar.buttonItems(
                           anchors: state.contextMenuAnchors,
                           buttonItems: [
@@ -187,9 +196,13 @@ class ChatBubble extends StatelessWidget {
 
 /// Gemini replies use `**bold**`; render it instead of showing the stars.
 /// ponytail: bold only — add a markdown package if replies need lists/headings.
+///
+/// UZ: Gemini javoblari `**bold**` dan foydalanadi; yulduzchalarni ko'rsatish o'rniga uni chizing.
+/// ponytail: faqat qalin — agar javoblarga ro'yxatlar/sarlavhalar kerak bo'lsa, markdown paketini qo'shing.
 TextSpan boldMarkdown(String text) {
   final parts = text.split('**');
   // An odd count of `**` leaves one unmatched marker: keep it as plain text.
+  // UZ: `**` belgilarining toq soni bitta mos kelmaydigan markerni qoldiradi: uni oddiy matn sifatida saqlang.
   if (parts.length.isEven) return TextSpan(text: text);
   return TextSpan(children: [
     for (var i = 0; i < parts.length; i++)

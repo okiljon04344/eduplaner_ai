@@ -41,6 +41,9 @@ class _AddEditClassSheetState extends ConsumerState<_AddEditClassSheet> {
 
   /// True while a save is in flight — a second tap would pass the slot check
   /// before the first write lands and create a duplicate class.
+  ///
+  /// UZ: Saqlash jarayoni ketayotganda true — ikkinchi marta bosish birinchi yozuv yetib borishidan oldin
+  /// slot tekshiruvidan o'tib, dublikat dars yaratishi mumkin.
   bool _saving = false;
   Color _selectedColor = AppColors.primary;
 
@@ -77,6 +80,8 @@ class _AddEditClassSheetState extends ConsumerState<_AddEditClassSheet> {
     final colorHex = '#${_selectedColor.toARGB32().toRadixString(16).substring(2).toUpperCase()}';
     // Editing an existing class must preserve groupId/status/statusNote/statusDate
     // (shared-group membership + cancellation alerts) — only the form fields change.
+    // UZ: Mavjud darsni tahrirlash groupId/status/statusNote/statusDate qiymatlarini saqlashi kerak
+    // (umumiy guruh a'zoligi + bekor qilish ogohlantirishlari) — faqat shakl maydonlari o'zgaradi.
     final model = existing != null
         ? existing.copyWith(
             subject: _subjectController.text.trim(),
@@ -104,6 +109,7 @@ class _AddEditClassSheetState extends ConsumerState<_AddEditClassSheet> {
     if (error != null) {
       setState(() => _saving = false);
       // A toast, not a SnackBar: the root Scaffold's SnackBar sits behind this sheet.
+      // UZ: SnackBar emas, toast: asosiy Scaffold'ning SnackBar'i ushbu varaq orqasida qolib ketadi.
       toastification.show(
         context: context,
         type: ToastificationType.error,
@@ -197,6 +203,8 @@ class _AddEditClassSheetState extends ConsumerState<_AddEditClassSheet> {
                   Autocomplete<String>(
                     // Seeded once; fieldViewBuilder must not reassign the text
                     // or every rebuild would move the cursor to the end.
+                    // UZ: Bir marta kiritilgan; fieldViewBuilder matnni qayta tayinlamasligi kerak,
+                    // aks holda har bir qayta qurish kursorni oxiriga siljitib qo'yadi.
                     initialValue: TextEditingValue(text: _subjectController.text),
                     optionsBuilder: (value) {
                       if (value.text.isEmpty) return SubjectColors.all;
@@ -229,6 +237,8 @@ class _AddEditClassSheetState extends ConsumerState<_AddEditClassSheet> {
                     children: List.generate(kWeekdayKanji.length, (i) {
                       // Stored/compared value stays the canonical kanji key;
                       // only the displayed label follows the app's locale.
+                      // UZ: Saqlangan/solishtirilgan qiymat kanonik kanji kaliti bo'lib qoladi;
+                      // faqat ko'rsatilgan yorliq ilova lokaliga mos keladi.
                       final day = kWeekdayKanji[i];
                       final label = DayTabRow.days[i];
                       final selected = day == _selectedDay;

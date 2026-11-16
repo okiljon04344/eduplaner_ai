@@ -10,6 +10,9 @@ import '../../auth/providers/auth_provider.dart';
 
 /// Home header: today's date, a time-of-day greeting, and one bell button
 /// (red dot while assignments are overdue or due within 3 days).
+///
+/// UZ: Asosiy ekran sarlavhasi: bugungi sana, kun vaqtiga mos salomlashish va bitta qo'ng'iroqcha tugmasi
+/// (topshiriqlar muddati o'tgan yoki 3 kun ichida topshirilishi kerak bo'lganda qizil nuqta bilan).
 class GreetingHeader extends ConsumerWidget {
   const GreetingHeader({super.key});
 
@@ -39,6 +42,7 @@ class GreetingHeader extends ConsumerWidget {
               ),
               const SizedBox(height: 2),
               // One line; long names shrink instead of wrapping a lone 「ん」.
+              // UZ: Bitta qator; uzun ismlar yolg'iz 「ん」ni keyingi qatorga tushirmasdan qisqaradi.
               FittedBox(
                 fit: BoxFit.scaleDown,
                 alignment: Alignment.centerLeft,

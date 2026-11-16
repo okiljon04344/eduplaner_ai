@@ -10,6 +10,9 @@ import '../widgets/school_notices_card.dart';
 
 /// Urgent notices first (pinned), then newest first. Notices whose server
 /// time is still pending sort as newest.
+///
+/// UZ: Avval shoshilinch bildirishnomalar (qadalgan), keyin eng yangilari. Server vaqti
+/// hali kutilayotgan bildirishnomalar eng yangi sifatida saralanadi.
 List<SchoolNotice> sortBoard(Iterable<SchoolNotice> notices) => [...notices]..sort((a, b) {
     if (a.urgent != b.urgent) return a.urgent ? -1 : 1;
     final x = a.createdAt, y = b.createdAt;
@@ -20,8 +23,14 @@ List<SchoolNotice> sortBoard(Iterable<SchoolNotice> notices) => [...notices]..so
 /// 掲示板: every notice teachers sent to the student's class. Read-only for
 /// students — no replies or comments by design. Filter by category, and by
 /// subject when opened from a timetable lesson.
+///
+/// UZ: 掲示板: o'qituvchilar talabaning sinfiga yuborgan har bir bildirishnoma. Talabalar uchun
+/// faqat o'qish rejimida — loyihalashtirilishiga ko'ra javoblar yoki izohlar yo'q. Kategoriya bo'yicha,
+/// va dars jadvali darsidan ochilganda fan bo'yicha filtrlash.
 class BoardScreen extends ConsumerStatefulWidget {
   /// Subject tag to pre-filter on (the lesson that was tapped), or null.
+  ///
+  /// UZ: Oldindan filtrlash uchun fan tegi (bosilgan dars) yoki null.
   final String? subject;
   const BoardScreen({super.key, this.subject});
 
@@ -40,6 +49,7 @@ class _BoardScreenState extends ConsumerState<BoardScreen> {
     final notices = sortBoard(ref.watch(myNoticesProvider).where((n) =>
         (_category == null || n.category == _category) && (subject == null || n.hasSubject(subject))));
     // The synced 休講/変更 feed is per class, not per subject.
+    // UZ: Sinxronlangan 休講/変更 lentasi har bir fan bo'yicha emas, balki har bir sinf bo'yicha.
     final showChanges = subject == null && (_category == null || _category == NoticeCategory.change);
 
     return Scaffold(

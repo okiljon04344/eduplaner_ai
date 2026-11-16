@@ -4,8 +4,17 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'message_model.freezed.dart';
 part 'message_model.g.dart';
 
+/// Represents the sender role in an AI conversation, distinguishing user input from assistant responses.
+///
+/// UZ: Foydalanuvchi kiritmasini yordamchi javoblaridan ajratib turuvchi, AI suhbatidagi yuboruvchi
+/// rolini ifodalaydi.
 enum MessageRole { user, assistant }
 
+/// Immutable model representing an AI conversation message, serialized to and from Firestore
+/// with sender role, message body, timestamp, and bot identifier.
+///
+/// UZ: Yuboruvchi roli, xabar matni, vaqt tamg'asi va bot identifikatori bilan Firestore'ga
+/// va Firestore'dan seriyalanadigan, AI suhbati xabarini ifodalovchi o'zgarmas model.
 @freezed
 class MessageModel with _$MessageModel {
   const factory MessageModel({

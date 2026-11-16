@@ -34,12 +34,17 @@ String _callError(Object e) => switch (e) {
     };
 
 /// "2年 全コース" / "2年 観光".
+///
+/// UZ: "2年 全コース" / "2年 観光".
 String noticeTargetLabel(int grade, String? course) => course == null
     ? AppStrings.t('notice_target_grade', {'grade': grade})
     : AppStrings.t('notice_target_class', {'grade': grade, 'course': course});
 
 /// お知らせボード for teachers (§9.2-4): send a notice to a class or a whole
 /// grade, see sent notices with their 既読 count, delete your own.
+///
+/// UZ: O'qituvchilar uchun お知らせボード (§9.2-4): sinfga yoki butun bir bosqichga e'lon
+/// yuborish, yuborilgan e'lonlarni ularning 既読 soni bilan ko'rish, o'zingiznikini o'chirish.
 class TeacherNoticesScreen extends ConsumerWidget {
   const TeacherNoticesScreen({super.key});
 
@@ -144,6 +149,8 @@ class _NoticeForm extends ConsumerStatefulWidget {
   final SchoolInfo info;
 
   /// A sent notice to correct (訂正); null composes a new one.
+  ///
+  /// UZ: Tahrirlash (訂正) uchun yuborilgan e'lon; null bo'lsa yangisini tuzadi.
   final SchoolNotice? existing;
   const _NoticeForm({required this.info, this.existing});
 
@@ -231,6 +238,8 @@ class _NoticeFormState extends ConsumerState<_NoticeForm> {
     final editing = widget.existing != null;
     // Subject tags come from the class's timetable, never typed, so a tag
     // always matches the lesson a student taps.
+    // UZ: Fan teglari sinfning dars jadvalidan olinadi, hech qachon qo'lda yozilmaydi,
+    // shuning uchun teg doimo talaba bosgan darsga mos keladi.
     final course = _course;
     final now = DateTime.now();
     final week = course == null
@@ -267,6 +276,7 @@ class _NoticeFormState extends ConsumerState<_NoticeForm> {
                 DropdownMenuItem(value: i, child: Text(noticeTargetLabel(targets[i].grade, targets[i].course))),
             ],
             // 訂正 keeps the addressed class: another class would need its own push.
+            // UZ: 訂正 murojaat qilingan sinfni saqlab qoladi: boshqa sinf uchun o'zining push xabari kerak bo'ladi.
             onChanged: _busy || editing
                 ? null
                 : (i) {

@@ -6,6 +6,8 @@ import 'nav_destinations.dart';
 import 'pressable.dart';
 
 /// Mobile bottom navigation bar — floating glass bar over the content.
+///
+/// UZ: Mobil pastki navigatsiya paneli — kontent ustidagi suzuvchi shisha panel.
 class AppBottomNav extends StatelessWidget {
   const AppBottomNav({super.key});
 
@@ -14,6 +16,8 @@ class AppBottomNav extends StatelessWidget {
     final bottom = MediaQuery.paddingOf(context).bottom;
     // Scrim: content scrolling under the floating bar fades out instead of
     // showing through the gap between the bar and the screen edge.
+    // UZ: Xiralashtiruvchi parda (scrim): suzuvchi panel ostida aylanayotgan tarkib panel va ekran
+    // cheti orasidagi bo'shliqdan ko'rinib qolish o'rniga asta yo'qoladi (fades out).
     return DecoratedBox(
       decoration: BoxDecoration(
         gradient: LinearGradient(

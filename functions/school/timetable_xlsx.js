@@ -11,6 +11,7 @@ export const dayDocId = (domain, day) =>
   `${domain}_${day.grade}_${day.course}_${day.date.replaceAll('-', '')}`;
 
 // ExcelJS cell value -> string. Dates come back as UTC Date objects (cell.text is locale-dependent).
+// UZ: ExcelJS katak qiymati -> satr. Sanalar UTC Date obyektlari sifatida qaytadi (cell.text lokalga bog'liq).
 function valueToString(v) {
   if (v == null) return '';
   if (v instanceof Date) return `${v.getUTCMonth() + 1}月${v.getUTCDate()}日`;
@@ -22,6 +23,7 @@ function valueToString(v) {
 }
 
 /** First worksheet -> string[][] (0-indexed). Merged (non-master) and empty cells are ''. */
+// UZ: Birinchi ishchi varaq -> string[][] (0-indekslangan). Birlashtirilgan (master bo'lmagan) va bo'sh kataklar '' bo'ladi.
 export async function xlsxToRows(buffer) {
   const wb = new ExcelJS.Workbook();
   await wb.xlsx.load(buffer);
@@ -105,6 +107,7 @@ export function parseTimetableRows(rawRows, options = {}) {
   rows.forEach((row, ri) => {
     if (!isDateRow(row)) return;
     // maximal runs of consecutive date columns
+    // UZ: ketma-ket sana ustunlarining maksimal ketma-ketliklari
     const runs = [];
     row.forEach((s, c) => {
       if (!DATE_RE.test(s)) return;

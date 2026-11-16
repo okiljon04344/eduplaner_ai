@@ -6,6 +6,9 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/responsive.dart';
 import '../providers/chat_provider.dart';
 
+/// Text entry bar docked at the bottom of the AI chat screen for composing and sending messages.
+///
+/// UZ: Xabarlarni yozish va yuborish uchun AI chat ekranining pastki qismiga biriktirilgan matn kiritish paneli.
 class ChatInputBar extends ConsumerStatefulWidget {
   const ChatInputBar({super.key});
 
@@ -73,6 +76,7 @@ class _ChatInputBarState extends ConsumerState<ChatInputBar> {
                     minLines: 1,
                     maxLines: 4,
                     // Matches the server-side cap in `chatWithTutor`.
+                    // UZ: `chatWithTutor`dagi server tomonidagi cheklovga mos keladi.
                     inputFormatters: [LengthLimitingTextInputFormatter(4000)],
                     onChanged: (v) =>
                         setState(() => _hasText = v.trim().isNotEmpty),

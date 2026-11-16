@@ -5,6 +5,10 @@ import '../../assignments/providers/assignments_provider.dart';
 import 'assignment_row_item.dart';
 import '../../../core/l10n/app_strings.dart';
 
+/// Widget displaying a condensed list of upcoming pending assignments on the home screen.
+///
+/// UZ: Asosiy ekranda yaqinlashib kelayotgan kutilayotgan topshiriqlarning qisqacha ro'yxatini
+/// ko'rsatadigan vidjet.
 class UpcomingAssignmentsList extends ConsumerWidget {
   const UpcomingAssignmentsList({super.key});
 

@@ -15,6 +15,11 @@ import 'school_providers.dart';
 // Pure models and functions (Firebase-independent for easy testing)
 // ============================================================================
 
+/// Represents a single lesson assigned to a teacher, binding calendar date, period,
+/// class grade/course, and slot details.
+///
+/// UZ: Taqvim sanasi, dars soati, sinf bosqichi/kursi va katakcha tafsilotlarini
+/// bog'lagan holda o'qituvchiga biriktirilgan bitta darsni ifodalaydi.
 class TeacherLesson {
   final DateTime date;
   final SchoolPeriod period;
@@ -72,6 +77,9 @@ bool isLessonDone(TeacherLesson lesson, DateTime now) {
   return endMin <= nowMin;
 }
 
+/// Associates a timetable schedule change with the targeted class grade and course.
+///
+/// UZ: Dars jadvalidagi o'zgarishni mo'ljallangan sinf bosqichi va kursi bilan bog'laydi.
 class ClassChangeItem {
   final int grade;
   final String course;
@@ -84,6 +92,11 @@ class ClassChangeItem {
   });
 }
 
+/// Summarizes schedule adjustments across the current week, categorizing cancellations,
+/// room changes, and makeup classes.
+///
+/// UZ: Joriy hafta davomidagi jadval o'zgarishlarini umumlashtiradi, bekor qilinganlar,
+/// xona o'zgarishlari va qo'shimcha (makeup) darslarni toifalarga ajratadi.
 class WeekChangesSummary {
   final int total;
   final int cancelledCount;
@@ -153,6 +166,9 @@ WeekChangesSummary summarizeWeekChanges({
   );
 }
 
+/// Tracks individual notice read reception alongside recipient group size and unread counts.
+///
+/// UZ: Qabul qiluvchilar guruhi hajmi va o'qilmaganlar soni bilan birga alohida e'lonning o'qilishini kuzatib boradi.
 class NoticeReadItem {
   final SchoolNotice notice;
   final int reads;
@@ -168,6 +184,9 @@ class NoticeReadItem {
   double? get percent => (size != null && size! > 0) ? (reads / size!).clamp(0.0, 1.0) : null;
 }
 
+/// Aggregates notice readership metrics including overall read percentages and highest unread items.
+///
+/// UZ: Umumiy o'qilish foizlari va eng ko'p o'qilmagan elementlarni o'z ichiga olgan e'lonlar o'qilishi ko'rsatkichlarini jamlaydi.
 class NoticesReadSummary {
   final List<NoticeReadItem> items;
   final int totalReads;
@@ -194,6 +213,7 @@ int? calculateNoticeClassSize({
     return classSizes['${notice.grade}_${notice.course}'];
   }
   // course == null (whole grade): sum of that grade's courses
+  // UZ: course == null (butun bosqich): ushbu bosqich kurslarining yig'indisi
   int sum = 0;
   bool foundAny = false;
   for (final c in allCourses) {
@@ -251,6 +271,9 @@ NoticesReadSummary calculateNoticesReadSummary(List<NoticeReadItem> items) {
 // Riverpod Providers
 // ============================================================================
 
+/// Fetches a map of student enrollment totals keyed by class identifier via Cloud Functions.
+///
+/// UZ: Cloud Functions orqali sinf identifikatori bo'yicha kalitlangan talabalar soni xaritasini oladi.
 final classSizesProvider = FutureProvider.autoDispose<Map<String, int>>((ref) async {
   try {
     final callable = FunctionsService.callable('getSchoolClassSizes');
@@ -271,6 +294,9 @@ final classSizesProvider = FutureProvider.autoDispose<Map<String, int>>((ref) as
   }
 });
 
+/// Provides sorted lessons scheduled for the authenticated teacher across today and the next school day.
+///
+/// UZ: Autentifikatsiyadan o'tgan o'qituvchi uchun bugun va keyingi o'quv kuniga rejalashtirilgan saralangan darslarni taqdim etadi.
 final myTeacherLessonsProvider = Provider.autoDispose<List<TeacherLesson>>((ref) {
   final info = ref.watch(schoolInfoProvider).valueOrNull;
   final user = FirebaseAuth.instance.currentUser;
@@ -331,6 +357,7 @@ final myTeacherLessonsProvider = Provider.autoDispose<List<TeacherLesson>>((ref)
   }
 
   // Deduplicate
+  // UZ: Takrorlanishlarni olib tashlash
   final seen = <String>{};
   final uniqueLessons = <TeacherLesson>[];
   for (final l in lessons) {
@@ -349,6 +376,9 @@ final myTeacherLessonsProvider = Provider.autoDispose<List<TeacherLesson>>((ref)
   return uniqueLessons;
 });
 
+/// Filters the teacher's lessons to only those scheduled for the current calendar day.
+///
+/// UZ: O'qituvchining darslarini faqat joriy taqvim kuniga rejalashtirilganlariga qarab filtrlaydi.
 final todayTeacherLessonsProvider = Provider.autoDispose<List<TeacherLesson>>((ref) {
   final lessons = ref.watch(myTeacherLessonsProvider);
   final now = ref.watch(todayProvider).valueOrNull ?? DateTime.now();
@@ -360,6 +390,9 @@ final todayTeacherLessonsProvider = Provider.autoDispose<List<TeacherLesson>>((r
   ];
 });
 
+/// Filters the teacher's lessons to only those occurring on the next instructional school day.
+///
+/// UZ: O'qituvchining darslarini faqat keyingi o'quv kunida bo'ladigan darslar bo'yicha filtrlaydi.
 final nextDayTeacherLessonsProvider = Provider.autoDispose<List<TeacherLesson>>((ref) {
   final lessons = ref.watch(myTeacherLessonsProvider);
   final now = ref.watch(todayProvider).valueOrNull ?? DateTime.now();
@@ -371,6 +404,9 @@ final nextDayTeacherLessonsProvider = Provider.autoDispose<List<TeacherLesson>>(
   ];
 });
 
+/// Resolves the teacher's lesson currently underway based on the active clock time.
+///
+/// UZ: Faol soat vaqtiga asoslanib hozirda o'tilayotgan o'qituvchining darsini aniqlaydi.
 final currentTeacherLessonProvider = Provider.autoDispose<TeacherLesson?>((ref) {
   final todayLessons = ref.watch(todayTeacherLessonsProvider);
   final now = ref.watch(minuteTickProvider).valueOrNull ?? DateTime.now();
@@ -380,6 +416,9 @@ final currentTeacherLessonProvider = Provider.autoDispose<TeacherLesson?>((ref) 
   return null;
 });
 
+/// Calculates daily lesson completion metrics and percentage progress for the teacher.
+///
+/// UZ: O'qituvchi uchun kunlik darslarni yakunlash ko'rsatkichlari va progress foizini hisoblaydi.
 final todayTeacherLessonsProgressProvider =
     Provider.autoDispose<({int total, int done, double progress})>((ref) {
   final todayLessons = ref.watch(todayTeacherLessonsProvider);
@@ -393,6 +432,9 @@ final todayTeacherLessonsProgressProvider =
   return (total: total, done: done, progress: progress);
 });
 
+/// Family stream provider watching schedule modifications for a specific grade and course.
+///
+/// UZ: Muayyan bosqich va kurs uchun jadval o'zgarishlarini kuzatuvchi family stream provayderi.
 final classChangesStreamProvider = StreamProvider.autoDispose
     .family<List<SchoolChange>, ({int grade, String course})>((ref, arg) {
   final domain = ref.watch(schoolDomainProvider);
@@ -402,6 +444,9 @@ final classChangesStreamProvider = StreamProvider.autoDispose
       .watchChanges(domain: domain, grade: arg.grade, course: arg.course);
 });
 
+/// Aggregates schedule changes across all grades and courses for the current school week.
+///
+/// UZ: Joriy o'quv haftasi uchun barcha bosqichlar va kurslar bo'yicha jadval o'zgarishlarini jamlaydi.
 final weekChangesProvider = Provider.autoDispose<WeekChangesSummary>((ref) {
   final info = ref.watch(schoolInfoProvider).valueOrNull;
   if (info == null) return const WeekChangesSummary();
@@ -424,6 +469,9 @@ final weekChangesProvider = Provider.autoDispose<WeekChangesSummary>((ref) {
   return summarizeWeekChanges(allChanges: allChanges, monday: monday);
 });
 
+/// Computes read count summaries and student coverage for recent notices authored by the teacher.
+///
+/// UZ: O'qituvchi tomonidan yaratilgan so'nggi e'lonlar uchun o'qilganlar soni xulosalari va talabalar qamrovini hisoblaydi.
 final myNoticesReadSummaryProvider = Provider.autoDispose<NoticesReadSummary>((ref) {
   final user = FirebaseAuth.instance.currentUser;
   final info = ref.watch(schoolInfoProvider).valueOrNull;

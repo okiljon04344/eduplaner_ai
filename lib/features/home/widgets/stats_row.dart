@@ -11,6 +11,9 @@ import 'today_lessons.dart';
 
 /// Today at a glance: lessons today · assignments due within 3 days · streak,
 /// 3 translucent stat cards inside the top glass block.
+///
+/// UZ: Bugungi kunga bir nazar: bugungi darslar · 3 kun ichida topshiriladigan topshiriqlar · streak,
+/// yuqori oyna (glass) bloki ichidagi 3 ta yarim shaffof statistika kartasi.
 class StatsRow extends ConsumerWidget {
   const StatsRow({super.key});
 

@@ -6,6 +6,11 @@ import 'user_model.dart';
 /// current locale via [label] at display time (same pattern as
 /// `kWeekdayKanji`/`DateHelper.localizedWeekday`).
 /// Declaration order is the chip order in the profile form.
+///
+/// UZ: Firestore da saqlanadigan kanonik maktab turi kalitlari (`users/{uid}.schoolType`).
+/// Hech qachon mahalliylashtirilgan yorliqni saqlamang — doimo ko'rsatish vaqtida [label] orqali
+/// joriy tilga moslashtiriladigan ushbu `key` saqlanadi (`kWeekdayKanji`/`DateHelper.localizedWeekday`
+/// bilan bir xil namuna). E'lon qilish tartibi profil shaklidagi chip tartibidir.
 enum SchoolType {
   juniorHigh('junior_high'),
   highSchool('high_school'),
@@ -30,6 +35,9 @@ enum SchoolType {
 
   /// 課程 keys (stored in `users/{uid}.program`, localized as `program_$key`).
   /// Only 高校 (全日制/定時制/通信制) and 大学院 (修士/博士/専門職) have them.
+  ///
+  /// UZ: 課程 kalitlari (`users/{uid}.program` da saqlanadi, `program_$key` sifatida mahalliylashtiriladi).
+  /// Faqat 高校 (全日制/定時制/通信制) va 大学院 (修士/博士/専門職) ularga ega.
   List<String> get programs => switch (this) {
         SchoolType.highSchool => const ['full_time', 'part_time', 'correspondence'],
         SchoolType.graduate => const ['master', 'doctor', 'professional'],
@@ -45,6 +53,10 @@ enum SchoolType {
   /// Number of selectable 学年 for this type (0 = no grade, e.g. その他).
   /// 定時制/通信制 high school run 4 years; 博士課程 is 4 (medical doctoral
   /// programs), 修士/専門職学位課程 are 2.
+  ///
+  /// UZ: Ushbu tur uchun tanlanadigan 学年 soni (0 = bosqich yo'q, masalan その他).
+  /// 定時制/通信制 yuqori maktab 4 yil davom etadi; 博士課程 4 yil (tibbiy doktorantura dasturlari),
+  /// 修士/専門職学位課程 2 yil.
   int maxGrade(String? program) => switch (this) {
         SchoolType.juniorHigh => 3,
         SchoolType.highSchool => (program == 'part_time' || program == 'correspondence') ? 4 : 3,
@@ -59,6 +71,10 @@ enum SchoolType {
   /// Only university-level institutions in the Japanese system have a 学部
   /// (faculty) tier above 学科 (department) — 大学院 relabels them as
   /// 研究科/専攻 via [facultyLabelKey]/[departmentLabelKey].
+  ///
+  /// UZ: Yapon tizimida faqat universitet darajasidagi muassasalarda 学科 (department) ustida
+  /// 学部 (faculty) bosqichi mavjud — 大学院 ularni [facultyLabelKey]/[departmentLabelKey]
+  /// orqali 研究科/専攻 sifatida qayta nomlaydi.
   bool get hasFaculty => this == SchoolType.university || this == SchoolType.graduate;
 
   bool get hasDepartment => this != SchoolType.juniorHigh && this != SchoolType.other;
@@ -72,6 +88,9 @@ enum SchoolType {
 
   /// First run of digits (half- or full-width) in [raw]. Legacy `grade` data
   /// is free text like "2年生" or "２年"; new data is digits only.
+  ///
+  /// UZ: [raw] dagi raqamlarning birinchi ketma-ketligi (yarim yoki to'liq kenglikdagi). Eski `grade`
+  /// ma'lumotlari "2年生" yoki "２年" kabi erkin matn bo'lgan; yangi ma'lumotlar faqat raqamlardan iborat.
   static int? parseGrade(String? raw) {
     final m = RegExp(r'[0-9０-９]+').firstMatch(raw ?? '');
     if (m == null) return null;
@@ -82,6 +101,9 @@ enum SchoolType {
 
 /// One-line school summary for Settings, e.g. "大学 2年 · 工学部".
 /// Null when the school type is unknown (profile not set up).
+///
+/// UZ: Sozlamalar uchun bir qatorli maktab xulosasi, masalan, "大学 2年 · 工学部".
+/// Maktab turi noma'lum bo'lsa (profil sozlanmagan), null bo'ladi.
 String? schoolSummary(UserModel? user) {
   final type = SchoolType.fromKey(user?.schoolType);
   if (type == null) return null;

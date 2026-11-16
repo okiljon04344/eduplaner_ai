@@ -8,6 +8,11 @@ import '../../../core/theme/app_colors.dart';
 ///
 /// Designed to be used in nav bars or hero sections where a full [ListTile]
 /// is too large. Displays the current language's flag emoji by default.
+///
+/// UZ: Modal pastki varag'ini (bottom sheet) ko'rsatadigan qayta ishlatiladigan til tanlash tugmasi.
+///
+/// To'liq [ListTile] juda katta bo'lgan navigatsiya panellari yoki hero bo'limlarida foydalanish
+/// uchun mo'ljallangan. Standart bo'yicha joriy tilning bayrog'i emojisini ko'rsatadi.
 class LanguagePickerButton extends ConsumerWidget {
   final Color? color;
   final bool showLabel;
@@ -62,6 +67,8 @@ class LanguagePickerButton extends ConsumerWidget {
 }
 
 /// Language picker sheet — shared by [LanguagePickerButton] and Settings.
+///
+/// UZ: Til tanlash varag'i — [LanguagePickerButton] va Sozlamalar tomonidan birgalikda ishlatiladi.
 void showLanguagePicker(BuildContext context, WidgetRef ref, String currentLocale) {
   showModalBottomSheet(
     context: context,
@@ -73,6 +80,8 @@ void showLanguagePicker(BuildContext context, WidgetRef ref, String currentLocal
     builder: (ctx) => DraggableScrollableSheet(
       // Opens at max size: on web a mouse wheel scrolls the list but never
       // grows the sheet, which left the last languages out of reach at 0.7.
+      // UZ: Maksimal hajmda ochiladi: vebda sichqoncha g'ildiragi ro'yxatni aylantiradi,
+      // ammo varaqni hech qachon kattalashtirmaydi, bu esa 0.7 hajmida oxirgi tillarni yetib bo'lmaydigan qilib qo'ygan edi.
       initialChildSize: 0.9,
       minChildSize: 0.4,
       maxChildSize: 0.9,

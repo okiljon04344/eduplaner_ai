@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'app_colors.dart';
 
 /// EduPlanner AI dizayn tizimi (Green Neon).
+///
+/// UZ: EduPlanner AI dizayn tizimi (Green Neon).
 class AppTheme {
   static ThemeData get light => _build(Brightness.light);
   static ThemeData get dark => _build(Brightness.dark);
@@ -14,6 +16,9 @@ class AppTheme {
     // This prevents ThemeData.light from being built with Dark colors if the
     // app is currently in dark mode (since MaterialApp evaluates both theme
     // and darkTheme getters during every build).
+    // UZ: Ranglarni joriy AppColors statiklariga EMAS, so'ralgan yorqinlikka (brightness) qarab aniqlang.
+    // Bu, agar ilova hozirda tungi rejimda bo'lsa, ThemeData.light'ning tungi (Dark) ranglar bilan
+    // yaratilishining oldini oladi (chunki MaterialApp har bir qurish paytida theme va darkTheme getterlarini baholaydi).
     final background = isDark ? AppColors.darkBackground : AppColors.lightBackground;
     final surface = isDark ? AppColors.darkSurface : AppColors.lightSurface;
     final surfaceVar = isDark ? AppColors.darkSurfaceVar : AppColors.lightSurfaceVar;

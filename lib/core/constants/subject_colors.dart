@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 
+/// Color styling configuration for a subject tag or badge, defining
+/// background fill, text, and accent dot colors.
+///
+/// UZ: Fan tegi yoki nishoni uchun rang uslubi konfiguratsiyasi, fon to'ldirish,
+/// matn va urg'u nuqtasi ranglarini belgilaydi.
 class SubjectStyle {
   final Color fill;
   final Color text;
@@ -8,12 +13,20 @@ class SubjectStyle {
   const SubjectStyle({required this.fill, required this.text, required this.dot});
 }
 
+/// Provides subject-to-color style mappings and available palette presets
+/// for timetables, assignments, and tags.
+///
+/// UZ: Dars jadvallari, topshiriqlar va teglar uchun fanni rang uslubiga moslashtirish
+/// hamda mavjud palitra oldindan sozlamalarini taqdim etadi.
 class SubjectColors {
   SubjectColors._();
 
   // Getters, not `static const` fields — [AppColors]'s text/dot tokens are
   // mutable (they flip with the theme), so these must be re-read on every
   // access rather than baked in once at first use.
+  // UZ: `static const` maydonlar emas, getter-lar — [AppColors] ning matn/nuqta tokenlari
+  // o'zgaruvchan (ular mavzuga qarab almashadi), shuning uchun birinchi foydalanishda bir marta
+  // muhrlanmasdan, har bir murojaatda qayta o'qilishi kerak.
   static Map<String, SubjectStyle> get _map => <String, SubjectStyle>{
         '数学': SubjectStyle(fill: AppColors.mathFill, text: AppColors.mathText, dot: AppColors.mathDot),
         '英語': SubjectStyle(fill: AppColors.engFill, text: AppColors.engText, dot: AppColors.engDot),

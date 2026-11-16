@@ -14,10 +14,20 @@ import '../models/message_model.dart';
 ///   - Builds the minimal, privacy-safe payload sent to the function.
 ///   - Persists messages to Firestore so history survives app restarts.
 ///   - Loads the last 50 messages on demand (capped to keep read costs low).
+///
+/// UZ: AI repetitor chati uchun ma'lumotlar qatlami.
+///
+/// Barcha AI xulosalari server tomonida `chatWithTutor` Cloud Function orqali amalga oshiriladi —
+/// Gemini API kaliti Firebase backend'idan hech qachon tashqariga chiqmaydi. Ushbu sinf faqat:
+///   - Funksiyaga yuboriladigan minimal, maxfiylik uchun xavfsiz payload'ni tuzadi.
+///   - Tarix ilova qayta ishga tushirilganda saqlanib qolishi uchun xabarlarni Firestore'da saqlaydi.
+///   - Talab bo'yicha oxirgi 50 ta xabarni yuklaydi (o'qish narxini past ushlab turish uchun cheklangan).
 class ChatRepository {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
   /// Reference to the messages sub-collection for a given user.
+  ///
+  /// UZ: Berilgan foydalanuvchi uchun xabarlar quyi kolleksiyasiga havola.
   CollectionReference _msgs(String userId) =>
       _db.collection('ai_chats').doc(userId).collection('messages');
 
@@ -31,6 +41,17 @@ class ChatRepository {
   ///
   /// Throws a localised [Exception] (via [AppStrings]) on error so callers
   /// can surface it directly in the UI without further translation.
+  ///
+  /// UZ: `chatWithTutor` Cloud Function'ini chaqiradi va AI javobini qaytaradi.
+  ///
+  /// Qurilmadan faqat anonim, shaxsni aniqlamaydigan maydonlar chiqadi:
+  ///   - Topshiriqlar: `{subject, dueDate, status, progress}` — sarlavha yoki tavsif yo'q
+  ///     (shaxsiy eslatmalar bo'lishi mumkin).
+  ///   - Darslar: `{subject, dayOfWeek, period}` — o'qituvchi ismlari yo'q
+  ///     (uchinchi tomon shaxsiy ma'lumotlari).
+  ///
+  /// Xatolik yuz berganda mahalliylashtirilgan [Exception] ([AppStrings] orqali) tashlaydi,
+  /// shunda chaqiruvchilar uni qo'shimcha tarjimasiz to'g'ridan-to'g'ri UI da ko'rsatishi mumkin.
   Future<String> sendMessage({
     required String botId,
     required String userMessage,
@@ -47,6 +68,10 @@ class ChatRepository {
         // no assignment titles/descriptions (may contain personal notes) and
         // no teacher names (third-party personal data). The AI still gets
         // enough context (subject, due date, progress) to give useful advice.
+        // UZ: Maxfiylik: qurilmadan faqat anonim, identifikatsiya qilmaydigan maydonlar chiqadi —
+        // topshiriq sarlavhalari/tavsiflari yo'q (shaxsiy qaydlar bo'lishi mumkin) va o'qituvchi
+        // ismlari yo'q (uchinchi tomon shaxsiy ma'lumotlari). AI baribir foydali maslahat berish
+        // uchun yetarli kontekstga (fan, muddat, progress) ega bo'ladi.
         'assignments': assignments.map((a) => {'subject': a.subject, 'dueDate': a.dueDateLabel, 'status': a.status.label, 'progress': a.progress}).toList(),
         'classes': classes.map((c) => {'subject': c.subject, 'dayOfWeek': c.dayOfWeek, 'period': c.period}).toList(),
       });
@@ -71,6 +96,11 @@ class ChatRepository {
   /// the client; reviewed in the Firebase console). [excerpt] is trimmed to
   /// 1000 chars to match the Firestore rule. Throws on failure so the caller
   /// can tell the user.
+  ///
+  /// UZ: `ai_reports` ga AI tomonidan yaratilgan kontent to'g'risida hisobot yuboradi (mijozdan
+  /// faqat yozish uchun; Firebase konsolida ko'rib chiqiladi). [excerpt] Firestore qoidasiga
+  /// mos kelishi uchun 1000 belgigacha qisqartiriladi. Muvaffaqiyatsizlikda xato tashlaydi,
+  /// shunda chaqiruvchi foydalanuvchiga xabar berishi mumkin.
   Future<void> reportAiContent({
     required String userId,
     required String kind,
@@ -93,6 +123,11 @@ class ChatRepository {
   ///
   /// Failures are logged with [debugPrint] and swallowed — a failed save
   /// should never crash the chat UI; the message is already shown locally.
+  ///
+  /// UZ: Bitta [MessageModel] ni Firestore'ga yozadi.
+  ///
+  /// Xatolar [debugPrint] bilan qayd qilinadi va yutiladi — saqlashdagi nosozlik hech qachon
+  /// chat UI sini buzmasligi kerak; xabar allaqachon mahalliy ravishda ko'rsatilgan.
   Future<void> saveMessage(String userId, MessageModel msg) async {
     try {
       await _msgs(userId).doc(msg.id).set(msg.toFirestore());
@@ -105,6 +140,11 @@ class ChatRepository {
   ///
   /// Returns an empty list on any error so the chat screen opens cleanly
   /// even without a network connection.
+  ///
+  /// UZ: [userId] uchun vaqt tamg'asi bo'yicha tartiblangan oxirgi 50 ta xabarni qaytaradi.
+  ///
+  /// Har qanday xatolikda bo'sh ro'yxat qaytaradi, shuning uchun hatto tarmoq ulanishisiz
+  /// ham chat ekrani xatosiz ochiladi.
   Future<List<MessageModel>> loadHistory(String userId) async {
     try {
       final snap = await _msgs(userId).orderBy('timestamp').limitToLast(50).get();
@@ -115,6 +155,8 @@ class ChatRepository {
   }
 
   /// Deletes all messages for [userId] in a single batched write.
+  ///
+  /// UZ: [userId] uchun barcha xabarlarni bitta paketli (batched) yozishda o'chiradi.
   Future<void> clearHistory(String userId) async {
     final snap = await _msgs(userId).get();
     final batch = _db.batch();

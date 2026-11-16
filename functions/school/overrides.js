@@ -5,7 +5,11 @@ import { formatPushDate, pt } from './push_i18n.js';
 // Teacher input (第2段階 §9): instant lesson changes that win over the synced
 // school file until the file catches up. One doc per class-day, keyed like
 // school_days, so the app can `get` it by id (rules allow no list queries).
-export const OVERRIDE_KINDS = ['cancelled', 'room', 'makeup', 'memo'];
+// UZ: O'qituvchi kiritishi (第2段階 §9): sinxronlashtirilgan maktab fayli yetib olguncha
+// undan ustun turadigan tezkor dars o'zgarishlari. Har bir sinf-kun uchun bitta hujjat,
+// school_days kabi kalitlangan, shunda ilova uni id bo'yicha `get` qilishi mumkin
+// (qoidalar ro'yxat so'rovlariga ruxsat bermaydi).
+const OVERRIDE_KINDS = ['cancelled', 'room', 'makeup', 'memo'];
 const FEED_MAX = 30;
 const MAX_TEXT = 100;
 const MAX_NOTE = 200;
@@ -24,6 +28,7 @@ export const isTeacher = (school, uid, email) =>
   (school?.teachers ?? []).includes(String(email ?? '').toLowerCase());
 
 /** Lowercased email of any domain (test accounts), or invalid-argument. */
+// UZ: Har qanday domendagi kichik harflarga o'tkazilgan elektron pochta (test hisoblari) yoki invalid-argument.
 export function normalizeEmail(email) {
   const e = String(email ?? '').trim().toLowerCase();
   if (e.length > 200 || !EMAIL_RE.test(e)) bad('A valid email is required.');
@@ -31,6 +36,7 @@ export function normalizeEmail(email) {
 }
 
 /** Lowercased teacher email of [domain], or invalid-argument. */
+// UZ: [domain] dagi o'qituvchining kichik harflarga o'tkazilgan elektron pochtasi yoki invalid-argument.
 export function normalizeTeacherEmail(email, domain) {
   const e = String(email ?? '').trim().toLowerCase();
   if (e.length > 200 || !EMAIL_RE.test(e) || e.split('@').pop() !== domain) {
@@ -42,6 +48,8 @@ export function normalizeTeacherEmail(email, domain) {
 /**
  * Validates a publish request against the school's synced grades/courses/periods.
  * kind 'clear' removes the teacher input for that slot.
+ * UZ: Nashr qilish so'rovini maktabning sinxronlangan grades/courses/periods ma'lumotlariga
+ * nisbatan tekshiradi. 'clear' turi ushbu slot uchun o'qituvchi kiritmasini olib tashlaydi.
  */
 export function validateOverride(input, school, todayIso) {
   const d = input ?? {};
@@ -71,6 +79,7 @@ export function validateOverride(input, school, todayIso) {
 }
 
 /** Validated teacherProfiles entry: timetable name + optional homeroom class. */
+// UZ: Tasdiqlangan teacherProfiles yozuvi: dars jadvalidagi ism + ixtiyoriy sinf rahbari (homeroom) sinfi.
 export function teacherProfileOf(input, school) {
   const d = input ?? {};
   const name = text(d.name, 50, 'name');
@@ -87,6 +96,9 @@ export function teacherProfileOf(input, school) {
  * Edit scope (§9.3): an admin, the class's homeroom teacher (担任), or the
  * teacher named in the lesson cell. An empty slot (補講) is open to anyone who
  * teaches that class on that day. Names come from schools.teacherProfiles.
+ * UZ: Tahrirlash doirasi (§9.3): admin, sinfning sinf rahbari (担任) yoki dars katagida
+ * ko'rsatilgan o'qituvchi. Bo'sh slot (補講) ushbu kunda o'sha sinfga dars beradigan har
+ * kim uchun ochiq. Ismlar schools.teacherProfiles dan olinadi.
  */
 export function canEditSlot(school, uid, email, ov, base, daySlots = []) {
   if ((school?.admins ?? []).includes(uid)) return true;
@@ -100,7 +112,8 @@ export function canEditSlot(school, uid, email, ov, base, daySlots = []) {
 }
 
 /** True when the school file's [slot] already shows what the teacher entered. */
-export function matchesOverride(item, slot) {
+// UZ: Maktab faylining [slot] qismi o'qituvchi kiritgan ma'lumotni allaqachon ko'rsatayotgan bo'lsa rost (true).
+function matchesOverride(item, slot) {
   if (!slot) return false;
   switch (item.kind) {
     case 'cancelled': return slot.status === 'cancelled';
@@ -114,6 +127,8 @@ export function matchesOverride(item, slot) {
 /**
  * Feed `what` (Japanese) and push builder `(lang) => {title, body}` for one
  * teacher input; memo sends no push (`push` is null).
+ * UZ: Bitta o'qituvchi kiritmasi uchun tasma `what` (yaponcha) va `(lang) => {title, body}`
+ * push tuzuvchisi; memo hech qanday push yubormaydi (`push` null bo'ladi).
  */
 export function describeOverride(ov, base, periods) {
   const label = periods.find((p) => p.key === ov.period)?.label ?? ov.period;
@@ -141,6 +156,8 @@ export function describeOverride(ov, base, periods) {
 /**
  * Saves (or clears) one teacher input, adds it to the class's change feed and
  * pushes it to the class. `notifyClass(grade, course, notification)` is injected.
+ * UZ: Bitta o'qituvchi kiritmasini saqlaydi (yoki tozalaydi), uni sinfning o'zgarishlar
+ * tasmasiga qo'shadi va sinfga push qiladi. `notifyClass(grade, course, notification)` inyeksiya qilinadi.
  */
 export async function publishOverride(domain, ov, uid, { db, now, notifyClass, canEdit, resetReads }) {
   const id = dayDocId(domain, ov);
@@ -148,6 +165,9 @@ export async function publishOverride(domain, ov, uid, { db, now, notifyClass, c
   // ponytail: read-modify-write, not a transaction; two teachers editing the
   // same class-day within the same second could drop one slot. Use a
   // transaction if that ever happens in practice.
+  // UZ: ponytail: read-modify-write, tranzaksiya emas; bir xil soniya ichida ayni bir sinf-kuni
+  // tahrirlayotgan ikkita o'qituvchi bitta slotni yo'qotib qo'yishi mumkin. Agar bu amalda
+  // yuz bersa, tranzaksiyadan foydalaning.
   const [ovSnap, daySnap, schoolSnap] = await Promise.all([
     ref.get(),
     db.collection('school_days').doc(id).get(),
@@ -186,6 +206,7 @@ export async function publishOverride(domain, ov, uid, { db, now, notifyClass, c
   });
 
   // A new announcement starts its 既読 count from zero.
+  // UZ: Yangi e'lon o'zining 既読 hisobini noldan boshlaydi.
   await resetReads?.(ov);
   const pushed = push ? await notifyClass(ov.grade, ov.course, push) : 0;
   return { pushed };
@@ -195,6 +216,10 @@ export async function publishOverride(domain, ov, uid, { db, now, notifyClass, c
  * Sync-time reconciliation (§9.3): marks teacher inputs the file now matches
  * as resolved, and drops file changes a teacher already announced (§8) from
  * [changed] so students are not pushed twice. Mutates and returns [changed].
+ * UZ: Sinxronizatsiya vaqtidagi muvofiqlashtirish (§9.3): fayl hozir mos keladigan o'qituvchi
+ * kiritmalarini hal qilingan (resolved) deb belgilaydi va o'quvchilarga ikki marta push
+ * yuborilmasligi uchun o'qituvchi allaqachon e'lon qilgan (§8) fayl o'zgarishlarini [changed]
+ * dan olib tashlaydi. [changed] ni o'zgartiradi va qaytaradi.
  */
 export async function reconcileOverrides(domain, daysById, changed, { db, now }) {
   const snap = await db.collection('school_overrides').where('domain', '==', domain).get();
@@ -224,11 +249,16 @@ export async function reconcileOverrides(domain, daysById, changed, { db, now })
 // 既読 receipts: Firestore `school_reads/{domain}_{target}_{uid}`. `target`
 // names what was read; the client builds the same string (school_repository).
 // A doc id cannot hold '/', so it becomes ','.
+// UZ: 既読 kvitansiyalari: Firestore `school_reads/{domain}_{target}_{uid}`. `target`
+// nima o'qilganini nomlaydi; mijoz xuddi shu qatorni tuzadi (school_repository).
+// Hujjat identifikatori '/' belgisini saqlay olmaydi, shuning uchun u ',' ga aylanadi.
 const readKey = (s) => String(s).replaceAll('/', ',');
 
 /** Target of one announced lesson change. */
+// UZ: E'lon qilingan bitta dars o'zgarishining nishoni.
 export const readTarget = (grade, course, date, period) =>
   readKey(`o_${grade}_${course}_${date}_${period}`);
 
 /** Target of one notice. */
+// UZ: Bitta bildirishnomaning nishoni.
 export const noticeReadTarget = (id) => readKey(`n_${id}`);

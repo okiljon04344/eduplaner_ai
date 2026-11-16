@@ -11,6 +11,9 @@ import '../../../shared/widgets/app_input_field.dart';
 import '../../../shared/widgets/language_picker_button.dart';
 import '../providers/auth_provider.dart';
 
+/// Registration screen for creating a new user account with display name, email, and password.
+///
+/// UZ: Ko'rsatiladigan ism, email va parol bilan yangi foydalanuvchi hisobini yaratish uchun ro'yxatdan o'tish ekrani.
 class EmailSignupScreen extends ConsumerStatefulWidget {
   const EmailSignupScreen({super.key});
 

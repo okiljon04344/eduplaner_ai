@@ -22,6 +22,9 @@ import '../widgets/school_week_grid.dart';
 
 /// Schedule tab — a day-tab row (月火水木金) + a vertical timeline of that
 /// day's classes, matching the dark-neon design reference.
+///
+/// UZ: Dars jadvali tabi — kunlar qatori (月火水木金) + to'q-neon dizayn namunasiga mos keladigan
+/// o'sha kungi darslarning vertikal vaqt shkalasi.
 class TimetableScreen extends ConsumerStatefulWidget {
   const TimetableScreen({super.key});
 
@@ -31,10 +34,16 @@ class TimetableScreen extends ConsumerStatefulWidget {
 
 /// Local-midnight Monday of [d]'s week (calendar arithmetic, so a DST change
 /// can't push the result onto the neighbouring day).
+///
+/// UZ: [d] haftasining mahalliy yarim kechadagi dushanbasi (taqvim arifmetikasi, shuning uchun
+/// DST o'zgarishi natijani qo'shni kunga surib yubora olmaydi).
 DateTime _mondayOf(DateTime d) => DateTime(d.year, d.month, d.day - (d.weekday - 1));
 
 /// Day indexes (0 = Mon) of [weekStart]'s week whose school lessons carry a
 /// cancellation or a teacher change.
+///
+/// UZ: Maktab darslarida bekor qilish yoki o'qituvchi o'zgarishi mavjud bo'lgan
+/// [weekStart] haftasining kun indekslari (0 = Dush).
 Set<int> _alertDays(WidgetRef ref, DateTime weekStart) {
   if (ref.watch(schoolClassProvider) == null) return const {};
   final week = ref.watch(schoolWeekProvider(weekStart)).valueOrNull ?? const {};
@@ -63,11 +72,14 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
   Widget build(BuildContext context) {
     final classCount = ref.watch(timetableStreamProvider).valueOrNull?.length ?? 0;
     // Watching the clock re-derives the displayed week after midnight.
+    // UZ: Soatni kuzatish yarim kechadan keyin ko'rsatilgan haftani qayta hisoblab chiqaradi.
     final today = ref.watch(todayProvider).valueOrNull ?? DateTime.now();
     final monday = _mondayOf(today);
     final weekStart = DateTime(monday.year, monday.month, monday.day + 7 * _weekOffset);
     // Gate on school data + width only (not on the week having loaded), so
     // prev/next week doesn't flip between grid and day tabs while loading.
+    // UZ: Faqat maktab ma'lumotlari + kenglik bo'yicha cheklash (hafta yuklanganligiga emas), shunda
+    // oldingi/keyingi hafta yuklanayotganda jadval (grid) va kun tablari o'rtasida o'zgarib ketmaydi.
     final showGrid = context.isTablet && ref.watch(schoolClassProvider) != null;
 
     return Scaffold(
@@ -147,6 +159,8 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
 }
 
 /// Week grid, plus the recent-changes feed in a side column on desktop widths.
+///
+/// UZ: Hafta katakchasi (grid), shuningdek, desktop kengliklarida yon ustunda so'nggi o'zgarishlar tasmasi.
 class _SchoolWeekBody extends StatelessWidget {
   final DateTime weekStart;
   const _SchoolWeekBody({required this.weekStart});
@@ -157,6 +171,8 @@ class _SchoolWeekBody extends StatelessWidget {
     if (context.screenWidth < Breakpoints.expanded) return grid;
     // stretch: a centered Row would float the short grid mid-screen.
     // Padding 20 on the right ensures the sidebar aligns with the glass header panel above.
+    // UZ: stretch: markazlashtirilgan Row qisqa jadvalni ekranning o'rtasida suzdirib qo'yardi.
+    // O'ng tomondagi 20 li padding yon panelning yuqoridagi shisha sarlavha paneli bilan tekislanishini ta'minlaydi.
     return Padding(
       padding: const EdgeInsets.only(right: 20),
       child: Row(
@@ -209,6 +225,7 @@ class _WeekNavigator extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       // On another week the label is a "back to today" link.
+                      // UZ: Boshqa haftada bu yorliq "bugungi kunga qaytish" havolasidir.
                       if (!isCurrentWeek) ...[
                         Icon(Icons.today_rounded, size: 16, color: AppColors.accentText),
                         const SizedBox(width: 4),
@@ -265,6 +282,9 @@ class _RoundButton extends StatelessWidget {
 
 /// Plain title row like the other tabs: 時間割 (or the school name under it),
 /// the teacher shortcut, and a round + to add a personal class.
+///
+/// UZ: Boshqa tablar kabi oddiy sarlavha qatori: 時間割 (yoki uning ostida maktab nomi),
+/// o'qituvchi yorlig'i va shaxsiy dars qo'shish uchun dumaloq + tugmasi.
 class _Header extends ConsumerWidget {
   final int classCount;
   const _Header({required this.classCount});
@@ -288,6 +308,8 @@ class _Header extends ConsumerWidget {
                 Text(
                   // With school data the personal-class count ("0 コマ")
                   // contradicts the lessons on screen, so name the school.
+                  // UZ: Maktab ma'lumotlari bilan shaxsiy darslar soni ("0 コマ")
+                  // ekrandagi darslarga zid keladi, shuning uchun maktab nomini ko'rsating.
                   schoolName ?? AppStrings.t('tt_count').replaceAll('{n}', '$classCount'),
                   style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
                 ),
@@ -304,6 +326,8 @@ class _Header extends ConsumerWidget {
           ),
           // A linked student's timetable comes from the school file: adding
           // classes by hand would mix made-up lessons into the official one.
+          // UZ: Bog'langan talabaning dars jadvali maktab faylidan keladi: darslarni
+          // qo'lda qo'shish rasmiy dars jadvaliga to'qima darslarni aralashtirib yuboradi.
           if (schoolName == null) const SizedBox(width: 12),
           if (schoolName == null) Tooltip(
             message: AppStrings.t('cls_add_title'),

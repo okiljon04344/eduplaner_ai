@@ -6,6 +6,12 @@ import '../../../core/theme/app_colors.dart';
 ///
 /// Drawn once in a [Stack] behind the scroll view and isolated with
 /// [RepaintBoundary] so it never repaints during scrolling.
+///
+/// UZ: Asosiy ekran uchun statik fon jilosi (ambient glow): maketdagi o'rinlarga mos
+/// keladigan 3 ta katta xiralashtirilgan aylana (yashil, ko'k, yashil).
+///
+/// Aylantirish (scroll) ko'rinishi orqasida [Stack] da bir marta chiziladi va [RepaintBoundary]
+/// bilan ajratiladi, shuning uchun aylantirish paytida hech qachon qayta chizilmaydi.
 class HomeAmbientGlow extends StatelessWidget {
   const HomeAmbientGlow({super.key});
 

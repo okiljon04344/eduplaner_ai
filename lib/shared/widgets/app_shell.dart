@@ -9,6 +9,8 @@ import 'app_bottom_nav.dart';
 import 'app_nav_rail.dart';
 
 /// Wraps every routed screen with a directional slide when switching tabs.
+///
+/// UZ: Har bir yo'naltirilgan ekranni tablar almashganda yo'naltirilgan siljish (slide) bilan o'raydi.
 class AppShell extends ConsumerWidget {
   final Widget child;
   const AppShell({super.key, required this.child});
@@ -26,6 +28,8 @@ class AppShell extends ConsumerWidget {
                 const AppNavRail(),
                 // Each tab clamps its own content column, so glows and
                 // full-bleed headers can span the whole area.
+                // UZ: Har bir tab o'z kontent ustunini cheklaydi, shunda porlashlar (glows) va
+                // to'liq kenglikdagi sarlavhalar butun maydonni qamrab olishi mumkin.
                 Expanded(child: _DirectionalTab(child: child)),
               ],
             )
@@ -48,6 +52,10 @@ class _DirectionalTabState extends ConsumerState<_DirectionalTab> {
   // the KeyedSubtree below is never reused across visits — AppColors' mutable
   // statics don't flow through InheritedWidget, so a reused Element can paint
   // stale colors picked up from before this tab was last hidden.
+  // UZ: Har bir tab almashganda (hatto ilgari tashrif buyurilgan indeksga qaytganda ham) oshiriladi,
+  // shunda quyidagi KeyedSubtree tashriflar davomida hech qachon qayta ishlatilmaydi — AppColors'ning
+  // o'zgaruvchan statiklari InheritedWidget orqali o'tmaydi, shuning uchun qayta ishlatilgan Element
+  // ushbu tab oxirgi marta yashirilishidan oldin olingan eski ranglarni chizib qo'yishi mumkin.
   int _visitNonce = 0;
 
   @override

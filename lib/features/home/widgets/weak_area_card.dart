@@ -9,6 +9,8 @@ import '../../../core/l10n/app_strings.dart';
 
 // Fallback strings mirrored from home_provider.dart for comparison.
 // Getters so they always resolve in the currently loaded locale.
+// UZ: Taqqoslash uchun home_provider.dart faylidan olingan zaxira satrlari.
+// Har doim hozir yuklangan lokalda aniqlanishi uchun getter'lar.
 String get _fallbackWeakArea => AppStrings.t('weak_fallback');
 String get _noAssignmentsWeakArea => AppStrings.t('weak_no_assignments');
 
@@ -16,6 +18,11 @@ String get _noAssignmentsWeakArea => AppStrings.t('weak_no_assignments');
 ///
 /// Shown instantly while the AI analysis is loading so the card is never
 /// just a spinner.  Returns an empty string when there are no assignments.
+///
+/// UZ: [assignmentsStreamProvider] dan sinxron ravishda hisoblangan tezkor mahalliy xulosa.
+///
+/// AI tahlili yuklanayotganda darhol ko'rsatiladi, shunda kartochka hech qachon faqat
+/// aylanuvchi kutish belgisi bo'lib qolmaydi. Topshiriqlar bo'lmaganida bo'sh satr qaytaradi.
 final _localWeakSummaryProvider = Provider<String>((ref) {
   final all = ref.watch(assignmentsStreamProvider).valueOrNull ?? [];
   final incomplete = all.where((a) => a.status != AssignmentStatus.completed).toList();
@@ -49,6 +56,16 @@ final _localWeakSummaryProvider = Provider<String>((ref) {
 ///
 /// While the Cloud Function is in flight the card shows a quick locally
 /// computed summary so the user never sees a plain spinner.
+///
+/// UZ: 苦手分野の分析 kartochkasi.
+///
+/// Bosiladigan:
+///   - Topshiriqlar yo'q → bir nechtasini qo'shish uchun `/assignments` ga o'tadi.
+///   - Tahlil mavjud → to'liq matn va qo'shimcha maslahat uchun AI chatiga yorliq bilan
+///     batafsil pastki varaqni ko'rsatadi.
+///
+/// Cloud Function jarayonda bo'lganida kartochka tezkor mahalliy hisoblangan xulosani ko'rsatadi,
+/// shunda foydalanuvchi hech qachon shunchaki kutish belgisini ko'rmaydi.
 class WeakAreaCard extends ConsumerWidget {
   const WeakAreaCard({super.key});
 
@@ -110,6 +127,7 @@ class WeakAreaCard extends ConsumerWidget {
                 ),
               ),
               // Refresh icon — tap to re-run analysis for today.
+              // UZ: Yangilash belgisi — bugun uchun tahlilni qayta ishga tushirish uchun bosing.
               if (hasAssignments)
                 Padding(
                   padding: const EdgeInsets.only(left: 8),
@@ -192,6 +210,8 @@ class WeakAreaCard extends ConsumerWidget {
 }
 
 /// Renders the correct state: full AI text, quick local text, loading, or error.
+///
+/// UZ: To'g'ri holatni chizadi: to'liq AI matni, tezkor mahalliy matn, yuklanish yoki xatolik.
 class _AnalysisText extends StatelessWidget {
   final AsyncValue<String> analysis;
   final String localSummary;
@@ -206,6 +226,7 @@ class _AnalysisText extends StatelessWidget {
       ),
       loading: () => localSummary.isNotEmpty
           // Show locally computed summary immediately while AI loads.
+          // UZ: AI yuklanayotgan paytda darhol mahalliy hisoblangan xulosani ko'rsatadi.
           ? Text(
               localSummary,
               style: TextStyle(fontSize: 12, color: AppColors.textSecondary, height: 1.4),

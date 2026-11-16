@@ -14,6 +14,13 @@ import '../providers/onboarding_provider.dart';
 /// Motion follows the finger: icon and text are placed from the live
 /// PageController offset (parallax, fade), so a swipe can be stopped or
 /// reversed at any point. The screen itself fades in once on open.
+///
+/// UZ: Birinchi marta ishga tushirish kirishi: ilova maktab o'quvchisi uchun nima qilishini
+/// ko'rsatadigan uchta slayd, so'ngra router /profile-setup sahifasiga o'tadi.
+///
+/// Harakat barmoqqa ergashadi: belgi va matn PageController'ning jonli ofsetidan (parallaks, fade)
+/// joylashtiriladi, shuning uchun surishni istalgan nuqtada to'xtatish yoki orqaga qaytarish mumkin.
+/// Ekranning o'zi ochilganda bir marta fade effekti bilan paydo bo'ladi.
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
 
@@ -26,6 +33,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   int _page = 0;
 
   // Accents are theme-independent brand colors; strings resolve at build.
+  // UZ: Urg'ular mavzuga bog'liq bo'lmagan brend ranglaridir; satrlar qurish (build) paytida aniqlanadi.
   static const _pages = [
     _PageData(Icons.event_note_outlined, AppColors.primary, 'onboard_1'),
     _PageData(Icons.campaign_outlined, AppColors.cyan, 'onboard_2'),
@@ -46,6 +54,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   // Router redirects to /profile-setup once the flag flips.
+  // UZ: Bayroq o'zgargandan so'ng router /profile-setup sahifasiga yo'naltiradi.
   Future<void> _finish() => ref.read(onboardingProvider.notifier).markDone();
 
   @override
@@ -169,6 +178,9 @@ class _PageData {
 
 /// Page indicator driven by the live scroll offset: the active pill
 /// stretches and recolors as the finger moves, not after the page settles.
+///
+/// UZ: Jonli siljitish ofseti bilan boshqariladigan sahifa indikatori: faol doira sahifa
+/// to'xtagandan keyin emas, balki barmoq harakatlanishi bilan cho'ziladi va qayta ranglanadi.
 class _Dots extends StatelessWidget {
   final int count;
   final double offset;
@@ -201,6 +213,8 @@ class _PageContent extends StatelessWidget {
   final _PageData data;
 
   /// Distance of this page from the viewport centre, -1..1 (0 = in view).
+  ///
+  /// UZ: Ushbu sahifaning ko'rish maydoni markazidan masofasi, -1..1 (0 = ko'rinib turibdi).
   final double delta;
   final double width;
   final bool reduced;
@@ -224,6 +238,9 @@ class _PageContent extends StatelessWidget {
     // Parallax: the page slides a full width, the icon drifts back 40% of it
     // and the text 15%, so layers separate during the swipe. Reduced motion
     // keeps only the fade.
+    // UZ: Parallaks: sahifa to'liq kenglikka siljiydi, belgi uning 40% qismiga, matn esa 15% qismiga
+    // orqaga siljiydi, shuning uchun surish paytida qatlamlar ajraladi. Harakatni kamaytirish
+    // faqat fade effektini saqlaydi.
     Widget layer(Widget child, double lag, {double shrink = 0}) => Opacity(
           opacity: (1 - dist * 1.4).clamp(0.0, 1.0),
           child: reduced
@@ -236,6 +253,8 @@ class _PageContent extends StatelessWidget {
 
     // Centered when it fits; scrolls on short screens (small phones, large
     // text) instead of overflowing.
+    // UZ: Sig'ganda markazlashtiriladi; toshib ketish o'rniga past bo'yli ekranlarda
+    // (kichik telefonlar, katta matn) aylanadi (scrolls).
     return Center(
       child: SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 32),

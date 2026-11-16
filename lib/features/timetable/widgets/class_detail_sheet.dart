@@ -100,6 +100,8 @@ class _ClassDetailSheet extends ConsumerWidget {
     final style = SubjectColors.of(classModel.subject);
     // Members of a shared timetable see each other's rows, but only the
     // creator may edit or delete one (Firestore rules enforce the same).
+    // UZ: Umumiy dars jadvali a'zolari bir-birlarining qatorlarini ko'rishadi, lekin faqat
+    // yaratuvchi ularni tahrirlashi yoki o'chirishi mumkin (Firestore qoidalari ham shuni talab qiladi).
     final isMine = classModel.userId == ref.watch(currentUserProvider)?.uid;
     return SafeArea(
       top: false,
@@ -183,6 +185,7 @@ class _StatusBanner extends StatelessWidget {
     final color = cancelled ? AppColors.danger : AppColors.warning;
     final date = classModel.statusDate;
     // "Today: …" only when the status really is for today; otherwise name the date.
+    // UZ: "Bugun: …" faqat holat haqiqatan ham bugungi kunga tegishli bo'lganda; aks holda sanani ko'rsating.
     final title = classModel.hasStatusAlertToday || date == null
         ? AppStrings.t('cls_today_status', {'status': classModel.status.label})
         : '${date.month}/${date.day} ${classModel.status.label}';
@@ -246,6 +249,8 @@ class _StatusReportSheetState extends State<_StatusReportSheet> {
   }
 
   /// M/D of the occurrence the report applies to (see [nextClassDate]).
+  ///
+  /// UZ: Hisobot tegishli bo'lgan dars o'tkazilishining O/K ([nextClassDate]ga qarang).
   String get _dateLabel {
     final c = widget.classModel;
     final d = nextClassDate(dayOfWeek: c.dayOfWeek, period: c.period);

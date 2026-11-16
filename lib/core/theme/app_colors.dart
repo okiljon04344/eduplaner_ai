@@ -32,6 +32,7 @@ abstract class AppColors {
   static Color iconButtonBg = darkIconButtonBg;
 
   // Subject colors (Mutable statics for theme-aware coloring)
+  // UZ: Fan ranglari (Mavzuga mos rang berish uchun o'zgaruvchan statiklar)
   static Color progText = darkProgText;
   static Color progDot = darkProgDot;
   static Color mathText = darkMathText;
@@ -44,10 +45,6 @@ abstract class AppColors {
   static Color chemDot = darkChemDot;
   static Color histText = darkHistText;
   static Color histDot = darkHistDot;
-
-  static LinearGradient get heroHomeGradient => isDark ? darkHeroHomeGradient : lightHeroHomeGradient;
-  static LinearGradient get heroScheduleGradient => isDark ? darkHeroScheduleGradient : lightHeroScheduleGradient;
-  static LinearGradient get heroTasksGradient => isDark ? darkHeroTasksGradient : lightHeroTasksGradient;
 
   static List<BoxShadow> get cardShadow => isDark ? darkCardShadow : lightCardShadow;
   static List<BoxShadow> get heroCardShadow => isDark ? darkHeroCardShadow : lightHeroCardShadow;
@@ -117,7 +114,6 @@ abstract class AppColors {
   static const darkCardBorder = Color(0xFF26332E);
   static const darkDividerSubtle = Color(0xFF26332E);
   static const darkGlassBg = Color(0x21FFFFFF);
-  static const darkGlassBorder = Color(0x26FFFFFF);
   static const darkNavBg = Color(0xFF0A100E);
   static const darkNavBorder = Color(0xFF26332E);
   static const darkCheckboxUnchecked = Color(0xFF34443D);
@@ -135,9 +131,6 @@ abstract class AppColors {
   static const darkHistText = Color(0xFFF87171);
   static const darkHistDot = Color(0xFFF87171);
 
-  static const darkHeroHomeGradient = LinearGradient(colors: [darkBackground, darkBackground]);
-  static const darkHeroScheduleGradient = LinearGradient(colors: [darkBackground, darkBackground]);
-  static const darkHeroTasksGradient = LinearGradient(colors: [darkBackground, darkBackground]);
   static const darkCardShadow = <BoxShadow>[];
   static const darkHeroCardShadow = <BoxShadow>[
     BoxShadow(color: Color(0x4006D6A0), blurRadius: 20, offset: Offset(0, 4)),
@@ -159,7 +152,6 @@ abstract class AppColors {
   static const lightCardBorder = Color(0xFFDFE6E2);
   static const lightDividerSubtle = Color(0xFFDFE6E2);
   static const lightGlassBg = Color(0x1406D6A0);
-  static const lightGlassBorder = Color(0x2606D6A0);
   static const lightNavBg = Color(0xFFFFFFFF);
   static const lightNavBorder = Color(0xFFDFE6E2);
   static const lightCheckboxUnchecked = Color(0xFFC8D3CE);
@@ -177,9 +169,6 @@ abstract class AppColors {
   static const lightHistText = Color(0xFF991B1B);
   static const lightHistDot = Color(0xFFEF4444);
 
-  static const lightHeroHomeGradient = LinearGradient(colors: [lightBackground, lightBackground]);
-  static const lightHeroScheduleGradient = LinearGradient(colors: [lightBackground, lightBackground]);
-  static const lightHeroTasksGradient = LinearGradient(colors: [lightBackground, lightBackground]);
   static const lightCardShadow = <BoxShadow>[];
   static const lightHeroCardShadow = <BoxShadow>[
     BoxShadow(color: Color(0x1A06D6A0), blurRadius: 24, offset: Offset(0, 4)),
@@ -190,6 +179,9 @@ abstract class AppColors {
 
   /// Label/icon color for content drawn ON primary/gradientPrimary fills —
   /// white on #06D6A0 is only 1.89:1.
+  ///
+  /// UZ: primary/gradientPrimary to'ldirishlari USTIDA chizilgan kontent uchun yorliq/belgi rangi —
+  /// #06D6A0 ustida oq rang atigi 1.89:1 nisbatga ega.
   static const onPrimary = Color(0xFF04291F);
   static const primaryMid = Color(0xFF34D399);
   static const primaryLight = Color(0xFF5EEAD4);
@@ -197,15 +189,12 @@ abstract class AppColors {
   static const primaryIndigo = Color(0xFF059669);
 
   static const cyan = Color(0xFF22D3EE);
-  static const cyanDeep = Color(0xFF06B6D4);
   static const amber = Color(0xFFFBBF24);
-  static const amberDeep = Color(0xFFF59E0B);
   static const pink = Color(0xFFF472B6);
   static const blue = Color(0xFF60A5FA);
 
   static const success = Color(0xFF34D399);
   static const successLight = Color(0x2634D399);
-  static const successGreen = Color(0xFF00B894);
   static const warning = Color(0xFFFBBF24);
   static const warningLight = Color(0x1FFBBF24);
   static const danger = Color(0xFFF87171);
@@ -225,22 +214,6 @@ abstract class AppColors {
     end: Alignment.bottomRight,
     colors: [Color(0xFF059669), Color(0xFF06D6A0), Color(0xFF5EEAD4)],
   );
-  static const gradientCyan = LinearGradient(
-    begin: Alignment.centerLeft,
-    end: Alignment.centerRight,
-    colors: [Color(0xFF059669), Color(0xFF34D399), Color(0xFF5EEAD4)],
-  );
-  static const gradientAmber = LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFFBBF24)]);
-  static const gradientAvatar = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [Color(0xFF06D6A0), Color(0xFF5EEAD4)],
-  );
-  static const gradientAvatarLight = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [Color(0xFF059669), Color(0xFF06D6A0)],
-  );
   static const gradientDark = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
@@ -256,18 +229,12 @@ abstract class AppColors {
     end: Alignment.bottomRight,
     colors: [Color(0xFF059669), Color(0xFF06D6A0)],
   );
-  static const gradientAddTaskLight = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [Color(0xFF00B894), Color(0xFF00CEC9)],
-  );
 
   static const subjectProgramming = Color(0xFFA855F7);
   static const subjectMath = Color(0xFFFBBF24);
   static const subjectEnglish = Color(0xFFF472B6);
   static const subjectPhysics = Color(0xFF60A5FA);
   static const subjectHistory = Color(0xFFF87171);
-  static const subjectPE = Color(0xFF34D399);
 
   static LinearGradient get userBubbleGradient =>
       isDark ? gradientUserBubble : gradientUserBubbleLight;
@@ -281,22 +248,20 @@ abstract class AppColors {
   static LinearGradient get aiBannerGradient =>
       isDark ? gradientDark : gradientAiBannerLight;
 
-  static LinearGradient get avatarGradient =>
-      isDark ? gradientAvatar : gradientAvatarLight;
-
-  /// AI banner/header gradient stops (`ai-grad-1`/`ai-grad-2` in the design
-  /// tokens) — exposed individually for headers that need just the two
-  /// stops rather than the full 3-stop [aiBannerGradient].
-  static Color get aiGrad1 => isDark ? const Color(0xFF0B1714) : const Color(0xFFECFDF5);
-  static Color get aiGrad2 => isDark ? const Color(0xFF10221C) : const Color(0xFFD1FAE5);
-
   /// Small accent links/timestamps needing extra pop (`accent-text` token).
+  ///
+  /// UZ: Qo'shimcha ajralib turishga muhtoj kichik aksent havolalar/vaqt tamg'alari (`accent-text` tokeni).
   static Color get accentText => isDark ? const Color(0xFF06D6A0) : const Color(0xFF047857);
 
   /// Vibrant green-toned brand panel background (login/onboarding hero
   /// panels) — deliberately distinct from [aiBannerGradient]/[gradientDark],
   /// which use the design's warm-brown `ai-grad` tokens meant only for the
   /// AI chat screen. Reusing those elsewhere muddies the brand color.
+  ///
+  /// UZ: Jonli yashil tusdagi brend paneli foni (login/onboarding hero panellari) —
+  /// ataylab [aiBannerGradient]/[gradientDark] dan farq qiladi, ular faqat AI chat ekrani
+  /// uchun mo'ljallangan iliq jigarrang `ai-grad` tokenlaridan foydalanadi. Ularni boshqa joyda
+  /// qayta ishlatish brend rangini xiralashtiradi.
   static const _darkBrandPanelGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
@@ -312,16 +277,19 @@ abstract class AppColors {
 
   // ==================== Glass tokens (mockup spec) ====================
   // Top glass block & general panels
+  // UZ: Yuqori oyna (glass) bloki va umumiy panellar
   static Color get glassFill => isDark ? const Color(0x0DFFFFFF) : const Color(0x99FFFFFF);
   static Color get glassBorder => isDark ? const Color(0x1AFFFFFF) : const Color(0xE6FFFFFF);
   static Color get glassHighlight => isDark ? const Color(0x14FFFFFF) : const Color(0xFFFFFFFF);
 
   // Background glow circles behind Home
+  // UZ: Home ortidagi fon nurli doiralari
   static Color get glowGreen => isDark ? const Color(0x4D06D6A0) : const Color(0x4706D6A0);
   static Color get glowBlue => isDark ? const Color(0x3360A5FA) : const Color(0x3860A5FA);
   static Color get glowGreenSubtle => isDark ? const Color(0x2906D6A0) : const Color(0x2E06D6A0);
 
   // Student bottom navigation
+  // UZ: Talabaning pastki navigatsiyasi
   static Color get navGlassFill => isDark ? const Color(0xD90E1513) : const Color(0xD9FFFFFF);
   static Color get navGlassBorder => isDark ? const Color(0x1AFFFFFF) : const Color(0xF2FFFFFF);
   static List<BoxShadow> get navGlassShadow => isDark
@@ -329,25 +297,26 @@ abstract class AppColors {
       : const [BoxShadow(color: Color(0x1F0F1A16), blurRadius: 32, offset: Offset(0, 12))];
 
   // NowLessonCard
+  // UZ: NowLessonCard
   static Color get nowGlassFill => isDark ? const Color(0x1F06D6A0) : const Color(0xBFE6FAF2);
   static Color get nowGlassBorder => const Color(0x7306D6A0);
   // Outer-only: these cards have translucent fills, and a normal shadow would
   // show through them as a hard band.
+  // UZ: Faqat tashqi (outer-only): bu kartalar yarim shaffof to'ldirishga ega va oddiy soya
+  // ular orqali qattiq chiziq kabi ko'rinib qoladi.
   static List<BoxShadow> get nowGlow => isDark
       ? const [BoxShadow(color: Color(0x3806D6A0), blurRadius: 32, blurStyle: BlurStyle.outer)]
       : const [BoxShadow(color: Color(0x2E06D6A0), blurRadius: 30, blurStyle: BlurStyle.outer)];
 
   // Translucent stat cards & bell chip button inside top hero panel
+  // UZ: Yuqori hero panelidagi yarim shaffof statistika kartalari va qo'ng'iroqcha tugmasi
   static Color get statGlassFill => isDark ? const Color(0x0FFFFFFF) : const Color(0xB3FFFFFF);
   static Color get statGlassBorder => isDark ? const Color(0x1AFFFFFF) : const Color(0xF2FFFFFF);
 
   // Top hero panel shadow in light theme
+  // UZ: Yorug' mavzudagi yuqori hero paneli soyasi
   static List<BoxShadow> get glassShadow => isDark
       ? const <BoxShadow>[]
       : const [BoxShadow(color: Color(0x140F1A16), blurRadius: 30, offset: Offset(0, 8))];
 
-  // Floating Action Button shadow
-  static List<BoxShadow> get fabShadow => isDark
-      ? const [BoxShadow(color: Color(0x5906D6A0), blurRadius: 24, offset: Offset(0, 8))]
-      : const [BoxShadow(color: Color(0x4D06D6A0), blurRadius: 24, offset: Offset(0, 8))];
 }

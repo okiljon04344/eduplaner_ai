@@ -9,6 +9,10 @@ import 'models/school_notice.dart';
 /// Read-only access to the server-synced school timetable. Rules allow only
 /// `get` on a doc, so every watch listens to single doc refs; a permission
 /// error (missing or foreign doc) is treated as "no data", never a stream error.
+///
+/// UZ: Server bilan sinxronlangan maktab dars jadvaliga faqat o'qish uchun kirish. Qoidalar hujjatda
+/// faqat `get` ga ruxsat beradi, shuning uchun har bir kuzatuv bitta hujjat havolalarini tinglaydi;
+/// ruxsat xatosi (yetishmayotgan yoki begona hujjat) hech qachon oqim xatosi emas, "ma'lumot yo'q" deb qaraladi.
 class SchoolRepository {
   SchoolRepository({FirebaseFirestore? firestore}) : _db = firestore ?? FirebaseFirestore.instance;
 
@@ -17,13 +21,20 @@ class SchoolRepository {
   // 既読 receipts: `school_reads/{domain}_{target}_{uid}`. Rules let a student
   // write and read only their own doc; teachers list a target's docs to count
   // them. Targets must match `readTarget`/`noticeReadTarget` in overrides.js.
+  // UZ: 既読 kvitansiyalari: `school_reads/{domain}_{target}_{uid}`. Qoidalar talabaga faqat o'zining
+  // hujjatini yozish va o'qishga ruxsat beradi; o'qituvchilar ularni sanash uchun nishon hujjatlarini
+  // ro'yxatlaydi. Nishonlar overrides.js dagi `readTarget`/`noticeReadTarget` bilan mos kelishi kerak.
   static String _readKey(String s) => s.replaceAll('/', ',');
 
   /// Target of one announced lesson change ([date] is `YYYY-MM-DD`).
+  ///
+  /// UZ: E'lon qilingan bitta dars o'zgarishining nishoni ([date] - `YYYY-MM-DD`).
   static String readTarget(int grade, String course, String date, String period) =>
       _readKey('o_${grade}_${course}_${date}_$period');
 
   /// Target of one notice.
+  ///
+  /// UZ: Bitta bildirishnomaning nishoni.
   static String noticeReadTarget(String id) => _readKey('n_$id');
 
   Future<void> _markRead(String domain, String target, String uid) =>
@@ -31,6 +42,8 @@ class SchoolRepository {
           {'domain': domain, 'target': target, 'uid': uid, 'at': FieldValue.serverTimestamp()});
 
   /// Number of distinct readers of [target]; 0 on error (e.g. not a teacher).
+  ///
+  /// UZ: [target] ning alohida o'quvchilari soni; xatolik yuz berganda 0 (masalan, o'qituvchi bo'lmaganda).
   Stream<int> _watchReadCount(String domain, String target) async* {
     try {
       await for (final s in _db
@@ -47,6 +60,8 @@ class SchoolRepository {
   }
 
   /// Lowercase part after the last '@' when [emailVerified] and non-empty.
+  ///
+  /// UZ: [emailVerified] va bo'sh bo'lmaganda oxirgi '@' dan keyingi kichik harflardagi qism.
   static String? domainFrom(String? email, bool emailVerified) {
     if (!emailVerified || email == null) return null;
     final at = email.lastIndexOf('@');
@@ -66,6 +81,8 @@ class SchoolRepository {
       '${domain}_${grade}_${course}_${_ymd(date, '')}';
 
   /// Emits the mapped doc, or [empty] for a missing doc or any error.
+  ///
+  /// UZ: Hujjat xaritaga kiritilganini chiqaradi, yoki yetishmayotgan hujjat yoki har qanday xatolik uchun [empty] chiqaradi.
   Stream<T> _watchDoc<T>(
       DocumentReference<Map<String, dynamic>> ref, T Function(DocumentSnapshot) map, T empty) async* {
     try {
@@ -79,6 +96,8 @@ class SchoolRepository {
   }
 
   /// School domain a pilot test account (e.g. Gmail) was let into, or null.
+  ///
+  /// UZ: Pilot test hisobi (masalan, Gmail) kiritilgan maktab domeni, yoki null.
   Stream<String?> watchTesterDomain(String email) => _watchDoc<String?>(
       _db.collection('school_testers').doc(email.toLowerCase()),
       (s) => (s.data() as Map?)?['domain'] as String?,
@@ -86,6 +105,9 @@ class SchoolRepository {
 
   /// Pilot test accounts of [domain]. Admin-only doc: these are personal
   /// addresses, so they are kept out of the student-readable school doc.
+  ///
+  /// UZ: [domain] ning pilot test hisoblari. Faqat admin uchun hujjat: bular shaxsiy manzillar,
+  /// shuning uchun ular talabalar o'qiy oladigan maktab hujjatidan tashqarida saqlanadi.
   Stream<List<String>> watchTesters(String domain) => _watchDoc<List<String>>(
       _db.collection('school_admin').doc(domain),
       (s) => (((s.data() as Map?)?['testers'] as List?) ?? const []).whereType<String>().toList(),
@@ -109,6 +131,9 @@ class SchoolRepository {
 
   /// Records that [uid] opened these changes. Best effort: a failure only
   /// leaves the teacher's 既読 count low.
+  ///
+  /// UZ: [uid] ushbu o'zgarishlarni ochganini qayd qiladi. Imkon qadar urinish (best effort):
+  /// nosozlik faqat o'qituvchining 既読 sonini past qilib qoldiradi.
   Future<void> markRead(
       {required String domain,
       required int grade,
@@ -124,6 +149,8 @@ class SchoolRepository {
   }
 
   /// How many students opened the announcement for [date] ([period]); 0 on error.
+  ///
+  /// UZ: [date] ([period]) uchun e'lonni qancha talaba ochgani; xatolik yuz berganda 0.
   Stream<int> watchReadCount(
       {required String domain,
       required int grade,
@@ -134,6 +161,9 @@ class SchoolRepository {
 
   /// The school's latest notices, newest first (rules check the domain of
   /// every doc, so the query must filter by it). Empty on error.
+  ///
+  /// UZ: Maktabning so'nggi bildirishnomalari, yangilari oldin (qoidalar har bir hujjatning domenini
+  /// tekshiradi, shuning uchun so'rov u bo'yicha filtrlashi kerak). Xatolik yuz berganda bo'sh.
   Stream<List<SchoolNotice>> watchNotices(String domain, {int limit = 30}) async* {
     try {
       await for (final s in _db
@@ -151,6 +181,8 @@ class SchoolRepository {
   }
 
   /// Records that [uid] opened notice [id]. Best effort, like [markRead].
+  ///
+  /// UZ: [uid] [id] bildirishnomasini ochganini qayd qiladi. [markRead] kabi imkon qadar urinish (best effort).
   Future<void> markNoticeRead({required String domain, required String id, required String uid}) async {
     try {
       await _markRead(domain, noticeReadTarget(id), uid);
@@ -160,10 +192,14 @@ class SchoolRepository {
   }
 
   /// How many students opened notice [id]; 0 on error.
+  ///
+  /// UZ: [id] bildirishnomasini qancha talaba ochgani; xatolik yuz berganda 0.
   Stream<int> watchNoticeReadCount({required String domain, required String id}) =>
       _watchReadCount(domain, noticeReadTarget(id));
 
   /// Distributed assignments of the school, newest first. Empty on error.
+  ///
+  /// UZ: Maktabning tarqatilgan topshiriqlari, eng yangilari birinchi. Xatolik yuz berganda bo'sh.
   Stream<List<SchoolAssignment>> watchAssignments(String domain, {int limit = 30}) async* {
     try {
       await for (final s in _db
@@ -183,6 +219,10 @@ class SchoolRepository {
   /// Student progress list for distributed assignment [sourceId]. Empty on error.
   /// Note: both 'domain' and 'sourceId' equality filters are strictly required
   /// by the security rules on `school_assignment_progress`.
+  ///
+  /// UZ: Tarqatilgan [sourceId] topshirig'i uchun talabalar progress ro'yxati. Xatolik yuz berganda bo'sh.
+  /// Note: ham 'domain', ham 'sourceId' tenglik filtrlari `school_assignment_progress`
+  /// xavfsizlik qoidalari tomonidan qat'iy talab qilinadi.
   Stream<List<AssignmentProgress>> watchAssignmentProgress(String domain, String sourceId) async* {
     try {
       await for (final s in _db
@@ -201,6 +241,10 @@ class SchoolRepository {
   /// Mon-Fri docs of the week starting [weekStart], keyed `YYYY-MM-DD`, with
   /// teacher inputs (`school_overrides`) applied; only days with lessons are
   /// present. Emits once every day doc and override doc has reported.
+  ///
+  /// UZ: [weekStart] dan boshlanadigan haftaning dushanba-juma hujjatlari, `YYYY-MM-DD` kaliti bilan,
+  /// o'qituvchi kiritmalari (`school_overrides`) qo'llangan holda; faqat darslari bor kunlar mavjud.
+  /// Har bir kun hujjati va override hujjati xabar bergandan keyin bir marta chiqaradi.
   Stream<Map<String, SchoolDay>> watchWeek({
     required String domain,
     required int grade,

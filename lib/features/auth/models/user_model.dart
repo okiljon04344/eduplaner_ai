@@ -4,6 +4,11 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'user_model.freezed.dart';
 part 'user_model.g.dart';
 
+/// Represents an authenticated user profile stored in Firestore, holding identity details
+/// and academic affiliation attributes (school type, grade, faculty, department).
+///
+/// UZ: Firestore da saqlanadigan autentifikatsiyadan o'tgan foydalanuvchi profilini ifodalaydi,
+/// shaxsiy ma'lumotlar va o'quv mansubligi atributlarini (maktab turi, bosqich, fakultet, kafedra/bo'lim) saqlaydi.
 @freezed
 class UserModel with _$UserModel {
   const factory UserModel({
@@ -51,6 +56,11 @@ class UserModel with _$UserModel {
   /// is the gate — it's only ever written together with `school` by
   /// [AuthRepository.saveSchoolProfile], never independently, so checking it
   /// alone is enough to know the whole step was completed.
+  ///
+  /// UZ: Majburiy maktab profili sozlash bosqichi bajarilgandan so'ng true bo'ladi.
+  /// `schoolType` asosiy shartdir — u faqat [AuthRepository.saveSchoolProfile] tomonidan
+  /// `school` bilan birga yoziladi, hech qachon mustaqil yozilmaydi, shuning uchun faqat uni
+  /// tekshirish butun bosqich yakunlanganini bilish uchun yetarlidir.
   bool get profileComplete => schoolType != null && schoolType!.isNotEmpty;
 
   Map<String, dynamic> toFirestore() => {

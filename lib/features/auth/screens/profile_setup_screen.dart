@@ -27,6 +27,20 @@ import '../providers/auth_provider.dart';
 /// Which mode this is is captured once in [initState] from the *current*
 /// `profileComplete` value, so the AppBar doesn't change mid-edit if the
 /// save itself is what flips it.
+///
+/// UZ: Majburiy maktab profili bosqichi: avval maktab turi, so'ngra faqat Yaponiya tizimida
+/// ushbu turga ega bo'lgan maydonlar — 課程 (高校/大学院), 学年 chiplari, 学部/研究科, 学科/専攻
+/// va コース ([SchoolType]ga qarang).
+///
+/// Unga ikki yo'l bilan kiriladi:
+///  - Ro'yxatdan o'tish/onboardingdan so'ng to'g'ridan-to'g'ri routerni qayta yo'naltirish,
+///    chunki `currentUserProvider`ning `profileComplete` qiymati hali false bo'ladi — bloklovchi,
+///    saqlanmaguncha chiqib ketishning iloji yo'q (router to'liq bo'lmaguncha boshqa hech qayerga
+///    yo'naltirmaydi).
+///  - Allaqachon to'ldirilgan profilni tahrirlash uchun Settings'dan ochiladi — oddiy
+///    orqaga qaytish tugmasi, saqlanganda yopiladi.
+/// Bu qaysi rejim ekanligi [initState]da *joriy* `profileComplete` qiymatidan bir marta aniqlanadi,
+/// shuning uchun tahrirlash paytida AppBar o'zgarmaydi, hatto saqlashning o'zi uni o'zgartirsa ham.
 class ProfileSetupScreen extends ConsumerStatefulWidget {
   const ProfileSetupScreen({super.key});
 
@@ -64,6 +78,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
     _departmentCtrl.text = user?.department ?? '';
     _courseCtrl.text = user?.course ?? '';
     // Prefill once from the synced school name, never over what the user typed.
+    // UZ: Sinxronlangan maktab nomidan bir marta oldindan to'ldiring, foydalanuvchi kiritgan ma'lumot ustidan emas.
     ref.listenManual(schoolInfoProvider, (_, next) {
       final name = next.valueOrNull?.name ?? '';
       if (_namePrefilled || name.isEmpty) return;
@@ -83,6 +98,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
 
   void _selectType(SchoolType t) {
     // Keep the current 課程 when it is also valid for the new type.
+    // UZ: Yangi tur uchun ham yaroqli bo'lsa, joriy 課程ni saqlang.
     _program = t.programs.contains(_program) ? _program : t.defaultProgram;
     _selectedType = t;
     _clampGrade();
@@ -99,11 +115,16 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
 
   /// A school-linked student's saved 学年/コース, locked unless the school
   /// admin allows changes (mirrors firestore.rules users/{uid} update).
+  ///
+  /// UZ: Maktabga bog'langan talabaning saqlangan 学年/コースi, maktab admini o'zgartirishlarga
+  /// ruxsat bermaguncha qulflanadi (firestore.rules users/{uid} yangilanishini aks ettiradi).
   bool _classLocked() {
     final user = ref.read(currentUserProvider);
     final info = ref.read(schoolInfoProvider).valueOrNull;
     // Only a student already saved under this school is locked (same as the
     // rules); a first link, or a test account moving in, picks freely.
+    // UZ: Faqat ushbu maktab ostida allaqachon saqlangan talaba qulflanadi (qoidalar bilan bir xil);
+    // birinchi marta bog'lanish yoki kirayotgan test hisobi erkin tanlaydi.
     if (user == null || info == null || user.schoolDomain != info.domain) return false;
     return info.locksStudentClass(grade: user.grade, course: user.course);
   }
@@ -135,6 +156,8 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
     final courses = _schoolCourses();
     // Locked: resend the stored strings untouched (a legacy "２年生" would
     // otherwise come back as "2" and be refused by the rules).
+    // UZ: Qulflangan: saqlangan satrlarni o'zgartirmasdan qayta yuboring (aks holda eski "２年生"
+    // "2" sifatida qaytib keladi va qoidalar tomonidan rad etiladi).
     final user = ref.read(currentUserProvider);
     final locked = _classLocked();
 
@@ -142,11 +165,13 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
           schoolType: type.key,
           schoolName: _schoolNameCtrl.text,
           // Hidden fields are saved as null so they never keep stale values.
+          // UZ: Yashirin maydonlar null sifatida saqlanadi, shuning uchun ular hech qachon eski qiymatlarni saqlamaydi.
           grade: locked ? user?.grade : (_grade == null ? null : '$_grade'),
           program: type.programs.isEmpty ? null : _program,
           faculty: type.hasFaculty ? _facultyCtrl.text : null,
           department: type.hasDepartment ? _departmentCtrl.text : null,
           // Synced school courses win: only a matching chip is saved.
+          // UZ: Sinxronlangan maktab kurslari ustunlik qiladi: faqat mos keladigan chip saqlanadi.
           course: locked
               ? user?.course
               : courses.isNotEmpty
@@ -172,6 +197,9 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
     // First-time setup leaves explicitly: the router is long-lived, so it no
     // longer re-runs from '/home' on auth changes to carry us there.
     // canPop: a web reload on /profile-setup leaves nothing to pop back to.
+    // UZ: Birinchi marta sozlash aniq chiqib ketadi: router uzoq umr ko'radi, shuning uchun bizni
+    // u yerga olib borish uchun autentifikatsiya o'zgarishlarida '/home'dan qayta ishga tushmaydi.
+    // canPop: /profile-setup sahifasida veb-qayta yuklash orqaga qaytish uchun hech narsa qoldirmaydi.
     _isEditing && context.canPop() ? context.pop() : context.go('/home');
   }
 
@@ -187,6 +215,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
     ref.watch(currentUserProvider);
     final locked = _classLocked();
     // Warn before the first save too: once saved, the choice sticks.
+    // UZ: Birinchi saqlashdan oldin ham ogohlantiring: bir marta saqlangach, tanlov o'zgarmay qoladi.
     final showLockNote = locked || (schoolInfo != null && !schoolInfo.allowStudentEdit && schoolCourses.isNotEmpty);
 
     return Scaffold(
@@ -208,6 +237,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
       ),
       body: SafeArea(
         // Top-aligned (not centered) so toggling the 学部 field never shifts the form.
+        // UZ: Tepaga tekislangan (markazlashtirilmagan), shunda 学部 maydonini yoqish/o'chirish shaklni hech qachon siljitmaydi.
         child: Align(
           alignment: Alignment.topCenter,
           child: ConstrainedBox(
@@ -245,6 +275,8 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                   ),
                   // Fields depend on the school type: fade the new set in
                   // instead of letting it pop.
+                  // UZ: Maydonlar maktab turiga bog'liq: birdaniga paydo bo'lishining o'rniga
+                  // yangi to'plamni fade effekti bilan ko'rsating.
                   Animate(
                     key: ValueKey(type),
                     effects: const [FadeEffect(duration: AppMotion.fadeDuration)],

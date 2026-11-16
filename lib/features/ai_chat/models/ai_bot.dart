@@ -4,6 +4,9 @@ import '../../../core/theme/app_colors.dart';
 
 /// Mirrors the `botPrompts` map in `functions/index.js` — keep the `id`
 /// values in sync with that file so `botId` round-trips correctly.
+///
+/// UZ: `functions/index.js` dagi `botPrompts` map'ini aks ettiradi — `botId` to'g'ri kelib-ketishi
+/// uchun `id` qiymatlarini ushbu fayl bilan sinxron holatda saqlang.
 class AiBot {
   final String id;
   final String emoji;
@@ -12,6 +15,9 @@ class AiBot {
 
   /// Localized display name, resolved from `bot_<id>` at read time so it
   /// always reflects the currently loaded locale.
+  ///
+  /// UZ: Mahalliylashtirilgan ko'rsatish nomi, o'qish vaqtida `bot_<id>` dan aniqlanadi,
+  /// shunda u har doim hozirda yuklangan lokalni aks ettiradi.
   String get label => AppStrings.t('bot_$id');
 }
 

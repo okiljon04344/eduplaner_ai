@@ -14,6 +14,8 @@ import '../../school/school_providers.dart';
 const _seenKey = 'school_changes_seen_at';
 
 /// Newest first; the server order isn't guaranteed and items without `at` go last.
+///
+/// UZ: Eng yangilari oldinda; server tartibi kafolatlanmagan va `at` maydoniga ega bo'lmagan elementlar oxirida bo'ladi.
 List<SchoolChange> _newestFirst(List<SchoolChange> l) => [...l]..sort((a, b) {
     final x = a.at, y = b.at;
     if (x == null || y == null) return x == y ? 0 : (x == null ? 1 : -1);
@@ -21,12 +23,16 @@ List<SchoolChange> _newestFirst(List<SchoolChange> l) => [...l]..sort((a, b) {
   });
 
 /// `M/d` for a `YYYY-MM-DD` change date; unparseable values pass through.
+///
+/// UZ: `YYYY-MM-DD` o'zgarish sanasi uchun `M/d`; tahlil qilib bo'lmaydigan qiymatlar o'z holicha o'tadi.
 String _md(String date) {
   final d = DateTime.tryParse(date);
   return d == null ? date : '${d.month}/${d.day}';
 }
 
 /// The "last synced" footer line, or nothing without school data.
+///
+/// UZ: "Oxirgi sinxronlangan" quyi qator, yoki maktab ma'lumotlarisiz hech narsa.
 class SchoolLastSyncLine extends ConsumerWidget {
   final EdgeInsetsGeometry padding;
   final TextAlign textAlign;
@@ -57,6 +63,8 @@ class SchoolLastSyncLine extends ConsumerWidget {
 }
 
 /// 「最近の変更」 feed. Sizes to its content; callers provide scrolling.
+///
+/// UZ: 「最近の変更」 lentasi. O'z tarkibiga ko'ra o'lcham oladi; chaqiruvchilar aylantirishni (scroll) ta'minlaydi.
 class SchoolChangesList extends ConsumerWidget {
   final bool compact;
   const SchoolChangesList({super.key, this.compact = false});
@@ -65,6 +73,8 @@ class SchoolChangesList extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Loading/error show only the title, so a slow load never flashes
     // "no changes".
+    // UZ: Yuklash/xatolik faqat sarlavhani ko'rsatadi, shunda sekin yuklanish
+    // hech qachon "o'zgarishlar yo'q" deb miltillab ko'rinmaydi.
     final changes = ref.watch(schoolChangesProvider).valueOrNull;
     final periods = ref.watch(schoolInfoProvider).valueOrNull?.periods ??
         const <SchoolPeriod>[];
@@ -128,6 +138,9 @@ class SchoolChangesList extends ConsumerWidget {
 
 /// Home banner: the newest change, shown while something is newer than the
 /// stored [_seenKey]. Tapping opens the full feed and marks it seen.
+///
+/// UZ: Asosiy ekran banneri: saqlangan [_seenKey] dan yangiroq biror narsa bo'lganda ko'rsatiladigan
+/// eng so'nggi o'zgarish. Bosish to'liq lentani ochadi va uni ko'rilgan deb belgilaydi.
 class SchoolChangesBanner extends ConsumerStatefulWidget {
   const SchoolChangesBanner({super.key});
 
@@ -138,6 +151,8 @@ class SchoolChangesBanner extends ConsumerStatefulWidget {
 
 class _SchoolChangesBannerState extends ConsumerState<SchoolChangesBanner> {
   /// Null until prefs are read (banner stays hidden meanwhile); 0 = never seen.
+  ///
+  /// UZ: Sozlamalar o'qilguncha null (bu vaqtda banner yashirin qoladi); 0 = hech qachon ko'rilmagan.
   int? _seenAt;
 
   @override
@@ -171,8 +186,12 @@ class _SchoolChangesBannerState extends ConsumerState<SchoolChangesBanner> {
 
   /// 既読 for the teacher: every change newer than what was seen before.
   /// Teachers opening the banner are not counted.
+  ///
+  /// UZ: O'qituvchi uchun 既読: avval ko'rilgandan yangiroq bo'lgan har bir o'zgarish.
+  /// Bannerni ochgan o'qituvchilar hisobga olinmaydi.
   void _markRead(List<SchoolChange> changes) {
     // Best effort, like the write itself: never block opening the feed.
+    // UZ: Yozishning o'zi kabi best effort: lentani ochishni hech qachon to'sib qo'ymaydi.
     try {
       final domain = ref.read(schoolDomainProvider);
       final cls = ref.read(schoolClassProvider);

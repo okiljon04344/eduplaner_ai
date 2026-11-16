@@ -4,6 +4,11 @@ import '../../../core/l10n/app_strings.dart';
 import '../../../core/services/functions_service.dart';
 import '../models/quiz_question.dart';
 
+/// Repository requesting AI-generated quiz questions by calling Cloud Functions
+/// with subject, topic, and search parameters.
+///
+/// UZ: Fan, mavzu va qidiruv parametrlari bilan Cloud Functions ni chaqirish orqali
+/// AI tomonidan yaratilgan test savollarini so'rovchi repozitoriy.
 class QuizRepository {
   Future<List<QuizQuestion>> generateQuiz({
     required String subject,
@@ -25,6 +30,9 @@ class QuizRepository {
       // Show the server-provided Japanese message when available so users see
       // "quota reached" vs "invalid input" vs "server busy" instead of one
       // generic fallback. Empty/null falls back to a generic message.
+      // UZ: Foydalanuvchilar bitta umumiy zaxira xabari o'rniga "quota reached" yoki "invalid input"
+      // yoki "server busy" kabi aniq xabarlarni ko'rishlari uchun server bergan yaponcha xabarni
+      // ko'rsatadi (mavjud bo'lganda). Bo'sh/null bo'lsa, umumiy xabarga tayanadi.
       final serverMsg = (e.message ?? '').trim();
       if (e.code == 'not-found') {
         throw Exception(AppStrings.t('err_quiz_unavailable'));

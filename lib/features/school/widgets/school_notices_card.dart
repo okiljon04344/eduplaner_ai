@@ -15,11 +15,16 @@ import '../school_providers.dart';
 const _shown = 3;
 
 /// "M/d HH:mm" in the app locale; empty while the server time is pending.
+///
+/// UZ: Ilova lokalida "M/d HH:mm"; server vaqti kutilayotganda bo'sh bo'ladi.
 String noticeTime(DateTime? at) =>
     at == null ? '' : DateFormat('M/d HH:mm', AppStrings.currentLocale).format(at);
 
 /// Home card (§9.2-4): the latest notices for the student's class. Hidden when
 /// there are none. Opening one shows it in full and counts as 既読.
+///
+/// UZ: Asosiy ekran kartasi (§9.2-4): talaba sinfi uchun eng so'nggi bildirishnomalar. Ular mavjud
+/// bo'lmaganda yashiriladi. Bittasini ochish uni to'liq ko'rsatadi va 既読 sifatida hisoblanadi.
 class SchoolNoticesCard extends ConsumerWidget {
   const SchoolNoticesCard({super.key});
 
@@ -69,6 +74,8 @@ class SchoolNoticesCard extends ConsumerWidget {
 }
 
 /// "連絡 · 数学 · 訂正": category, subject tag and the correction stamp.
+///
+/// UZ: "連絡 · 数学 · 訂正": toifa, fan tegi va tuzatish muhri.
 String noticeTags(SchoolNotice n) => [
       n.category.label,
       if (n.subject.isNotEmpty) n.subject,
@@ -76,6 +83,8 @@ String noticeTags(SchoolNotice n) => [
     ].join(' · ');
 
 /// One notice line: urgent badge, unread dot, title, time · author.
+///
+/// UZ: Bitta bildirishnoma qatori: shoshilinch nishon, o'qilmagan nuqta, sarlavha, vaqt · muallif.
 class NoticeRow extends ConsumerWidget {
   final SchoolNotice notice;
   final bool unread;
@@ -147,6 +156,8 @@ class NoticeRow extends ConsumerWidget {
   }
 
   /// Local unread dot always; the teacher's 既読 count only for students.
+  ///
+  /// UZ: Doimo mahalliy o'qilmagan nuqta; o'qituvchining 既読 hisobi faqat talabalar uchun.
   void _markRead(WidgetRef ref) {
     ref.read(seenNoticesProvider.notifier).markSeen(notice.id);
     try {
@@ -162,6 +173,8 @@ class NoticeRow extends ConsumerWidget {
 }
 
 /// Full notice text in a bottom sheet.
+///
+/// UZ: Pastki varaqda (bottom sheet) to'liq bildirishnoma matni.
 class NoticeDetail extends StatelessWidget {
   final SchoolNotice notice;
   const NoticeDetail({super.key, required this.notice});
@@ -204,6 +217,9 @@ class NoticeDetail extends StatelessWidget {
   }
 }
 
+/// Badge indicator displayed on high-priority or emergency school notices.
+///
+/// UZ: Yuqori ustuvorlikdagi yoki favqulodda maktab bildirishnomalarida ko'rsatiladigan nishon ko'rsatkichi.
 class UrgentBadge extends StatelessWidget {
   const UrgentBadge({super.key});
 

@@ -10,6 +10,10 @@ import '../../auth/providers/auth_provider.dart';
 /// Shown on Home while an email/password account is unverified. School data
 /// (timetable sync, notices, 課題配布) is granted on a verified email only,
 /// so without this card such a student has no way to get in.
+///
+/// UZ: Email/parol hisobi tasdiqlanmagan paytda Home sahifasida ko'rsatiladi. Maktab ma'lumotlari
+/// (jadval sinxronizatsiyasi, bildirishnomalar, 課題配布) faqat tasdiqlangan email orqali taqdim etiladi,
+/// shuning uchun ushbu kartasiz bunday talaba kira olmaydi.
 class VerifyEmailCard extends ConsumerStatefulWidget {
   const VerifyEmailCard({super.key});
 
@@ -52,6 +56,8 @@ class _VerifyEmailCardState extends ConsumerState<VerifyEmailCard> {
         if (!verified) return _toast('verify_email_not_yet', ToastificationType.info);
         // authStateStream memoizes per uid, so restart it to let the school
         // providers see the verified email.
+        // UZ: authStateStream har bir uid uchun eslab qoladi (memoizes), shuning uchun maktab
+        // providerlari tasdiqlangan emailni ko'rishi uchun uni qayta ishga tushiring.
         ref.invalidate(authStateProvider);
       });
 

@@ -2,6 +2,10 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/class_model.dart';
 
+/// Repository handling CRUD operations and real-time streams for personal and shared timetable classes in Firestore.
+///
+/// UZ: Firestore'da shaxsiy va umumiy dars jadvali darslari uchun CRUD operatsiyalari va
+/// real vaqt oqimlarini (streams) boshqaruvchi repozitoriy.
 class TimetableRepository {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   CollectionReference get _col => _db.collection('timetables');
@@ -14,6 +18,13 @@ class TimetableRepository {
   /// union of the user's own classes (personal ones keep their reminders, so
   /// they must stay visible) and the group's shared classes, de-duplicated by
   /// doc id — two snapshot streams merged by hand, no rxdart.
+  ///
+  /// UZ: Juftliklar bo'yicha saralangan foydalanuvchi dars jadvalini oqim (stream) sifatida uzatadi.
+  ///
+  /// Guruhdan tashqarida bu faqat foydalanuvchining shaxsiy darslaridir. Guruhda esa bu foydalanuvchining
+  /// shaxsiy darslari (shaxsiy darslar o'z eslatmalarini saqlab qoladi, shuning uchun ular ko'rinib turishi kerak)
+  /// va guruhning umumiy darslarining hujjat id si bo'yicha takrorlanmagan birlashmasidir — ikkita snapshot
+  /// oqimi qo'lda birlashtirilgan, rxdart yo'q.
   Stream<List<ClassModel>> watch(String userId, {String? groupId}) {
     final own = _col.where('userId', isEqualTo: userId).orderBy('period').snapshots().map(_classes);
     if (groupId == null) return own;
@@ -25,6 +36,7 @@ class TimetableRepository {
     List<ClassModel>? sharedLatest;
     void emit() {
       // Wait for both sides so the list never flashes with half its rows.
+      // UZ: Ikkala tomonni kuting, shunda ro'yxat hech qachon qatorlarining yarmi bilan miltillamaydi.
       if (ownLatest == null || sharedLatest == null) return;
       final byId = <String, ClassModel>{
         for (final c in sharedLatest!) c.id: c,
@@ -78,6 +90,11 @@ class TimetableRepository {
   ///
   /// In a group the slot counts as taken if either the user's own classes or
   /// the group's classes occupy it (the same two sets [watch] displays).
+  ///
+  /// UZ: [excludeId] ni hisobga olmaganda, [day]/[period] allaqachon band qilinganligi.
+  ///
+  /// Guruhda slot foydalanuvchining shaxsiy darslari yoki guruh darslaridan biri uni egallagan bo'lsa
+  /// ([watch] ko'rsatadigan ikkita bir xil to'plam) band deb hisoblanadi.
   Future<bool> slotOccupied(String userId, String day, int period, {String? excludeId, String? groupId}) async {
     Future<bool> taken(String field, String value) async {
       final q = await _col

@@ -27,6 +27,11 @@ import '../../timetable/widgets/school_changes_list.dart';
 import '../../timetable/providers/timetable_provider.dart';
 import '../widgets/group_share_section.dart';
 
+/// User settings screen managing app preferences, notifications, theme, locale,
+/// academic profile info, and account lifecycle actions.
+///
+/// UZ: Ilova sozlamalari, xabarnomalar, mavzu, lokal, akademik profil ma'lumotlari
+/// va hisobning hayot aylanishi harakatlarini boshqaruvchi foydalanuvchi sozlamalari ekrani.
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
@@ -158,6 +163,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with WidgetsBin
     return Scaffold(
       backgroundColor: AppColors.background,
       // A bottom-nav tab now: no back arrow, title aligned with the cards column.
+      // UZ: Endi pastki navigatsiya tabi: orqaga o'q yo'q, sarlavha kartalar ustuni bilan tekislangan.
       appBar: AppBar(
         title: ResponsiveBody(
           maxWidth: 640,
@@ -183,6 +189,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with WidgetsBin
               padding: EdgeInsets.fromLTRB(20, 8, 20, context.isTablet ? 40 : 120),
               children: [
                 // Profile card: GlassPanel top block.
+                // UZ: Profil kartasi: GlassPanel yuqori bloki.
                 Entrance(
                   index: 0,
                   child: KeyedSubtree(
@@ -295,6 +302,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with WidgetsBin
                     children: [
                       _SectionTitle(AppStrings.t('set_class_share')),
                       // Deliberately non-const: identical-widget tree reuse freezes buttons across theme switches (CLAUDE.md 2026-08-27)
+                      // UZ: Ataylab const emas: bir xil vidjet daraxtini qayta ishlatish mavzu almashganda tugmalarni qotirib qo'yadi (CLAUDE.md 2026-08-27)
                       // ignore: prefer_const_constructors, prefer_const_literals_to_create_immutables
                       _SettingsCard(children: [GroupShareSection()]),
                     ],
@@ -451,6 +459,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with WidgetsBin
 /// Rounded card grouping related settings rows — the single visual
 /// container every section below uses, replacing bare `ListTile`s directly
 /// on the scaffold background.
+///
+/// UZ: Tegishli sozlamalar qatorlarini guruhlaydigan yumaloq karta — scaffold fonidagi
+/// yalang'och `ListTile`lar o'rnini bosuvchi quyidagi har bir bo'lim ishlatadigan yagona vizual konteyner.
 class _SettingsCard extends StatelessWidget {
   final List<Widget> children;
   const _SettingsCard({required this.children});
@@ -471,6 +482,9 @@ class _SettingsCard extends StatelessWidget {
 
 /// One row inside a [_SettingsCard]: colored icon chip + title (+ optional
 /// subtitle) + trailing widget, tappable when [onTap] is given.
+///
+/// UZ: [_SettingsCard] ichidagi bitta qator: rangli belgi chipi + sarlavha (+ ixtiyoriy
+/// subtitr) + [onTap] berilganda bosiladigan bo'lgan oxirgi vidjet.
 class _SettingsRow extends StatelessWidget {
   final IconData icon;
   final Color iconColor;

@@ -6,6 +6,11 @@ import '../../../core/l10n/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/language_picker_button.dart';
 
+/// Public promotional landing screen featuring product overviews, interactive showcases,
+/// and sign-in or get-started entry points.
+///
+/// UZ: Mahsulot sharhlari, interaktiv ko'rgazmalar va tizimga kirish yoki boshlash
+/// nuqtalarini o'z ichiga olgan ommaviy reklama landing ekrani.
 class LandingScreen extends StatefulWidget {
   const LandingScreen({super.key});
 
@@ -31,6 +36,7 @@ class _LandingScreenState extends State<LandingScreen>
   void didChangeDependencies() {
     super.didChangeDependencies();
     // Reduce-motion: leave the controllers stopped at their resting value (0).
+    // UZ: Harakatni kamaytirish (reduce-motion): kontrollerlarni tinch holatdagi qiymatida (0) to'xtatilgan holda qoldiring.
     if (MediaQuery.disableAnimationsOf(context)) {
       _bgCtrl.stop();
       _floatCtrl.stop();
@@ -60,9 +66,12 @@ class _LandingScreenState extends State<LandingScreen>
       body: Stack(
         children: [
           // Animated background orbs
+          // UZ: Animatsiyali fon sharlari
           _AnimatedBg(ctrl: _bgCtrl),
           // Scrollable content — SafeArea keeps the nav bar (title + CTA
           // button) clear of the OS status bar/notch on phones.
+          // UZ: Aylantiriladigan kontent — SafeArea navigatsiya panelini (sarlavha + CTA
+          // tugmasi) telefonlardagi operatsion tizim holat paneli/o'yig'idan xoli saqlaydi.
           SafeArea(
             bottom: false,
             child: SingleChildScrollView(
@@ -158,6 +167,7 @@ class _NavBar extends StatelessWidget {
       child: Row(
         children: [
           // Animated logo
+          // UZ: Animatsiyali logo
           Container(
             width: 34, height: 34,
             decoration: BoxDecoration(
@@ -176,6 +186,9 @@ class _NavBar extends StatelessWidget {
           // Expanded (not Flexible+Spacer) so the wordmark claims the *entire*
           // leftover width; scaleDown (not ellipsis) keeps the brand whole when
           // a long localized CTA (de/ru/vi) leaves less room on phones.
+          // UZ: Expanded (Flexible+Spacer emas), shunda so'z belgisi *butun* qolgan kenglikni egallaydi;
+          // uzun mahalliylashtirilgan CTA (de/ru/vi) telefonlarda kamroq joy qoldirganda scaleDown
+          // (ellipsis emas) brendni butunligicha saqlaydi.
           const Expanded(
             child: FittedBox(
               fit: BoxFit.scaleDown,
@@ -197,6 +210,10 @@ class _NavBar extends StatelessWidget {
           // signup CTAs prominently, so on narrow phones the nav bar only
           // keeps the signup button — otherwise there isn't enough width for
           // the full "EduPlanner AI" wordmark next to three separate CTAs.
+          // UZ: Pastdagi hero bo'limi kirish va ro'yxatdan o'tish CTA'larini ko'zga ko'rinarli
+          // tarzda takrorlaydi, shuning uchun tor telefonlarda navigatsiya paneli faqat ro'yxatdan
+          // o'tish tugmasini saqlab qoladi — aks holda uchta alohida CTA yonida to'liq
+          // "EduPlanner AI" so'z belgisi uchun yetarli kenglik bo'lmaydi.
           if (isDesktop) ...[
             TextButton(
               onPressed: () => context.push('/login'),
@@ -214,6 +231,9 @@ class _NavBar extends StatelessWidget {
           // Capped on phones so a long translation ("Commencer gratuitement")
           // shrinks the button instead of squeezing the wordmark; dropped
           // under 360dp, where the hero CTAs right below are enough.
+          // UZ: Telefonlarda cheklangan, shunda uzun tarjima ("Commencer gratuitement") so'z belgisini
+          // siqib qo'yish o'rniga tugmani kichraytiradi; 360dp dan pastda olib tashlangan, bu yerda
+          // pastdagi hero CTA'larining o'zi yetarli.
           if (isDesktop || MediaQuery.sizeOf(context).width >= 360) ConstrainedBox(
             constraints: BoxConstraints(maxWidth: isDesktop ? double.infinity : 140),
             child: FittedBox(
@@ -284,6 +304,7 @@ class _HeroText extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         // Badge
+        // UZ: Nishon
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
           decoration: BoxDecoration(
@@ -331,6 +352,7 @@ class _HeroText extends StatelessWidget {
         const SizedBox(height: 24),
 
         // Main title — each word animates in
+        // UZ: Asosiy sarlavha — har bir so'z animatsiya bilan kirib keladi
         _GradientTitle()
             .animate()
             .fadeIn(delay: 400.ms, duration: 700.ms)
@@ -386,6 +408,7 @@ class _HeroText extends StatelessWidget {
         const SizedBox(height: 28),
 
         // Social proof
+        // UZ: Ijtimoiy isbot (social proof)
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -395,6 +418,7 @@ class _HeroText extends StatelessWidget {
             )),
             const SizedBox(width: 8),
             // Flexible: long translations wrap instead of being clipped.
+            // UZ: Flexible: uzun tarjimalar kesilib qolmasdan keyingi qatorga o'tadi.
             Flexible(
               child: Text(
                 AppStrings.t('social_proof'),
@@ -425,6 +449,7 @@ class _GradientTitle extends StatelessWidget {
         AppStrings.t('landing_title'),
         style: TextStyle(
           // 28 under 360dp: ja's first line (学習をスマートに、) must fit a 320dp phone.
+          // UZ: 360dp dan pastda 28: ja tilining birinchi qatori (学習をスマートに、) 320dp telefoniga sig'ishi kerak.
           fontSize: switch (MediaQuery.sizeOf(context).width) { < 360 => 28, < 600 => 34, _ => 46 }, fontWeight: FontWeight.w900,
           color: Colors.white, height: 1.15, letterSpacing: -1.2,
           fontFamily: 'Plus Jakarta Sans', fontFamilyFallback: const ['NotoSansJP'],
@@ -603,6 +628,7 @@ class _FeaturesSection extends StatelessWidget {
       child: Column(
         children: [
           // Section label
+          // UZ: Bo'lim yorlig'i
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
             decoration: BoxDecoration(
