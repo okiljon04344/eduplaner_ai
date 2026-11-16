@@ -71,29 +71,24 @@ class _DirectionalTabState extends ConsumerState<_DirectionalTab> {
     final index = ref.watch(shellTabIndexProvider);
     final isReduced = reduceMotion(context);
 
-    return AnimatedSwitcher(
+    // One copy of the shell child only: it is go_router's Navigator, which
+    // carries a GlobalKey, so an AnimatedSwitcher (old + new child alive at
+    // once) throws "Duplicate GlobalKey" on every tab switch. A fresh key
+    // restarts this entrance instead; the page that left is not kept.
+    // UZ: Shell child faqat bitta nusxada bo'ladi: u go_router'ning Navigator'i va GlobalKey'ga
+    // ega, shuning uchun AnimatedSwitcher (eski va yangi child bir vaqtda) har tab almashganda
+    // "Duplicate GlobalKey" xatosini beradi. Buning o'rniga yangi kalit shu kirish animatsiyasini
+    // qayta boshlaydi; chiqib ketgan sahifa saqlanmaydi.
+    return TweenAnimationBuilder<double>(
+      key: ValueKey('${index}_$_visitNonce'),
+      tween: Tween(begin: _visitNonce == 0 ? 1.0 : 0.0, end: 1.0),
       duration: isReduced ? AppMotion.fadeDuration : AppMotion.screenDuration,
-      transitionBuilder: (child, animation) {
-        if (isReduced) {
-          return FadeTransition(
-            opacity: animation,
-            child: child,
-          );
-        }
-        final curved = CurvedAnimation(parent: animation, curve: AppMotion.strongEaseOut);
-        return FadeTransition(
-          opacity: curved,
-          child: AnimatedBuilder(
-            animation: curved,
-            builder: (context, child) => Transform.translate(
-              offset: Offset(0, 10.0 * (1.0 - curved.value)),
-              child: child,
-            ),
-            child: child,
-          ),
-        );
-      },
-      child: KeyedSubtree(key: ValueKey('${index}_$_visitNonce'), child: widget.child),
+      curve: AppMotion.strongEaseOut,
+      builder: (context, t, child) => Opacity(
+        opacity: t,
+        child: isReduced ? child : Transform.translate(offset: Offset(0, 10.0 * (1.0 - t)), child: child),
+      ),
+      child: widget.child,
     );
   }
 }
