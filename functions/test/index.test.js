@@ -9,6 +9,7 @@ import {
   validateDocxZip,
   extractJson,
   requireAuth,
+  assertAppCheck,
   replyLanguageOf,
   AI_DAILY_LIMIT,
   enforceAiQuota,
@@ -318,6 +319,18 @@ test('replyLanguageOf and requireAuth helpers', () => {
     message: 'Login is required.',
   });
   assert.doesNotThrow(() => requireAuth({ auth: { uid: 'student1' } }));
+});
+
+test('App Check is enforced only when switched on', () => {
+  const auth = { uid: 'student1' };
+  // Off (the default): a call without an App Check token still passes.
+  assert.doesNotThrow(() => requireAuth({ auth }));
+  assert.doesNotThrow(() => assertAppCheck({ auth }, false));
+  // On: no token is refused, a verified token passes.
+  assert.throws(() => requireAuth({ auth }, true), { code: 'failed-precondition' });
+  assert.doesNotThrow(() => requireAuth({ auth, app: { appId: 'app' } }, true));
+  // Missing login is reported first, whatever the switch says.
+  assert.throws(() => requireAuth({}, true), { code: 'unauthenticated' });
 });
 
 test('validateDocxZip accepts valid zip buffer', () => {

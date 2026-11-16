@@ -135,9 +135,30 @@ export const replyLanguageOf = (language) => LANGUAGE_NAMES[language] ?? 'Japane
 /// UZ: Har bir chaqiriladigan funksiya boshlanishida standart `unauthenticated` xatosini
 /// tashlaydi. Xabar/kod har birida qayta yozilmasdan, barcha oltita chaqiriluvchida bir xil
 /// bo'lib qolishi uchun markazlashtirilgan.
-export function requireAuth(request) {
+export function requireAuth(request, enforce = appCheckEnforced()) {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'Login is required.');
+  }
+  assertAppCheck(request, enforce);
+}
+
+// Off unless APP_CHECK_ENFORCE=true is set at deploy time, so it can be
+// switched on once App Check metrics show real traffic is verified, and off
+// again by redeploying with the value removed.
+// UZ: Deploy vaqtida APP_CHECK_ENFORCE=true berilmasa o'chiq turadi. App Check
+// metrikalari haqiqiy trafik tasdiqlanayotganini ko'rsatgach yoqiladi; qiymatni
+// olib tashlab qayta deploy qilinsa yana o'chadi.
+const appCheckEnforce = defineString('APP_CHECK_ENFORCE', {default: 'false'});
+const appCheckEnforced = () => appCheckEnforce.value() === 'true';
+
+/// Rejects a call that carries no valid App Check token when [enforce] is on.
+/// `request.app` is set by the callable runtime only for a verified token.
+///
+/// UZ: [enforce] yoqilgan bo'lsa, yaroqli App Check tokeni bo'lmagan chaqiruvni rad etadi.
+/// `request.app` ni callable runtime faqat tasdiqlangan token uchun o'rnatadi.
+export function assertAppCheck(request, enforce) {
+  if (enforce && !request.app) {
+    throw new HttpsError('failed-precondition', 'App verification failed. Update the app and try again.');
   }
 }
 
@@ -1010,8 +1031,8 @@ function schoolSyncDeps() {
 /// Verified caller who is an admin of their email-domain school → its domain.
 ///
 /// UZ: O'z email-domenidagi maktabning admini bo'lgan tasdiqlangan chaqiruvchi → uning domeni.
-async function requireSchoolAdmin(request) {
-  requireAuth(request);
+async function requireSchoolAdmin(request, enforce) {
+  requireAuth(request, enforce);
   const {email, email_verified: verified} = request.auth.token;
   const domain = domainOf(email);
   const school = (await db().collection('schools').doc(domain || '-').get()).data();
@@ -1027,7 +1048,9 @@ export const linkSchoolStart = onCall({
   timeoutSeconds: 60,
   secrets: [googleClientSecret],
 }, async (request) => {
-  requireAuth(request);
+  // Called from web/school-link.html, a plain page with no App Check SDK.
+  // UZ: web/school-link.html dan chaqiriladi; bu sahifada App Check SDK yo'q.
+  requireAuth(request, false);
   const {code} = request.data ?? {};
   if (typeof code !== 'string' || !code || code.length > 2048) {
     throw new HttpsError('invalid-argument', 'A valid auth code is required.');
@@ -1060,7 +1083,9 @@ export const linkSchoolStart = onCall({
 });
 
 export const linkSchoolFile = onCall(SCHOOL_SYNC_OPTS, async (request) => {
-  const domain = await requireSchoolAdmin(request);
+  // Same web page as linkSchoolStart: no App Check token to check.
+  // UZ: linkSchoolStart bilan bir xil veb sahifa: tekshiriladigan App Check tokeni yo'q.
+  const domain = await requireSchoolAdmin(request, false);
   const {fileId, schoolName} = request.data ?? {};
   if (typeof fileId !== 'string' || !/^[\w-]{10,200}$/.test(fileId)) {
     throw new HttpsError('invalid-argument', 'A valid file id is required.');
