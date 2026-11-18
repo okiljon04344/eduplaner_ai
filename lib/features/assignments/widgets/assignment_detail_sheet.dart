@@ -1,8 +1,8 @@
-import 'dart:typed_data';
-
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:toastification/toastification.dart';
 import '../../../core/l10n/app_strings.dart';
@@ -14,14 +14,35 @@ import '../../../shared/widgets/confirm_dialog.dart';
 import '../../../shared/widgets/donut_chart.dart';
 import '../../../shared/widgets/star_rating.dart';
 import '../../../shared/widgets/subject_pill.dart';
+import '../../auth/providers/auth_provider.dart';
 import '../models/assignment_model.dart';
 import '../providers/assignments_provider.dart';
 import 'add_edit_assignment_sheet.dart';
 import 'assignment_actions.dart';
 import 'distributed_badge.dart';
 
-const _kSupportedSubmissionExtensions = ['jpg', 'jpeg', 'png', 'pdf', 'docx', 'txt'];
+const _kBaseSupportedSubmissionExtensions = [
+  'jpg',
+  'jpeg',
+  'png',
+  'webp',
+  'pdf',
+  'docx',
+  'txt',
+];
+const _kMobileSupportedSubmissionExtensions = [
+  ..._kBaseSupportedSubmissionExtensions,
+  'heic',
+  'heif',
+];
 const _kMaxSubmissionBytes = 10 * 1024 * 1024;
+const _kHeicCompressMaxEdge = 2048;
+const _kHeicCompressQuality = 85;
+
+bool get _supportsClientHeicConversion =>
+    !kIsWeb &&
+    (defaultTargetPlatform == TargetPlatform.iOS ||
+        defaultTargetPlatform == TargetPlatform.android);
 
 String? _mimeTypeForExtension(String? extension) {
   switch (extension?.toLowerCase()) {
@@ -30,6 +51,8 @@ String? _mimeTypeForExtension(String? extension) {
       return 'image/jpeg';
     case 'png':
       return 'image/png';
+    case 'webp':
+      return 'image/webp';
     case 'pdf':
       return 'application/pdf';
     case 'docx':
@@ -41,17 +64,50 @@ String? _mimeTypeForExtension(String? extension) {
   }
 }
 
-Future<void> showAssignmentDetailSheet(BuildContext context, WidgetRef ref, AssignmentModel assignment) {
+typedef PickedSubmissionFile = ({
+  String name,
+  Future<Uint8List> Function() readBytes,
+});
+
+typedef HeicToJpegConverter = Future<Uint8List> Function(Uint8List heicBytes);
+
+Future<Uint8List> _defaultConvertHeicToJpeg(Uint8List bytes) {
+  return FlutterImageCompress.compressWithList(
+    bytes,
+    minWidth: _kHeicCompressMaxEdge,
+    minHeight: _kHeicCompressMaxEdge,
+    quality: _kHeicCompressQuality,
+    format: CompressFormat.jpeg,
+  );
+}
+
+Future<void> showAssignmentDetailSheet(
+  BuildContext context,
+  WidgetRef ref,
+  AssignmentModel assignment, {
+  @visibleForTesting Future<PickedSubmissionFile?> Function()? pickSubmissionFile,
+  @visibleForTesting HeicToJpegConverter? convertHeicToJpeg,
+}) {
   return showAppSheet(
     context,
-    (_) => _AssignmentDetailSheet(assignment: assignment),
+    (_) => _AssignmentDetailSheet(
+      assignment: assignment,
+      pickSubmissionFile: pickSubmissionFile,
+      convertHeicToJpeg: convertHeicToJpeg,
+    ),
     useRootNavigator: true,
   );
 }
 
 class _AssignmentDetailSheet extends ConsumerStatefulWidget {
   final AssignmentModel assignment;
-  const _AssignmentDetailSheet({required this.assignment});
+  final Future<PickedSubmissionFile?> Function()? pickSubmissionFile;
+  final HeicToJpegConverter? convertHeicToJpeg;
+  const _AssignmentDetailSheet({
+    required this.assignment,
+    this.pickSubmissionFile,
+    this.convertHeicToJpeg,
+  });
 
   @override
   ConsumerState<_AssignmentDetailSheet> createState() => _AssignmentDetailSheetState();
@@ -67,6 +123,7 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
   late AssignmentModel _current;
   bool _aiLoading = false;
   bool _aiCheckLoading = false;
+  bool _highRedactionWarning = false;
 
   @override
   void initState() {
@@ -111,8 +168,12 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
     } on FirebaseFunctionsException catch (e) {
       if (!mounted) return;
       setState(() => _aiLoading = false);
-      // Quota/login problems are actionable — show them instead of the generic failure.
-      final actionable = e.code == 'resource-exhausted' || e.code == 'unauthenticated';
+      // Quota/budget/unavailable/login problems are actionable — show them instead of the generic failure.
+      final reason = FunctionsService.reasonOf(e);
+      final actionable = reason == 'ai_temporarily_unavailable' ||
+          reason == 'ai_budget_exceeded' ||
+          e.code == 'resource-exhausted' ||
+          e.code == 'unauthenticated';
       _showAiError(actionable ? FunctionsService.describeError(e) : AppStrings.t('ai_plan_failed'));
     } catch (e) {
       if (!mounted) return;
@@ -123,33 +184,97 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
 
   void _showAiError(String message) => showAssignmentErrorToast(context, message);
 
-  /// 課題の自動チェック — picks an image/PDF/Word/text file and reads its
-  /// bytes via `PlatformFile.readAsBytes()` (file_picker 12's API — the
-  /// platform-agnostic way to get bytes on web, desktop, and mobile alike,
-  /// replacing the old synchronous `.bytes` getter + `withData` param),
-  /// sends it for AI review, and shows the result inline.
-  Future<void> _pickAndCheckSubmission() async {
-    final file = await FilePicker.pickFile(
-      type: FileType.custom,
-      allowedExtensions: _kSupportedSubmissionExtensions,
-    );
-    if (file == null || !mounted) return;
+  Future<bool> _ensureAiFileConsent() async {
+    final user = ref.read(currentUserProvider);
+    if (user?.hasCurrentAiFileConsent == true) return true;
 
-    final Uint8List bytes;
+    final agreed = await showConfirmDialog(
+      context,
+      title: AppStrings.t('ai_file_consent_title'),
+      message: AppStrings.t('ai_file_consent_body'),
+      confirmLabel: AppStrings.t('ai_file_consent_agree'),
+      confirmColor: AppColors.primary,
+    );
+    if (!agreed || !mounted) return false;
+
+    if (user != null) {
+      try {
+        await ref.read(authNotifierProvider.notifier).recordAiFileConsent();
+      } catch (_) {
+        if (!mounted) return false;
+        _showAiError(AppStrings.t('err_generic_retry'));
+        return false;
+      }
+    }
+    return mounted;
+  }
+
+  /// 課題の自動チェック — checks one-time AI privacy consent, picks an
+  /// image/PDF/Word/text file and reads its bytes via `PlatformFile.readAsBytes()`
+  /// (file_picker 12's API — the platform-agnostic way to get bytes on web,
+  /// desktop, and mobile alike), sends it for AI review, and shows the result.
+  Future<void> _pickAndCheckSubmission() async {
+    final consented = await _ensureAiFileConsent();
+    if (!consented || !mounted) return;
+
+    final pick = widget.pickSubmissionFile;
+    final PickedSubmissionFile? picked;
+    if (pick != null) {
+      picked = await pick();
+    } else {
+      final file = await FilePicker.pickFile(
+        type: FileType.custom,
+        allowedExtensions: _supportsClientHeicConversion
+            ? _kMobileSupportedSubmissionExtensions
+            : _kBaseSupportedSubmissionExtensions,
+      );
+      picked = file == null
+          ? null
+          : (name: file.name, readBytes: file.readAsBytes);
+    }
+    if (picked == null || !mounted) return;
+
+    final extension = picked.name.contains('.') ? picked.name.split('.').last.toLowerCase() : null;
+    final isHeic = extension == 'heic' || extension == 'heif';
+    if (isHeic && !_supportsClientHeicConversion) {
+      _showAiError(AppStrings.t('err_heic_unsupported'));
+      return;
+    }
+
+    Uint8List bytes;
     try {
-      bytes = await file.readAsBytes();
+      bytes = await picked.readBytes();
     } catch (_) {
       if (!mounted) return;
       _showAiError(AppStrings.t('file_read_failed'));
       return;
     }
     if (!mounted) return;
+
+    final String? mimeType;
+    if (isHeic) {
+      try {
+        final converter = widget.convertHeicToJpeg ?? _defaultConvertHeicToJpeg;
+        bytes = await converter(bytes);
+      } catch (_) {
+        if (!mounted) return;
+        _showAiError(AppStrings.t('err_heic_unsupported'));
+        return;
+      }
+      if (!mounted) return;
+      if (bytes.isEmpty) {
+        _showAiError(AppStrings.t('err_heic_unsupported'));
+        return;
+      }
+      mimeType = 'image/jpeg';
+    } else {
+      mimeType = _mimeTypeForExtension(extension);
+    }
+
     if (bytes.lengthInBytes > _kMaxSubmissionBytes) {
       _showAiError(AppStrings.t('file_too_large'));
       return;
     }
-    final extension = file.name.contains('.') ? file.name.split('.').last : null;
-    final mimeType = _mimeTypeForExtension(extension);
     if (mimeType == null) {
       _showAiError(AppStrings.t('file_unsupported'));
       return;
@@ -166,12 +291,15 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
     // Merge only the AI fields: progress/status may have changed while the
     // check was running, and a whole-model replace would roll them back.
     final checked = outcome.model!;
-    setState(() => _current = _current.copyWith(
-          aiCompletionPercent: checked.aiCompletionPercent,
-          aiMissingParts: checked.aiMissingParts,
-          aiAdvice: checked.aiAdvice,
-          aiAnalyzedAt: checked.aiAnalyzedAt,
-        ));
+    setState(() {
+      _highRedactionWarning = outcome.highRedactionWarning;
+      _current = _current.copyWith(
+        aiCompletionPercent: checked.aiCompletionPercent,
+        aiMissingParts: checked.aiMissingParts,
+        aiAdvice: checked.aiAdvice,
+        aiAnalyzedAt: checked.aiAnalyzedAt,
+      );
+    });
   }
 
   /// Puts the live slider/chip values back to the last persisted state.
@@ -380,7 +508,10 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
                 ),
                 if (assignment.hasAiAnalysis) ...[
                   const SizedBox(height: 14),
-                  _AiCheckResult(assignment: assignment),
+                  _AiCheckResult(
+                    assignment: assignment,
+                    highRedactionWarning: _highRedactionWarning,
+                  ),
                 ],
                 const SizedBox(height: 12),
                 if (assignment.isDistributed)
@@ -423,7 +554,11 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
 
 class _AiCheckResult extends StatelessWidget {
   final AssignmentModel assignment;
-  const _AiCheckResult({required this.assignment});
+  final bool highRedactionWarning;
+  const _AiCheckResult({
+    required this.assignment,
+    this.highRedactionWarning = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -454,6 +589,30 @@ class _AiCheckResult extends StatelessWidget {
               ),
             ],
           ),
+          if (highRedactionWarning) ...[
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppColors.warning.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AppColors.warning.withValues(alpha: 0.4)),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(Icons.warning_amber_rounded, size: 16, color: AppColors.warning),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      AppStrings.t('ai_high_redaction_warning'),
+                      style: TextStyle(fontSize: 12, color: AppColors.textPrimary, height: 1.35),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
           if (assignment.aiMissingParts.isNotEmpty) ...[
             const SizedBox(height: 12),
             Text(AppStrings.t('ai_missing_parts'), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.warning)),

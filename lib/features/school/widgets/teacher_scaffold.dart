@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -170,15 +169,17 @@ class _DesktopTeacherScaffold extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final info = ref.watch(schoolInfoProvider).valueOrNull;
     final role = ref.watch(schoolRoleProvider);
-    final user = FirebaseAuth.instance.currentUser;
-    final mine = info?.profileOf(user?.email);
+    final user = ref.watch(schoolUserIdentityProvider);
+    final mine = info?.profileOf(user.email);
     final weekChanges = ref.watch(weekChangesProvider);
     final noticesSummary = ref.watch(myNoticesReadSummaryProvider);
     final lessonProgress = ref.watch(todayTeacherLessonsProgressProvider);
 
     final teacherName = (mine != null && mine.name.isNotEmpty)
         ? mine.name
-        : (user?.displayName ?? AppStrings.t('tov_title'));
+        : ((user.displayName?.isNotEmpty ?? false)
+            ? user.displayName!
+            : AppStrings.t('tov_title'));
 
     final homeroom = (mine != null &&
             mine.homeroomGrade != null &&

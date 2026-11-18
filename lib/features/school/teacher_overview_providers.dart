@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/periods.dart';
@@ -273,8 +272,8 @@ final classSizesProvider = FutureProvider.autoDispose<Map<String, int>>((ref) as
 
 final myTeacherLessonsProvider = Provider.autoDispose<List<TeacherLesson>>((ref) {
   final info = ref.watch(schoolInfoProvider).valueOrNull;
-  final user = FirebaseAuth.instance.currentUser;
-  if (info == null || user == null) return const [];
+  final user = ref.watch(schoolUserIdentityProvider);
+  if (info == null || user.uid == null) return const [];
   final profile = info.profileOf(user.email);
   if (profile == null || profile.name.isEmpty) return const [];
   final teacherName = profile.name;
@@ -425,12 +424,12 @@ final weekChangesProvider = Provider.autoDispose<WeekChangesSummary>((ref) {
 });
 
 final myNoticesReadSummaryProvider = Provider.autoDispose<NoticesReadSummary>((ref) {
-  final user = FirebaseAuth.instance.currentUser;
+  final user = ref.watch(schoolUserIdentityProvider);
   final info = ref.watch(schoolInfoProvider).valueOrNull;
   final allNotices = ref.watch(schoolNoticesProvider).valueOrNull ?? const [];
   final classSizes = ref.watch(classSizesProvider).valueOrNull ?? const {};
 
-  if (user == null || info == null) return const NoticesReadSummary();
+  if (user.uid == null || info == null) return const NoticesReadSummary();
 
   final myNotices = [for (final n in allNotices) if (n.createdBy == user.uid) n];
   myNotices.sort((a, b) => (b.createdAt ?? DateTime(0)).compareTo(a.createdAt ?? DateTime(0)));

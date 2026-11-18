@@ -22,17 +22,20 @@ class QuizRepository {
       return raw.map((e) => QuizQuestion.fromJson(Map<String, dynamic>.from(e as Map))).toList();
     } on FirebaseFunctionsException catch (e) {
       debugPrint('generateQuiz error: ${e.code} ${e.message}');
-      // Show the server-provided Japanese message when available so users see
-      // "quota reached" vs "invalid input" vs "server busy" instead of one
-      // generic fallback. Empty/null falls back to a generic message.
+      // Show the server-provided message or localized reason when available so
+      // users see "budget exceeded" / "temporarily unavailable" / "quota reached"
+      // instead of one generic fallback.
       final serverMsg = (e.message ?? '').trim();
+      final reason = FunctionsService.reasonOf(e);
       if (e.code == 'not-found') {
         throw Exception(AppStrings.t('err_quiz_unavailable'));
       }
-      if (e.code == 'resource-exhausted') {
-        throw Exception(AppStrings.t('err_ai_limit_reached'));
-      }
-      if (e.code == 'unauthenticated' || e.code == 'deadline-exceeded' || e.code == 'unavailable') {
+      if (reason == 'ai_temporarily_unavailable' ||
+          reason == 'ai_budget_exceeded' ||
+          e.code == 'unauthenticated' ||
+          e.code == 'deadline-exceeded' ||
+          e.code == 'unavailable' ||
+          e.code == 'resource-exhausted') {
         throw Exception(FunctionsService.describeError(e));
       }
       throw Exception(serverMsg.isNotEmpty ? serverMsg : AppStrings.t('err_quiz_generate_failed'));

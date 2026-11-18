@@ -342,4 +342,16 @@ class AuthRepository {
     // the router's profileComplete redirect fire immediately after saving.
     _cachedFromDoc = false;
   }
+
+  /// Records the user's one-time acknowledgement of the AI file privacy
+  /// notice on `users/{uid}` using server timestamp + [version].
+  Future<void> recordAiFileConsent({int version = kAiFileConsentVersion}) async {
+    final uid = _auth.currentUser?.uid;
+    if (uid == null) throw Exception(AppStrings.t('err_user_info_unavailable'));
+    await _db.collection('users').doc(uid).set({
+      'aiFileConsentAt': FieldValue.serverTimestamp(),
+      'aiFileConsentVersion': version,
+    }, SetOptions(merge: true));
+    _cachedFromDoc = false;
+  }
 }

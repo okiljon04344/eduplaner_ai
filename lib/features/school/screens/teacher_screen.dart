@@ -1,7 +1,8 @@
 import 'package:cloud_functions/cloud_functions.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:toastification/toastification.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -58,6 +59,7 @@ class _TeacherScreenState extends ConsumerState<TeacherScreen> {
   Widget build(BuildContext context) {
     final info = ref.watch(schoolInfoProvider).valueOrNull;
     final role = ref.watch(schoolRoleProvider);
+    final canImport = ref.watch(canImportTimetableProvider);
 
     Widget body;
     if (info == null || info.periods.isEmpty) {
@@ -65,8 +67,8 @@ class _TeacherScreenState extends ConsumerState<TeacherScreen> {
     } else if (!role.teacher) {
       body = _Message(AppStrings.t('teacher_no_access'));
     } else {
-      final me = FirebaseAuth.instance.currentUser;
-      final mine = info.profileOf(me?.email);
+      final me = ref.watch(schoolUserIdentityProvider);
+      final mine = info.profileOf(me.email);
       // Homeroom teachers start on their own class.
       final grade = info.grades.contains(_grade)
           ? _grade!
@@ -86,8 +88,8 @@ class _TeacherScreenState extends ConsumerState<TeacherScreen> {
       final wide = context.screenWidth >= 1100;
       void tap(DateTime date, SchoolPeriod period, SchoolSlot? slot) {
         final allowed = info.canEdit(
-          uid: me?.uid,
-          email: me?.email,
+          uid: me.uid,
+          email: me.email,
           grade: grade,
           course: course,
           slot: slot,
@@ -203,10 +205,54 @@ class _TeacherScreenState extends ConsumerState<TeacherScreen> {
       }
     }
 
-    return TeacherScaffold(
+    final isWide = context.screenWidth >= 1100;
+    void openImport() {
+      if (canImport) context.push('/teacher/timetable/import');
+    }
+
+    final scaffold = TeacherScaffold(
       section: TeacherSection.timetable,
       title: AppStrings.t('teacher_title'),
+      actions: [
+        if (canImport)
+          isWide
+              ? FilledButton.icon(
+                  key: const Key('open_timetable_import_button'),
+                  onPressed: openImport,
+                  icon: const Icon(Icons.upload_file_rounded, size: 18),
+                  label: Text(
+                    AppStrings.t('tt_import_btn'),
+                    style: const TextStyle(fontWeight: FontWeight.w800),
+                  ),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: AppColors.onPrimary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    minimumSize: const Size(0, 42),
+                  ),
+                )
+              : IconButton(
+                  key: const Key('open_timetable_import_button'),
+                  tooltip: AppStrings.t('tt_import_btn'),
+                  onPressed: openImport,
+                  icon: const Icon(Icons.upload_file_rounded),
+                ),
+      ],
       body: body,
+    );
+
+    if (!canImport) return scaffold;
+
+    return CallbackShortcuts(
+      bindings: <ShortcutActivator, VoidCallback>{
+        const SingleActivator(LogicalKeyboardKey.keyI, control: true):
+            openImport,
+        const SingleActivator(LogicalKeyboardKey.keyI, meta: true): openImport,
+      },
+      child: scaffold,
     );
   }
 

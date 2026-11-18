@@ -11,6 +11,40 @@ const CHANNEL_ID = 'eduplanner_reminders';
 
 export const domainOf = (email) => String(email ?? '').split('@')[1]?.toLowerCase() ?? '';
 
+/**
+ * Resolves the school domain for an authenticated caller, matching the
+ * exact semantics of `inDomain(d)` / `isTester(d)` in `firestore.rules`:
+ * 1. If `auth.token.email_verified !== true`, returns `null`.
+ * 2. Checks `school_testers/{lowercaseEmail}` first (pilot test account let in
+ *    by a school admin via `setSchoolTester`).
+ * 3. Otherwise checks if `schools/{emailDomain}` exists; if so, returns
+ *    `emailDomain`, else `null` (an unlinked personal account like `@gmail.com`
+ *    is not an error).
+ */
+export async function resolveSchoolDomain(auth, { db } = {}) {
+  const token = auth?.token;
+  if (!token || token.email_verified !== true) return null;
+  const email = String(token.email ?? '').trim().toLowerCase();
+  if (!email) return null;
+
+  if (db) {
+    const testerSnap = await db.collection('school_testers').doc(email).get();
+    const testerDomain = testerSnap.exists ? testerSnap.data()?.domain : null;
+    if (typeof testerDomain === 'string' && testerDomain.trim().length > 0) {
+      return testerDomain.trim().toLowerCase();
+    }
+  }
+
+  const emailDomain = domainOf(email);
+  if (!emailDomain) return null;
+
+  if (db) {
+    const schoolSnap = await db.collection('schools').doc(emailDomain).get();
+    if (!schoolSnap.exists) return null;
+  }
+  return emailDomain;
+}
+
 // Japan has no DST, so a fixed +9h offset is exact. (An Intl 'sv-SE' format
 // silently falls back to en-US on small-ICU Node builds, e.g. the emulator.)
 const TOKYO_OFFSET_MS = 9 * 60 * 60 * 1000;

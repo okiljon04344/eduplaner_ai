@@ -213,15 +213,21 @@ class AssignmentsNotifier extends AsyncNotifier<void> {
   /// result (`completionPercent`, `missingParts`, `advice`) is written back
   /// to Firestore and returned to the caller.
   ///
-  /// Returns `(model: updated, error: null)` on success or
-  /// `(model: null, error: message)` on failure.
-  Future<({AssignmentModel? model, String? error})> checkWithAi(
+  /// Returns `(model: updated, error: null, highRedactionWarning: ...)` on
+  /// success or `(model: null, error: message, highRedactionWarning: false)` on
+  /// failure.
+  Future<({AssignmentModel? model, String? error, bool highRedactionWarning})>
+      checkWithAi(
     AssignmentModel assignment, {
     required Uint8List fileBytes,
     required String mimeType,
   }) async {
     if (fileBytes.length > _kMaxAssignmentFileBytes) {
-      return (model: null, error: AppStrings.t('err_invalid_file'));
+      return (
+        model: null,
+        error: AppStrings.t('err_invalid_file'),
+        highRedactionWarning: false,
+      );
     }
     final repo = ref.read(assignmentsRepositoryProvider);
     try {
@@ -238,6 +244,7 @@ class AssignmentsNotifier extends AsyncNotifier<void> {
           .map((e) => e.toString())
           .toList();
       final advice = result['advice'] as String? ?? '';
+      final highRedactionWarning = result['highRedactionWarning'] == true;
       final analyzedAt = DateTime.now();
       await repo.saveAiAnalysis(
         assignment.id,
@@ -252,10 +259,18 @@ class AssignmentsNotifier extends AsyncNotifier<void> {
         aiAdvice: advice,
         aiAnalyzedAt: analyzedAt,
       );
-      return (model: updated, error: null);
+      return (
+        model: updated,
+        error: null,
+        highRedactionWarning: highRedactionWarning,
+      );
     } catch (e) {
       debugPrint('checkWithAi error: $e');
-      return (model: null, error: e.toString().replaceFirst('Exception: ', ''));
+      return (
+        model: null,
+        error: e.toString().replaceFirst('Exception: ', ''),
+        highRedactionWarning: false,
+      );
     }
   }
 }

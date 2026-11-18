@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/constants/periods.dart';
+import '../../auth/models/user_model.dart';
 
 enum SchoolSlotStatus {
   normal,
@@ -117,6 +118,10 @@ class SchoolInfo {
 
   /// Pilot test accounts (non-school emails) let in as students.
   final List<String> testers;
+
+  /// Client-side UI policy hints (server remains source of truth).
+  final SchoolPolicy policy;
+
   const SchoolInfo({
     required this.domain,
     required this.name,
@@ -129,6 +134,7 @@ class SchoolInfo {
     this.teacherProfiles = const {},
     this.allowStudentEdit = false,
     this.testers = const [],
+    this.policy = const SchoolPolicy(),
   });
 
   bool isAdmin(String? uid) => uid != null && admins.contains(uid);
@@ -187,11 +193,174 @@ class SchoolInfo {
           : const {},
       allowStudentEdit: m['allowStudentEdit'] == true,
       testers: _strings(m['testers']),
+      policy: SchoolPolicy.fromMap(m['policy'] as Map?),
     );
   }
 
   factory SchoolInfo.fromFirestore(DocumentSnapshot doc) =>
       SchoolInfo.fromMap(doc.id, (doc.data() as Map?) ?? const {});
+}
+
+/// Client-side UI policy hints (server remains source of truth).
+class SchoolClosedRange {
+  final String start;
+  final String end;
+  final String label;
+
+  const SchoolClosedRange({
+    required this.start,
+    required this.end,
+    this.label = '',
+  });
+
+  factory SchoolClosedRange.fromMap(Map m) => SchoolClosedRange(
+        start: _str(m['start']),
+        end: _str(m['end']),
+        label: _str(m['label']),
+      );
+
+  Map<String, dynamic> toMap() => {
+        'start': start,
+        'end': end,
+        'label': label,
+      };
+}
+
+/// Client-side UI policy hints (server remains source of truth).
+class SchoolPolicy {
+  static const defaults = SchoolPolicy();
+
+  final int schemaVersion;
+  final int revision;
+  final String? updatedAt;
+  final String allowedImporters;
+  final String replaceMode;
+  final bool notifyStudentsDefault;
+  final int undoWindowDays;
+  final List<String> schoolDays;
+  final List<SchoolClosedRange> closedDateRanges;
+  final bool excludeNationalHolidays;
+  final List<String> studentIdPatterns;
+  final List<String> extraRedactionLabels;
+  final List<String> extraHonorificExceptions;
+
+  const SchoolPolicy({
+    this.schemaVersion = 1,
+    this.revision = 0,
+    this.updatedAt,
+    this.allowedImporters = 'homeroom_and_admins',
+    this.replaceMode = 'admins_only',
+    this.notifyStudentsDefault = false,
+    this.undoWindowDays = 7,
+    this.schoolDays = const ['月', '火', '水', '木', '金'],
+    this.closedDateRanges = const [],
+    this.excludeNationalHolidays = true,
+    this.studentIdPatterns = const [],
+    this.extraRedactionLabels = const [],
+    this.extraHonorificExceptions = const [],
+  });
+
+  bool canUserUseReplace({required bool isAdmin}) {
+    if (replaceMode == 'disabled') return false;
+    if (replaceMode == 'admins_only') return isAdmin;
+    return true;
+  }
+
+  Map<String, dynamic> toMap() => {
+        'schemaVersion': schemaVersion,
+        'revision': revision,
+        'updatedAt': updatedAt,
+        'timetableImport': {
+          'allowedImporters': allowedImporters,
+          'replaceMode': replaceMode,
+          'notifyStudentsDefault': notifyStudentsDefault,
+          'undoWindowDays': undoWindowDays,
+          'schoolDays': schoolDays,
+          'closedDateRanges': closedDateRanges.map((r) => r.toMap()).toList(),
+          'excludeNationalHolidays': excludeNationalHolidays,
+        },
+        'privacy': {
+          'studentIdPatterns': studentIdPatterns,
+          'extraRedactionLabels': extraRedactionLabels,
+          'extraHonorificExceptions': extraHonorificExceptions,
+        },
+      };
+
+  factory SchoolPolicy.fromMap(Map? m) {
+    if (m == null) return defaults;
+    final tt = m['timetableImport'] is Map ? m['timetableImport'] as Map : const {};
+    final pr = m['privacy'] is Map ? m['privacy'] as Map : const {};
+    return SchoolPolicy(
+      schemaVersion: m['schemaVersion'] is num ? (m['schemaVersion'] as num).toInt() : 1,
+      revision: m['revision'] is num ? (m['revision'] as num).toInt() : 0,
+      updatedAt: m['updatedAt'] is String ? m['updatedAt'] as String : null,
+      allowedImporters: tt['allowedImporters'] is String ? tt['allowedImporters'] as String : 'homeroom_and_admins',
+      replaceMode: tt['replaceMode'] is String ? tt['replaceMode'] as String : 'admins_only',
+      notifyStudentsDefault: tt['notifyStudentsDefault'] == true,
+      undoWindowDays: tt['undoWindowDays'] is num ? (tt['undoWindowDays'] as num).toInt() : 7,
+      schoolDays: tt['schoolDays'] is List
+          ? (tt['schoolDays'] as List).whereType<String>().toList()
+          : const ['月', '火', '水', '木', '金'],
+      closedDateRanges: tt['closedDateRanges'] is List
+          ? (tt['closedDateRanges'] as List).whereType<Map>().map(SchoolClosedRange.fromMap).toList()
+          : const [],
+      excludeNationalHolidays: tt['excludeNationalHolidays'] != false,
+      studentIdPatterns: _strings(pr['studentIdPatterns']),
+      extraRedactionLabels: _strings(pr['extraRedactionLabels']),
+      extraHonorificExceptions: _strings(pr['extraHonorificExceptions']),
+    );
+  }
+}
+
+/// Client-side UI gate mirroring server `canUserImportTimetable`.
+/// Server remains the authoritative enforcement layer.
+bool canUserImport(
+  UserModel? user,
+  SchoolInfo? school,
+  SchoolPolicy? policy, {
+  int? targetGrade,
+  String? targetCourse,
+}) {
+  return canUserImportByIdentity(
+    uid: user?.uid,
+    email: user?.email,
+    school: school,
+    policy: policy,
+    targetGrade: targetGrade,
+    targetCourse: targetCourse,
+  );
+}
+
+/// Identity-based helper for [canUserImport] when [uid] and [email] come from
+/// either [UserModel] or [FirebaseAuth].
+bool canUserImportByIdentity({
+  required String? uid,
+  required String? email,
+  required SchoolInfo? school,
+  required SchoolPolicy? policy,
+  int? targetGrade,
+  String? targetCourse,
+}) {
+  if (school == null || uid == null || uid.isEmpty) return false;
+  if (!school.isTeacher(uid, email)) return false;
+  if (school.isAdmin(uid)) return true;
+
+  final mode = (policy ?? school.policy).allowedImporters;
+  if (mode == 'admins_only') return false;
+  if (mode == 'all_teachers') return true;
+
+  // 'homeroom_and_admins'
+  final profile = school.profileOf(email);
+  if (profile == null ||
+      profile.homeroomGrade == null ||
+      (profile.homeroomCourse == null || profile.homeroomCourse!.isEmpty)) {
+    return false;
+  }
+  if (targetGrade != null && targetCourse != null) {
+    return profile.homeroomGrade == targetGrade &&
+        profile.homeroomCourse == targetCourse;
+  }
+  return true;
 }
 
 class TeacherProfile {

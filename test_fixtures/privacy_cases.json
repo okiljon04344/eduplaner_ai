@@ -1,0 +1,192 @@
+[
+  {
+    "id": "case_1_honorific_student",
+    "description": "山田太郎さん -> [STUDENT_1]さん",
+    "input": "山田太郎さん",
+    "people": [
+      {
+        "id": "s1",
+        "fullName": "山田太郎",
+        "role": "student",
+        "parts": ["山田", "太郎", "やまだ", "Yamada"]
+      }
+    ],
+    "extraPatterns": [],
+    "expectedMasked": "[STUDENT_1]さん",
+    "expectedRestored": "山田太郎さん"
+  },
+  {
+    "id": "case_2_parts_same_person",
+    "description": "山田さんと太郎くん -> same token for the same person",
+    "input": "山田さんと太郎くん",
+    "people": [
+      {
+        "id": "s1",
+        "fullName": "山田太郎",
+        "role": "student",
+        "parts": ["山田", "太郎", "やまだ", "Yamada"]
+      }
+    ],
+    "extraPatterns": [],
+    "expectedMasked": "[STUDENT_1]さんと[STUDENT_1]くん",
+    "expectedRestored": "山田太郎さんと山田太郎くん"
+  },
+  {
+    "id": "case_3_longest_first",
+    "description": "山田太郎 matches full name first and never becomes [STUDENT_1]太郎",
+    "input": "山田太郎",
+    "people": [
+      {
+        "id": "s1",
+        "fullName": "山田太郎",
+        "role": "student",
+        "parts": ["山田", "太郎"]
+      }
+    ],
+    "extraPatterns": [],
+    "expectedMasked": "[STUDENT_1]",
+    "expectedRestored": "山田太郎"
+  },
+  {
+    "id": "case_4_min_part_length",
+    "description": "田んぼ is unchanged because single-character part 田 is ignored",
+    "input": "田んぼで遊ぶ",
+    "people": [
+      {
+        "id": "s4",
+        "fullName": "田一郎",
+        "role": "student",
+        "parts": ["田"]
+      }
+    ],
+    "extraPatterns": [],
+    "expectedMasked": "田んぼで遊ぶ",
+    "expectedRestored": "田んぼで遊ぶ"
+  },
+  {
+    "id": "case_5_latin_word_boundary",
+    "description": "Ali inside Alisher is not replaced",
+    "input": "Alisher came to class",
+    "people": [
+      {
+        "id": "s3",
+        "fullName": "Ali",
+        "role": "student",
+        "parts": ["Ali"]
+      }
+    ],
+    "extraPatterns": [],
+    "expectedMasked": "Alisher came to class",
+    "expectedRestored": "Alisher came to class"
+  },
+  {
+    "id": "case_6_case_insensitive",
+    "description": "ALI / ali are matched case-insensitively",
+    "input": "ALI and ali submitted",
+    "people": [
+      {
+        "id": "s3",
+        "fullName": "Ali",
+        "role": "student",
+        "parts": ["Ali"]
+      }
+    ],
+    "extraPatterns": [],
+    "expectedMasked": "[STUDENT_1] and [STUDENT_1] submitted",
+    "expectedRestored": "Ali and Ali submitted"
+  },
+  {
+    "id": "case_7_two_students",
+    "description": "Two distinct students receive [STUDENT_1] and [STUDENT_2]",
+    "input": "山田太郎と鈴木花子が発表します",
+    "people": [
+      {
+        "id": "s1",
+        "fullName": "山田太郎",
+        "role": "student",
+        "parts": ["山田", "太郎"]
+      },
+      {
+        "id": "s2",
+        "fullName": "鈴木花子",
+        "role": "student",
+        "parts": ["鈴木", "花子"]
+      }
+    ],
+    "extraPatterns": [],
+    "expectedMasked": "[STUDENT_1]と[STUDENT_2]が発表します",
+    "expectedRestored": "山田太郎と鈴木花子が発表します"
+  },
+  {
+    "id": "case_8_ambiguous_surname",
+    "description": "Shared surname (同姓) uses generic PERSON while full name uses role prefix",
+    "input": "佐藤と佐藤健が話した",
+    "people": [
+      {
+        "id": "t1",
+        "fullName": "佐藤先生",
+        "role": "teacher",
+        "parts": ["佐藤"]
+      },
+      {
+        "id": "s5",
+        "fullName": "佐藤健",
+        "role": "student",
+        "parts": ["佐藤"]
+      }
+    ],
+    "extraPatterns": [],
+    "expectedMasked": "[PERSON_1]と[STUDENT_1]が話した",
+    "expectedRestored": "佐藤と佐藤健が話した"
+  },
+  {
+    "id": "case_9_preexisting_token_neutralized",
+    "description": "Preexisting [PERSON_1] in input is neutralized to full-width brackets",
+    "input": "山田太郎と[PERSON_1]のメモ",
+    "people": [
+      {
+        "id": "s1",
+        "fullName": "山田太郎",
+        "role": "student",
+        "parts": ["山田", "太郎"]
+      }
+    ],
+    "extraPatterns": [],
+    "expectedMasked": "[STUDENT_1]と［PERSON_1］のメモ",
+    "expectedRestored": "山田太郎と［PERSON_1］のメモ"
+  },
+  {
+    "id": "case_10_honorific_fallback_and_exceptions",
+    "description": "Unknown name with honorific is masked as PERSON while お母さん and 皆さん are preserved",
+    "input": "お母さんと皆さんと高橋先生が田中さんに相談した",
+    "people": [],
+    "extraPatterns": [],
+    "expectedMasked": "お母さんと皆さんと[PERSON_1]先生が[PERSON_2]さんに相談した",
+    "expectedRestored": "お母さんと皆さんと高橋先生が田中さんに相談した"
+  },
+  {
+    "id": "case_11_pii_phone_email_postal_id_dates",
+    "description": "Masks phone (full/half width), email, postal, student ID while keeping dates and times",
+    "input": "連絡先: ０９０－１２３４－５６７８ / test@example.com / 〒086-1100 / 学籍 S202601 / 締切 2026-11-17 10:30",
+    "people": [],
+    "extraPatterns": ["\\bS\\d{6}\\b"],
+    "expectedMasked": "連絡先: [PHONE_1] / [EMAIL_1] / [POSTAL_1] / 学籍 [STUDENT_ID_1] / 締切 2026-11-17 10:30",
+    "expectedRestored": "連絡先: ０９０－１２３４－５６７８ / test@example.com / 〒086-1100 / 学籍 S202601 / 締切 2026-11-17 10:30"
+  },
+  {
+    "id": "case_12_email_matching_known_name",
+    "description": "Email local-part matching a known person name is masked as [EMAIL_1], not [STUDENT_1]@gmail.com",
+    "input": "Taro Yamada (taro@gmail.com)",
+    "people": [
+      {
+        "id": "s6",
+        "fullName": "Taro Yamada",
+        "role": "student",
+        "parts": ["Taro", "Yamada"]
+      }
+    ],
+    "extraPatterns": [],
+    "expectedMasked": "[STUDENT_1] ([EMAIL_1])",
+    "expectedRestored": "Taro Yamada (taro@gmail.com)"
+  }
+]

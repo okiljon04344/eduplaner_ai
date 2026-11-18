@@ -24,10 +24,25 @@ abstract class FunctionsService {
   static HttpsCallable callable(String name) =>
       _instance.httpsCallable(name, options: HttpsCallableOptions(timeout: timeout));
 
-  /// Maps the error codes any callable can raise (auth/timeout/offline/server)
-  /// to a localized message. Call sites should check their own
-  /// function-specific codes first and fall back to this for the rest.
+  /// Extracts `details['reason']` from a [FirebaseFunctionsException] when present.
+  static String? reasonOf(FirebaseFunctionsException e) {
+    final details = e.details;
+    return details is Map ? details['reason']?.toString() : null;
+  }
+
+  /// Maps the error codes and shared `details['reason']` tags any callable
+  /// can raise (auth/timeout/offline/budget/unavailable/server) to a localized
+  /// message. Call sites should check their own function-specific codes first
+  /// and fall back to this for the rest.
   static String describeError(FirebaseFunctionsException e) {
+    final reason = reasonOf(e);
+    if (reason == 'ai_temporarily_unavailable') {
+      return AppStrings.t('err_ai_temporarily_unavailable');
+    }
+    if (reason == 'ai_budget_exceeded') {
+      return AppStrings.t('err_ai_budget_exceeded');
+    }
+
     switch (e.code) {
       case 'unauthenticated':
         return AppStrings.t('err_login_required');

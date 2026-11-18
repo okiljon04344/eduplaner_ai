@@ -22,6 +22,7 @@ import '../../features/school/screens/teacher_home_screen.dart';
 import '../../features/school/screens/teacher_notices_screen.dart';
 import '../../features/school/screens/teacher_screen.dart';
 import '../../features/settings/screens/settings_screen.dart';
+import '../../features/timetable/screens/timetable_import_screen.dart';
 import '../../features/timetable/screens/timetable_screen.dart';
 import '../../shared/widgets/app_shell.dart';
 
@@ -138,6 +139,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/quiz', pageBuilder: (_, s) => _slideUp(s, const QuizScreen())),
       GoRoute(path: '/teacher', pageBuilder: (_, s) => _slideRight(s, const TeacherHomeScreen())),
       GoRoute(path: '/teacher/timetable', pageBuilder: (_, s) => _slideRight(s, const TeacherScreen())),
+      GoRoute(path: '/teacher/timetable/import', pageBuilder: (_, s) => _slideRight(s, const TimetableImportScreen())),
       GoRoute(path: '/teacher/notices', pageBuilder: (_, s) => _slideRight(s, const TeacherNoticesScreen())),
       GoRoute(path: '/teacher/assignments', pageBuilder: (_, s) => _slideRight(s, const TeacherAssignmentsScreen())),
       GoRoute(path: '/school-admin', pageBuilder: (_, s) => _slideRight(s, const SchoolAdminScreen())),

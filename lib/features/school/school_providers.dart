@@ -36,6 +36,50 @@ final schoolInfoProvider = StreamProvider<SchoolInfo?>((ref) {
   return ref.watch(schoolRepositoryProvider).watchSchool(domain);
 });
 
+/// The active school's policy (or default fallback).
+final schoolPolicyProvider = Provider<SchoolPolicy>((ref) {
+  return ref.watch(schoolInfoProvider).valueOrNull?.policy ?? SchoolPolicy.defaults;
+});
+
+/// Safe identity helper for school/teacher widgets.
+/// Uses [currentUserProvider] first so widget tests do not require
+/// `Firebase.initializeApp()`.
+final schoolUserIdentityProvider =
+    Provider<({String? uid, String? email, String? displayName})>((ref) {
+  final userModel = ref.watch(currentUserProvider);
+  if (userModel != null) {
+    return (
+      uid: userModel.uid,
+      email: userModel.email,
+      displayName: userModel.name,
+    );
+  }
+  ref.watch(authStateProvider);
+  try {
+    final authUser = FirebaseAuth.instance.currentUser;
+    return (
+      uid: authUser?.uid,
+      email: authUser?.email,
+      displayName: authUser?.displayName,
+    );
+  } catch (_) {
+    return (uid: null, email: null, displayName: null);
+  }
+});
+
+/// Client-side UI hint: whether the signed-in user is allowed to open timetable import.
+final canImportTimetableProvider = Provider<bool>((ref) {
+  final info = ref.watch(schoolInfoProvider).valueOrNull;
+  final policy = ref.watch(schoolPolicyProvider);
+  final identity = ref.watch(schoolUserIdentityProvider);
+  return canUserImportByIdentity(
+    uid: identity.uid,
+    email: identity.email,
+    school: info,
+    policy: policy,
+  );
+});
+
 /// The user's grade/course, only when it matches the synced school.
 final schoolClassProvider = Provider<({int grade, String course})?>((ref) {
   final info = ref.watch(schoolInfoProvider).valueOrNull;

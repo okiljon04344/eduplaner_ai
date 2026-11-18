@@ -1,0 +1,19 @@
+{
+  "scannedPdf": "scanned_pdf",
+  "unsupportedHeic": "unsupported_heic",
+  "sjisUnsupportedRuntime": "sjis_unsupported_runtime",
+  "ocrFailed": "ocr_failed",
+  "timetableChanged": "timetable_changed",
+  "policyChanged": "policy_changed",
+  "policyDisallowsReplace": "policy_disallows_replace",
+  "invalidDateRange": "invalid_date_range",
+  "rangeTooLarge": "range_too_large",
+  "fileTooLarge": "file_too_large",
+  "draftExpiredOrNotFound": "draft_expired_or_not_found",
+  "undoWindowExpired": "undo_window_expired",
+  "alreadyReverted": "already_reverted",
+  "aiQuotaExceeded": "ai_quota_exceeded",
+  "imageTooLargeForProvider": "image_too_large_for_provider",
+  "aiTemporarilyUnavailable": "ai_temporarily_unavailable",
+  "aiBudgetExceeded": "ai_budget_exceeded"
+}

@@ -51,7 +51,19 @@ class AssignmentsRepository {
       });
       return Map<String, dynamic>.from(result.data);
     } on FirebaseFunctionsException catch (e) {
-      if (e.code == 'invalid-argument') throw Exception(e.message ?? AppStrings.t('err_invalid_file'));
+      final reason = FunctionsService.reasonOf(e);
+      if (reason == 'ai_temporarily_unavailable' || reason == 'ai_budget_exceeded') {
+        throw Exception(FunctionsService.describeError(e));
+      }
+      if (e.code == 'invalid-argument') {
+        if (reason == 'scanned_pdf' || (e.message?.contains('SCANNED_PDF_NOT_SUPPORTED') ?? false)) {
+          throw Exception(AppStrings.t('err_scanned_pdf'));
+        }
+        if (reason == 'unsupported_heic') {
+          throw Exception(AppStrings.t('err_heic_unsupported'));
+        }
+        throw Exception(e.message ?? AppStrings.t('err_invalid_file'));
+      }
       if (e.code == 'unauthenticated' || e.code == 'deadline-exceeded' || e.code == 'unavailable' || e.code == 'resource-exhausted') {
         throw Exception(FunctionsService.describeError(e));
       }

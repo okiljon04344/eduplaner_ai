@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "revision": 0,
+  "updatedAt": null,
+  "timetableImport": {
+    "allowedImporters": "homeroom_and_admins",
+    "replaceMode": "admins_only",
+    "notifyStudentsDefault": false,
+    "undoWindowDays": 7,
+    "schoolDays": ["月", "火", "水", "木", "金"],
+    "closedDateRanges": [],
+    "excludeNationalHolidays": true
+  },
+  "privacy": {
+    "studentIdPatterns": [],
+    "extraRedactionLabels": [],
+    "extraHonorificExceptions": []
+  }
+}

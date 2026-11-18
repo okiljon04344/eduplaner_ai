@@ -92,6 +92,13 @@ class AuthNotifier extends AsyncNotifier<void> {
       ref.invalidate(authStateProvider);
     });
   }
+
+  /// Records that the user acknowledged the AI file upload privacy notice,
+  /// then refreshes [authStateProvider] so [currentUserProvider] reflects it.
+  Future<void> recordAiFileConsent() async {
+    await ref.read(authRepositoryProvider).recordAiFileConsent();
+    ref.invalidate(authStateProvider);
+  }
 }
 
 /// Global provider for [AuthNotifier].

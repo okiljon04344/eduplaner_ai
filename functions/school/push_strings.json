@@ -19,6 +19,7 @@
     "push_status_title": "{subject}: {status}",
     "push_sync_body": "السنة {grade} {course}: {when} {subject} → {what}{more}",
     "push_sync_failed": "فشل استيراد الجدول الزمني",
+    "push_tt_import_summary": "تم تحديث الجدول ({n} يومًا)",
     "push_tt_title": "تغيير في الجدول (من المعلم)",
     "push_tt_title_sync": "تغيير في الجدول"
   },
@@ -42,6 +43,7 @@
     "push_status_title": "{subject}: {status}",
     "push_sync_body": "{grade}. Jahr {course}: {when} {subject} → {what}{more}",
     "push_sync_failed": "Stundenplan konnte nicht importiert werden",
+    "push_tt_import_summary": "Stundenplan aktualisiert ({n} Tage)",
     "push_tt_title": "Stundenplanänderung (von deiner Lehrkraft)",
     "push_tt_title_sync": "Stundenplanänderung"
   },
@@ -65,6 +67,7 @@
     "push_status_title": "{subject}: {status}",
     "push_sync_body": "Year {grade} {course}: {when} {subject} → {what}{more}",
     "push_sync_failed": "Timetable import failed",
+    "push_tt_import_summary": "Timetable updated ({n} days)",
     "push_tt_title": "Timetable change (from your teacher)",
     "push_tt_title_sync": "Timetable change"
   },
@@ -88,6 +91,7 @@
     "push_status_title": "{subject}: {status}",
     "push_sync_body": "Curso {grade} {course}: {when} {subject} → {what}{more}",
     "push_sync_failed": "Error al importar el horario",
+    "push_tt_import_summary": "Horario actualizado ({n} días)",
     "push_tt_title": "Cambio de horario (del profesor)",
     "push_tt_title_sync": "Cambio de horario"
   },
@@ -111,6 +115,7 @@
     "push_status_title": "{subject}: {status}",
     "push_sync_body": "Taon {grade} {course}: {when} {subject} → {what}{more}",
     "push_sync_failed": "Nabigong i-import ang iskedyul",
+    "push_tt_import_summary": "Na-update ang iskedyul ({n} araw)",
     "push_tt_title": "Pagbabago sa iskedyul (mula sa guro)",
     "push_tt_title_sync": "Pagbabago sa iskedyul"
   },
@@ -134,6 +139,7 @@
     "push_status_title": "{subject} : {status}",
     "push_sync_body": "Année {grade} {course} : {when} {subject} → {what}{more}",
     "push_sync_failed": "Échec de l'importation de l'emploi du temps",
+    "push_tt_import_summary": "Emploi du temps mis à jour ({n} jours)",
     "push_tt_title": "Changement d'emploi du temps (de votre enseignant)",
     "push_tt_title_sync": "Changement d'emploi du temps"
   },
@@ -157,6 +163,7 @@
     "push_status_title": "{subject}: {status}",
     "push_sync_body": "वर्ष {grade} {course}: {when} {subject} → {what}{more}",
     "push_sync_failed": "समय-सारणी आयात विफल",
+    "push_tt_import_summary": "समय-सारणी अपडेट की गई ({n} दिन)",
     "push_tt_title": "समय-सारणी में बदलाव (शिक्षक द्वारा)",
     "push_tt_title_sync": "समय-सारणी में बदलाव"
   },
@@ -180,6 +187,7 @@
     "push_status_title": "{subject}: {status}",
     "push_sync_body": "Tahun {grade} {course}: {when} {subject} → {what}{more}",
     "push_sync_failed": "Gagal mengimpor jadwal",
+    "push_tt_import_summary": "Jadwal diperbarui ({n} hari)",
     "push_tt_title": "Perubahan jadwal (dari guru)",
     "push_tt_title_sync": "Perubahan jadwal"
   },
@@ -203,6 +211,7 @@
     "push_status_title": "{subject}: {status}",
     "push_sync_body": "{grade}º anno {course}: {when} {subject} → {what}{more}",
     "push_sync_failed": "Importazione orario non riuscita",
+    "push_tt_import_summary": "Orario aggiornato ({n} giorni)",
     "push_tt_title": "Modifica orario (dal docente)",
     "push_tt_title_sync": "Modifica orario"
   },
@@ -226,6 +235,7 @@
     "push_status_title": "{subject}が{status}になりました",
     "push_sync_body": "{grade}年・{course}：{when} {subject} → {what}{more}",
     "push_sync_failed": "時間割の取り込みに失敗しました",
+    "push_tt_import_summary": "時間割が更新されました（{n}日分）",
     "push_tt_title": "時間割の変更（先生より）",
     "push_tt_title_sync": "時間割の変更"
   },
@@ -249,6 +259,7 @@
     "push_status_title": "{subject}: {status}",
     "push_sync_body": "{grade}학년 {course}: {when} {subject} → {what}{more}",
     "push_sync_failed": "시간표를 가져오지 못했습니다",
+    "push_tt_import_summary": "시간표가 업데이트되었습니다 ({n}일)",
     "push_tt_title": "시간표 변경 (선생님)",
     "push_tt_title_sync": "시간표 변경"
   },
@@ -272,6 +283,7 @@
     "push_status_title": "{subject}: {status}",
     "push_sync_body": "Tahun {grade} {course}: {when} {subject} → {what}{more}",
     "push_sync_failed": "Gagal mengimport jadual waktu",
+    "push_tt_import_summary": "Jadual waktu dikemas kini ({n} hari)",
     "push_tt_title": "Perubahan jadual waktu (daripada guru)",
     "push_tt_title_sync": "Perubahan jadual waktu"
   },
@@ -295,6 +307,7 @@
     "push_status_title": "{subject}: {status}",
     "push_sync_body": "Jaar {grade} {course}: {when} {subject} → {what}{more}",
     "push_sync_failed": "Rooster importeren mislukt",
+    "push_tt_import_summary": "Rooster bijgewerkt ({n} dagen)",
     "push_tt_title": "Roosterwijziging (van je docent)",
     "push_tt_title_sync": "Roosterwijziging"
   },
@@ -318,6 +331,7 @@
     "push_status_title": "{subject}: {status}",
     "push_sync_body": "{grade}º ano {course}: {when} {subject} → {what}{more}",
     "push_sync_failed": "Falha ao importar o horário",
+    "push_tt_import_summary": "Horário atualizado ({n} dias)",
     "push_tt_title": "Alteração de horário (do professor)",
     "push_tt_title_sync": "Alteração de horário"
   },
@@ -341,6 +355,7 @@
     "push_status_title": "{subject}: {status}",
     "push_sync_body": "{grade}-й курс {course}: {when} {subject} → {what}{more}",
     "push_sync_failed": "Не удалось импортировать расписание",
+    "push_tt_import_summary": "Расписание обновлено ({n} дн.)",
     "push_tt_title": "Изменение расписания (от преподавателя)",
     "push_tt_title_sync": "Изменение расписания"
   },
@@ -364,6 +379,7 @@
     "push_status_title": "{subject}: {status}",
     "push_sync_body": "ปี {grade} {course}: {when} {subject} → {what}{more}",
     "push_sync_failed": "นำเข้าตารางเรียนไม่สำเร็จ",
+    "push_tt_import_summary": "อัปเดตตารางเรียนแล้ว ({n} วัน)",
     "push_tt_title": "การเปลี่ยนแปลงตารางเรียน (จากครู)",
     "push_tt_title_sync": "การเปลี่ยนแปลงตารางเรียน"
   },
@@ -387,6 +403,7 @@
     "push_status_title": "{subject}: {status}",
     "push_sync_body": "{grade}. sınıf {course}: {when} {subject} → {what}{more}",
     "push_sync_failed": "Ders programı içe aktarılamadı",
+    "push_tt_import_summary": "Ders programı güncellendi ({n} gün)",
     "push_tt_title": "Ders programı değişikliği (öğretmenden)",
     "push_tt_title_sync": "Ders programı değişikliği"
   },
@@ -410,6 +427,7 @@
     "push_status_title": "{subject}: {status}",
     "push_sync_body": "{grade}-kurs {course}: {when} {subject} → {what}{more}",
     "push_sync_failed": "Dars jadvalini yuklash amalga oshmadi",
+    "push_tt_import_summary": "Jadval yangilandi: {n} kun",
     "push_tt_title": "Dars jadvali o'zgarishi (o'qituvchidan)",
     "push_tt_title_sync": "Dars jadvali o'zgarishi"
   },
@@ -433,6 +451,7 @@
     "push_status_title": "{subject}: {status}",
     "push_sync_body": "Năm {grade} {course}: {when} {subject} → {what}{more}",
     "push_sync_failed": "Nhập thời khóa biểu thất bại",
+    "push_tt_import_summary": "Đã cập nhật thời khóa biểu ({n} ngày)",
     "push_tt_title": "Thay đổi thời khóa biểu (từ giáo viên)",
     "push_tt_title_sync": "Thay đổi thời khóa biểu"
   },
@@ -456,6 +475,7 @@
     "push_status_title": "{subject}：{status}",
     "push_sync_body": "{grade}年级 {course}：{when} {subject} → {what}{more}",
     "push_sync_failed": "课表导入失败",
+    "push_tt_import_summary": "课表已更新（{n}天）",
     "push_tt_title": "课表变动（来自老师）",
     "push_tt_title_sync": "课表变动"
   },
@@ -479,6 +499,7 @@
     "push_status_title": "{subject}：{status}",
     "push_sync_body": "{grade}年級 {course}：{when} {subject} → {what}{more}",
     "push_sync_failed": "課表匯入失敗",
+    "push_tt_import_summary": "課表已更新（{n}天）",
     "push_tt_title": "課表變更（來自老師）",
     "push_tt_title_sync": "課表變更"
   }

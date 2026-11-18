@@ -19,8 +19,20 @@ class FakeAssignmentsRepository implements AssignmentsRepository {
   final List<AssignmentModel> addedModels = [];
   final List<AssignmentModel> updatedModels = [];
   final List<String> deletedIds = [];
+  int analyzeSubmissionCalls = 0;
+  String? lastAnalyzeMimeType;
+  String? lastAnalyzeFileBase64;
+  Map<String, dynamic> analyzeResult;
 
-  FakeAssignmentsRepository({this.initial = const []});
+  FakeAssignmentsRepository({
+    this.initial = const [],
+    this.analyzeResult = const {
+      'completionPercent': 0.0,
+      'missingParts': <String>[],
+      'advice': '',
+      'highRedactionWarning': false,
+    },
+  });
 
   @override
   Stream<List<AssignmentModel>> watch(String userId) => Stream.value(initial);
@@ -47,7 +59,10 @@ class FakeAssignmentsRepository implements AssignmentsRepository {
     required String fileBase64,
     required String mimeType,
   }) async {
-    return const {'completionPercent': 0.0, 'missingParts': <String>[], 'advice': ''};
+    analyzeSubmissionCalls += 1;
+    lastAnalyzeMimeType = mimeType;
+    lastAnalyzeFileBase64 = fileBase64;
+    return analyzeResult;
   }
 
   @override
@@ -245,6 +260,8 @@ class FakeAuthRepository implements AuthRepository {
     currentUser = null;
   }
 
+  int recordAiFileConsentCalls = 0;
+
   @override
   Future<void> saveSchoolProfile({
     required String schoolType,
@@ -256,6 +273,18 @@ class FakeAuthRepository implements AuthRepository {
     String? course,
     String? schoolDomain,
   }) async {}
+
+  @override
+  Future<void> recordAiFileConsent({int version = kAiFileConsentVersion}) async {
+    recordAiFileConsentCalls += 1;
+    final cur = currentUser;
+    if (cur != null) {
+      currentUser = cur.copyWith(
+        aiFileConsentAt: DateTime.now(),
+        aiFileConsentVersion: version,
+      );
+    }
+  }
 }
 
 /// Minimal FakeDocumentSnapshot for testing `fromFirestore` factory constructors.

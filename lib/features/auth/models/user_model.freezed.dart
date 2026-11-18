@@ -33,6 +33,8 @@ mixin _$UserModel {
   String? get department => throw _privateConstructorUsedError;
   String? get course => throw _privateConstructorUsedError;
   String? get schoolDomain => throw _privateConstructorUsedError;
+  DateTime? get aiFileConsentAt => throw _privateConstructorUsedError;
+  int? get aiFileConsentVersion => throw _privateConstructorUsedError;
   DateTime get createdAt => throw _privateConstructorUsedError;
 
   /// Serializes this UserModel to a JSON map.
@@ -64,6 +66,8 @@ abstract class $UserModelCopyWith<$Res> {
       String? department,
       String? course,
       String? schoolDomain,
+      DateTime? aiFileConsentAt,
+      int? aiFileConsentVersion,
       DateTime createdAt});
 }
 
@@ -95,6 +99,8 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
     Object? department = freezed,
     Object? course = freezed,
     Object? schoolDomain = freezed,
+    Object? aiFileConsentAt = freezed,
+    Object? aiFileConsentVersion = freezed,
     Object? createdAt = null,
   }) {
     return _then(_value.copyWith(
@@ -150,6 +156,14 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
           ? _value.schoolDomain
           : schoolDomain // ignore: cast_nullable_to_non_nullable
               as String?,
+      aiFileConsentAt: freezed == aiFileConsentAt
+          ? _value.aiFileConsentAt
+          : aiFileConsentAt // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+      aiFileConsentVersion: freezed == aiFileConsentVersion
+          ? _value.aiFileConsentVersion
+          : aiFileConsentVersion // ignore: cast_nullable_to_non_nullable
+              as int?,
       createdAt: null == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -180,6 +194,8 @@ abstract class _$$UserModelImplCopyWith<$Res>
       String? department,
       String? course,
       String? schoolDomain,
+      DateTime? aiFileConsentAt,
+      int? aiFileConsentVersion,
       DateTime createdAt});
 }
 
@@ -209,6 +225,8 @@ class __$$UserModelImplCopyWithImpl<$Res>
     Object? department = freezed,
     Object? course = freezed,
     Object? schoolDomain = freezed,
+    Object? aiFileConsentAt = freezed,
+    Object? aiFileConsentVersion = freezed,
     Object? createdAt = null,
   }) {
     return _then(_$UserModelImpl(
@@ -264,6 +282,14 @@ class __$$UserModelImplCopyWithImpl<$Res>
           ? _value.schoolDomain
           : schoolDomain // ignore: cast_nullable_to_non_nullable
               as String?,
+      aiFileConsentAt: freezed == aiFileConsentAt
+          ? _value.aiFileConsentAt
+          : aiFileConsentAt // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+      aiFileConsentVersion: freezed == aiFileConsentVersion
+          ? _value.aiFileConsentVersion
+          : aiFileConsentVersion // ignore: cast_nullable_to_non_nullable
+              as int?,
       createdAt: null == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -289,6 +315,8 @@ class _$UserModelImpl extends _UserModel {
       this.department,
       this.course,
       this.schoolDomain,
+      this.aiFileConsentAt,
+      this.aiFileConsentVersion,
       required this.createdAt})
       : super._();
 
@@ -322,11 +350,15 @@ class _$UserModelImpl extends _UserModel {
   @override
   final String? schoolDomain;
   @override
+  final DateTime? aiFileConsentAt;
+  @override
+  final int? aiFileConsentVersion;
+  @override
   final DateTime createdAt;
 
   @override
   String toString() {
-    return 'UserModel(uid: $uid, name: $name, email: $email, photoUrl: $photoUrl, classId: $classId, school: $school, schoolType: $schoolType, grade: $grade, program: $program, faculty: $faculty, department: $department, course: $course, schoolDomain: $schoolDomain, createdAt: $createdAt)';
+    return 'UserModel(uid: $uid, name: $name, email: $email, photoUrl: $photoUrl, classId: $classId, school: $school, schoolType: $schoolType, grade: $grade, program: $program, faculty: $faculty, department: $department, course: $course, schoolDomain: $schoolDomain, aiFileConsentAt: $aiFileConsentAt, aiFileConsentVersion: $aiFileConsentVersion, createdAt: $createdAt)';
   }
 
   @override
@@ -351,6 +383,10 @@ class _$UserModelImpl extends _UserModel {
             (identical(other.course, course) || other.course == course) &&
             (identical(other.schoolDomain, schoolDomain) ||
                 other.schoolDomain == schoolDomain) &&
+            (identical(other.aiFileConsentAt, aiFileConsentAt) ||
+                other.aiFileConsentAt == aiFileConsentAt) &&
+            (identical(other.aiFileConsentVersion, aiFileConsentVersion) ||
+                other.aiFileConsentVersion == aiFileConsentVersion) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt));
   }
@@ -372,6 +408,8 @@ class _$UserModelImpl extends _UserModel {
       department,
       course,
       schoolDomain,
+      aiFileConsentAt,
+      aiFileConsentVersion,
       createdAt);
 
   /// Create a copy of UserModel
@@ -405,6 +443,8 @@ abstract class _UserModel extends UserModel {
       final String? department,
       final String? course,
       final String? schoolDomain,
+      final DateTime? aiFileConsentAt,
+      final int? aiFileConsentVersion,
       required final DateTime createdAt}) = _$UserModelImpl;
   const _UserModel._() : super._();
 
@@ -437,6 +477,10 @@ abstract class _UserModel extends UserModel {
   String? get course;
   @override
   String? get schoolDomain;
+  @override
+  DateTime? get aiFileConsentAt;
+  @override
+  int? get aiFileConsentVersion;
   @override
   DateTime get createdAt;
 

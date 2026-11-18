@@ -57,10 +57,15 @@ class ChatRepository {
       return reply;
     } on FirebaseFunctionsException catch (e) {
       debugPrint('chatWithTutor error: ${e.code} ${e.message}');
+      final reason = FunctionsService.reasonOf(e);
       if (e.code == 'unauthenticated') {
         throw Exception(AppStrings.t('err_login_required'));
       }
-      if (e.code == 'deadline-exceeded' || e.code == 'unavailable' || e.code == 'resource-exhausted') {
+      if (reason == 'ai_temporarily_unavailable' ||
+          reason == 'ai_budget_exceeded' ||
+          e.code == 'deadline-exceeded' ||
+          e.code == 'unavailable' ||
+          e.code == 'resource-exhausted') {
         throw Exception(FunctionsService.describeError(e));
       }
       throw Exception(AppStrings.t('err_ai_connection_failed'));

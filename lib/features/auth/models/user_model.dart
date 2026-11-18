@@ -4,6 +4,11 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'user_model.freezed.dart';
 part 'user_model.g.dart';
 
+/// Current version of the one-time AI homework file upload consent notice.
+/// Bump this constant if the disclosure text changes materially so users are
+/// prompted once again under the updated version.
+const int kAiFileConsentVersion = 1;
+
 @freezed
 class UserModel with _$UserModel {
   const factory UserModel({
@@ -20,6 +25,8 @@ class UserModel with _$UserModel {
     String? department,
     String? course,
     String? schoolDomain,
+    DateTime? aiFileConsentAt,
+    int? aiFileConsentVersion,
     required DateTime createdAt,
   }) = _UserModel;
 
@@ -41,6 +48,8 @@ class UserModel with _$UserModel {
       department: data['department'] as String?,
       course: data['course'] as String?,
       schoolDomain: data['schoolDomain'] as String?,
+      aiFileConsentAt: (data['aiFileConsentAt'] as Timestamp?)?.toDate(),
+      aiFileConsentVersion: (data['aiFileConsentVersion'] as num?)?.toInt(),
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }
@@ -53,19 +62,30 @@ class UserModel with _$UserModel {
   /// alone is enough to know the whole step was completed.
   bool get profileComplete => schoolType != null && schoolType!.isNotEmpty;
 
-  Map<String, dynamic> toFirestore() => {
-        'name': name,
-        'email': email,
-        'photoUrl': photoUrl,
-        'classId': classId,
-        'school': school,
-        'schoolType': schoolType,
-        'grade': grade,
-        'program': program,
-        'faculty': faculty,
-        'department': department,
-        'course': course,
-        'schoolDomain': schoolDomain,
-        'createdAt': Timestamp.fromDate(createdAt),
-      };
+  /// True when the user has acknowledged the current [kAiFileConsentVersion]
+  /// notice before sending assignment files to AI.
+  bool get hasCurrentAiFileConsent =>
+      aiFileConsentAt != null && aiFileConsentVersion == kAiFileConsentVersion;
+
+  Map<String, dynamic> toFirestore() {
+    final consentAt = aiFileConsentAt;
+    final consentVersion = aiFileConsentVersion;
+    return {
+      'name': name,
+      'email': email,
+      'photoUrl': photoUrl,
+      'classId': classId,
+      'school': school,
+      'schoolType': schoolType,
+      'grade': grade,
+      'program': program,
+      'faculty': faculty,
+      'department': department,
+      'course': course,
+      'schoolDomain': schoolDomain,
+      if (consentAt != null) 'aiFileConsentAt': Timestamp.fromDate(consentAt),
+      if (consentVersion != null) 'aiFileConsentVersion': consentVersion,
+      'createdAt': Timestamp.fromDate(createdAt),
+    };
+  }
 }

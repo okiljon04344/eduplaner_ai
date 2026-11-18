@@ -77,10 +77,17 @@ ios/Flutter/App.framework.dSYM
 # macOS related
 /macos/Flutter/ephemeral/
 
-# Environment variables
+# Environment variables & local Firebase secrets
 .env
 .env.local
 .env.local.json
+.secret.local
+functions/.secret.local
+functions/.env.local
+functions/.env.*
+!functions/.env
+compare_results*.jsonl
+functions/compare_results*.jsonl
 
 graphify-out/
 docs/hearing/
