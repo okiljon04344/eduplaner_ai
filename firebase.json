@@ -96,6 +96,15 @@
             "value": "no-cache"
           }
         ]
+      },
+      {
+        "source": "app_build.json",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-store"
+          }
+        ]
       }
     ]
   },

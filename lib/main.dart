@@ -17,6 +17,7 @@ import 'app.dart';
 import 'core/l10n/app_strings.dart';
 import 'core/services/app_check_config.dart';
 import 'core/services/notification_service.dart';
+import 'core/services/web_update/web_update_checker.dart';
 import 'firebase_options.dart';
 
 /// App entry point.
@@ -134,4 +135,5 @@ Future<void> main() async {
   final savedLocale = prefs.getString('app_locale') ?? 'ja';
   await AppStrings.load(savedLocale);
   runApp(const ProviderScope(child: EduPlannerApp()));
+  startWebUpdateChecker();
 }
