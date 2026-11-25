@@ -216,6 +216,7 @@ npm run ai:keys -- remove claude
   - `GEMINI_API_KEY` **billing yoqilmagan alohida Google Cloud loyihasida** yaratilishi shart! Aks holda (agar billing ulangan Firebase/GCP loyihasida yaratilsa), Gemini API avtomatik **Paid Services (Tier 1+)** pullik tarifida ishlaydi.
   - Bepul tarif (**Unpaid Services**) ma'lumotlardan foydalanish shartlari ([Gemini API Additional Terms of Service](https://ai.google.dev/gemini-api/terms)): Yevropa Iqtisodiy Hududi (EEA), Shveytsariya va Buyuk Britaniyadan tashqarida yuborilgan promptlar, tizim ko'rsatmalari, fayllar va javoblar Google mahsulotlari hamda ML texnologiyalarini yaxshilash uchun ishlatilishi va inson moderatorlar (akkaunt/loyihadan ajratilgan holda) tomonidan ko'rib chiqilishi mumkin. Shu sababli maxfiy/talaba fayllari (`analyzeAssignmentSubmission`, `previewTimetableImport`) hech qachon bepul tarifga yuborilmaydi. EEA/Shveytsariya/Buyuk Britaniya foydalanuvchilari uchun faqat Paid Services ruxsat etiladi.
 - **Shared JSON sinxronligi:** `shared/*.json` fayllari yagona manba (source of truth) hisoblanadi; tahrirdan so'ng `cd functions && npm run sync-shared` ni bajaring.
+- **Firebase App Check (dev/emulator va platformalar):** Batafsil sozlash hamda debug token ro'yxatdan o'tkazish yo'riqnomasi [docs/app_check_setup.md](docs/app_check_setup.md) faylida (enforcement hozircha o'chiq).
 
 ---
 

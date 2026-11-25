@@ -1,10 +1,12 @@
+import 'dart:async' show unawaited;
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart'
-    show LicenseEntryWithLineBreaks, LicenseRegistry, TargetPlatform, defaultTargetPlatform, kDebugMode, kIsWeb;
+    show LicenseEntryWithLineBreaks, LicenseRegistry, kDebugMode;
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -13,6 +15,7 @@ import 'package:timezone/data/latest.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
 import 'app.dart';
 import 'core/l10n/app_strings.dart';
+import 'core/services/app_check_config.dart';
 import 'core/services/notification_service.dart';
 import 'firebase_options.dart';
 
@@ -33,26 +36,40 @@ import 'firebase_options.dart';
 /// See the emulator block in `initFirebase` below.
 const kUseEmulator = bool.fromEnvironment('USE_EMULATOR');
 
-/// reCAPTCHA v3 site key for App Check on web (public, not a secret):
-/// `flutter build web --dart-define=RECAPTCHA_SITE_KEY=...`. Empty = web
-/// runs without App Check, so a build without the key still works.
-const kRecaptchaSiteKey = String.fromEnvironment('RECAPTCHA_SITE_KEY');
-
 /// App Check proves requests come from this app, not a script reusing the
 /// API key. Debug builds use the debug provider (its token is printed to the
-/// log once; register it in the console). Enforcement is switched on in the
-/// console / Cloud Functions only after the metrics show verified traffic.
+/// log once, or supplied via `--dart-define=APP_CHECK_DEBUG_TOKEN=...`).
+/// Enforcement is switched on in the console / Cloud Functions only after
+/// the metrics show verified traffic (`app: VALID`).
 Future<void> activateAppCheck() async {
-  final mobile = defaultTargetPlatform == TargetPlatform.android || defaultTargetPlatform == TargetPlatform.iOS;
-  if (kIsWeb ? kRecaptchaSiteKey.isEmpty : !mobile) return;
+  final plan = resolveAppCheckPlan(useEmulator: kUseEmulator);
+  if (!plan.shouldActivate) {
+    debugPrint('App Check skipped (${plan.reason})');
+    return;
+  }
   try {
     await FirebaseAppCheck.instance.activate(
-      providerWeb: kIsWeb ? ReCaptchaV3Provider(kRecaptchaSiteKey) : null,
-      providerAndroid: kDebugMode ? const AndroidDebugProvider() : const AndroidPlayIntegrityProvider(),
-      providerApple: kDebugMode ? const AppleDebugProvider() : const AppleAppAttestWithDeviceCheckFallbackProvider(),
+      providerWeb: plan.providerWeb,
+      providerAndroid: plan.providerAndroid,
+      providerApple: plan.providerApple,
+      providerWindows: plan.providerWindows,
     );
+    if (kDebugMode) {
+      // Trigger initial token fetch in the background so the SDK logs any
+      // unregistered debug secret or exchange failure immediately at boot,
+      // without blocking startup or printing token values.
+      unawaited(
+        FirebaseAppCheck.instance.getToken(false).then((token) {
+          debugPrint(
+            'App Check ready (${plan.reason}, tokenPresent=${token != null && token.isNotEmpty})',
+          );
+        }).catchError((Object e) {
+          debugPrint('App Check token fetch failed (${plan.reason}): $e');
+        }),
+      );
+    }
   } catch (e) {
-    debugPrint('App Check init error: $e');
+    debugPrint('App Check init error (${plan.reason}): $e');
   }
 }
 
