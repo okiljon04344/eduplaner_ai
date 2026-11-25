@@ -357,7 +357,7 @@
   "quiz_generate_btn": "إنشاء اختبار",
   "quiz_generating": "جارٍ الإنشاء...",
   "quiz_loading": "الذكاء الاصطناعي يعد الأسئلة...",
-  "quiz_loading_sub": "قد يستغرق حتى 60 ثانية",
+  "quiz_loading_sub": "قد يستغرق حتى 120 ثانية",
   "quiz_subject": "المادة",
   "quiz_title": "📝 أسئلة اختبار",
   "quiz_topic": "الموضوع (اختياري)",

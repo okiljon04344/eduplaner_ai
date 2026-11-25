@@ -357,7 +357,7 @@
   "quiz_generate_btn": "Gerar questionário",
   "quiz_generating": "Gerando...",
   "quiz_loading": "A IA está criando as perguntas...",
-  "quiz_loading_sub": "Pode levar até 60 segundos",
+  "quiz_loading_sub": "Pode levar até 120 segundos",
   "quiz_subject": "Matéria",
   "quiz_title": "📝 Questionário",
   "quiz_topic": "Tópico (opcional)",

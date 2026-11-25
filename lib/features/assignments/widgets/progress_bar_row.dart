@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_colors.dart';
 
 /// Thin animated progress bar used inside [AssignmentCard].
 /// Height 5, radius 3, width animates via [AnimatedFractionallySizedBox] whenever
@@ -18,7 +19,7 @@ class ProgressBarRow extends StatelessWidget {
       borderRadius: BorderRadius.circular(3),
       child: Stack(
         children: [
-          Container(height: 5, decoration: const BoxDecoration(color: Color(0x0FFFFFFF))),
+          Container(height: 5, decoration: BoxDecoration(color: AppColors.surfaceVar)),
           // Implicit animation: animates only on value change, not from 0 on first build.
           // UZ: Yashirin (implicit) animatsiya: birinchi qurishda 0 dan emas, faqat qiymat o'zgarganda animatsiya qilinadi.
           AnimatedFractionallySizedBox(

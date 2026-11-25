@@ -10,6 +10,7 @@ import '../../../shared/widgets/glass_panel.dart';
 import '../../../shared/widgets/pressable.dart';
 import '../../home/widgets/assignment_row_item.dart';
 import '../../home/widgets/home_ambient_glow.dart';
+import '../../school/school_providers.dart';
 import '../models/assignment_model.dart';
 import '../providers/assignments_provider.dart';
 import '../widgets/add_edit_assignment_sheet.dart';
@@ -59,7 +60,11 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      floatingActionButton: Padding(
+      // School-linked students get 課題 from the teacher; only personal
+      // accounts add their own.
+      // UZ: Maktabga ulangan o'quvchilar 課題 ni o'qituvchidan oladi; faqat shaxsiy
+      // akkauntlar o'zi qo'shadi.
+      floatingActionButton: ref.watch(schoolClassProvider) != null ? null : Padding(
         padding: EdgeInsets.only(bottom: context.isTablet ? 0 : 84),
         child: Pressable(
           child: FloatingActionButton.extended(

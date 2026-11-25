@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import '../../core/theme/app_colors.dart';
 
 /// Centralized Lottie animation helper.
 ///
@@ -47,10 +48,22 @@ class _LottieLoop extends StatelessWidget {
       // Loops forever — correct for loading spinners.
       // UZ: Cheksiz aylanadi — yuklash spinnerlari uchun to'g'ri.
       repeat: true,
+      delegates: LottieDelegates(
+        values: [
+          ValueDelegate.color(
+            const ['**'],
+            value: AppColors.primary,
+          ),
+          ValueDelegate.strokeColor(
+            const ['**'],
+            value: AppColors.primary,
+          ),
+        ],
+      ),
       errorBuilder: (_, __, ___) => SizedBox(
         width: size,
         height: size,
-        child: const CircularProgressIndicator(strokeWidth: 2),
+        child: const CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
       ),
     );
   }

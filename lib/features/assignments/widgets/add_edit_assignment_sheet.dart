@@ -363,7 +363,7 @@ class _AddEditAssignmentSheetState extends ConsumerState<_AddEditAssignmentSheet
                     child: ElevatedButton(
                       onPressed: _saving ? null : _save,
                       child: _saving
-                          ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                          ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.onPrimary))
                           : Text(existing != null ? AppStrings.t('btn_update') : AppStrings.t('btn_save')),
                     ),
                   ),

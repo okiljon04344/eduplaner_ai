@@ -250,6 +250,14 @@ abstract class AppColors {
   static LinearGradient get aiBannerGradient =>
       isDark ? gradientDark : gradientAiBannerLight;
 
+  /// Status-chip text on the translucent *Light fills: bright on dark, deep
+  /// shade on light so it stays readable in both themes.
+  ///
+  /// UZ: Shaffof *Light fonlar ustidagi holat yozuvi: qorong'ida yorqin, yorug'da to'q
+  /// tus, shunda ikkala mavzuda ham o'qiladi.
+  static Color get warningText => isDark ? warning : const Color(0xFFC2410C);
+  static Color get successText => isDark ? success : const Color(0xFF15803D);
+
   /// Small accent links/timestamps needing extra pop (`accent-text` token).
   ///
   /// UZ: Qo'shimcha ajralib turishga muhtoj kichik aksent havolalar/vaqt tamg'alari (`accent-text` tokeni).

@@ -1,0 +1,1048 @@
+diff -ruN a/assets/l10n/ar.json b/assets/l10n/ar.json
+--- a/assets/l10n/ar.json	2026-11-25 12:16:18.255000000 +0000
++++ b/assets/l10n/ar.json	2026-11-25 12:16:18.262000000 +0000
+@@ -348,7 +348,7 @@
+   "quiz_generate_btn": "إنشاء اختبار",
+   "quiz_generating": "جارٍ الإنشاء...",
+   "quiz_loading": "الذكاء الاصطناعي يعد الأسئلة...",
+-  "quiz_loading_sub": "قد يستغرق حتى 60 ثانية",
++  "quiz_loading_sub": "قد يستغرق حتى 120 ثانية",
+   "quiz_subject": "المادة",
+   "quiz_title": "📝 أسئلة اختبار",
+   "quiz_topic": "الموضوع (اختياري)",
+diff -ruN a/assets/l10n/de.json b/assets/l10n/de.json
+--- a/assets/l10n/de.json	2026-11-25 12:16:18.048000000 +0000
++++ b/assets/l10n/de.json	2026-11-25 12:16:18.052000000 +0000
+@@ -348,7 +348,7 @@
+   "quiz_generate_btn": "Quiz erstellen",
+   "quiz_generating": "Wird erstellt...",
+   "quiz_loading": "KI erstellt die Fragen...",
+-  "quiz_loading_sub": "Kann bis zu 60 Sekunden dauern",
++  "quiz_loading_sub": "Kann bis zu 120 Sekunden dauern",
+   "quiz_subject": "Fach",
+   "quiz_title": "📝 Quiz",
+   "quiz_topic": "Thema (optional)",
+diff -ruN a/assets/l10n/en.json b/assets/l10n/en.json
+--- a/assets/l10n/en.json	2026-11-25 12:16:18.111000000 +0000
++++ b/assets/l10n/en.json	2026-11-25 12:16:18.113000000 +0000
+@@ -348,7 +348,7 @@
+   "quiz_generate_btn": "Generate quiz",
+   "quiz_generating": "Generating...",
+   "quiz_loading": "AI is writing your questions...",
+-  "quiz_loading_sub": "This can take up to 60 seconds",
++  "quiz_loading_sub": "This can take up to 120 seconds",
+   "quiz_subject": "Subject",
+   "quiz_title": "📝 Quiz",
+   "quiz_topic": "Topic (optional)",
+diff -ruN a/assets/l10n/es.json b/assets/l10n/es.json
+--- a/assets/l10n/es.json	2026-11-25 12:16:18.223000000 +0000
++++ b/assets/l10n/es.json	2026-11-25 12:16:18.227000000 +0000
+@@ -348,7 +348,7 @@
+   "quiz_generate_btn": "Generar cuestionario",
+   "quiz_generating": "Generando...",
+   "quiz_loading": "La IA está creando las preguntas...",
+-  "quiz_loading_sub": "Puede tardar hasta 60 segundos",
++  "quiz_loading_sub": "Puede tardar hasta 120 segundos",
+   "quiz_subject": "Asignatura",
+   "quiz_title": "📝 Cuestionario",
+   "quiz_topic": "Tema (opcional)",
+diff -ruN a/assets/l10n/fil.json b/assets/l10n/fil.json
+--- a/assets/l10n/fil.json	2026-11-25 12:16:18.325000000 +0000
++++ b/assets/l10n/fil.json	2026-11-25 12:16:18.328000000 +0000
+@@ -348,7 +348,7 @@
+   "quiz_generate_btn": "Gumawa ng quiz",
+   "quiz_generating": "Gumagawa...",
+   "quiz_loading": "Gumagawa ang AI ng mga tanong...",
+-  "quiz_loading_sub": "Maaaring tumagal ng hanggang 60 segundo",
++  "quiz_loading_sub": "Maaaring tumagal ng hanggang 120 segundo",
+   "quiz_subject": "Subject",
+   "quiz_title": "📝 Quiz",
+   "quiz_topic": "Paksa (opsyonal)",
+diff -ruN a/assets/l10n/fr.json b/assets/l10n/fr.json
+--- a/assets/l10n/fr.json	2026-11-25 12:16:18.140000000 +0000
++++ b/assets/l10n/fr.json	2026-11-25 12:16:18.143000000 +0000
+@@ -348,7 +348,7 @@
+   "quiz_generate_btn": "Générer le quiz",
+   "quiz_generating": "Génération...",
+   "quiz_loading": "L'IA rédige vos questions...",
+-  "quiz_loading_sub": "Cela peut prendre jusqu'à 60 secondes",
++  "quiz_loading_sub": "Cela peut prendre jusqu'à 120 secondes",
+   "quiz_subject": "Matière",
+   "quiz_title": "📝 Quiz",
+   "quiz_topic": "Sujet (facultatif)",
+diff -ruN a/assets/l10n/hi.json b/assets/l10n/hi.json
+--- a/assets/l10n/hi.json	2026-11-25 12:16:18.007000000 +0000
++++ b/assets/l10n/hi.json	2026-11-25 12:16:18.010000000 +0000
+@@ -348,7 +348,7 @@
+   "quiz_generate_btn": "प्रश्नोत्तरी बनाएं",
+   "quiz_generating": "बना रहा है...",
+   "quiz_loading": "AI प्रश्न तैयार कर रहा है...",
+-  "quiz_loading_sub": "इसमें 60 सेकंड तक लग सकते हैं",
++  "quiz_loading_sub": "इसमें 120 सेकंड तक लग सकते हैं",
+   "quiz_subject": "विषय",
+   "quiz_title": "📝 प्रश्नोत्तरी",
+   "quiz_topic": "टॉपिक (वैकल्पिक)",
+diff -ruN a/assets/l10n/id.json b/assets/l10n/id.json
+--- a/assets/l10n/id.json	2026-11-25 12:16:18.174000000 +0000
++++ b/assets/l10n/id.json	2026-11-25 12:16:18.176000000 +0000
+@@ -348,7 +348,7 @@
+   "quiz_generate_btn": "Buat kuis",
+   "quiz_generating": "Membuat...",
+   "quiz_loading": "AI sedang menyusun soal...",
+-  "quiz_loading_sub": "Bisa memakan waktu hingga 60 detik",
++  "quiz_loading_sub": "Bisa memakan waktu hingga 120 detik",
+   "quiz_subject": "Mata pelajaran",
+   "quiz_title": "📝 Kuis",
+   "quiz_topic": "Topik (opsional)",
+diff -ruN a/assets/l10n/it.json b/assets/l10n/it.json
+--- a/assets/l10n/it.json	2026-11-25 12:16:18.126000000 +0000
++++ b/assets/l10n/it.json	2026-11-25 12:16:18.128000000 +0000
+@@ -348,7 +348,7 @@
+   "quiz_generate_btn": "Genera quiz",
+   "quiz_generating": "Generazione...",
+   "quiz_loading": "L'IA sta creando le domande...",
+-  "quiz_loading_sub": "Può richiedere fino a 60 secondi",
++  "quiz_loading_sub": "Può richiedere fino a 120 secondi",
+   "quiz_subject": "Materia",
+   "quiz_title": "📝 Quiz",
+   "quiz_topic": "Argomento (facoltativo)",
+diff -ruN a/assets/l10n/ja.json b/assets/l10n/ja.json
+--- a/assets/l10n/ja.json	2026-11-25 12:16:18.188000000 +0000
++++ b/assets/l10n/ja.json	2026-11-25 12:16:18.190000000 +0000
+@@ -349,7 +349,7 @@
+   "quiz_generate_btn": "テストを生成",
+   "quiz_generating": "生成中...",
+   "quiz_loading": "AIが問題を作成しています...",
+-  "quiz_loading_sub": "最大60秒ほどかかる場合があります",
++  "quiz_loading_sub": "最大120秒ほどかかる場合があります",
+   "quiz_subject": "科目",
+   "quiz_title": "📝 テスト問題",
+   "quiz_topic": "トピック（任意）",
+diff -ruN a/assets/l10n/ko.json b/assets/l10n/ko.json
+--- a/assets/l10n/ko.json	2026-11-25 12:16:18.275000000 +0000
++++ b/assets/l10n/ko.json	2026-11-25 12:16:18.279000000 +0000
+@@ -348,7 +348,7 @@
+   "quiz_generate_btn": "퀴즈 생성",
+   "quiz_generating": "생성 중...",
+   "quiz_loading": "AI가 문제를 만들고 있습니다...",
+-  "quiz_loading_sub": "최대 60초 정도 걸릴 수 있습니다",
++  "quiz_loading_sub": "최대 120초 정도 걸릴 수 있습니다",
+   "quiz_subject": "과목",
+   "quiz_title": "📝 퀴즈",
+   "quiz_topic": "주제 (선택)",
+diff -ruN a/assets/l10n/ms.json b/assets/l10n/ms.json
+--- a/assets/l10n/ms.json	2026-11-25 12:16:18.157000000 +0000
++++ b/assets/l10n/ms.json	2026-11-25 12:16:18.162000000 +0000
+@@ -348,7 +348,7 @@
+   "quiz_generate_btn": "Jana kuiz",
+   "quiz_generating": "Menjana...",
+   "quiz_loading": "AI sedang menyediakan soalan...",
+-  "quiz_loading_sub": "Mungkin mengambil masa sehingga 60 saat",
++  "quiz_loading_sub": "Mungkin mengambil masa sehingga 120 saat",
+   "quiz_subject": "Subjek",
+   "quiz_title": "📝 Kuiz",
+   "quiz_topic": "Topik (pilihan)",
+diff -ruN a/assets/l10n/nl.json b/assets/l10n/nl.json
+--- a/assets/l10n/nl.json	2026-11-25 12:16:18.206000000 +0000
++++ b/assets/l10n/nl.json	2026-11-25 12:16:18.211000000 +0000
+@@ -348,7 +348,7 @@
+   "quiz_generate_btn": "Quiz genereren",
+   "quiz_generating": "Genereren...",
+   "quiz_loading": "AI stelt de vragen op...",
+-  "quiz_loading_sub": "Kan tot 60 seconden duren",
++  "quiz_loading_sub": "Kan tot 120 seconden duren",
+   "quiz_subject": "Vak",
+   "quiz_title": "📝 Quiz",
+   "quiz_topic": "Onderwerp (optioneel)",
+diff -ruN a/assets/l10n/pt.json b/assets/l10n/pt.json
+--- a/assets/l10n/pt.json	2026-11-25 12:16:18.291000000 +0000
++++ b/assets/l10n/pt.json	2026-11-25 12:16:18.294000000 +0000
+@@ -348,7 +348,7 @@
+   "quiz_generate_btn": "Gerar questionário",
+   "quiz_generating": "Gerando...",
+   "quiz_loading": "A IA está criando as perguntas...",
+-  "quiz_loading_sub": "Pode levar até 60 segundos",
++  "quiz_loading_sub": "Pode levar até 120 segundos",
+   "quiz_subject": "Matéria",
+   "quiz_title": "📝 Questionário",
+   "quiz_topic": "Tópico (opcional)",
+diff -ruN a/assets/l10n/ru.json b/assets/l10n/ru.json
+--- a/assets/l10n/ru.json	2026-11-25 12:16:18.308000000 +0000
++++ b/assets/l10n/ru.json	2026-11-25 12:16:18.311000000 +0000
+@@ -348,7 +348,7 @@
+   "quiz_generate_btn": "Создать тест",
+   "quiz_generating": "Генерация...",
+   "quiz_loading": "ИИ составляет вопросы...",
+-  "quiz_loading_sub": "Может занять до 60 секунд",
++  "quiz_loading_sub": "Может занять до 120 секунд",
+   "quiz_subject": "Предмет",
+   "quiz_title": "📝 Тест",
+   "quiz_topic": "Тема (необязательно)",
+diff -ruN a/assets/l10n/th.json b/assets/l10n/th.json
+--- a/assets/l10n/th.json	2026-11-25 12:16:17.988000000 +0000
++++ b/assets/l10n/th.json	2026-11-25 12:16:17.991000000 +0000
+@@ -348,7 +348,7 @@
+   "quiz_generate_btn": "สร้างแบบทดสอบ",
+   "quiz_generating": "กำลังสร้าง...",
+   "quiz_loading": "AI กำลังออกข้อสอบ...",
+-  "quiz_loading_sub": "อาจใช้เวลาถึง 60 วินาที",
++  "quiz_loading_sub": "อาจใช้เวลาถึง 120 วินาที",
+   "quiz_subject": "วิชา",
+   "quiz_title": "📝 แบบทดสอบ",
+   "quiz_topic": "หัวข้อ (ไม่บังคับ)",
+diff -ruN a/assets/l10n/tr.json b/assets/l10n/tr.json
+--- a/assets/l10n/tr.json	2026-11-25 12:16:18.239000000 +0000
++++ b/assets/l10n/tr.json	2026-11-25 12:16:18.242000000 +0000
+@@ -348,7 +348,7 @@
+   "quiz_generate_btn": "Test oluştur",
+   "quiz_generating": "Oluşturuluyor...",
+   "quiz_loading": "YZ soruları hazırlıyor...",
+-  "quiz_loading_sub": "60 saniyeye kadar sürebilir",
++  "quiz_loading_sub": "120 saniyeye kadar sürebilir",
+   "quiz_subject": "Ders",
+   "quiz_title": "📝 Test soruları",
+   "quiz_topic": "Konu (isteğe bağlı)",
+diff -ruN a/assets/l10n/uz.json b/assets/l10n/uz.json
+--- a/assets/l10n/uz.json	2026-11-25 12:16:18.070000000 +0000
++++ b/assets/l10n/uz.json	2026-11-25 12:16:18.072000000 +0000
+@@ -349,7 +349,7 @@
+   "quiz_generate_btn": "Test yaratish",
+   "quiz_generating": "Yaratilmoqda...",
+   "quiz_loading": "AI savollarni tayyorlayapti...",
+-  "quiz_loading_sub": "60 soniyagacha vaqt olishi mumkin",
++  "quiz_loading_sub": "120 soniyagacha vaqt olishi mumkin",
+   "quiz_subject": "Fan",
+   "quiz_title": "📝 Test savollari",
+   "quiz_topic": "Mavzu (ixtiyoriy)",
+diff -ruN a/assets/l10n/vi.json b/assets/l10n/vi.json
+--- a/assets/l10n/vi.json	2026-11-25 12:16:18.026000000 +0000
++++ b/assets/l10n/vi.json	2026-11-25 12:16:18.031000000 +0000
+@@ -348,7 +348,7 @@
+   "quiz_generate_btn": "Tạo bài trắc nghiệm",
+   "quiz_generating": "Đang tạo...",
+   "quiz_loading": "AI đang soạn câu hỏi...",
+-  "quiz_loading_sub": "Có thể mất tới 60 giây",
++  "quiz_loading_sub": "Có thể mất tới 120 giây",
+   "quiz_subject": "Môn học",
+   "quiz_title": "📝 Câu hỏi trắc nghiệm",
+   "quiz_topic": "Chủ đề (tùy chọn)",
+diff -ruN a/assets/l10n/zh.json b/assets/l10n/zh.json
+--- a/assets/l10n/zh.json	2026-11-25 12:16:18.089000000 +0000
++++ b/assets/l10n/zh.json	2026-11-25 12:16:18.092000000 +0000
+@@ -348,7 +348,7 @@
+   "quiz_generate_btn": "生成测验",
+   "quiz_generating": "生成中...",
+   "quiz_loading": "AI正在出题...",
+-  "quiz_loading_sub": "最长可能需要60秒",
++  "quiz_loading_sub": "最长可能需要120秒",
+   "quiz_subject": "科目",
+   "quiz_title": "📝 测验题",
+   "quiz_topic": "主题（可选）",
+diff -ruN a/assets/l10n/zh_TW.json b/assets/l10n/zh_TW.json
+--- a/assets/l10n/zh_TW.json	2026-11-25 12:16:17.968000000 +0000
++++ b/assets/l10n/zh_TW.json	2026-11-25 12:16:17.972000000 +0000
+@@ -348,7 +348,7 @@
+   "quiz_generate_btn": "產生測驗",
+   "quiz_generating": "產生中...",
+   "quiz_loading": "AI正在出題...",
+-  "quiz_loading_sub": "最長可能需要60秒",
++  "quiz_loading_sub": "最長可能需要120秒",
+   "quiz_subject": "科目",
+   "quiz_title": "📝 測驗題",
+   "quiz_topic": "主題（可選）",
+diff -ruN a/lib/core/router/app_router.dart b/lib/core/router/app_router.dart
+--- a/lib/core/router/app_router.dart	2026-11-25 12:16:08.029000000 +0000
++++ b/lib/core/router/app_router.dart	2026-11-25 12:16:08.031000000 +0000
+@@ -196,7 +196,7 @@
+       body: Center(
+         child: Text(
+           AppStrings.t('err_page_not_found', {'error': state.error}),
+-          style: const TextStyle(color: Colors.red),
++          style: const TextStyle(color: AppColors.danger),
+         ),
+       ),
+     ),
+diff -ruN a/lib/core/theme/app_colors.dart b/lib/core/theme/app_colors.dart
+--- a/lib/core/theme/app_colors.dart	2026-11-25 12:16:08.010000000 +0000
++++ b/lib/core/theme/app_colors.dart	2026-11-25 12:16:08.012000000 +0000
+@@ -251,6 +251,14 @@
+   /// Small accent links/timestamps needing extra pop (`accent-text` token).
+   ///
+   /// UZ: Qo'shimcha ajralib turishga muhtoj kichik aksent havolalar/vaqt tamg'alari (`accent-text` tokeni).
++  /// Status-chip text on the translucent *Light fills: bright on dark, deep
++  /// shade on light so it stays readable in both themes.
++  ///
++  /// UZ: Shaffof *Light fonlar ustidagi holat yozuvi: qorong'ida yorqin, yorug'da to'q
++  /// tus, shunda ikkala mavzuda ham o'qiladi.
++  static Color get warningText => isDark ? warning : const Color(0xFFC2410C);
++  static Color get successText => isDark ? success : const Color(0xFF15803D);
++
+   static Color get accentText => isDark ? const Color(0xFF06D6A0) : const Color(0xFF047857);
+ 
+   /// Vibrant green-toned brand panel background (login/onboarding hero
+diff -ruN a/lib/features/ai_chat/widgets/chat_bubble.dart b/lib/features/ai_chat/widgets/chat_bubble.dart
+--- a/lib/features/ai_chat/widgets/chat_bubble.dart	2026-11-25 12:16:08.225000000 +0000
++++ b/lib/features/ai_chat/widgets/chat_bubble.dart	2026-11-25 12:16:08.227000000 +0000
+@@ -7,8 +7,6 @@
+ import 'report_ai_content.dart';
+ import 'typing_indicator.dart';
+ 
+-const _kAiBorderColorDark = Color(0x3306D6A0); // rgba(6,214,160,.2)
+-
+ /// Renders a chat message bubble for either the user or the AI assistant,
+ /// including markdown parsing, timestamps, and report actions.
+ ///
+@@ -103,7 +101,7 @@
+             fontSize: 13,
+             fontWeight: FontWeight.w500,
+             height: 1.6,
+-            color: Colors.white,
++            color: AppColors.onPrimary,
+           ),
+         ),
+       ),
+@@ -136,7 +134,7 @@
+             decoration: BoxDecoration(
+               color: AppColors.bgLayer,
+               border: AppColors.isDark
+-                  ? Border.all(color: _kAiBorderColorDark, width: 1)
++                  ? Border.all(color: AppColors.borderPrimary, width: 1)
+                   : null,
+               borderRadius: const BorderRadius.only(
+                 topLeft: Radius.circular(20),
+diff -ruN a/lib/features/ai_chat/widgets/chat_input_bar.dart b/lib/features/ai_chat/widgets/chat_input_bar.dart
+--- a/lib/features/ai_chat/widgets/chat_input_bar.dart	2026-11-25 12:16:08.195000000 +0000
++++ b/lib/features/ai_chat/widgets/chat_input_bar.dart	2026-11-25 12:16:08.198000000 +0000
+@@ -3,7 +3,6 @@
+ import 'package:flutter_riverpod/flutter_riverpod.dart';
+ import '../../../core/l10n/app_strings.dart';
+ import '../../../core/theme/app_colors.dart';
+-import '../../../core/utils/responsive.dart';
+ import '../providers/chat_provider.dart';
+ 
+ /// Text entry bar docked at the bottom of the AI chat screen for composing and sending messages.
+@@ -51,11 +50,14 @@
+     final borderColor = _isFocused
+         ? AppColors.primaryMid.withValues(alpha: 0.6)
+         : AppColors.primaryMid.withValues(alpha: 0.2);
+-    final isKeyboardOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
+-    final bottomNavPad = (!context.isTablet && !isKeyboardOpen) ? 84.0 : 0.0;
++    // No nav-bar or keyboard padding here: AppShell (extendBody) reports the
++    // real bar height as bottom padding and the screen's SafeArea applies it,
++    // so the bar sits right above the nav on every screen size.
++    // UZ: Bu yerda nav-bar yoki klaviatura uchun padding yo'q: AppShell (extendBody) barning
++    // haqiqiy balandligini pastki padding sifatida beradi va ekranning SafeArea'si uni
++    // qo'llaydi, shuning uchun maydon har qanday ekranda navning ustida turadi.
+     return Container(
+-      padding: EdgeInsets.fromLTRB(16, 10, 16,
+-          8 + bottomNavPad + MediaQuery.viewInsetsOf(context).bottom),
++      padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
+       child: Column(
+         mainAxisSize: MainAxisSize.min,
+         children: [
+diff -ruN a/lib/features/ai_chat/widgets/quick_reply_chips.dart b/lib/features/ai_chat/widgets/quick_reply_chips.dart
+--- a/lib/features/ai_chat/widgets/quick_reply_chips.dart	2026-11-25 12:16:08.209000000 +0000
++++ b/lib/features/ai_chat/widgets/quick_reply_chips.dart	2026-11-25 12:16:08.213000000 +0000
+@@ -19,7 +19,7 @@
+     return Container(
+       width: double.infinity,
+       decoration: BoxDecoration(
+-        color: const Color(0x05FFFFFF),
++        color: AppColors.glassFill,
+         border: Border(bottom: BorderSide(color: AppColors.borderLight, width: 1)),
+       ),
+       child: ResponsiveBody(
+diff -ruN a/lib/features/assignments/models/assignment_model.dart b/lib/features/assignments/models/assignment_model.dart
+--- a/lib/features/assignments/models/assignment_model.dart	2026-11-25 12:16:08.070000000 +0000
++++ b/lib/features/assignments/models/assignment_model.dart	2026-11-25 12:16:08.071000000 +0000
+@@ -46,20 +46,20 @@
+       case AssignmentStatus.notStarted:
+         return AppColors.danger;
+       case AssignmentStatus.inProgress:
+-        return const Color(0xFFC2410C);
++        return AppColors.warningText;
+       case AssignmentStatus.completed:
+-        return const Color(0xFF15803D);
++        return AppColors.successText;
+     }
+   }
+ 
+   Color get borderColor {
+     switch (this) {
+       case AssignmentStatus.notStarted:
+-        return const Color(0xFFFECACA);
++        return AppColors.danger.withValues(alpha: 0.4);
+       case AssignmentStatus.inProgress:
+-        return const Color(0xFFFED7AA);
++        return AppColors.warning.withValues(alpha: 0.4);
+       case AssignmentStatus.completed:
+-        return const Color(0xFFBBF7D0);
++        return AppColors.success.withValues(alpha: 0.4);
+     }
+   }
+ 
+diff -ruN a/lib/features/assignments/screens/assignments_screen.dart b/lib/features/assignments/screens/assignments_screen.dart
+--- a/lib/features/assignments/screens/assignments_screen.dart	2026-11-25 12:16:08.085000000 +0000
++++ b/lib/features/assignments/screens/assignments_screen.dart	2026-11-25 12:16:08.087000000 +0000
+@@ -10,6 +10,7 @@
+ import '../../../shared/widgets/pressable.dart';
+ import '../../home/widgets/assignment_row_item.dart';
+ import '../../home/widgets/home_ambient_glow.dart';
++import '../../school/school_providers.dart';
+ import '../models/assignment_model.dart';
+ import '../providers/assignments_provider.dart';
+ import '../widgets/add_edit_assignment_sheet.dart';
+@@ -59,7 +60,11 @@
+ 
+     return Scaffold(
+       backgroundColor: AppColors.background,
+-      floatingActionButton: Padding(
++      // School-linked students get 課題 from the teacher; only personal
++      // accounts add their own.
++      // UZ: Maktabga ulangan o'quvchilar 課題 ni o'qituvchidan oladi; faqat shaxsiy
++      // akkauntlar o'zi qo'shadi.
++      floatingActionButton: ref.watch(schoolClassProvider) != null ? null : Padding(
+         padding: EdgeInsets.only(bottom: context.isTablet ? 0 : 84),
+         child: Pressable(
+           child: FloatingActionButton.extended(
+diff -ruN a/lib/features/assignments/widgets/add_edit_assignment_sheet.dart b/lib/features/assignments/widgets/add_edit_assignment_sheet.dart
+--- a/lib/features/assignments/widgets/add_edit_assignment_sheet.dart	2026-11-25 12:16:08.115000000 +0000
++++ b/lib/features/assignments/widgets/add_edit_assignment_sheet.dart	2026-11-25 12:16:08.117000000 +0000
+@@ -363,7 +363,7 @@
+                     child: ElevatedButton(
+                       onPressed: _saving ? null : _save,
+                       child: _saving
+-                          ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
++                          ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.onPrimary))
+                           : Text(existing != null ? AppStrings.t('btn_update') : AppStrings.t('btn_save')),
+                     ),
+                   ),
+diff -ruN a/lib/features/assignments/widgets/assignment_detail_sheet.dart b/lib/features/assignments/widgets/assignment_detail_sheet.dart
+--- a/lib/features/assignments/widgets/assignment_detail_sheet.dart	2026-11-25 12:16:08.129000000 +0000
++++ b/lib/features/assignments/widgets/assignment_detail_sheet.dart	2026-11-25 12:16:08.131000000 +0000
+@@ -395,7 +395,7 @@
+                   child: OutlinedButton.icon(
+                     onPressed: _aiCheckLoading ? null : _pickAndCheckSubmission,
+                     icon: _aiCheckLoading
+-                        ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
++                        ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary))
+                         : const Icon(Icons.upload_file_outlined, size: 18),
+                     label: Text(_aiCheckLoading ? AppStrings.t('ai_checking') : AppStrings.t('ai_check_btn')),
+                   ),
+diff -ruN a/lib/features/assignments/widgets/progress_bar_row.dart b/lib/features/assignments/widgets/progress_bar_row.dart
+--- a/lib/features/assignments/widgets/progress_bar_row.dart	2026-11-25 12:16:08.100000000 +0000
++++ b/lib/features/assignments/widgets/progress_bar_row.dart	2026-11-25 12:16:08.102000000 +0000
+@@ -1,4 +1,5 @@
+ import 'package:flutter/material.dart';
++import '../../../core/theme/app_colors.dart';
+ 
+ /// Thin animated progress bar used inside [AssignmentCard].
+ /// Height 5, radius 3, width animates via [AnimatedFractionallySizedBox] whenever
+@@ -18,7 +19,7 @@
+       borderRadius: BorderRadius.circular(3),
+       child: Stack(
+         children: [
+-          Container(height: 5, decoration: const BoxDecoration(color: Color(0x0FFFFFFF))),
++          Container(height: 5, decoration: BoxDecoration(color: AppColors.surfaceVar)),
+           // Implicit animation: animates only on value change, not from 0 on first build.
+           // UZ: Yashirin (implicit) animatsiya: birinchi qurishda 0 dan emas, faqat qiymat o'zgarganda animatsiya qilinadi.
+           AnimatedFractionallySizedBox(
+diff -ruN a/lib/features/auth/screens/login_screen.dart b/lib/features/auth/screens/login_screen.dart
+--- a/lib/features/auth/screens/login_screen.dart	2026-11-25 12:16:08.149000000 +0000
++++ b/lib/features/auth/screens/login_screen.dart	2026-11-25 12:16:08.151000000 +0000
+@@ -462,10 +462,10 @@
+ // oddiy `final` ushbu qatorlarni birinchi murojaatda muzlatib qo'yar va foydalanuvchi tilni
+ // almashtirganda hech qachon yangilanmas edi.
+ List<(String, IconData, Color, String)> get _desktopFeatures => [
+-  (AppStrings.t('feat_timetable'), Icons.calendar_month_outlined, const Color(0xFF06B6D4), AppStrings.t('feat_timetable_desc')),
+-  (AppStrings.t('feat_assignments'), Icons.assignment_outlined, const Color(0xFF10B981), AppStrings.t('feat_assignments_desc')),
+-  (AppStrings.t('feat_ai_chat'), Icons.smart_toy_outlined, const Color(0xFFA855F7), AppStrings.t('feat_ai_chat_desc')),
+-  (AppStrings.t('feat_quiz'), Icons.quiz_outlined, const Color(0xFFF59E0B), AppStrings.t('feat_quiz_desc')),
++  (AppStrings.t('feat_timetable'), Icons.calendar_month_outlined, AppColors.cyan, AppStrings.t('feat_timetable_desc')),
++  (AppStrings.t('feat_assignments'), Icons.assignment_outlined, AppColors.primary, AppStrings.t('feat_assignments_desc')),
++  (AppStrings.t('feat_ai_chat'), Icons.smart_toy_outlined, AppColors.subjectProgramming, AppStrings.t('feat_ai_chat_desc')),
++  (AppStrings.t('feat_quiz'), Icons.quiz_outlined, AppColors.amber, AppStrings.t('feat_quiz_desc')),
+ ];
+ 
+ /// Google sign-in entry point, shared by the mobile and desktop layouts.
+diff -ruN a/lib/features/home/screens/home_screen.dart b/lib/features/home/screens/home_screen.dart
+--- a/lib/features/home/screens/home_screen.dart	2026-11-25 12:16:08.289000000 +0000
++++ b/lib/features/home/screens/home_screen.dart	2026-11-25 12:16:08.291000000 +0000
+@@ -70,7 +70,17 @@
+                   const Padding(padding: EdgeInsets.symmetric(horizontal: 20), child: UpcomingAssignmentsList()),
+                 ];
+                 const aiTip = Padding(padding: EdgeInsets.fromLTRB(20, 20, 20, 12), child: AiStudyTipCard());
+-                final weakArea = Padding(padding: EdgeInsets.fromLTRB(20, 0, 20, context.isTablet ? 110 : 130), child: const WeakAreaCard());
++                // Lifts above the floating nav bar using the real padding reported by AppShell on mobile.
++                // UZ: Mobilda AppShell bergan haqiqiy padding yordamida suzuvchi nav bardan yuqoriga ko'taradi.
++                final weakArea = Padding(
++                  padding: EdgeInsets.fromLTRB(
++                    20,
++                    0,
++                    20,
++                    context.isTablet ? 110 : (20 + MediaQuery.paddingOf(context).bottom),
++                  ),
++                  child: const WeakAreaCard(),
++                );
+ 
+                 // Desktop: lessons on the left, assignments and AI on the right,
+                 // so a wide window shows the whole day without scrolling.
+diff -ruN a/lib/features/quiz/providers/quiz_provider.dart b/lib/features/quiz/providers/quiz_provider.dart
+--- a/lib/features/quiz/providers/quiz_provider.dart	2026-11-25 12:16:08.165000000 +0000
++++ b/lib/features/quiz/providers/quiz_provider.dart	2026-11-25 12:16:08.167000000 +0000
+@@ -19,9 +19,19 @@
+ /// Holat oxirgi muvaffaqiyatli generatsiya tomonidan qaytarilgan [QuizQuestion]lar ro'yxati,
+ /// yoki birinchi chaqiruvdan oldin bo'sh ro'yxat hisoblanadi.
+ class QuizNotifier extends AsyncNotifier<List<QuizQuestion>> {
++  int _generationCounter = 0;
++
+   @override
+   Future<List<QuizQuestion>> build() async => [];
+ 
++  /// Cancels any ongoing quiz generation and resets state to empty.
++  ///
++  /// UZ: Davom etayotgan viktorina generatsiyasini bekor qiladi va holatni bo'sh holatga qaytaradi.
++  void cancel() {
++    _generationCounter++;
++    state = const AsyncData([]);
++  }
++
+   /// Calls the `generateQuiz` Cloud Function and replaces state with the
+   /// returned questions.
+   ///
+@@ -39,14 +49,18 @@
+     String topic = '',
+     bool useSearch = false,
+   }) async {
++    final currentId = ++_generationCounter;
+     state = const AsyncLoading();
+-    state = await AsyncValue.guard(
++    final result = await AsyncValue.guard(
+       () => ref.read(quizRepositoryProvider).generateQuiz(
+         subject: subject,
+         topic: topic,
+         useSearch: useSearch,
+       ),
+     );
++    if (_generationCounter == currentId) {
++      state = result;
++    }
+   }
+ 
+   /// Clears the current question list (e.g. when the subject changes).
+diff -ruN a/lib/features/quiz/screens/quiz_screen.dart b/lib/features/quiz/screens/quiz_screen.dart
+--- a/lib/features/quiz/screens/quiz_screen.dart	2026-11-25 12:16:08.179000000 +0000
++++ b/lib/features/quiz/screens/quiz_screen.dart	2026-11-25 12:16:08.181000000 +0000
+@@ -6,8 +6,12 @@
+ import '../../../core/theme/app_text_styles.dart';
+ import '../../../core/utils/responsive.dart';
+ import '../../../shared/widgets/app_input_field.dart';
++import '../../../shared/widgets/entrance.dart';
++import '../../../shared/widgets/glass_panel.dart';
+ import '../../../shared/widgets/lottie_helpers.dart';
++import '../../../shared/widgets/pressable.dart';
+ import '../../assignments/providers/assignments_provider.dart';
++import '../../home/widgets/home_ambient_glow.dart';
+ import '../../timetable/providers/timetable_provider.dart';
+ import '../../ai_chat/widgets/report_ai_content.dart';
+ import '../models/quiz_question.dart';
+@@ -73,73 +77,135 @@
+ 
+     return Scaffold(
+       backgroundColor: AppColors.background,
+-      appBar: AppBar(
+-        title: Text(AppStrings.t('quiz_title')),
+-        backgroundColor: AppColors.background,
+-        elevation: 0,
+-        leading: canPop
+-            ? IconButton(
+-                icon: const Icon(Icons.arrow_back),
+-                onPressed: () => Navigator.of(context).maybePop(),
+-              )
+-            : null,
+-        actions: [
+-          if ((quizState.valueOrNull ?? const <QuizQuestion>[]).isNotEmpty)
+-            IconButton(
+-              tooltip: AppStrings.t('ai_report_title'),
+-              icon: const Icon(Icons.outlined_flag),
+-              onPressed: () => confirmAndReportAiContent(
+-                context,
+-                kind: 'quiz',
+-                excerpt: quizState.value!.map((q) => q.question).join('\n'),
+-              ),
+-            ),
+-        ],
+-      ),
+-      body: SafeArea(
+-        child: Center(
+-          child: ConstrainedBox(
+-            constraints: BoxConstraints(maxWidth: context.isTablet ? 720 : double.infinity),
+-            child: Column(
+-              children: [
+-                _ConfigPanel(
+-                  subjectCtrl: _subjectCtrl,
+-                  subjectSuggestions: _subjectSuggestions(),
+-                  topicCtrl: _topicCtrl,
+-                  useSearch: _useSearch,
+-                  isLoading: quizState.isLoading,
+-                  onUseSearchChanged: (v) => setState(() => _useSearch = v),
+-                  onGenerate: _generate,
+-                ),
+-                const Divider(height: 1),
+-                Expanded(
+-                  child: quizState.when(
+-                    loading: () => const _LoadingState(),
+-                    error: (e, __) => _ErrorState(
+-                      message: e.toString().replaceFirst('Exception: ', ''),
+-                      onRetry: _generate,
++      body: Stack(
++        children: [
++          const Positioned.fill(child: HomeAmbientGlow()),
++          ResponsiveBody(
++            maxWidth: 720,
++            expandedMaxWidth: 720,
++            child: SafeArea(
++              bottom: false,
++              // The whole page scrolls as a single CustomScrollView so the keyboard never overflows on small screens.
++              // UZ: Kichik ekranlarda klaviatura sig'may qolmasligi uchun butun sahifa yagona CustomScrollView sifatida aylanadi.
++              child: CustomScrollView(
++                keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
++                slivers: [
++                  SliverToBoxAdapter(
++                    child: Entrance(
++                      index: 0,
++                      child: Padding(
++                        padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
++                        child: Row(
++                          children: [
++                            if (canPop) ...[
++                              IconButton(
++                                icon: Icon(Icons.arrow_back, color: AppColors.textPrimary),
++                                onPressed: () => Navigator.of(context).maybePop(),
++                              ),
++                              const SizedBox(width: 4),
++                            ],
++                            Expanded(
++                              child: Text(
++                                AppStrings.t('quiz_title'),
++                                style: TextStyle(
++                                  fontSize: 24,
++                                  height: 1.4,
++                                  fontWeight: FontWeight.w700,
++                                  color: AppColors.textPrimary,
++                                ),
++                              ),
++                            ),
++                            if ((quizState.valueOrNull ?? const <QuizQuestion>[]).isNotEmpty)
++                              IconButton(
++                                tooltip: AppStrings.t('ai_report_title'),
++                                icon: Icon(Icons.outlined_flag, color: AppColors.textPrimary),
++                                onPressed: () => confirmAndReportAiContent(
++                                  context,
++                                  kind: 'quiz',
++                                  excerpt: quizState.value!.map((q) => q.question).join('\n'),
++                                ),
++                              ),
++                          ],
++                        ),
++                      ),
++                    ),
++                  ),
++                  SliverToBoxAdapter(
++                    child: Entrance(
++                      index: 1,
++                      child: Padding(
++                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
++                        child: KeyedSubtree(
++                          key: ValueKey(AppColors.brightness),
++                          child: GlassPanel(
++                            padding: const EdgeInsets.all(16),
++                            radius: 24,
++                            tint: AppColors.glassFill,
++                            borderColor: AppColors.glassBorder,
++                            shadows: AppColors.glassShadow,
++                            child: _ConfigPanel(
++                              subjectCtrl: _subjectCtrl,
++                              subjectSuggestions: _subjectSuggestions(),
++                              topicCtrl: _topicCtrl,
++                              useSearch: _useSearch,
++                              isLoading: quizState.isLoading,
++                              onUseSearchChanged: (v) => setState(() => _useSearch = v),
++                              onGenerate: _generate,
++                            ),
++                          ),
++                        ),
++                      ),
++                    ),
++                  ),
++                  SliverToBoxAdapter(
++                    child: Entrance(
++                      index: 2,
++                      child: quizState.when(
++                        loading: () => Padding(
++                          padding: const EdgeInsets.symmetric(vertical: 40),
++                          child: _LoadingState(
++                            onCancel: () => ref.read(quizNotifierProvider.notifier).cancel(),
++                          ),
++                        ),
++                        error: (e, __) => Padding(
++                          padding: const EdgeInsets.symmetric(vertical: 40),
++                          child: _ErrorState(
++                            message: e.toString().replaceFirst('Exception: ', ''),
++                            onRetry: _generate,
++                          ),
++                        ),
++                        data: (questions) {
++                          if (questions.isEmpty) {
++                            return const Padding(
++                              padding: EdgeInsets.symmetric(vertical: 40),
++                              child: _EmptyState(),
++                            );
++                          }
++                          return Padding(
++                            padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
++                            child: Column(
++                              children: [
++                                for (var i = 0; i < questions.length; i++)
++                                  _QuizCard(
++                                    key: ObjectKey(questions[i]),
++                                    index: i,
++                                    question: questions[i],
++                                  ),
++                              ],
++                            ),
++                          );
++                        },
++                      ),
+                     ),
+-                    data: (questions) {
+-                      if (questions.isEmpty) return const _EmptyState();
+-                      return ListView.builder(
+-                        padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+-                        itemCount: questions.length,
+-                        // Keyed by question identity: without this, regenerating a
+-                        // quiz reuses the old _QuizCardState at each position, so
+-                        // answers from the previous quiz appear pre-selected on the
+-                        // new questions.
+-                        // UZ: Savol identifikatori bo'yicha kalitlangan: busiz testni qayta
+-                        // yaratish har bir pozitsiyada eski _QuizCardState holatini qayta ishlatadi,
+-                        // natijada oldingi testdagi javoblar yangi savollarda oldindan tanlangan bo'lib qoladi.
+-                        itemBuilder: (context, i) => _QuizCard(key: ObjectKey(questions[i]), index: i, question: questions[i]),
+-                      );
+-                    },
+                   ),
+-                ),
+-              ],
++                  const SliverToBoxAdapter(
++                    child: SizedBox(height: 32),
++                  ),
++                ],
++              ),
+             ),
+           ),
+-        ),
++        ],
+       ),
+     );
+   }
+@@ -165,92 +231,118 @@
+ 
+   @override
+   Widget build(BuildContext context) {
+-    return Padding(
+-      padding: const EdgeInsets.fromLTRB(20, 14, 20, 14),
+-      child: Column(
+-        crossAxisAlignment: CrossAxisAlignment.stretch,
+-        children: [
+-          Text(
+-            AppStrings.t('quiz_subject'),
+-            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.5, color: AppColors.textSecondary),
+-          ),
+-          const SizedBox(height: 6),
+-          Autocomplete<String>(
+-            // Seeded once; fieldViewBuilder must not reassign the text
+-            // or every rebuild would move the cursor to the end.
+-            // UZ: Bir marta boshlang'ich qiymat beriladi; fieldViewBuilder matnni qayta
+-            // tayinlamasligi kerak, aks holda har bir qayta qurish kursor oxiriga o'tib ketadi.
+-            initialValue: TextEditingValue(text: subjectCtrl.text),
+-            optionsBuilder: (value) {
+-              if (value.text.isEmpty) return subjectSuggestions;
+-              return subjectSuggestions.where((s) => s.contains(value.text));
+-            },
+-            onSelected: (value) => subjectCtrl.text = value,
+-            fieldViewBuilder: (context, controller, focusNode, onSubmit) {
+-              return AppInputField(
+-                controller: controller,
+-                focusNode: focusNode,
+-                hintText: AppStrings.t('fld_subject_hint_free'),
+-                onChanged: (v) => subjectCtrl.text = v,
+-              );
+-            },
+-          ),
+-          const SizedBox(height: 12),
+-          Text(
+-            AppStrings.t('quiz_topic'),
+-            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.5, color: AppColors.textSecondary),
+-          ),
+-          const SizedBox(height: 6),
+-          AppInputField(
+-            controller: topicCtrl,
+-            hintText: AppStrings.t('quiz_topic_hint'),
+-            textInputAction: TextInputAction.done,
+-            onSubmitted: (_) => isLoading ? null : onGenerate(),
++    return Column(
++      crossAxisAlignment: CrossAxisAlignment.stretch,
++      children: [
++        Text(
++          AppStrings.t('quiz_subject'),
++          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, letterSpacing: 0.5, color: AppColors.textSecondary),
++        ),
++        const SizedBox(height: 6),
++        Autocomplete<String>(
++          // Seeded once; fieldViewBuilder must not reassign the text
++          // or every rebuild would move the cursor to the end.
++          // UZ: Bir marta boshlang'ich qiymat beriladi; fieldViewBuilder matnni qayta
++          // tayinlamasligi kerak, aks holda har bir qayta qurish kursor oxiriga o'tib ketadi.
++          initialValue: TextEditingValue(text: subjectCtrl.text),
++          optionsBuilder: (value) {
++            if (value.text.isEmpty) return subjectSuggestions;
++            return subjectSuggestions.where((s) => s.contains(value.text));
++          },
++          onSelected: (value) => subjectCtrl.text = value,
++          fieldViewBuilder: (context, controller, focusNode, onSubmit) {
++            return AppInputField(
++              controller: controller,
++              focusNode: focusNode,
++              hintText: AppStrings.t('fld_subject_hint_free'),
++              onChanged: (v) => subjectCtrl.text = v,
++            );
++          },
++        ),
++        const SizedBox(height: 12),
++        Text(
++          AppStrings.t('quiz_topic'),
++          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, letterSpacing: 0.5, color: AppColors.textSecondary),
++        ),
++        const SizedBox(height: 6),
++        AppInputField(
++          controller: topicCtrl,
++          hintText: AppStrings.t('quiz_topic_hint'),
++          textInputAction: TextInputAction.done,
++          onSubmitted: (_) => isLoading ? null : onGenerate(),
++        ),
++        const SizedBox(height: 12),
++        Container(
++          decoration: BoxDecoration(
++            color: AppColors.surfaceVar,
++            borderRadius: BorderRadius.circular(14),
++            border: Border.all(color: AppColors.border),
+           ),
+-          const SizedBox(height: 12),
+-          Container(
+-            decoration: BoxDecoration(
+-              color: AppColors.surfaceVar,
+-              borderRadius: BorderRadius.circular(14),
+-              border: Border.all(color: AppColors.border),
+-            ),
+-            // Own Material so the ListTile ink is not hidden by the box color.
+-            // UZ: ListTile siyoh (ink) effekti quti rangi bilan yashirinib qolmasligi uchun o'z Material vidjeti.
+-            child: Material(
+-              type: MaterialType.transparency,
+-              child: SwitchListTile.adaptive(
+-                value: useSearch,
+-                onChanged: isLoading ? null : onUseSearchChanged,
+-                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+-                activeThumbColor: AppColors.primary,
+-                title: Text(
+-                  AppStrings.t('quiz_use_search'),
+-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+-                ),
+-                subtitle: Text(
+-                  AppStrings.t('quiz_use_search_sub'),
+-                  style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+-                ),
++          // Own Material so the ListTile ink is not hidden by the box color.
++          // UZ: ListTile siyoh (ink) effekti quti rangi bilan yashirinib qolmasligi uchun o'z Material vidjeti.
++          child: Material(
++            type: MaterialType.transparency,
++            child: SwitchListTile.adaptive(
++              value: useSearch,
++              onChanged: isLoading ? null : onUseSearchChanged,
++              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
++              activeThumbColor: AppColors.primary,
++              activeTrackColor: AppColors.primary.withValues(alpha: 0.38),
++              thumbColor: WidgetStateProperty.resolveWith((states) {
++                if (states.contains(WidgetState.selected)) {
++                  return states.contains(WidgetState.disabled)
++                      ? AppColors.primary.withValues(alpha: 0.7)
++                      : AppColors.primary;
++                }
++                return null;
++              }),
++              trackColor: WidgetStateProperty.resolveWith((states) {
++                if (states.contains(WidgetState.selected)) {
++                  return states.contains(WidgetState.disabled)
++                      ? AppColors.primary.withValues(alpha: 0.25)
++                      : AppColors.primary.withValues(alpha: 0.38);
++                }
++                return null;
++              }),
++              title: Text(
++                AppStrings.t('quiz_use_search'),
++                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
++              ),
++              subtitle: Text(
++                AppStrings.t('quiz_use_search_sub'),
++                style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+               ),
+             ),
+           ),
+-          const SizedBox(height: 14),
+-          SizedBox(
+-            height: 48,
++        ),
++        const SizedBox(height: 14),
++        Pressable(
++          child: SizedBox(
++            height: 54,
+             child: ElevatedButton.icon(
+               onPressed: isLoading ? null : onGenerate,
+-              icon: isLoading ? SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.textSecondary)) : const Icon(Icons.auto_awesome, size: 18),
++              style: ElevatedButton.styleFrom(
++                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
++              ),
++              icon: isLoading
++                  ? SizedBox(
++                      width: 16,
++                      height: 16,
++                      child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.textSecondary),
++                    )
++                  : const Icon(Icons.auto_awesome, size: 18),
+               label: Text(isLoading ? AppStrings.t('quiz_generating') : AppStrings.t('quiz_generate_btn')),
+             ),
+           ),
+-        ],
+-      ),
++        ),
++      ],
+     );
+   }
+ }
+ 
+ class _LoadingState extends StatelessWidget {
+-  const _LoadingState();
++  final VoidCallback onCancel;
++  const _LoadingState({required this.onCancel});
+ 
+   @override
+   Widget build(BuildContext context) {
+@@ -269,6 +361,11 @@
+             AppStrings.t('quiz_loading_sub'),
+             style: TextStyle(fontSize: 11, color: AppColors.textMuted),
+           ),
++          const SizedBox(height: 16),
++          TextButton(
++            onPressed: onCancel,
++            child: Text(AppStrings.t('common_cancel')),
++          ),
+         ],
+       ),
+     );
+@@ -286,7 +383,7 @@
+         child: Column(
+           mainAxisSize: MainAxisSize.min,
+           children: [
+-            const Text('📚', style: TextStyle(fontSize: 40)),
++            Icon(Icons.quiz_outlined, size: 40, color: AppColors.textMuted),
+             const SizedBox(height: 12),
+             Text(
+               AppStrings.t('quiz_empty'),
+diff -ruN a/lib/features/school/screens/teacher_notices_screen.dart b/lib/features/school/screens/teacher_notices_screen.dart
+--- a/lib/features/school/screens/teacher_notices_screen.dart	2026-11-25 12:16:08.052000000 +0000
++++ b/lib/features/school/screens/teacher_notices_screen.dart	2026-11-25 12:16:08.055000000 +0000
+@@ -351,7 +351,7 @@
+             child: FilledButton.icon(
+               onPressed: _busy ? null : _send,
+               icon: _busy
+-                  ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
++                  ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.onPrimary))
+                   : const Icon(Icons.send_rounded),
+               label: Text(AppStrings.t('notice_send')),
+             ),
+diff -ruN a/lib/features/settings/screens/settings_screen.dart b/lib/features/settings/screens/settings_screen.dart
+--- a/lib/features/settings/screens/settings_screen.dart	2026-11-25 12:16:08.255000000 +0000
++++ b/lib/features/settings/screens/settings_screen.dart	2026-11-25 12:16:08.258000000 +0000
+@@ -186,7 +186,14 @@
+           ResponsiveBody(
+             maxWidth: 640,
+             child: ListView(
+-              padding: EdgeInsets.fromLTRB(20, 8, 20, context.isTablet ? 40 : 120),
++              // Follows real nav bar padding on mobile to clear the floating bar.
++              // UZ: Suzuvchi panel ustida qolishi uchun mobilda haqiqiy nav bar paddingidan foydalanadi.
++              padding: EdgeInsets.fromLTRB(
++                20,
++                8,
++                20,
++                context.isTablet ? 40 : (20 + MediaQuery.paddingOf(context).bottom),
++              ),
+               children: [
+                 // Profile card: GlassPanel top block.
+                 // UZ: Profil kartasi: GlassPanel yuqori bloki.
+diff -ruN a/lib/features/settings/widgets/group_share_section.dart b/lib/features/settings/widgets/group_share_section.dart
+--- a/lib/features/settings/widgets/group_share_section.dart	2026-11-25 12:16:08.271000000 +0000
++++ b/lib/features/settings/widgets/group_share_section.dart	2026-11-25 12:16:08.273000000 +0000
+@@ -71,7 +71,7 @@
+     return groupAsync.when(
+       loading: () => const Padding(
+         padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+-        child: SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2)),
++        child: SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary)),
+       ),
+       error: (_, __) => const SizedBox.shrink(),
+       data: (group) {
+diff -ruN a/lib/features/timetable/widgets/add_edit_class_sheet.dart b/lib/features/timetable/widgets/add_edit_class_sheet.dart
+--- a/lib/features/timetable/widgets/add_edit_class_sheet.dart	2026-11-25 12:16:08.240000000 +0000
++++ b/lib/features/timetable/widgets/add_edit_class_sheet.dart	2026-11-25 12:16:08.242000000 +0000
+@@ -326,7 +326,7 @@
+                     child: ElevatedButton(
+                       onPressed: _saving ? null : _saveClass,
+                       child: _saving
+-                          ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
++                          ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.onPrimary))
+                           : Text(existing != null ? AppStrings.t('btn_update') : AppStrings.t('btn_save')),
+                     ),
+                   ),
+diff -ruN a/lib/shared/widgets/lottie_helpers.dart b/lib/shared/widgets/lottie_helpers.dart
+--- a/lib/shared/widgets/lottie_helpers.dart	2026-11-25 12:16:07.985000000 +0000
++++ b/lib/shared/widgets/lottie_helpers.dart	2026-11-25 12:16:07.993000000 +0000
+@@ -1,5 +1,6 @@
+ import 'package:flutter/material.dart';
+ import 'package:lottie/lottie.dart';
++import '../../core/theme/app_colors.dart';
+ 
+ /// Centralized Lottie animation helper.
+ ///
+@@ -47,10 +48,22 @@
+       // Loops forever — correct for loading spinners.
+       // UZ: Cheksiz aylanadi — yuklash spinnerlari uchun to'g'ri.
+       repeat: true,
++      delegates: LottieDelegates(
++        values: [
++          ValueDelegate.color(
++            const ['**'],
++            value: AppColors.primary,
++          ),
++          ValueDelegate.strokeColor(
++            const ['**'],
++            value: AppColors.primary,
++          ),
++        ],
++      ),
+       errorBuilder: (_, __, ___) => SizedBox(
+         width: size,
+         height: size,
+-        child: const CircularProgressIndicator(strokeWidth: 2),
++        child: const CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+       ),
+     );
+   }

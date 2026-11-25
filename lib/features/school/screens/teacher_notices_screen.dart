@@ -351,7 +351,7 @@ class _NoticeFormState extends ConsumerState<_NoticeForm> {
             child: FilledButton.icon(
               onPressed: _busy ? null : _send,
               icon: _busy
-                  ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                  ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.onPrimary))
                   : const Icon(Icons.send_rounded),
               label: Text(AppStrings.t('notice_send')),
             ),

@@ -357,7 +357,7 @@
   "quiz_generate_btn": "퀴즈 생성",
   "quiz_generating": "생성 중...",
   "quiz_loading": "AI가 문제를 만들고 있습니다...",
-  "quiz_loading_sub": "최대 60초 정도 걸릴 수 있습니다",
+  "quiz_loading_sub": "최대 120초 정도 걸릴 수 있습니다",
   "quiz_subject": "과목",
   "quiz_title": "📝 퀴즈",
   "quiz_topic": "주제 (선택)",

@@ -357,7 +357,7 @@
   "quiz_generate_btn": "Generar cuestionario",
   "quiz_generating": "Generando...",
   "quiz_loading": "La IA está creando las preguntas...",
-  "quiz_loading_sub": "Puede tardar hasta 60 segundos",
+  "quiz_loading_sub": "Puede tardar hasta 120 segundos",
   "quiz_subject": "Asignatura",
   "quiz_title": "📝 Cuestionario",
   "quiz_topic": "Tema (opcional)",

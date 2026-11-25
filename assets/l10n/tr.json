@@ -357,7 +357,7 @@
   "quiz_generate_btn": "Test oluştur",
   "quiz_generating": "Oluşturuluyor...",
   "quiz_loading": "YZ soruları hazırlıyor...",
-  "quiz_loading_sub": "60 saniyeye kadar sürebilir",
+  "quiz_loading_sub": "120 saniyeye kadar sürebilir",
   "quiz_subject": "Ders",
   "quiz_title": "📝 Test soruları",
   "quiz_topic": "Konu (isteğe bağlı)",

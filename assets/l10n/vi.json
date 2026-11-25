@@ -357,7 +357,7 @@
   "quiz_generate_btn": "Tạo bài trắc nghiệm",
   "quiz_generating": "Đang tạo...",
   "quiz_loading": "AI đang soạn câu hỏi...",
-  "quiz_loading_sub": "Có thể mất tới 60 giây",
+  "quiz_loading_sub": "Có thể mất tới 120 giây",
   "quiz_subject": "Môn học",
   "quiz_title": "📝 Câu hỏi trắc nghiệm",
   "quiz_topic": "Chủ đề (tùy chọn)",

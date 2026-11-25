@@ -358,7 +358,7 @@
   "quiz_generate_btn": "テストを生成",
   "quiz_generating": "生成中...",
   "quiz_loading": "AIが問題を作成しています...",
-  "quiz_loading_sub": "最大60秒ほどかかる場合があります",
+  "quiz_loading_sub": "最大120秒ほどかかる場合があります",
   "quiz_subject": "科目",
   "quiz_title": "📝 テスト問題",
   "quiz_topic": "トピック（任意）",

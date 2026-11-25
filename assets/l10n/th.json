@@ -357,7 +357,7 @@
   "quiz_generate_btn": "สร้างแบบทดสอบ",
   "quiz_generating": "กำลังสร้าง...",
   "quiz_loading": "AI กำลังออกข้อสอบ...",
-  "quiz_loading_sub": "อาจใช้เวลาถึง 60 วินาที",
+  "quiz_loading_sub": "อาจใช้เวลาถึง 120 วินาที",
   "quiz_subject": "วิชา",
   "quiz_title": "📝 แบบทดสอบ",
   "quiz_topic": "หัวข้อ (ไม่บังคับ)",

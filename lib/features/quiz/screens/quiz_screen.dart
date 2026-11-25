@@ -6,8 +6,12 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../shared/widgets/app_input_field.dart';
+import '../../../shared/widgets/entrance.dart';
+import '../../../shared/widgets/glass_panel.dart';
 import '../../../shared/widgets/lottie_helpers.dart';
+import '../../../shared/widgets/pressable.dart';
 import '../../assignments/providers/assignments_provider.dart';
+import '../../home/widgets/home_ambient_glow.dart';
 import '../../timetable/providers/timetable_provider.dart';
 import '../../ai_chat/widgets/report_ai_content.dart';
 import '../models/quiz_question.dart';
@@ -73,73 +77,135 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text(AppStrings.t('quiz_title')),
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        leading: canPop
-            ? IconButton(
-                icon: const Icon(Icons.arrow_back),
-                onPressed: () => Navigator.of(context).maybePop(),
-              )
-            : null,
-        actions: [
-          if ((quizState.valueOrNull ?? const <QuizQuestion>[]).isNotEmpty)
-            IconButton(
-              tooltip: AppStrings.t('ai_report_title'),
-              icon: const Icon(Icons.outlined_flag),
-              onPressed: () => confirmAndReportAiContent(
-                context,
-                kind: 'quiz',
-                excerpt: quizState.value!.map((q) => q.question).join('\n'),
+      body: Stack(
+        children: [
+          const Positioned.fill(child: HomeAmbientGlow()),
+          ResponsiveBody(
+            maxWidth: 720,
+            expandedMaxWidth: 720,
+            child: SafeArea(
+              bottom: false,
+              // The whole page scrolls as a single CustomScrollView so the keyboard never overflows on small screens.
+              // UZ: Kichik ekranlarda klaviatura sig'may qolmasligi uchun butun sahifa yagona CustomScrollView sifatida aylanadi.
+              child: CustomScrollView(
+                keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: Entrance(
+                      index: 0,
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+                        child: Row(
+                          children: [
+                            if (canPop) ...[
+                              IconButton(
+                                icon: Icon(Icons.arrow_back, color: AppColors.textPrimary),
+                                onPressed: () => Navigator.of(context).maybePop(),
+                              ),
+                              const SizedBox(width: 4),
+                            ],
+                            Expanded(
+                              child: Text(
+                                AppStrings.t('quiz_title'),
+                                style: TextStyle(
+                                  fontSize: 24,
+                                  height: 1.4,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                            ),
+                            if ((quizState.valueOrNull ?? const <QuizQuestion>[]).isNotEmpty)
+                              IconButton(
+                                tooltip: AppStrings.t('ai_report_title'),
+                                icon: Icon(Icons.outlined_flag, color: AppColors.textPrimary),
+                                onPressed: () => confirmAndReportAiContent(
+                                  context,
+                                  kind: 'quiz',
+                                  excerpt: quizState.value!.map((q) => q.question).join('\n'),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  SliverToBoxAdapter(
+                    child: Entrance(
+                      index: 1,
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+                        child: KeyedSubtree(
+                          key: ValueKey(AppColors.brightness),
+                          child: GlassPanel(
+                            padding: const EdgeInsets.all(16),
+                            radius: 24,
+                            tint: AppColors.glassFill,
+                            borderColor: AppColors.glassBorder,
+                            shadows: AppColors.glassShadow,
+                            child: _ConfigPanel(
+                              subjectCtrl: _subjectCtrl,
+                              subjectSuggestions: _subjectSuggestions(),
+                              topicCtrl: _topicCtrl,
+                              useSearch: _useSearch,
+                              isLoading: quizState.isLoading,
+                              onUseSearchChanged: (v) => setState(() => _useSearch = v),
+                              onGenerate: _generate,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  SliverToBoxAdapter(
+                    child: Entrance(
+                      index: 2,
+                      child: quizState.when(
+                        loading: () => Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 40),
+                          child: _LoadingState(
+                            onCancel: () => ref.read(quizNotifierProvider.notifier).cancel(),
+                          ),
+                        ),
+                        error: (e, __) => Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 40),
+                          child: _ErrorState(
+                            message: e.toString().replaceFirst('Exception: ', ''),
+                            onRetry: _generate,
+                          ),
+                        ),
+                        data: (questions) {
+                          if (questions.isEmpty) {
+                            return const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 40),
+                              child: _EmptyState(),
+                            );
+                          }
+                          return Padding(
+                            padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
+                            child: Column(
+                              children: [
+                                for (var i = 0; i < questions.length; i++)
+                                  _QuizCard(
+                                    key: ObjectKey(questions[i]),
+                                    index: i,
+                                    question: questions[i],
+                                  ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                  const SliverToBoxAdapter(
+                    child: SizedBox(height: 32),
+                  ),
+                ],
               ),
             ),
-        ],
-      ),
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: context.isTablet ? 720 : double.infinity),
-            child: Column(
-              children: [
-                _ConfigPanel(
-                  subjectCtrl: _subjectCtrl,
-                  subjectSuggestions: _subjectSuggestions(),
-                  topicCtrl: _topicCtrl,
-                  useSearch: _useSearch,
-                  isLoading: quizState.isLoading,
-                  onUseSearchChanged: (v) => setState(() => _useSearch = v),
-                  onGenerate: _generate,
-                ),
-                const Divider(height: 1),
-                Expanded(
-                  child: quizState.when(
-                    loading: () => const _LoadingState(),
-                    error: (e, __) => _ErrorState(
-                      message: e.toString().replaceFirst('Exception: ', ''),
-                      onRetry: _generate,
-                    ),
-                    data: (questions) {
-                      if (questions.isEmpty) return const _EmptyState();
-                      return ListView.builder(
-                        padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
-                        itemCount: questions.length,
-                        // Keyed by question identity: without this, regenerating a
-                        // quiz reuses the old _QuizCardState at each position, so
-                        // answers from the previous quiz appear pre-selected on the
-                        // new questions.
-                        // UZ: Savol identifikatori bo'yicha kalitlangan: busiz testni qayta
-                        // yaratish har bir pozitsiyada eski _QuizCardState holatini qayta ishlatadi,
-                        // natijada oldingi testdagi javoblar yangi savollarda oldindan tanlangan bo'lib qoladi.
-                        itemBuilder: (context, i) => _QuizCard(key: ObjectKey(questions[i]), index: i, question: questions[i]),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -165,92 +231,118 @@ class _ConfigPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 14, 20, 14),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            AppStrings.t('quiz_subject'),
-            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.5, color: AppColors.textSecondary),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          AppStrings.t('quiz_subject'),
+          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, letterSpacing: 0.5, color: AppColors.textSecondary),
+        ),
+        const SizedBox(height: 6),
+        Autocomplete<String>(
+          // Seeded once; fieldViewBuilder must not reassign the text
+          // or every rebuild would move the cursor to the end.
+          // UZ: Bir marta boshlang'ich qiymat beriladi; fieldViewBuilder matnni qayta
+          // tayinlamasligi kerak, aks holda har bir qayta qurish kursor oxiriga o'tib ketadi.
+          initialValue: TextEditingValue(text: subjectCtrl.text),
+          optionsBuilder: (value) {
+            if (value.text.isEmpty) return subjectSuggestions;
+            return subjectSuggestions.where((s) => s.contains(value.text));
+          },
+          onSelected: (value) => subjectCtrl.text = value,
+          fieldViewBuilder: (context, controller, focusNode, onSubmit) {
+            return AppInputField(
+              controller: controller,
+              focusNode: focusNode,
+              hintText: AppStrings.t('fld_subject_hint_free'),
+              onChanged: (v) => subjectCtrl.text = v,
+            );
+          },
+        ),
+        const SizedBox(height: 12),
+        Text(
+          AppStrings.t('quiz_topic'),
+          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, letterSpacing: 0.5, color: AppColors.textSecondary),
+        ),
+        const SizedBox(height: 6),
+        AppInputField(
+          controller: topicCtrl,
+          hintText: AppStrings.t('quiz_topic_hint'),
+          textInputAction: TextInputAction.done,
+          onSubmitted: (_) => isLoading ? null : onGenerate(),
+        ),
+        const SizedBox(height: 12),
+        Container(
+          decoration: BoxDecoration(
+            color: AppColors.surfaceVar,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: AppColors.border),
           ),
-          const SizedBox(height: 6),
-          Autocomplete<String>(
-            // Seeded once; fieldViewBuilder must not reassign the text
-            // or every rebuild would move the cursor to the end.
-            // UZ: Bir marta boshlang'ich qiymat beriladi; fieldViewBuilder matnni qayta
-            // tayinlamasligi kerak, aks holda har bir qayta qurish kursor oxiriga o'tib ketadi.
-            initialValue: TextEditingValue(text: subjectCtrl.text),
-            optionsBuilder: (value) {
-              if (value.text.isEmpty) return subjectSuggestions;
-              return subjectSuggestions.where((s) => s.contains(value.text));
-            },
-            onSelected: (value) => subjectCtrl.text = value,
-            fieldViewBuilder: (context, controller, focusNode, onSubmit) {
-              return AppInputField(
-                controller: controller,
-                focusNode: focusNode,
-                hintText: AppStrings.t('fld_subject_hint_free'),
-                onChanged: (v) => subjectCtrl.text = v,
-              );
-            },
-          ),
-          const SizedBox(height: 12),
-          Text(
-            AppStrings.t('quiz_topic'),
-            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.5, color: AppColors.textSecondary),
-          ),
-          const SizedBox(height: 6),
-          AppInputField(
-            controller: topicCtrl,
-            hintText: AppStrings.t('quiz_topic_hint'),
-            textInputAction: TextInputAction.done,
-            onSubmitted: (_) => isLoading ? null : onGenerate(),
-          ),
-          const SizedBox(height: 12),
-          Container(
-            decoration: BoxDecoration(
-              color: AppColors.surfaceVar,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: AppColors.border),
-            ),
-            // Own Material so the ListTile ink is not hidden by the box color.
-            // UZ: ListTile siyoh (ink) effekti quti rangi bilan yashirinib qolmasligi uchun o'z Material vidjeti.
-            child: Material(
-              type: MaterialType.transparency,
-              child: SwitchListTile.adaptive(
-                value: useSearch,
-                onChanged: isLoading ? null : onUseSearchChanged,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
-                activeThumbColor: AppColors.primary,
-                title: Text(
-                  AppStrings.t('quiz_use_search'),
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
-                ),
-                subtitle: Text(
-                  AppStrings.t('quiz_use_search_sub'),
-                  style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
-                ),
+          // Own Material so the ListTile ink is not hidden by the box color.
+          // UZ: ListTile siyoh (ink) effekti quti rangi bilan yashirinib qolmasligi uchun o'z Material vidjeti.
+          child: Material(
+            type: MaterialType.transparency,
+            child: SwitchListTile.adaptive(
+              value: useSearch,
+              onChanged: isLoading ? null : onUseSearchChanged,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+              activeThumbColor: AppColors.primary,
+              activeTrackColor: AppColors.primary.withValues(alpha: 0.38),
+              thumbColor: WidgetStateProperty.resolveWith((states) {
+                if (states.contains(WidgetState.selected)) {
+                  return states.contains(WidgetState.disabled)
+                      ? AppColors.primary.withValues(alpha: 0.7)
+                      : AppColors.primary;
+                }
+                return null;
+              }),
+              trackColor: WidgetStateProperty.resolveWith((states) {
+                if (states.contains(WidgetState.selected)) {
+                  return states.contains(WidgetState.disabled)
+                      ? AppColors.primary.withValues(alpha: 0.25)
+                      : AppColors.primary.withValues(alpha: 0.38);
+                }
+                return null;
+              }),
+              title: Text(
+                AppStrings.t('quiz_use_search'),
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+              ),
+              subtitle: Text(
+                AppStrings.t('quiz_use_search_sub'),
+                style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
               ),
             ),
           ),
-          const SizedBox(height: 14),
-          SizedBox(
-            height: 48,
+        ),
+        const SizedBox(height: 14),
+        Pressable(
+          child: SizedBox(
+            height: 54,
             child: ElevatedButton.icon(
               onPressed: isLoading ? null : onGenerate,
-              icon: isLoading ? SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.textSecondary)) : const Icon(Icons.auto_awesome, size: 18),
+              style: ElevatedButton.styleFrom(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              ),
+              icon: isLoading
+                  ? SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.textSecondary),
+                    )
+                  : const Icon(Icons.auto_awesome, size: 18),
               label: Text(isLoading ? AppStrings.t('quiz_generating') : AppStrings.t('quiz_generate_btn')),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
 
 class _LoadingState extends StatelessWidget {
-  const _LoadingState();
+  final VoidCallback onCancel;
+  const _LoadingState({required this.onCancel});
 
   @override
   Widget build(BuildContext context) {
@@ -269,6 +361,11 @@ class _LoadingState extends StatelessWidget {
             AppStrings.t('quiz_loading_sub'),
             style: TextStyle(fontSize: 11, color: AppColors.textMuted),
           ),
+          const SizedBox(height: 16),
+          TextButton(
+            onPressed: onCancel,
+            child: Text(AppStrings.t('common_cancel')),
+          ),
         ],
       ),
     );
@@ -286,7 +383,7 @@ class _EmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('📚', style: TextStyle(fontSize: 40)),
+            Icon(Icons.quiz_outlined, size: 40, color: AppColors.textMuted),
             const SizedBox(height: 12),
             Text(
               AppStrings.t('quiz_empty'),

@@ -357,7 +357,7 @@
   "quiz_generate_btn": "Generate quiz",
   "quiz_generating": "Generating...",
   "quiz_loading": "AI is writing your questions...",
-  "quiz_loading_sub": "This can take up to 60 seconds",
+  "quiz_loading_sub": "This can take up to 120 seconds",
   "quiz_subject": "Subject",
   "quiz_title": "📝 Quiz",
   "quiz_topic": "Topic (optional)",

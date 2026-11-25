@@ -357,7 +357,7 @@
   "quiz_generate_btn": "Quiz genereren",
   "quiz_generating": "Genereren...",
   "quiz_loading": "AI stelt de vragen op...",
-  "quiz_loading_sub": "Kan tot 60 seconden duren",
+  "quiz_loading_sub": "Kan tot 120 seconden duren",
   "quiz_subject": "Vak",
   "quiz_title": "📝 Quiz",
   "quiz_topic": "Onderwerp (optioneel)",

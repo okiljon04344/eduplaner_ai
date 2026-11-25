@@ -516,7 +516,7 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
                   child: OutlinedButton.icon(
                     onPressed: _aiCheckLoading ? null : _pickAndCheckSubmission,
                     icon: _aiCheckLoading
-                        ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                        ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary))
                         : const Icon(Icons.upload_file_outlined, size: 18),
                     label: Text(_aiCheckLoading ? AppStrings.t('ai_checking') : AppStrings.t('ai_check_btn')),
                   ),

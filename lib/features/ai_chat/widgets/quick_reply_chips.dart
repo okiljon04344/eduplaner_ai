@@ -19,7 +19,7 @@ class QuickReplyChips extends ConsumerWidget {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: const Color(0x05FFFFFF),
+        color: AppColors.glassFill,
         border: Border(bottom: BorderSide(color: AppColors.borderLight, width: 1)),
       ),
       child: ResponsiveBody(

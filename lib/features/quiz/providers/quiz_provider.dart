@@ -19,8 +19,18 @@ final selectedQuizSubjectProvider = StateProvider<String?>((_) => null);
 /// Holat oxirgi muvaffaqiyatli generatsiya tomonidan qaytarilgan [QuizQuestion]lar ro'yxati,
 /// yoki birinchi chaqiruvdan oldin bo'sh ro'yxat hisoblanadi.
 class QuizNotifier extends AsyncNotifier<List<QuizQuestion>> {
+  int _generationCounter = 0;
+
   @override
   Future<List<QuizQuestion>> build() async => [];
+
+  /// Cancels any ongoing quiz generation and resets state to empty.
+  ///
+  /// UZ: Davom etayotgan viktorina generatsiyasini bekor qiladi va holatni bo'sh holatga qaytaradi.
+  void cancel() {
+    _generationCounter++;
+    state = const AsyncData([]);
+  }
 
   /// Calls the `generateQuiz` Cloud Function and replaces state with the
   /// returned questions.
@@ -39,14 +49,18 @@ class QuizNotifier extends AsyncNotifier<List<QuizQuestion>> {
     String topic = '',
     bool useSearch = false,
   }) async {
+    final currentId = ++_generationCounter;
     state = const AsyncLoading();
-    state = await AsyncValue.guard(
+    final result = await AsyncValue.guard(
       () => ref.read(quizRepositoryProvider).generateQuiz(
         subject: subject,
         topic: topic,
         useSearch: useSearch,
       ),
     );
+    if (_generationCounter == currentId) {
+      state = result;
+    }
   }
 
   /// Clears the current question list (e.g. when the subject changes).

@@ -7,8 +7,6 @@ import '../models/message_model.dart';
 import 'report_ai_content.dart';
 import 'typing_indicator.dart';
 
-const _kAiBorderColorDark = Color(0x3306D6A0); // rgba(6,214,160,.2)
-
 /// Renders a chat message bubble for either the user or the AI assistant,
 /// including markdown parsing, timestamps, and report actions.
 ///
@@ -103,7 +101,7 @@ class ChatBubble extends StatelessWidget {
             fontSize: 13,
             fontWeight: FontWeight.w500,
             height: 1.6,
-            color: Colors.white,
+            color: AppColors.onPrimary,
           ),
         ),
       ),
@@ -136,7 +134,7 @@ class ChatBubble extends StatelessWidget {
             decoration: BoxDecoration(
               color: AppColors.bgLayer,
               border: AppColors.isDark
-                  ? Border.all(color: _kAiBorderColorDark, width: 1)
+                  ? Border.all(color: AppColors.borderPrimary, width: 1)
                   : null,
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(20),

@@ -71,7 +71,7 @@ class GroupShareSection extends ConsumerWidget {
     return groupAsync.when(
       loading: () => const Padding(
         padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2)),
+        child: SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary)),
       ),
       error: (_, __) => const SizedBox.shrink(),
       data: (group) {

@@ -357,7 +357,7 @@
   "quiz_generate_btn": "Buat kuis",
   "quiz_generating": "Membuat...",
   "quiz_loading": "AI sedang menyusun soal...",
-  "quiz_loading_sub": "Bisa memakan waktu hingga 60 detik",
+  "quiz_loading_sub": "Bisa memakan waktu hingga 120 detik",
   "quiz_subject": "Mata pelajaran",
   "quiz_title": "📝 Kuis",
   "quiz_topic": "Topik (opsional)",

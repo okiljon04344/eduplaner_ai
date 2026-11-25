@@ -357,7 +357,7 @@
   "quiz_generate_btn": "प्रश्नोत्तरी बनाएं",
   "quiz_generating": "बना रहा है...",
   "quiz_loading": "AI प्रश्न तैयार कर रहा है...",
-  "quiz_loading_sub": "इसमें 60 सेकंड तक लग सकते हैं",
+  "quiz_loading_sub": "इसमें 120 सेकंड तक लग सकते हैं",
   "quiz_subject": "विषय",
   "quiz_title": "📝 प्रश्नोत्तरी",
   "quiz_topic": "टॉपिक (वैकल्पिक)",

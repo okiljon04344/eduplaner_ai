@@ -70,7 +70,17 @@ class HomeScreen extends ConsumerWidget {
                   const Padding(padding: EdgeInsets.symmetric(horizontal: 20), child: UpcomingAssignmentsList()),
                 ];
                 const aiTip = Padding(padding: EdgeInsets.fromLTRB(20, 20, 20, 12), child: AiStudyTipCard());
-                final weakArea = Padding(padding: EdgeInsets.fromLTRB(20, 0, 20, context.isTablet ? 110 : 130), child: const WeakAreaCard());
+                // Lifts above the floating nav bar using the real padding reported by AppShell on mobile.
+                // UZ: Mobilda AppShell bergan haqiqiy padding yordamida suzuvchi nav bardan yuqoriga ko'taradi.
+                final weakArea = Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    20,
+                    0,
+                    20,
+                    context.isTablet ? 110 : (20 + MediaQuery.paddingOf(context).bottom),
+                  ),
+                  child: const WeakAreaCard(),
+                );
 
                 // Desktop: lessons on the left, assignments and AI on the right,
                 // so a wide window shows the whole day without scrolling.

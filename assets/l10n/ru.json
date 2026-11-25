@@ -357,7 +357,7 @@
   "quiz_generate_btn": "Создать тест",
   "quiz_generating": "Генерация...",
   "quiz_loading": "ИИ составляет вопросы...",
-  "quiz_loading_sub": "Может занять до 60 секунд",
+  "quiz_loading_sub": "Может занять до 120 секунд",
   "quiz_subject": "Предмет",
   "quiz_title": "📝 Тест",
   "quiz_topic": "Тема (необязательно)",

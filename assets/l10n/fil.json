@@ -357,7 +357,7 @@
   "quiz_generate_btn": "Gumawa ng quiz",
   "quiz_generating": "Gumagawa...",
   "quiz_loading": "Gumagawa ang AI ng mga tanong...",
-  "quiz_loading_sub": "Maaaring tumagal ng hanggang 60 segundo",
+  "quiz_loading_sub": "Maaaring tumagal ng hanggang 120 segundo",
   "quiz_subject": "Subject",
   "quiz_title": "📝 Quiz",
   "quiz_topic": "Paksa (opsyonal)",

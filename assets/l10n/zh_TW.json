@@ -357,7 +357,7 @@
   "quiz_generate_btn": "產生測驗",
   "quiz_generating": "產生中...",
   "quiz_loading": "AI正在出題...",
-  "quiz_loading_sub": "最長可能需要60秒",
+  "quiz_loading_sub": "最長可能需要120秒",
   "quiz_subject": "科目",
   "quiz_title": "📝 測驗題",
   "quiz_topic": "主題（可選）",

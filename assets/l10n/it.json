@@ -357,7 +357,7 @@
   "quiz_generate_btn": "Genera quiz",
   "quiz_generating": "Generazione...",
   "quiz_loading": "L'IA sta creando le domande...",
-  "quiz_loading_sub": "Può richiedere fino a 60 secondi",
+  "quiz_loading_sub": "Può richiedere fino a 120 secondi",
   "quiz_subject": "Materia",
   "quiz_title": "📝 Quiz",
   "quiz_topic": "Argomento (facoltativo)",

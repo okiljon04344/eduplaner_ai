@@ -186,7 +186,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> with WidgetsBin
           ResponsiveBody(
             maxWidth: 640,
             child: ListView(
-              padding: EdgeInsets.fromLTRB(20, 8, 20, context.isTablet ? 40 : 120),
+              // Follows real nav bar padding on mobile to clear the floating bar.
+              // UZ: Suzuvchi panel ustida qolishi uchun mobilda haqiqiy nav bar paddingidan foydalanadi.
+              padding: EdgeInsets.fromLTRB(
+                20,
+                8,
+                20,
+                context.isTablet ? 40 : (20 + MediaQuery.paddingOf(context).bottom),
+              ),
               children: [
                 // Profile card: GlassPanel top block.
                 // UZ: Profil kartasi: GlassPanel yuqori bloki.

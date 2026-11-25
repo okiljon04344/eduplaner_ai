@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/utils/responsive.dart';
 import '../providers/chat_provider.dart';
 
 /// Text entry bar docked at the bottom of the AI chat screen for composing and sending messages.
@@ -51,11 +50,14 @@ class _ChatInputBarState extends ConsumerState<ChatInputBar> {
     final borderColor = _isFocused
         ? AppColors.primaryMid.withValues(alpha: 0.6)
         : AppColors.primaryMid.withValues(alpha: 0.2);
-    final isKeyboardOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
-    final bottomNavPad = (!context.isTablet && !isKeyboardOpen) ? 84.0 : 0.0;
+    // No nav-bar or keyboard padding here: AppShell (extendBody) reports the
+    // real bar height as bottom padding and the screen's SafeArea applies it,
+    // so the bar sits right above the nav on every screen size.
+    // UZ: Bu yerda nav-bar yoki klaviatura uchun padding yo'q: AppShell (extendBody) barning
+    // haqiqiy balandligini pastki padding sifatida beradi va ekranning SafeArea'si uni
+    // qo'llaydi, shuning uchun maydon har qanday ekranda navning ustida turadi.
     return Container(
-      padding: EdgeInsets.fromLTRB(16, 10, 16,
-          8 + bottomNavPad + MediaQuery.viewInsetsOf(context).bottom),
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

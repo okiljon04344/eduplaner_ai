@@ -357,7 +357,7 @@
   "quiz_generate_btn": "Quiz erstellen",
   "quiz_generating": "Wird erstellt...",
   "quiz_loading": "KI erstellt die Fragen...",
-  "quiz_loading_sub": "Kann bis zu 60 Sekunden dauern",
+  "quiz_loading_sub": "Kann bis zu 120 Sekunden dauern",
   "quiz_subject": "Fach",
   "quiz_title": "📝 Quiz",
   "quiz_topic": "Thema (optional)",

@@ -46,20 +46,20 @@ enum AssignmentStatus {
       case AssignmentStatus.notStarted:
         return AppColors.danger;
       case AssignmentStatus.inProgress:
-        return const Color(0xFFC2410C);
+        return AppColors.warningText;
       case AssignmentStatus.completed:
-        return const Color(0xFF15803D);
+        return AppColors.successText;
     }
   }
 
   Color get borderColor {
     switch (this) {
       case AssignmentStatus.notStarted:
-        return const Color(0xFFFECACA);
+        return AppColors.danger.withValues(alpha: 0.4);
       case AssignmentStatus.inProgress:
-        return const Color(0xFFFED7AA);
+        return AppColors.warning.withValues(alpha: 0.4);
       case AssignmentStatus.completed:
-        return const Color(0xFFBBF7D0);
+        return AppColors.success.withValues(alpha: 0.4);
     }
   }
 
