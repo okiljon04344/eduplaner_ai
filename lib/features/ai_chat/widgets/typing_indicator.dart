@@ -4,6 +4,10 @@ import '../../../core/theme/app_colors.dart';
 /// Three purple dots that pulse in a staggered wave, mirroring the
 /// AI-chat prototype's `dot1`/`dot2`/`dot3` CSS keyframes
 /// (scale 0→1→0, opacity .3→1→.3, 1.2s cycle, 200ms stagger).
+///
+/// UZ: AI-chat prototipining `dot1`/`dot2`/`dot3` CSS keyframe'larini aks ettiruvchi ketma-ket
+/// to'lqinda pulsatsiyalanuvchi uchta binafsharang nuqta (scale 0→1→0, opacity .3→1→.3,
+/// 1.2s sikl, 200ms siljish).
 class TypingIndicator extends StatefulWidget {
   const TypingIndicator({super.key});
 
@@ -32,6 +36,8 @@ class _TypingIndicatorState extends State<TypingIndicator> with SingleTickerProv
   double _pulse(double t, double delay) {
     // Shift the timeline for this dot, then map through a 0→1→0 triangle
     // eased with easeInOut for a smooth scale/opacity pulse.
+    // UZ: Ushbu nuqta uchun vaqt jadvalini siljiting, so'ng silliq scale/opacity pulsatsiyasi
+    // uchun easeInOut bilan yumshatilgan 0→1→0 uchburchak orqali aks ettiring.
     final local = (t - delay) % 1.0;
     final triangle = local < 0.5 ? local * 2 : (1 - local) * 2;
     return Curves.easeInOut.transform(triangle.clamp(0.0, 1.0));

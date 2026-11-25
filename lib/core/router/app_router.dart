@@ -19,6 +19,7 @@ import '../../features/onboarding/screens/onboarding_screen.dart';
 import '../../features/quiz/screens/quiz_screen.dart';
 import '../../features/school/screens/teacher_assignments_screen.dart';
 import '../../features/school/screens/teacher_home_screen.dart';
+import '../../features/school/screens/board_screen.dart';
 import '../../features/school/screens/teacher_notices_screen.dart';
 import '../../features/school/screens/teacher_screen.dart';
 import '../../features/settings/screens/settings_screen.dart';
@@ -29,6 +30,10 @@ import '../../shared/widgets/app_shell.dart';
 /// Pure top-level redirect decision function.
 ///
 /// Evaluates Riverpod [authState] and [onboardingState] against the target [location].
+///
+/// UZ: Yuqori darajadagi sof qayta yo'naltirish (redirect) qarori funksiyasi.
+///
+/// Riverpod [authState] va [onboardingState] holatlarini nishon [location] ga nisbatan baholaydi.
 String? appRedirect({
   required AsyncValue<UserModel?> authState,
   required AsyncValue<bool> onboardingState,
@@ -46,6 +51,10 @@ String? appRedirect({
 /// Resolves the redirect route based on auth, onboarding state, and current location.
 ///
 /// Pure and synchronous — no side-effects.
+///
+/// UZ: Autentifikatsiya, onboarding holati va joriy joylashuv asosida qayta yo'naltirish marshrutini hal qiladi.
+///
+/// Sof va sinxron — nojo'ya ta'sirlarsiz (no side-effects).
 String? resolveRedirect({
   required UserModel? currentUser,
   required bool isAuthLoading,
@@ -54,6 +63,7 @@ String? resolveRedirect({
   required String location,
 }) {
   // Wait for both auth and onboarding state to load
+  // UZ: Ham autentifikatsiya, ham onboarding holati yuklanishini kutish
   if (isAuthLoading || isOnboardingLoading) return null;
 
   final isLoggedIn = currentUser != null;
@@ -63,6 +73,7 @@ String? resolveRedirect({
   final isOnProfileSetup = location == '/profile-setup';
 
   // Not logged in → go to landing (if not already on an auth page or landing)
+  // UZ: Tizimga kirmagan → landing sahifasiga o'tish (agar hali auth yoki landing sahifasida bo'lmasa)
   if (!isLoggedIn) {
     if (!isOnLogin && !isOnLanding) return '/';
     return null;
@@ -70,25 +81,35 @@ String? resolveRedirect({
 
   // Returning user: signed in and profileComplete is true.
   // Flow: straight to /home, never /onboarding, whatever the device flag says.
+  // UZ: Qaytgan foydalanuvchi: tizimga kirgan va profileComplete qiymati true.
+  // Oqim: to'g'ridan-to'g'ri /home ga, hech qachon /onboarding ga emas, qurilma bayrog'i nima deyishidan qat'i nazar.
   if (currentUser.profileComplete) {
     // /profile-setup stays reachable: Settings pushes it to edit school info.
+    // UZ: /profile-setup ochiq qoladi: Sozlamalar maktab ma'lumotlarini tahrirlash uchun uni ochadi.
     if (isOnLogin || isOnLanding || isOnOnboarding) return '/home';
     return null;
   }
 
   // New user: signed in but profileComplete is false (no school profile yet).
   // Flow: /onboarding (if not seen on this device) then /profile-setup then /home.
+  // UZ: Yangi foydalanuvchi: tizimga kirgan, lekin profileComplete qiymati false (hali maktab profili yo'q).
+  // Oqim: /onboarding (agar bu qurilmada ko'rilmagan bo'lsa), keyin /profile-setup, keyin /home.
   if (!onboardingDone) {
     return isOnOnboarding ? null : '/onboarding';
   }
 
   // Onboarding done on this device, but school profile setup not completed yet.
+  // UZ: Ushbu qurilmada onboarding yakunlangan, lekin maktab profilini sozlash hali tugallanmagan.
   return isOnProfileSetup ? null : '/profile-setup';
 }
 
 /// Checks if the signed-in user is a returning user (`profileComplete == true`)
 /// whose device onboarding flag is not yet marked done. If so, calls
 /// [OnboardingNotifier.markDone] asynchronously outside the redirect callback.
+///
+/// UZ: Tizimga kirgan foydalanuvchi qurilmadagi onboarding bayrog'i hali bajarildi deb belgilanmagan
+/// qaytgan foydalanuvchi (`profileComplete == true`) ekanligini tekshiradi. Agar shunday bo'lsa,
+/// qayta yo'naltirish chaqiruvidan tashqarida asinxron ravishda [OnboardingNotifier.markDone] ni chaqiradi.
 void syncReturningUserOnboarding(Ref ref) {
   final user = ref.read(authStateProvider).valueOrNull;
   if (user != null && user.profileComplete) {
@@ -113,6 +134,19 @@ void syncReturningUserOnboarding(Ref ref) {
 ///   - Returning user (`profileComplete` true) → straight to `/home`, never `/onboarding`.
 ///   - New user (`profileComplete` false) and onboarding not done → redirect to `/onboarding`.
 ///   - New user, onboarded, but mandatory school-profile step missing → redirect to `/profile-setup`.
+///
+/// UZ: Yagona [GoRouter] instansiyasini taqdim etadi.
+///
+/// Router Riverpod [Provider] ichida bir marta yaratiladi; uning qayta yo'naltirishi
+/// [authStateProvider] va [onboardingProvider] ni o'qiydi va autentifikatsiya holati o'zgarganda
+/// (masalan, istalgan ekrandan chiqish) `_RouterRefreshNotifier` tomonidan qayta ishga tushiriladi.
+///
+/// Qayta yo'naltirish mantiqi (har bir navigatsiyada va auth/onboarding holati o'zgarganda baholanadi):
+///   - Har ikkala provider yuklanayotganda → qayta yo'naltirish yo'q (miltillashning oldini olish).
+///   - Tizimga kirmagan va auth/landing yo'lida bo'lmaganda → `'/'` ga qayta yo'naltirish.
+///   - Qaytgan foydalanuvchi (`profileComplete` true) → to'g'ridan-to'g'ri `/home` ga, hech qachon `/onboarding` ga emas.
+///   - Yangi foydalanuvchi (`profileComplete` false) va onboarding bajarilmagan → `/onboarding` ga qayta yo'naltirish.
+///   - Yangi foydalanuvchi, onboardingdan o'tgan, lekin majburiy maktab profili bosqichi yetishmayapti → `/profile-setup` ga qayta yo'naltirish.
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/home',
@@ -120,6 +154,8 @@ final routerProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       // read (not watch): the notifier below re-runs redirect, and watching
       // would recreate the GoRouter on every auth change.
+      // UZ: read (watch emas): quyidagi bildirishnoma qayta yo'naltirishni qayta ishga tushiradi,
+      // va watching har bir auth o'zgarishida GoRouter'ni qayta yaratadi.
       final authState = ref.read(authStateProvider);
       final onboardingState = ref.read(onboardingProvider);
       return appRedirect(
@@ -137,6 +173,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/onboarding', pageBuilder: (_, s) => _fade(s, const OnboardingScreen())),
       GoRoute(path: '/profile-setup', pageBuilder: (_, s) => _fade(s, const ProfileSetupScreen())),
       GoRoute(path: '/quiz', pageBuilder: (_, s) => _slideUp(s, const QuizScreen())),
+      GoRoute(
+          path: '/board',
+          pageBuilder: (_, s) => _slideRight(s, BoardScreen(subject: s.uri.queryParameters['subject']))),
       GoRoute(path: '/teacher', pageBuilder: (_, s) => _slideRight(s, const TeacherHomeScreen())),
       GoRoute(path: '/teacher/timetable', pageBuilder: (_, s) => _slideRight(s, const TeacherScreen())),
       GoRoute(path: '/teacher/timetable/import', pageBuilder: (_, s) => _slideRight(s, const TimetableImportScreen())),
@@ -169,6 +208,8 @@ final routerProvider = Provider<GoRouter>((ref) {
 // ─── Page transition helpers ─────────────────────────────────────────────────
 
 /// Simple cross-fade — used for top-level tab switches and login.
+///
+/// UZ: Oddiy cross-fade — yuqori darajadagi tab almashinuvi va login uchun ishlatiladi.
 CustomTransitionPage<void> _fade(GoRouterState s, Widget child) =>
     CustomTransitionPage<void>(
       key: s.pageKey,
@@ -180,6 +221,8 @@ CustomTransitionPage<void> _fade(GoRouterState s, Widget child) =>
     );
 
 /// Slight upward slide + fade — used for modal-style pushes (sign-up, quiz).
+///
+/// UZ: Yengil yuqoriga siljish + fade — modal uslubidagi push'lar uchun ishlatiladi (ro'yxatdan o'tish, quiz).
 CustomTransitionPage<void> _slideUp(GoRouterState s, Widget child) =>
     CustomTransitionPage<void>(
       key: s.pageKey,
@@ -196,6 +239,8 @@ CustomTransitionPage<void> _slideUp(GoRouterState s, Widget child) =>
     );
 
 /// Slight right-to-left slide + fade — used for settings (secondary screen).
+///
+/// UZ: O'ngdan chapga yengil siljish + fade — sozlamalar uchun ishlatiladi (ikkilamchi ekran).
 CustomTransitionPage<void> _slideRight(GoRouterState s, Widget child) =>
     CustomTransitionPage<void>(
       key: s.pageKey,
@@ -217,6 +262,13 @@ CustomTransitionPage<void> _slideRight(GoRouterState s, Widget child) =>
 ///
 /// Also synchronizes the device onboarding flag for returning users outside
 /// of the synchronous redirect callback.
+///
+/// UZ: Riverpod provider o'zgarishlarini GoRouter'ning [ChangeNotifier] asosidagi yangilash
+/// mexanizmiga bog'laydi, shunda router autentifikatsiya yoki onboarding holati o'zgarganda
+/// o'zining qayta yo'naltirish mantiqini qayta baholaydi.
+///
+/// Shuningdek, qaytgan foydalanuvchilar uchun qurilmadagi onboarding bayrog'ini sinxron qayta
+/// yo'naltirish chaqiruvidan tashqarida sinxronlashtiradi.
 class _RouterRefreshNotifier extends ChangeNotifier {
   _RouterRefreshNotifier(Ref ref) {
     ref.listen(authStateProvider, (_, __) {

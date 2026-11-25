@@ -6,21 +6,26 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../shared/widgets/entrance.dart';
 import '../../../shared/widgets/glass_panel.dart';
-import '../../../shared/widgets/pressable.dart';
 import '../../timetable/widgets/school_changes_list.dart';
+import '../../school/widgets/school_load_error_banner.dart';
 import '../../school/widgets/school_notices_card.dart';
 import '../providers/home_provider.dart';
 import '../widgets/ai_study_tip_card.dart';
 import '../widgets/greeting_header.dart';
 import '../widgets/home_ambient_glow.dart';
 import '../widgets/notification_prompt_card.dart';
+import '../widgets/verify_email_card.dart';
 import '../widgets/stats_row.dart';
 import '../widgets/today_lessons.dart';
-import '../../assignments/widgets/add_edit_assignment_sheet.dart';
 import '../widgets/upcoming_assignments_list.dart';
 import '../widgets/weak_area_card.dart';
 import '../../../core/l10n/app_strings.dart';
 
+/// Main dashboard screen for students, featuring daily schedule highlights,
+/// upcoming deadlines, AI study tips, and academic notices.
+///
+/// UZ: O'quvchilar uchun asosiy boshqaruv paneli (dashboard) ekrani: kunlik dars jadvali,
+/// yaqinlashib kelayotgan muddatlar, AI o'quv maslahatlari va akademik bildirishnomalarni o'z ichiga oladi.
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
@@ -28,21 +33,6 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      floatingActionButton: Padding(
-        padding: EdgeInsets.only(bottom: context.isTablet ? 0 : 84),
-        child: Pressable(
-          child: FloatingActionButton.extended(
-            heroTag: 'home-add-assignment',
-            onPressed: () => showAddEditAssignmentSheet(context, ref),
-            backgroundColor: AppColors.primary,
-            foregroundColor: AppColors.onPrimary,
-            elevation: 2,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-            icon: const Icon(Icons.add_rounded),
-            label: Text(AppStrings.t('home_add_assignment'), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
-          ),
-        ),
-      ),
       body: Stack(
         children: [
           const Positioned.fill(child: HomeAmbientGlow()),
@@ -54,6 +44,8 @@ class HomeScreen extends ConsumerWidget {
               onRefresh: () async {
                 // Explicit user refresh: drop today's cached AI results so the
                 // providers below actually fetch instead of re-serving the cache.
+                // UZ: Foydalanuvchining bevosita yangilashi: quyidagi provayderlar keshni qayta
+                // ko'rsatish o'rniga yangitdan olishi uchun bugungi keshdagi AI natijalarini o'chiradi.
                 await clearTodaysAiCache(ref.read(localeProvider));
                 ref.invalidate(aiStudyTipProvider);
                 ref.invalidate(weakAreaProvider);
@@ -82,6 +74,8 @@ class HomeScreen extends ConsumerWidget {
 
                 // Desktop: lessons on the left, assignments and AI on the right,
                 // so a wide window shows the whole day without scrolling.
+                // UZ: Desktop: darslar chap tomonda, topshiriqlar va AI o'ng tomonda,
+                // shuning uchun keng oyna aylantirmasdan (scroll) butun kunni ko'rsatadi.
                 final wide = constraints.maxWidth >= 900;
                 return CustomScrollView(
                   slivers: [
@@ -125,6 +119,8 @@ class HomeScreen extends ConsumerWidget {
                           children: [
                             SchoolChangesBanner(),
                             SchoolNoticesCard(),
+                            SchoolLoadErrorBanner(margin: EdgeInsets.fromLTRB(16, 4, 16, 12)),
+                            VerifyEmailCard(),
                             NotificationPromptCard(),
                           ],
                         ),
@@ -209,6 +205,8 @@ class HomeScreen extends ConsumerWidget {
 }
 
 /// Section title (17/700) with a plain text link on the right.
+///
+/// UZ: O'ng tomonida oddiy matnli havolasi bo'lgan bo'lim sarlavhasi (17/700).
 class _SectionLabel extends StatelessWidget {
   final String text, linkLabel;
   final VoidCallback onTap;

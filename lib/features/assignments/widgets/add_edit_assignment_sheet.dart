@@ -50,10 +50,17 @@ class _AddEditAssignmentSheetState extends ConsumerState<_AddEditAssignmentSheet
 
   /// True while a save/delete write is in flight — disables the buttons and
   /// makes [_save] ignore re-entry so a double tap can't create two docs.
+  ///
+  /// UZ: Saqlash/o'chirish yozilishi jarayonda bo'lganida true — tugmalarni o'chiradi va
+  /// [_save] qayta chaqirilishini e'tiborsiz qoldiradi, shunda ikki marta bosish ikkita hujjat
+  /// yaratib qo'ymaydi.
   bool _saving = false;
 
   /// Set on the first save attempt so the due-date field doesn't start out
   /// with an error border before the user has done anything.
+  ///
+  /// UZ: Foydalanuvchi biror amal bajarishidan oldin muddat maydoni xatolik hoshiyasi bilan
+  /// boshlanmasligi uchun birinchi saqlash urinishida o'rnatiladi.
   bool _triedSave = false;
 
   @override
@@ -82,6 +89,10 @@ class _AddEditAssignmentSheetState extends ConsumerState<_AddEditAssignmentSheet
   /// Suggestions only — the field always accepts freely typed subject names
   /// too, not just these. Combines the fixed color-coded subjects with any
   /// subject the student already uses in their timetable classes.
+  ///
+  /// UZ: Faqat tavsiyalar — maydon faqat bularni emas, balki erkin kiritilgan fan nomlarini ham
+  /// doim qabul qiladi. Rangi belgilangan fanlarni o'quvchi o'zining dars jadvalida allaqachon
+  /// ishlatayotgan har qanday fan bilan birlashtiradi.
   List<String> _subjectSuggestions() {
     final fromClasses = (ref.read(timetableStreamProvider).valueOrNull ?? []).map((c) => c.subject);
     return {...SubjectColors.all, ...fromClasses}.where((s) => s.trim().isNotEmpty).toList();
@@ -92,6 +103,8 @@ class _AddEditAssignmentSheetState extends ConsumerState<_AddEditAssignmentSheet
     final initial = _selectedDate ?? now;
     // The range must contain initialDate or showDatePicker asserts — an edited
     // assignment can be due further back/ahead than the usual window.
+    // UZ: Oraliq initialDate ni o'z ichiga olishi kerak, aks holda showDatePicker assert tashlaydi —
+    // tahrirlangan topshiriq odatiy oraliqdan ko'ra oldinroqqa/keyinroqqa to'g'ri kelishi mumkin.
     final firstDate = initial.isBefore(now.subtract(const Duration(days: 365))) ? initial : now.subtract(const Duration(days: 365));
     final lastDate = initial.isAfter(now.add(const Duration(days: 365 * 2))) ? initial : now.add(const Duration(days: 365 * 2));
     final picked = await showDatePicker(
@@ -107,6 +120,8 @@ class _AddEditAssignmentSheetState extends ConsumerState<_AddEditAssignmentSheet
     if (_saving) return;
     // Rebuild so the due-date border reflects the failed attempt even when
     // the text-field validators below are what stops the save.
+    // UZ: Quyidagi matn maydoni validatorlari saqlashni to'xtatgan taqdirda ham, muddat chegarasi
+    // muvaffaqiyatsiz urinishni aks ettirishi uchun qayta chizing (rebuild).
     setState(() => _triedSave = true);
     if (!(_formKey.currentState?.validate() ?? false)) return;
     if (_selectedDate == null) return;
@@ -220,6 +235,8 @@ class _AddEditAssignmentSheetState extends ConsumerState<_AddEditAssignmentSheet
                   Autocomplete<String>(
                     // Seeded once; fieldViewBuilder must not reassign the text
                     // or every rebuild would move the cursor to the end.
+                    // UZ: Bir marta beriladi; fieldViewBuilder matnni qayta belgilamasligi kerak,
+                    // aks holda har bir rebuild kursorni oxiriga o'tkazib yuboradi.
                     initialValue: TextEditingValue(text: _subjectController.text),
                     optionsBuilder: (value) {
                       final suggestions = _subjectSuggestions();
@@ -303,6 +320,7 @@ class _AddEditAssignmentSheetState extends ConsumerState<_AddEditAssignmentSheet
                     Text(AppStrings.t('fld_status'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
                     const SizedBox(height: 8),
                     // Same chips as the detail sheet (SegmentedButton rendered borderless and cramped here).
+                    // UZ: Tafsilotlar varag'idagi kabi chiplar (SegmentedButton bu yerda chegarasiz va qisilgan holda chizilgan).
                     Wrap(
                       spacing: 8,
                       runSpacing: 8,

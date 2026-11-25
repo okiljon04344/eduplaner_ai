@@ -8,6 +8,13 @@ import '../../../core/theme/app_motion.dart';
 /// - The check icon pops (scale 0.6 -> 1.12 -> 1.0 in 260ms).
 /// - The fill and border color transition over 160ms.
 /// - When [reduceMotion] is true, no scale pop occurs.
+///
+/// UZ: Animatsiyali topshiriq bajarilganligini belgilash katagi aylanasi.
+///
+/// Bajarildi deb belgilanganda:
+/// - Belgilash belgisi sakraydi (scale 0.6 -> 1.12 -> 1.0 260ms ichida).
+/// - To'ldirish va chegara rangi 160ms davomida o'tadi.
+/// - [reduceMotion] true bo'lsa, masshtab sakrashi yuz bermaydi.
 class AnimatedAssignmentCheck extends StatefulWidget {
   final bool isCompleted;
   final double size;

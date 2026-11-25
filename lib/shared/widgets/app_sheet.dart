@@ -7,6 +7,12 @@ import '../../core/theme/app_motion.dart';
 ///
 /// Uses [AppColors.bgLayer], top radius 24, and [isScrollControlled: true] by default.
 /// Disposes the [AnimationController] when the sheet closes.
+///
+/// UZ: Maxsus animatsiya vaqtiga ega standart ilova pastki varag'i (bottom sheet) ishga tushirgichi:
+/// 320ms ochilish, 200ms yopilish (yoki [reduceMotion] true bo'lsa 150ms).
+///
+/// Standart bo'yicha [AppColors.bgLayer], yuqori radiusi 24 va [isScrollControlled: true] dan foydalanadi.
+/// Varaq yopilganda [AnimationController] ni bekor qiladi (dispose).
 Future<T?> showAppSheet<T>(
   BuildContext context,
   WidgetBuilder builder, {
@@ -39,6 +45,8 @@ Future<T?> showAppSheet<T>(
   } finally {
     // The future completes at pop, while the 200ms exit transition is still
     // running: disposing now would freeze the sheet half closed.
+    // UZ: Future pop paytida yakunlanadi, 200ms li chiqish o'tishi esa hali davom etmoqda:
+    // hozir dispose qilish varaqni yarim yopiq holda qotirib qo'yadi.
     if (controller.isDismissed) {
       controller.dispose();
     } else {

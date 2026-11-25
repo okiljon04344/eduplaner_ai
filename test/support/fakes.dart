@@ -235,6 +235,12 @@ class FakeAuthRepository implements AuthRepository {
   Future<void> ensureGoogleSignInReady() async {}
 
   @override
+  Future<void> sendEmailVerification() async {}
+
+  @override
+  Future<bool> refreshEmailVerified() async => true;
+
+  @override
   Future<UserModel> signInWithGoogle() async => currentUser ?? buildUser();
 
   @override

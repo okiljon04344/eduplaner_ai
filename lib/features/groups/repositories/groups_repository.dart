@@ -6,6 +6,11 @@ import '../../../core/l10n/app_strings.dart';
 import '../../../core/services/functions_service.dart';
 import '../models/study_group_model.dart';
 
+/// Manages study group creation, membership subscriptions in Firestore,
+/// and join code verification via Cloud Functions.
+///
+/// UZ: O'quv guruhlarini yaratish, Firestore'da a'zolik obunalarini boshqarish
+/// va Cloud Functions orqali qo'shilish kodini tekshirishni boshqaradi.
 class GroupsRepository {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   CollectionReference get _col => _db.collection('study_groups');
@@ -40,6 +45,10 @@ class GroupsRepository {
   /// Runs server-side via [functions/index.js]'s `joinGroupByCode` — the
   /// client can't add itself to `memberIds` directly because Firestore rules
   /// only allow existing members to update a group document.
+  ///
+  /// UZ: [functions/index.js] dagi `joinGroupByCode` orqali server tomonida ishlaydi — mijoz
+  /// o'zini to'g'ridan-to'g'ri `memberIds` ga qo'sha olmaydi, chunki Firestore qoidalari faqat
+  /// mavjud a'zolarga guruh hujjatini yangilashga ruxsat beradi.
   Future<String?> joinGroupByCode(String code) async {
     try {
       final callable = FunctionsService.callable('joinGroupByCode');
@@ -64,6 +73,16 @@ class GroupsRepository {
   ///  * owner with others remaining → ownership moves to the longest-standing
   ///    remaining member in the same write, so the group is never ownerless;
   ///  * anyone else → just removed from `memberIds`.
+  ///
+  /// UZ: Guruhdan [uid] ni olib tashlaydi.
+  ///
+  /// Avvalo, tark etuvchining shaxsiy darslari guruhdan ajratiladi (u hali a'zo bo'lgan paytda),
+  /// shuning uchun ular endi o'qiy olmaydigan guruhga ishora qilish o'rniga shaxsiy dars jadvalida qoladi. Keyin:
+  ///  * yagona a'zo → guruh hujjati o'chiriladi (qoidalar `memberIds` ni bo'shatishni taqiqlaydi,
+  ///    lekin yagona a'zoga o'chirishga ruxsat beradi);
+  ///  * boshqalar qolgan holda egasi → egalik xuddi shu yozishda eng uzoq vaqt qolgan a'zoga
+  ///    o'tadi, shuning uchun guruh hech qachon egasiz qolmaydi;
+  ///  * boshqa har qanday odam → faqat `memberIds` dan olib tashlanadi.
   Future<void> leaveGroup(StudyGroupModel group, String uid) async {
     final mine = await _db
         .collection('timetables')

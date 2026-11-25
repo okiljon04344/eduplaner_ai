@@ -17,6 +17,14 @@ import '../../../shared/widgets/app_input_field.dart';
 /// Links / iOS Universal Links (real domain ownership + native config) —
 /// trading a bit of copy-paste friction for something that works today with
 /// no extra infrastructure.
+///
+/// UZ: Deep-linking siz Firebase parolini tiklashni yakunlaydi: foydalanuvchi o'z elektron
+/// pochtasidagi to'liq tiklash havolasini yoki faqat `oobCode` so'rov parametri qiymatini
+/// joylashtiradi va butunlay ilova ichida yangi parolni o'rnatadi.
+///
+/// Bu Firebase Dynamic Links (to'xtatilgan) yoki Android App Links / iOS Universal Links
+/// (haqiqiy domenga egalik + nativ sozlash) ehtiyojini chetlab o'tadi — qo'shimcha infratuzilmasiz
+/// hozir ishlaydigan yechim evaziga nusxa ko'chirish-joylashtirishdagi kichik qiyinchilikka almashadi.
 class ResetPasswordScreen extends ConsumerStatefulWidget {
   const ResetPasswordScreen({super.key});
 
@@ -37,6 +45,8 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
 
   // Once the code is verified, we hold onto the raw code + the email it
   // resolved to, and move to step 2 (new password entry).
+  // UZ: Kod tasdiqlangach, xom kodni va u aniqlagan emailni saqlab qolamiz hamda
+  // 2-bosqichga (yangi parol kiritish) o'tamiz.
   String? _verifiedCode;
   String? _verifiedEmail;
 
@@ -50,6 +60,9 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
 
   /// Extracts `oobCode` from a full reset link, or returns the input as-is
   /// if it doesn't look like a URL (the user pasted the bare code).
+  ///
+  /// UZ: To'liq tiklash havolasidan `oobCode` ni ajratib oladi yoki agar u URL ga o'xshamasa
+  /// (foydalanuvchi faqat kodning o'zini qo'ygan bo'lsa), kiritmani o'z holicha qaytaradi.
   String _extractCode(String input) {
     final trimmed = input.trim();
     final uri = Uri.tryParse(trimmed);

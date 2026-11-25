@@ -91,6 +91,19 @@ function toGeminiContents(contents) {
 }
 
 /**
+ * Users are school students: block at the strictest standard threshold instead
+ * of the API default. A blocked reply comes back with empty text, which every
+ * caller already treats as a failed generation. (Ported from the pre-pilot
+ * audit, commit 51ea899.)
+ */
+export const GEMINI_SAFETY_SETTINGS = Object.freeze([
+  'HARM_CATEGORY_HARASSMENT',
+  'HARM_CATEGORY_HATE_SPEECH',
+  'HARM_CATEGORY_SEXUALLY_EXPLICIT',
+  'HARM_CATEGORY_DANGEROUS_CONTENT',
+].map((category) => Object.freeze({ category, threshold: 'BLOCK_LOW_AND_ABOVE' })));
+
+/**
  * Converts a provider-agnostic [AiRequest] into the configuration expected by
  * `@google/genai`'s `models.generateContent`.
  *
@@ -100,7 +113,10 @@ function toGeminiContents(contents) {
 export function toGeminiSdkConfig(aiRequest, defaultModel = DEFAULT_GEMINI_MODEL) {
   const model = aiRequest.model || defaultModel;
   const contents = toGeminiContents(aiRequest.contents);
-  const config = { ...(aiRequest.providerConfig ?? {}) };
+  const config = {
+    ...(aiRequest.providerConfig ?? {}),
+    safetySettings: GEMINI_SAFETY_SETTINGS.map((s) => ({ ...s })),
+  };
 
   if (aiRequest.systemInstruction !== undefined) {
     config.systemInstruction = aiRequest.systemInstruction;

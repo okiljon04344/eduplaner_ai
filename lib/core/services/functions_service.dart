@@ -8,11 +8,20 @@ import '../l10n/app_strings.dart';
 /// shared across all calls (AI analysis / quiz generation are the slowest,
 /// so the whole surface uses the same generous budget rather than tuning
 /// each call site separately).
+///
+/// UZ: Ilovadagi har bir Cloud Functions chaqiruvi uchun markazlashtirilgan kirish nuqtasi.
+///
+/// Barcha chaqiriluvchilar `asia-northeast1` hududida joylashtirilgan (`functions/index.js`ga qarang)
+/// — bu mos kelishi kerak, aks holda har bir chaqiruv `not-found` bilan muvaffaqiyatsiz tugaydi.
+/// `timeout` barcha chaqiruvlar bo'ylab taqsimlanadi (AI tahlili / viktorina generatsiyasi eng sekin,
+/// shuning uchun har bir chaqiruv joyini alohida sozlashdan ko'ra butun tizim bir xil keng byudjetdan foydalanadi).
 abstract class FunctionsService {
   static final FirebaseFunctions _instance = () {
     final f = FirebaseFunctions.instanceFor(region: 'asia-northeast1');
     // Emulator-auth tokens are rejected by production functions anyway;
     // route to a (possibly absent) local functions emulator instead.
+    // UZ: Emulator-auth tokenlari production funksiyalari tomonidan baribir rad etiladi;
+    // buning o'rniga (ehtimol mavjud bo'lmagan) mahalliy funksiyalar emulatoriga yo'naltiring.
     if (const bool.fromEnvironment('USE_EMULATOR')) {
       const host = String.fromEnvironment('EMULATOR_HOST', defaultValue: 'localhost');
       f.useFunctionsEmulator(host, 5001);

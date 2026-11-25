@@ -16,6 +16,11 @@ import '../widgets/add_edit_assignment_sheet.dart';
 import '../widgets/assignment_card.dart';
 import '../widgets/filter_chips_row.dart';
 
+/// Screen displaying the student's assignments in list or calendar mode,
+/// with status filtering, completion tracking, and creation actions.
+///
+/// UZ: Talabaning topshiriqlarini ro'yxat yoki taqvim rejimida ko'rsatadigan, holat bo'yicha filtrlash,
+/// bajarilishini kuzatish va yaratish amallariga ega ekran.
 class AssignmentsScreen extends ConsumerStatefulWidget {
   const AssignmentsScreen({super.key});
 
@@ -40,6 +45,8 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
 
     // Calendar mode hides the filter chips, so it ignores the status filter
     // (all assignments); with a selected day it shows only that day's.
+    // UZ: Taqvim rejimi filtr chiplarini yashiradi, shuning uchun holat filtrini e'tiborsiz
+    // qoldiradi (barcha topshiriqlar); tanlangan kun bo'lsa, faqat o'sha kunnikini ko'rsatadi.
     final displayAssignments = !_calendarMode
         ? filtered
         : (_selectedDay != null
@@ -208,6 +215,7 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
                     ]),
                   ),
                 // Room for the floating 課題を追加 button and bottom navigation bar.
+                // UZ: Suzuvchi 課題を追加 tugmasi va pastki navigatsiya paneli uchun joy.
                 SliverToBoxAdapter(child: SizedBox(height: context.isTablet ? 150 : 130)),
               ],
             ),
@@ -220,6 +228,9 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
 
   /// Redesign grouping by due date: 期限切れ / 今日・明日 / 今週 / 来週以降,
   /// then 完了 last (a finished assignment is never overdue).
+  ///
+  /// UZ: Topshirish muddati bo'yicha qayta dizayn guruhlash: 期限切れ / 今日・明日 / 今週 / 来週以降,
+  /// so'ngra oxirida 完了 (bajarilgan topshiriqning muddati hech qachon o'tgan bo'lmaydi).
   List<Widget> _dueGroups(List<AssignmentModel> list) {
     int bucket(AssignmentModel a) {
       if (a.status == AssignmentStatus.completed) return 4;
@@ -265,6 +276,8 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
 }
 
 /// 今週の進捗: done / total this week, a bar, and an overdue nudge.
+///
+/// UZ: 今週の進捗: bu haftadagi bajarilgan / jami, progress bar va muddati o'tganlik haqida eslatma.
 class _ProgressCard extends StatelessWidget {
   final ({int completed, int total}) weekly;
   final int overdue;
@@ -345,6 +358,10 @@ class _AssignmentCalendar extends StatelessWidget {
 
   /// Groups [assignments] by due-day once so `eventLoader` below is an O(1)
   /// map lookup per visible cell instead of an O(n) scan per cell.
+  ///
+  /// UZ: [assignments]ni topshirish kuni bo'yicha bir marta guruhlaydi, shunda quyidagi
+  /// `eventLoader` har bir katak uchun O(n) qidiruv o'rniga har bir ko'rinadigan katak uchun
+  /// O(1) map qidiruviga aylanadi.
   Map<DateTime, List<AssignmentModel>> _groupByDueDay() {
     final byDay = <DateTime, List<AssignmentModel>>{};
     for (final a in assignments) {

@@ -5,11 +5,17 @@ import '../../../core/theme/app_colors.dart';
 import '../models/assignment_model.dart';
 import '../providers/assignments_provider.dart';
 
+/// Horizontal selector of filter chips displaying assignment status categories along with count badges.
+///
+/// UZ: Topshiriq holati toifalarini hisoblagich nishonlari bilan birga ko'rsatadigan filtr chiplarining gorizontal tanlagichi.
 class FilterChipsRow extends ConsumerWidget {
   const FilterChipsRow({super.key});
 
   /// Stable filter ids stored in [selectedFilterProvider]; labels are
   /// resolved per-locale in [_labelFor].
+  ///
+  /// UZ: [selectedFilterProvider] da saqlanadigan barqaror filtr identifikatorlari;
+  /// yorliqlar [_labelFor] da har bir tilga qarab aniqlanadi.
   static const _filters = ['all', 'notStarted', 'inProgress', 'completed'];
 
   static String _labelFor(String id) {

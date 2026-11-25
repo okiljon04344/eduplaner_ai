@@ -11,6 +11,16 @@ import '../../core/theme/app_colors.dart';
 /// When [MediaQuery.disableAnimationsOf] is true, [BackdropFilter] is skipped
 /// and an opaque-enough fill ([AppColors.cardSurface]) is painted instead,
 /// ensuring high contrast and smooth performance.
+///
+/// UZ: Qayta ishlatiladigan shishasimon (glassmorphic) panel.
+///
+/// [child]'ni shaffof [tint] to'ldiruvchisi va [borderColor] bilan yumaloqlangan konteynerga o'raydi.
+/// [blurSigma] berilganda (va > 0 bo'lganda) hamda animatsiyalar/effektlar yoqilgan bo'lsa, u
+/// [ImageFilter.blur] bilan haqiqiy [BackdropFilter]'ni qo'llaydi.
+///
+/// [MediaQuery.disableAnimationsOf] rost (true) bo'lganda, [BackdropFilter] o'tkazib yuboriladi va
+/// yuqori kontrast hamda silliq ishlashni ta'minlash uchun uning o'rniga yetarlicha xira to'ldiruvchi
+/// ([AppColors.cardSurface]) chiziladi.
 class GlassPanel extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;
@@ -78,6 +88,9 @@ class GlassPanel extends StatelessWidget {
           // The fill is translucent, so a shadow painted under the panel shows
           // through as a hard band (CSS never paints under the box): outer
           // blur only, centred (an offset outer shadow still leaves a band).
+          // UZ: To'ldiruvchi yarim shaffof, shuning uchun panel ostida chizilgan soya qattiq
+          // chiziq bo'lib ko'rinadi (CSS hech qachon quti ostiga chizmaydi): faqat tashqi xiralashtirish,
+          // markazlashtirilgan (siljigan tashqi soya baribir chiziq qoldiradi).
           boxShadow: [for (final s in shadows!) BoxShadow(color: s.color, offset: Offset.zero, blurRadius: s.blurRadius, spreadRadius: s.spreadRadius, blurStyle: BlurStyle.outer)],
         ),
         child: inner,

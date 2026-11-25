@@ -16,6 +16,10 @@ import '../providers/quiz_provider.dart';
 /// テスト問題の自動生成 — pick a subject, optionally add a specific topic
 /// and enable web-grounded generation, then answer 5 AI-generated MC questions
 /// with instant correct/incorrect feedback + explanation.
+///
+/// UZ: テスト問題の自動生成 — fanni tanlang, ixtiyoriy ravishda aniq mavzu qo'shing va
+/// vebga asoslangan yaratishni yoqing, so'ngra bir zumda to'g'ri/noto'g'ri fikr-mulohazalar + tushuntirish
+/// bilan AI tomonidan yaratilgan 5 ta test savoliga javob bering.
 class QuizScreen extends ConsumerStatefulWidget {
   const QuizScreen({super.key});
 
@@ -27,6 +31,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
   final _subjectCtrl = TextEditingController(text: SubjectColors.all.first);
   final _topicCtrl = TextEditingController();
   // Off by default: each web-grounded quiz costs two AI calls.
+  // UZ: Odatiy holda o'chiq: har bir vebga asoslangan test ikkita AI chaqiruvini talab qiladi.
   bool _useSearch = false;
 
   @override
@@ -40,6 +45,11 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
   /// name too (school/college/university subject names vary), not just
   /// these. Combines the fixed color-coded subjects with any subject the
   /// student already uses in their timetable classes or assignments.
+  ///
+  /// UZ: Faqat takliflar — bu maydon har doim faqat bularni emas, balki erkin kiritilgan
+  /// fan nomini ham qabul qiladi (maktab/kollej/universitet fan nomlari farq qiladi).
+  /// Belgilangan rangli fanlarni talaba dars jadvalida yoki topshiriqlarida allaqachon
+  /// foydalanayotgan har qanday fan bilan birlashtiradi.
   List<String> _subjectSuggestions() {
     final fromClasses = (ref.read(timetableStreamProvider).valueOrNull ?? []).map((c) => c.subject);
     final fromAssignments = (ref.read(assignmentsStreamProvider).valueOrNull ?? []).map((a) => a.subject);
@@ -118,6 +128,9 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                         // quiz reuses the old _QuizCardState at each position, so
                         // answers from the previous quiz appear pre-selected on the
                         // new questions.
+                        // UZ: Savol identifikatori bo'yicha kalitlangan: busiz testni qayta
+                        // yaratish har bir pozitsiyada eski _QuizCardState holatini qayta ishlatadi,
+                        // natijada oldingi testdagi javoblar yangi savollarda oldindan tanlangan bo'lib qoladi.
                         itemBuilder: (context, i) => _QuizCard(key: ObjectKey(questions[i]), index: i, question: questions[i]),
                       );
                     },
@@ -165,6 +178,8 @@ class _ConfigPanel extends StatelessWidget {
           Autocomplete<String>(
             // Seeded once; fieldViewBuilder must not reassign the text
             // or every rebuild would move the cursor to the end.
+            // UZ: Bir marta boshlang'ich qiymat beriladi; fieldViewBuilder matnni qayta
+            // tayinlamasligi kerak, aks holda har bir qayta qurish kursor oxiriga o'tib ketadi.
             initialValue: TextEditingValue(text: subjectCtrl.text),
             optionsBuilder: (value) {
               if (value.text.isEmpty) return subjectSuggestions;
@@ -200,6 +215,7 @@ class _ConfigPanel extends StatelessWidget {
               border: Border.all(color: AppColors.border),
             ),
             // Own Material so the ListTile ink is not hidden by the box color.
+            // UZ: ListTile siyoh (ink) effekti quti rangi bilan yashirinib qolmasligi uchun o'z Material vidjeti.
             child: Material(
               type: MaterialType.transparency,
               child: SwitchListTile.adaptive(

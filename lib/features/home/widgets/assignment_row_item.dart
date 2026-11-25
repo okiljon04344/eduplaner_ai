@@ -10,6 +10,9 @@ import '../../assignments/widgets/distributed_badge.dart';
 
 /// One row in [UpcomingAssignmentsList]: a circular checkbox (tap toggles
 /// completion directly) and title + colored deadline text.
+///
+/// UZ: [UpcomingAssignmentsList] dagi bitta qator: dumaloq katakcha (bosish to'g'ridan-to'g'ri
+/// bajarilganlikni almashtiradi) hamda sarlavha + rangli muddat matni.
 class AssignmentRowItem extends ConsumerWidget {
   final AssignmentModel assignment;
   final bool showDivider;

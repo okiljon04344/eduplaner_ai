@@ -7,6 +7,7 @@ import {
   syncAllSchools,
   notifySchoolChanges,
   assertLinkAllowed,
+  releaseSchoolAdmin,
   tokyoToday,
 } from '../school/sync.js';
 import {
@@ -43,6 +44,7 @@ class FakeDb {
       id: path.split('/').pop(),
       get: async () => this.snap(path),
       set: async (d, opts) => this.put(path, d, opts),
+      delete: async () => { this.docs.delete(path); },
     };
   }
   snap(path) {
@@ -238,11 +240,30 @@ test('syncAllSchools continues after one school fails', async () => {
   assert.deepEqual(seen.sort(), ['a.jp', 'b.jp']);
 });
 
+test('releaseSchoolAdmin drops the admin and their Drive token', async () => {
+  const db = new FakeDb();
+  db.seed('schools/a.jp', { admins: ['u1', 'u2'], file: { id: 'f' } });
+  db.seed('school_secrets/a.jp', { refreshToken: 'r', linkedBy: 'u1' });
+  db.seed('schools/b.jp', { admins: ['u1'], file: { id: 'g' } });
+  db.seed('school_secrets/b.jp', { refreshToken: 'r', linkedBy: 'other' });
+  db.seed('schools/c.jp', { admins: ['x'] });
+  assert.equal(await releaseSchoolAdmin(db, 'u1', 'DEL'), 2);
+  assert.deepEqual(db.docs.get('schools/a.jp'), { admins: ['u2'], file: 'DEL' });
+  assert.equal(db.docs.has('school_secrets/a.jp'), false);
+  assert.deepEqual(db.docs.get('schools/b.jp'), { admins: [], file: { id: 'g' } });
+  assert.equal(db.docs.has('school_secrets/b.jp'), true);
+  assert.deepEqual(db.docs.get('schools/c.jp'), { admins: ['x'] });
+});
+
 test('linkSchoolStart rejects tokens without matching hd', () => {
   const ok = {
     callerEmail: 'T@School.example.jp', callerVerified: true, tokenEmail: 't@school.example.jp',
     hd: 'school.example.jp', school: null, uid: 'u1',
+    firstAdmins: ['t@school.example.jp'],
   };
+  // No admin yet: only an operator-listed email may claim the school.
+  assert.throws(() => assertLinkAllowed({ ...ok, firstAdmins: [] }), { code: 'permission-denied' });
+  assert.throws(() => assertLinkAllowed({ ...ok, firstAdmins: [], school: { name: 'x' } }), { code: 'permission-denied' });
   assert.equal(assertLinkAllowed(ok), 'school.example.jp');
   const denied = (o) => assert.throws(() => assertLinkAllowed({ ...ok, ...o }), { code: 'permission-denied' });
   denied({ hd: undefined });

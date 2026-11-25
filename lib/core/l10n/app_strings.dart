@@ -12,6 +12,18 @@ import 'package:flutter/services.dart';
 /// (which requires code-gen on every string change) in favour of simple JSON
 /// asset loading.  The trade-off is that string safety is runtime, not
 /// compile-time — watch for silent fallbacks during QA.
+///
+/// UZ: Barcha UI tarjimalari uchun xotiradagi statik satrlar keshi.
+///
+/// Ilova ishga tushganda (va har bir lokal o'zgarganda) `assets/l10n/<locale>.json` dan mos JSON
+/// faylini [_strings] ga tahlil qilish uchun [load] ni chaqiring. Vidjetlar kalitni qidirish
+/// uchun [t] ni chaqiradi; agar kalit topilmasa, ishlab chiqish jarayonida buzilgan tarjimalar
+/// vizual ko'rinishi uchun kalitning o'zi qaytariladi.
+///
+/// Dizayn tanlovi: bu oddiy JSON aktivlarini yuklash foydasiga har bir satr o'zgarishida kod
+/// generatsiyasini talab qiladigan Flutter'ning o'rnatilgan `intl`/`gen_l10n` vositalar zanjiridan
+/// qochadi. Kamchiligi shundaki, satrlar xavfsizligi kompilyatsiya vaqtida emas, balki bajarilish
+/// vaqtida (runtime) bo'ladi — QA jarayonida sezilarsiz zaxira variantlarga e'tibor bering.
 class AppStrings {
   AppStrings._();
 
@@ -19,6 +31,8 @@ class AppStrings {
   static String _currentLocale = 'ja';
 
   /// The locale code that is currently loaded (e.g. `'ja'`, `'en'`, `'uz'`).
+  ///
+  /// UZ: Hozirda yuklangan lokal kodi (masalan, `'ja'`, `'en'`, `'uz'`).
   static String get currentLocale => _currentLocale;
 
   /// Loads `assets/l10n/<locale>.json` and caches all key/value pairs.
@@ -26,6 +40,12 @@ class AppStrings {
   /// If [locale] is not in [_supported] it falls back to `'ja'`.
   /// If the asset file fails to parse it silently retries with `'ja'`,
   /// so the app never crashes due to a missing or malformed translation file.
+  ///
+  /// UZ: `assets/l10n/<locale>.json` ni yuklaydi va barcha kalit/qiymat juftliklarini keshlaydi.
+  ///
+  /// Agar [locale] [_supported] ichida bo'lmasa, u `'ja'` ga qaytadi.
+  /// Agar aktiv faylini tahlil qilish bajarilmasa, u bildirmasdan `'ja'` bilan qayta urinib ko'radi,
+  /// shuning uchun tarjima fayli yo'qligi yoki noto'g'riligi sababli ilova hech qachon qulab tushmaydi.
   static Future<void> load(String locale) async {
     final target = _supported.contains(locale) ? locale : 'ja';
     try {
@@ -45,6 +65,14 @@ class AppStrings {
   ///
   /// Falls back to [key] itself when the key is absent — visible as raw keys
   /// in the UI, which makes gaps in a new translation file obvious during QA.
+  ///
+  /// UZ: [key] uchun tarjima qilingan satrni qaytaradi.
+  ///
+  /// Satrdagi o'rinbosarlarni almashtirish uchun ixtiyoriy [args] map'idan foydalanish mumkin
+  /// (masalan, `t('hello', {'name': 'User'})` tarjimadagi `{name}` ni almashtiradi).
+  ///
+  /// Kalit mavjud bo'lmaganda [key] ning o'ziga qaytadi — bu UI da xom kalitlar sifatida
+  /// ko'rinadi va yangi tarjima faylidagi bo'shliqlarni QA paytida yaqqol ko'rsatadi.
   static String t(String key, [Map<String, dynamic>? args]) {
     var value = _strings[key] ?? key;
     if (args != null) {
@@ -56,6 +84,8 @@ class AppStrings {
   }
 
   /// BCP-47 locale codes supported by the app.
+  ///
+  /// UZ: Ilova tomonidan qo'llab-quvvatlanadigan BCP-47 lokal kodlari.
   static const _supported = {
     'ja', 'en', 'zh', 'zh_TW', 'ko', 'vi', 'th', 'id', 'ms',
     'hi', 'ar', 'es', 'fr', 'de', 'pt', 'ru', 'it', 'tr', 'nl', 'uz', 'fil',
@@ -65,6 +95,11 @@ class AppStrings {
   ///
   /// Each record is `(code, nativeName, flagEmoji)`.
   /// Used by the language picker in the settings screen.
+  ///
+  /// UZ: Qo'llab-quvvatlanadigan har bir lokal uchun ko'rsatish metama'lumotlari.
+  ///
+  /// Har bir yozuv `(code, nativeName, flagEmoji)` ko'rinishida.
+  /// Sozlamalar ekranidagi til tanlagich tomonidan ishlatiladi.
   static const locales = [
     ('ja',    '日本語',           '🇯🇵'),
     ('en',    'English',         '🇺🇸'),

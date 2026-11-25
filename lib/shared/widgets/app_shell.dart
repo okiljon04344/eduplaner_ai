@@ -9,6 +9,8 @@ import 'app_bottom_nav.dart';
 import 'app_nav_rail.dart';
 
 /// Wraps every routed screen with a directional slide when switching tabs.
+///
+/// UZ: Har bir yo'naltirilgan ekranni tablar almashganda yo'naltirilgan siljish (slide) bilan o'raydi.
 class AppShell extends ConsumerWidget {
   final Widget child;
   const AppShell({super.key, required this.child});
@@ -26,6 +28,8 @@ class AppShell extends ConsumerWidget {
                 const AppNavRail(),
                 // Each tab clamps its own content column, so glows and
                 // full-bleed headers can span the whole area.
+                // UZ: Har bir tab o'z kontent ustunini cheklaydi, shunda porlashlar (glows) va
+                // to'liq kenglikdagi sarlavhalar butun maydonni qamrab olishi mumkin.
                 Expanded(child: _DirectionalTab(child: child)),
               ],
             )
@@ -48,6 +52,10 @@ class _DirectionalTabState extends ConsumerState<_DirectionalTab> {
   // the KeyedSubtree below is never reused across visits — AppColors' mutable
   // statics don't flow through InheritedWidget, so a reused Element can paint
   // stale colors picked up from before this tab was last hidden.
+  // UZ: Har bir tab almashganda (hatto ilgari tashrif buyurilgan indeksga qaytganda ham) oshiriladi,
+  // shunda quyidagi KeyedSubtree tashriflar davomida hech qachon qayta ishlatilmaydi — AppColors'ning
+  // o'zgaruvchan statiklari InheritedWidget orqali o'tmaydi, shuning uchun qayta ishlatilgan Element
+  // ushbu tab oxirgi marta yashirilishidan oldin olingan eski ranglarni chizib qo'yishi mumkin.
   int _visitNonce = 0;
 
   @override
@@ -63,29 +71,24 @@ class _DirectionalTabState extends ConsumerState<_DirectionalTab> {
     final index = ref.watch(shellTabIndexProvider);
     final isReduced = reduceMotion(context);
 
-    return AnimatedSwitcher(
+    // One copy of the shell child only: it is go_router's Navigator, which
+    // carries a GlobalKey, so an AnimatedSwitcher (old + new child alive at
+    // once) throws "Duplicate GlobalKey" on every tab switch. A fresh key
+    // restarts this entrance instead; the page that left is not kept.
+    // UZ: Shell child faqat bitta nusxada bo'ladi: u go_router'ning Navigator'i va GlobalKey'ga
+    // ega, shuning uchun AnimatedSwitcher (eski va yangi child bir vaqtda) har tab almashganda
+    // "Duplicate GlobalKey" xatosini beradi. Buning o'rniga yangi kalit shu kirish animatsiyasini
+    // qayta boshlaydi; chiqib ketgan sahifa saqlanmaydi.
+    return TweenAnimationBuilder<double>(
+      key: ValueKey('${index}_$_visitNonce'),
+      tween: Tween(begin: _visitNonce == 0 ? 1.0 : 0.0, end: 1.0),
       duration: isReduced ? AppMotion.fadeDuration : AppMotion.screenDuration,
-      transitionBuilder: (child, animation) {
-        if (isReduced) {
-          return FadeTransition(
-            opacity: animation,
-            child: child,
-          );
-        }
-        final curved = CurvedAnimation(parent: animation, curve: AppMotion.strongEaseOut);
-        return FadeTransition(
-          opacity: curved,
-          child: AnimatedBuilder(
-            animation: curved,
-            builder: (context, child) => Transform.translate(
-              offset: Offset(0, 10.0 * (1.0 - curved.value)),
-              child: child,
-            ),
-            child: child,
-          ),
-        );
-      },
-      child: KeyedSubtree(key: ValueKey('${index}_$_visitNonce'), child: widget.child),
+      curve: AppMotion.strongEaseOut,
+      builder: (context, t, child) => Opacity(
+        opacity: t,
+        child: isReduced ? child : Transform.translate(offset: Offset(0, 10.0 * (1.0 - t)), child: child),
+      ),
+      child: widget.child,
     );
   }
 }

@@ -10,24 +10,35 @@ import '../../assignments/models/assignment_model.dart';
 import '../../assignments/providers/assignments_provider.dart';
 
 // Getters (not consts) so they always resolve in the currently loaded locale.
+// UZ: Doimo joriy yuklangan tilda aniqlanishi uchun getter-lar (const emas).
 String get _fallbackTip => AppStrings.t('tip_fallback');
 String get _fallbackWeakArea => AppStrings.t('weak_fallback');
 String get _noAssignmentsWeakArea => AppStrings.t('weak_no_assignments');
 
 // Cache keys are per locale and per day, so switching language re-fetches in
 // the new language and a new day starts fresh.
+// UZ: Kesh kalitlari har bir til va har bir kun uchun alohida, shuning uchun tilni almashtirish
+// yangi tilda qayta yuklaydi va yangi kun yangidan boshlanadi.
 String _studyTipCacheKey(String locale, DateTime day) => 'study_tip_${locale}_${DateHelper.dayKey(day)}';
 String _weakAreaCacheKey(String locale, DateTime day) => 'weak_area_${locale}_${DateHelper.dayKey(day)}';
 
 /// While set and in the future, [weakAreaProvider] makes no `analyzeWeakArea`
 /// call: after a failure, every assignment change would otherwise retry the
 /// function (and burn daily AI quota) while it is failing.
+///
+/// UZ: O'rnatilgan va kelajakda bo'lgan paytda [weakAreaProvider] hech qanday `analyzeWeakArea`
+/// chaqiruvini amalga oshirmaydi: xatolikdan so'ng, aks holda har bir topshiriq o'zgarishi funksiya
+/// xato berayotgan vaqtda uni qayta chaqirib (va kunlik AI kvotasini sarflab) yuborar edi.
 DateTime? _weakAreaBackoffUntil;
 const _weakAreaBackoff = Duration(minutes: 10);
 
 /// Removes today's cached study tip and weak-area analysis for [locale] (and
 /// any weak-area failure backoff) so the next provider read hits the server.
 /// Used by the home pull-to-refresh, which is an explicit user request.
+///
+/// UZ: Keyingi provayder o'qishi serverga murojaat qilishi uchun [locale] bo'yicha bugungi keshdagi
+/// o'rganish bo'yicha maslahat va zaif sohalar tahlilini (hamda har qanday xatolik backoff-ini) olib tashlaydi.
+/// Foydalanuvchining aniq so'rovi bo'lgan asosiy ekranni pastga tortib yangilash (pull-to-refresh) tomonidan ishlatiladi.
 Future<void> clearTodaysAiCache(String locale) async {
   final prefs = await SharedPreferences.getInstance();
   final now = DateTime.now();
@@ -41,6 +52,11 @@ Future<void> clearTodaysAiCache(String locale) async {
 /// Backs the "🔥 Streak" stat pill on the home screen with a real number.
 /// The streak increments when the app is opened on the day immediately
 /// following the last recorded open; it resets to 1 otherwise.
+///
+/// UZ: Ilovani ketma-ket kunlar ochish davomiyligini (streak) kuzatib boradi va uni [SharedPreferences] da saqlaydi.
+///
+/// Asosiy ekrandagi "🔥 Streak" statistika belgisini haqiqiy raqam bilan ta'minlaydi.
+/// Ketma-ketlik ilova oxirgi qayd etilgan ochilishdan keyingi kunda ochilganda 1 taga oshadi; aks holda 1 ga qaytariladi.
 final dailyStreakProvider = FutureProvider<int>((ref) async {
   final prefs = await SharedPreferences.getInstance();
   final now = DateTime.now();
@@ -53,6 +69,8 @@ final dailyStreakProvider = FutureProvider<int>((ref) async {
   if (lastOpen != null) {
     // Calendar arithmetic (not `subtract(Duration(days: 1))`, which is 24h and
     // lands on the wrong day just after a DST change).
+    // UZ: Taqvim arifmetikasi (24 soat bo'lgan va DST o'zgarishidan so'ng noto'g'ri kunga
+    // to'g'ri kelib qoladigan `subtract(Duration(days: 1))` emas).
     final yesterdayKey = DateHelper.dayKey(DateTime(now.year, now.month, now.day - 1));
     streak = (lastOpen == yesterdayKey) ? streak + 1 : 1;
   } else {
@@ -69,6 +87,12 @@ final dailyStreakProvider = FutureProvider<int>((ref) async {
 /// The tip is cached in [SharedPreferences] keyed by today's date so the
 /// function is called at most once per calendar day.  Falls back to a static
 /// motivational string if the call fails or returns empty.
+///
+/// UZ: `chatWithTutor` Cloud Function dan qisqa kunlik AI o'rganish maslahatini oladi.
+///
+/// Maslahat bugungi sana kaliti bilan [SharedPreferences] da keshlanadi,
+/// shunda funksiya taqvim kunida ko'pi bilan bir marta chaqiriladi. Agar chaqiruv muvaffaqiyatsiz
+/// tugasa yoki bo'sh qaytsa, statik motivatsion qatorga tayanadi.
 final aiStudyTipProvider = FutureProvider<String>((ref) async {
   if (ref.watch(currentUserProvider) == null) return _fallbackTip;
   final locate = ref.watch(localeProvider);
@@ -95,6 +119,8 @@ final aiStudyTipProvider = FutureProvider<String>((ref) async {
 
 
 /// Per-subject assignment stat accumulator for [weakAreaProvider].
+///
+/// UZ: [weakAreaProvider] uchun har bir fan bo'yicha topshiriqlar statistikasi yig'uvchisi.
 class _SubjectStat {
   int total = 0;
   int completed = 0;
@@ -112,6 +138,16 @@ class _SubjectStat {
 /// the stats actually changed, not on every assignment-stream emission. After
 /// a failed call no new call is made for 10 minutes; the cached text (even
 /// from older stats) is returned if there is one, else the localized fallback.
+///
+/// UZ: 苦手分野の分析 — har bir fan bo'yicha topshiriqlar statistikasini mahalliy ravishda
+/// birlashtiradi (hisoblash uchun AI kerak emas), so'ngra faqat xulosa raqamlarini `analyzeWeakArea`
+/// Cloud Function ga yuboradi, shunda Gemini eng zaif fan(lar)ni aniqlab, qisqa amaliy maslahat bera oladi.
+///
+/// Natija har bir til va kun bo'yicha JSON `{sig, text}` ko'rinishida keshlanadi, bu yerda `sig`
+/// hisoblangan statistikaning barqaror qatori: funksiya har bir topshiriqlar oqimi uzatilganda emas,
+/// faqat statistika haqiqatdan o'zgargandagina chaqiriladi. Muvaffaqiyatsiz chaqiruvdan so'ng 10 daqiqa
+/// davomida yangi chaqiruv qilinmaydi; keshdagi matn (hatto eski statistikadan bo'lsa ham) mavjud bo'lsa
+/// qaytariladi, aks holda mahalliylashtirilgan zaxira matn beriladi.
 final weakAreaProvider = FutureProvider<String>((ref) async {
   final locate = ref.watch(localeProvider);
   final assignments = ref.watch(assignmentsStreamProvider).valueOrNull ?? [];
@@ -171,6 +207,10 @@ final weakAreaProvider = FutureProvider<String>((ref) async {
 /// Parses the `{sig, text}` weak-area cache entry. A plain-text entry written
 /// by an older app version is returned with an empty `sig` (never matches, so
 /// it is refreshed once, but still usable as a fallback text).
+///
+/// UZ: `{sig, text}` zaif soha kesh yozuvini tahlil qiladi (parse). Ilovaning eski versiyasi tomonidan
+/// yozilgan oddiy matnli yozuv bo'sh `sig` bilan qaytariladi (hech qachon mos kelmaydi, shuning uchun
+/// bir marta yangilanadi, ammo baribir zaxira matn sifatida ishlatilishi mumkin).
 ({String sig, String text})? _decodeWeakAreaCache(String? raw) {
   if (raw == null || raw.isEmpty) return null;
   try {

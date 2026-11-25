@@ -4,6 +4,11 @@ import '../../../core/l10n/app_strings.dart';
 import '../../../core/services/functions_service.dart';
 import '../models/assignment_model.dart';
 
+/// Handles CRUD operations for assignments in Firestore and communicates with
+/// Cloud Functions to perform automated assignment checks.
+///
+/// UZ: Firestore da topshiriqlar uchun CRUD amallarini bajaradi va topshiriqlarni
+/// avtomatlashtirilgan tekshirishni amalga oshirish uchun Cloud Functions bilan muloqot qiladi.
 class AssignmentsRepository {
   final _db = FirebaseFirestore.instance;
   CollectionReference get _col => _db.collection('assignments');
@@ -21,17 +26,27 @@ class AssignmentsRepository {
   /// Writes every editable field but never the `ai*` result fields — those
   /// are owned by [saveAiAnalysis], so a stale model passed here can't erase
   /// a fresher AI check.
+  ///
+  /// UZ: Har bir tahrirlanadigan maydonni yozadi, lekin hech qachon `ai*` natija maydonlarini
+  /// yozmaydi — ular [saveAiAnalysis] ga tegishli, shuning uchun bu yerga uzatilgan eski model
+  /// yangiroq AI tekshiruvini o'chirib yubora olmaydi.
   Future<void> update(AssignmentModel model) async =>
       _col.doc(model.id).update(model.toFirestore()..removeWhere((k, _) => k.startsWith('ai')));
   Future<void> delete(String id) async => _col.doc(id).delete();
 
   /// Writes status and progress together in one update so the two fields
   /// can never be observed out of sync.
+  ///
+  /// UZ: Ikkala maydon hech qachon sinxronlikdan chiqib qolgan holda ko'rinmasligi uchun
+  /// holat va progressni bitta yangilanishda birga yozadi.
   Future<void> updateStatusAndProgress(String id, AssignmentStatus status, double progress) async =>
       _col.doc(id).update({'status': status.firestoreValue, 'progress': progress});
 
   /// 課題の自動チェック — sends the submitted file (never stored, only
   /// forwarded) to `analyzeAssignmentSubmission` for a Gemini-based review.
+  ///
+  /// UZ: 課題の自動チェック — Gemini asosidagi ko'rib chiqish uchun yuborilgan faylni
+  /// (hech qachon saqlanmaydi, faqat uzatiladi) `analyzeAssignmentSubmission` ga yuboradi.
   Future<Map<String, dynamic>> analyzeSubmission({
     required String subject,
     required String title,

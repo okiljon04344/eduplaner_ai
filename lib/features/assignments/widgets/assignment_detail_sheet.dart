@@ -116,10 +116,15 @@ class _AssignmentDetailSheet extends ConsumerStatefulWidget {
 class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> {
   /// Live slider/chip values — may run ahead of [_current] while a write is
   /// in flight, and are reverted to it if the write fails.
+  ///
+  /// UZ: Jonli slayder/chip qiymatlari — yozish jarayoni davom etayotganda [_current]dan oldinga
+  /// ketishi mumkin va agar yozish muvaffaqiyatsiz tugasa, unga qaytariladi.
   late double _progress;
   late AssignmentStatus _status;
 
   /// Last persisted state of the assignment (including AI-check results).
+  ///
+  /// UZ: Topshiriqning oxirgi saqlangan holati (shu jumladan AI-tekshiruvi natijalari).
   late AssignmentModel _current;
   bool _aiLoading = false;
   bool _aiCheckLoading = false;
@@ -290,6 +295,8 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
     }
     // Merge only the AI fields: progress/status may have changed while the
     // check was running, and a whole-model replace would roll them back.
+    // UZ: Faqat AI maydonlarini birlashtiring: tekshirish davom etayotganda progress/status
+    // o'zgargan bo'lishi mumkin va modelni to'liq almashtirish ularni orqaga qaytarib qo'yadi.
     final checked = outcome.model!;
     setState(() {
       _highRedactionWarning = outcome.highRedactionWarning;
@@ -303,6 +310,8 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
   }
 
   /// Puts the live slider/chip values back to the last persisted state.
+  ///
+  /// UZ: Jonli slayder/chip qiymatlarini oxirgi saqlangan holatga qaytaradi.
   void _revertToCurrent() {
     _progress = _current.progress;
     _status = _current.status;
@@ -317,6 +326,8 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
 
   // Committing on drag-end (not every `onChanged` tick) avoids firing a
   // Firestore write per pixel of drag while the slider is being dragged.
+  // UZ: Slayder tortilayotganda har bir piksel uchun Firestore'ga yozishni oldini olish maqsadida
+  // o'zgarishlarni har bir `onChanged` chaqiruvida emas, tortish tugaganda (drag-end) saqlash.
   Future<void> _onProgressChangeEnd(double value) async {
     if (value == _current.progress) return;
     final error = await ref.read(assignmentsNotifierProvider.notifier).updateProgress(_current, value);
@@ -350,6 +361,8 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
     if (widget.assignment.isDistributed) return;
     // Hand the edit sheet the current state (not the sheet's initial snapshot)
     // so progress/status changed here aren't overwritten on save.
+    // UZ: Tahrirlash varag'iga joriy holatni bering (varaqning dastlabki snapshotini emas),
+    // shunda bu yerda o'zgartirilgan progress/status saqlash paytida qayta yozilib ketmaydi.
     final existing = _current.copyWith(progress: _progress, status: _status);
     Navigator.pop(context);
     await showAddEditAssignmentSheet(context, ref, existing: existing);
@@ -427,6 +440,7 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
                 Text(assignment.title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
                 const SizedBox(height: 8),
                 // Wrap so a long localized date can push the badge to the next line.
+                // UZ: Mahalliylashtirilgan uzun sana nishonni keyingi qatorga tushirishi uchun Wrap qiling.
                 Wrap(
                   spacing: 8,
                   runSpacing: 4,
@@ -437,6 +451,7 @@ class _AssignmentDetailSheetState extends ConsumerState<_AssignmentDetailSheet> 
                       style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
                     ),
                     // The full date is already in the prefix; a finished task needs no countdown badge.
+                    // UZ: To'liq sana allaqachon prefiksda bor; bajarilgan topshiriq uchun ortga hisoblash nishoni kerak emas.
                     if (_status != AssignmentStatus.completed) Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                       decoration: BoxDecoration(color: assignment.dueDateBgColor, borderRadius: BorderRadius.circular(20)),

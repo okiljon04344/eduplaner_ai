@@ -60,6 +60,11 @@ class UserModel with _$UserModel {
   /// is the gate — it's only ever written together with `school` by
   /// [AuthRepository.saveSchoolProfile], never independently, so checking it
   /// alone is enough to know the whole step was completed.
+  ///
+  /// UZ: Majburiy maktab profili sozlash bosqichi bajarilgandan so'ng true bo'ladi.
+  /// `schoolType` asosiy shartdir — u faqat [AuthRepository.saveSchoolProfile] tomonidan
+  /// `school` bilan birga yoziladi, hech qachon mustaqil yozilmaydi, shuning uchun faqat uni
+  /// tekshirish butun bosqich yakunlanganini bilish uchun yetarlidir.
   bool get profileComplete => schoolType != null && schoolType!.isNotEmpty;
 
   /// True when the user has acknowledged the current [kAiFileConsentVersion]

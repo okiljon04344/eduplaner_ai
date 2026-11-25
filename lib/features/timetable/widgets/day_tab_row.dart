@@ -4,8 +4,14 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_motion.dart';
 import '../../../shared/widgets/pressable.dart';
 
+/// Horizontal tab selector for weekdays Monday through Friday, highlighting alert days with badges.
+///
+/// UZ: Dushanbadan jumagacha bo'lgan hafta kunlari uchun gorizontal tab tanlagich,
+/// ogohlantirish kunlarini nishonlar bilan ajratib ko'rsatadi.
 class DayTabRow extends StatelessWidget {
   /// Localized weekday labels (Mon–Fri), resolved at read time.
+  ///
+  /// UZ: Mahalliylashtirilgan hafta kuni yorliqlari (Dush–Jum), o'qish vaqtida aniqlanadi.
   static List<String> get days => [
         AppStrings.t('day_mon'),
         AppStrings.t('day_tue'),
@@ -19,9 +25,13 @@ class DayTabRow extends StatelessWidget {
   final DateTime weekStart;
 
   /// Day indexes (0 = Mon) that carry a cancellation or change: red dot.
+  ///
+  /// UZ: Bekor qilish yoki o'zgarish mavjud bo'lgan kun indekslari (0 = Dush): qizil nuqta.
   final Set<int> alertDays;
 
   /// Outer padding, defaults to zero when rendered inside the top glass panel.
+  ///
+  /// UZ: Tashqi padding, yuqori shisha panel ichida chizilganda standart bo'yicha nolga teng.
   final EdgeInsetsGeometry padding;
 
   const DayTabRow({

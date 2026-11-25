@@ -16,6 +16,11 @@ import '../widgets/teacher_scaffold.dart';
 import 'teacher_assignments_screen.dart';
 import 'teacher_screen.dart';
 
+/// Teacher dashboard overview screen displaying today's classes, current lesson status,
+/// upcoming schedule changes, and notice read statistics.
+///
+/// UZ: Bugungi darslar, joriy dars holati, bo'lajak jadval o'zgarishlari va e'lonlarni
+/// o'qish statistikasini ko'rsatadigan o'qituvchi boshqaruv paneli (dashboard) ekrani.
 class TeacherHomeScreen extends ConsumerWidget {
   const TeacherHomeScreen({super.key});
 
@@ -48,6 +53,7 @@ class TeacherHomeScreen extends ConsumerWidget {
     final hasProfileName = mine != null && mine.name.isNotEmpty;
 
     // Greeting text
+    // UZ: Salomlashish matni
     final hour = now.hour;
     final teacherName = hasProfileName ? mine.name : (user?.displayName ?? '');
     final greeting = hasProfileName
@@ -63,6 +69,7 @@ class TeacherHomeScreen extends ConsumerWidget {
                 : AppStrings.t('tov_greeting_evening_default'));
 
     // Date range pill: Mon-Fri
+    // UZ: Sana oralig'i nishoni: Dushanba-Juma
     final monday = mondayOf(today);
     final friday = monday.add(const Duration(days: 4));
     final weekDateRange = '${monday.month}/${monday.day}–${friday.month}/${friday.day}';
@@ -168,6 +175,7 @@ class _DesktopTeacherHome extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 20, 24, 32),
       children: [
         // Header
+        // UZ: Sarlavha
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -221,6 +229,7 @@ class _DesktopTeacherHome extends StatelessWidget {
         const SizedBox(height: 16),
 
         // Filter pills row
+        // UZ: Filtr nishonlari qatori
         Row(
           children: [
             _PillChip(
@@ -236,16 +245,19 @@ class _DesktopTeacherHome extends StatelessWidget {
         const SizedBox(height: 16),
 
         // If no profile name set, show prompt
+        // UZ: Agar profil ismi o'rnatilmagan bo'lsa, eslatmani ko'rsatish
         if (!hasProfileName) ...[
           _NoProfileWarning(role: role),
           const SizedBox(height: 16),
         ],
 
         // 3-Column Layout: Column 1 spans 2 rows
+        // UZ: 3 ustunli tartib: 1-ustun 2 qatorni egallaydi
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Column 1: 今日の私の授業
+            // UZ: 1-ustun: 今日の私の授業
             Expanded(
               child: _MyLessonsCard(
                 info: info,
@@ -264,6 +276,7 @@ class _DesktopTeacherHome extends StatelessWidget {
             const SizedBox(width: 16),
 
             // Column 2: お知らせの既読 (Row 1) + 担当クラス (Row 2)
+            // UZ: 2-ustun: お知らせの既読 (1-qator) + 担当クラス (2-qator)
             Expanded(
               child: Column(
                 children: [
@@ -285,6 +298,7 @@ class _DesktopTeacherHome extends StatelessWidget {
             const SizedBox(width: 16),
 
             // Column 3: 今週の時間割変更 (Row 1) + 課題配布 (Row 2)
+            // UZ: 3-ustun: 今週の時間割変更 (1-qator) + 課題配布 (2-qator)
             Expanded(
               child: Column(
                 children: [
@@ -348,6 +362,7 @@ class _PhoneTeacherHome extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
       children: [
         // Phone Header
+        // UZ: Telefon sarlavhasi
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -384,6 +399,7 @@ class _PhoneTeacherHome extends StatelessWidget {
         const SizedBox(height: 14),
 
         // 2-card stats row
+        // UZ: 2 kartali statistika qatori
         Row(
           children: [
             Expanded(
@@ -424,12 +440,14 @@ class _PhoneTeacherHome extends StatelessWidget {
         const SizedBox(height: 14),
 
         // If no profile name set, show prompt
+        // UZ: Agar profil ismi o'rnatilmagan bo'lsa, eslatmani ko'rsatish
         if (!hasProfileName) ...[
           _NoProfileWarning(role: role),
           const SizedBox(height: 14),
         ],
 
         // 今日の私の授業
+        // UZ: 今日の私の授業
         _MyLessonsCard(
           info: info,
           today: today,
@@ -446,6 +464,7 @@ class _PhoneTeacherHome extends StatelessWidget {
         const SizedBox(height: 14),
 
         // Unread hint row
+        // UZ: O'qilmaganlar ishorasi qatori
         if (noticesSummary.mostUnreadNotice != null) ...[
           _UnreadHintRow(
             unreadNotice: noticesSummary.mostUnreadNotice!,
@@ -455,6 +474,7 @@ class _PhoneTeacherHome extends StatelessWidget {
         ],
 
         // お知らせの既読
+        // UZ: お知らせの既読
         _NoticesReadCard(
           summary: noticesSummary,
           isDesktop: false,
@@ -463,6 +483,7 @@ class _PhoneTeacherHome extends StatelessWidget {
         const SizedBox(height: 14),
 
         // 担当クラス
+        // UZ: 担当クラス
         _MyClassesCard(
           info: info,
           classSizes: classSizes,
@@ -473,6 +494,7 @@ class _PhoneTeacherHome extends StatelessWidget {
         const SizedBox(height: 14),
 
         // 課題配布
+        // UZ: 課題配布
         const _AssignmentsCard(),
       ],
     );
@@ -704,6 +726,7 @@ class _MyLessonsCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header row
+          // UZ: Sarlavha qatori
           Row(
             children: [
               Expanded(
@@ -736,6 +759,7 @@ class _MyLessonsCard extends StatelessWidget {
           const SizedBox(height: 12),
 
           // Current lesson highlighted box
+          // UZ: Joriy dars ajratilgan qutisi
           if (cur != null) ...[
             Container(
               padding: const EdgeInsets.all(14),
@@ -836,6 +860,7 @@ class _MyLessonsCard extends StatelessWidget {
           ],
 
           // Empty state when no lessons today
+          // UZ: Bugun darslar bo'lmagandagi bo'sh holat
           if (todayLessons.isEmpty) ...[
             Padding(
               padding: EdgeInsets.symmetric(vertical: isDesktop ? 60 : 20),
@@ -848,6 +873,7 @@ class _MyLessonsCard extends StatelessWidget {
             ),
           ] else ...[
             // "今日" section
+            // UZ: "今日" bo'limi
             Text(
               AppStrings.t('tov_today'),
               style: TextStyle(
@@ -862,6 +888,7 @@ class _MyLessonsCard extends StatelessWidget {
           ],
 
           // "明日" (Desktop shows tomorrow's lessons if available)
+          // UZ: "明日" (Ish stoli mavjud bo'lsa ertangi darslarni ko'rsatadi)
           if (isDesktop && nextDayLessons.isNotEmpty) ...[
             const SizedBox(height: 12),
             Text(
@@ -878,6 +905,7 @@ class _MyLessonsCard extends StatelessWidget {
           ],
 
           // Unread hint row at bottom (Desktop)
+          // UZ: Pastdagi o'qilmaganlar ishorasi qatori (Ish stoli)
           if (isDesktop && mostUnreadNotice != null) ...[
             const SizedBox(height: 10),
             _UnreadHintRow(unreadNotice: mostUnreadNotice!, isDesktop: true),
@@ -1301,6 +1329,7 @@ class _WeekChangesCard extends StatelessWidget {
           const SizedBox(height: 12),
 
           // 3 colored boxes
+          // UZ: 3 ta rangli quti
           Row(
             children: [
               Expanded(
@@ -1335,6 +1364,7 @@ class _WeekChangesCard extends StatelessWidget {
           const SizedBox(height: 12),
 
           // 2 recent items
+          // UZ: 2 ta oxirgi element
           if (summary.recentItems.isEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 6),
@@ -1567,6 +1597,7 @@ class _ClassRowItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Count changes for this class
+    // UZ: Ushbu sinf uchun o'zgarishlarni hisoblash
     int cancelledForClass = 0;
     int changesForClass = 0;
     for (final item in weekChanges.recentItems) {

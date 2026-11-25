@@ -2,6 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/constants/periods.dart';
 import '../../auth/models/user_model.dart';
 
+/// Schedule state for a school timetable slot, such as normal, cancelled, or special event.
+///
+/// UZ: Maktab dars jadvali katakchasi holati, masalan normal, bekor qilingan yoki maxsus tadbir.
 enum SchoolSlotStatus {
   normal,
   cancelled,
@@ -10,6 +13,8 @@ enum SchoolSlotStatus {
   elective;
 
   /// Unknown or missing values fall back to [normal].
+  ///
+  /// UZ: Noma'lum yoki mavjud bo'lmagan qiymatlar [normal] ga qaytadi.
   static SchoolSlotStatus parse(String? s) => SchoolSlotStatus.values
       .firstWhere((v) => v.name == s, orElse: () => SchoolSlotStatus.normal);
 }
@@ -21,6 +26,8 @@ List<Map> _maps(Object? v) => v is List ? v.whereType<Map>().toList() : const []
 List<String> _strings(Object? v) => v is List ? v.whereType<String>().toList() : const [];
 
 /// `'HH:MM'` -> [Hm]; malformed values become `(0, 0)`.
+///
+/// UZ: `'HH:MM'` -> [Hm]; noto'g'ri shakllangan qiymatlar `(0, 0)` ga aylanadi.
 Hm _parseHm(Object? v) {
   final m = RegExp(r'^(\d{1,2}):(\d{2})$').firstMatch(_str(v));
   if (m == null) return (0, 0);
@@ -29,6 +36,9 @@ Hm _parseHm(Object? v) {
 
 DateTime? _ts(Object? v) => v is Timestamp ? v.toDate() : null;
 
+/// Represents a class period slot with identifier key, display name, and start/end clock times.
+///
+/// UZ: Identifikator kaliti, ko'rsatiladigan nomi va boshlanish/tugash vaqtlari bilan dars soati katakchasini ifodalaydi.
 class SchoolPeriod {
   final String key, label;
   final Hm start, end;
@@ -46,11 +56,18 @@ class SchoolPeriod {
       );
 }
 
+/// Represents a scheduled class lesson slot within a school day, including subject, instructor,
+/// classroom location, schedule status, and optional teacher overrides.
+///
+/// UZ: O'quv kunidagi rejalashtirilgan dars katakchasini ifodalaydi, jumladan fan, o'qituvchi,
+/// xona joylashuvi, jadval holati va o'qituvchi tomonidan kiritilgan ixtiyoriy o'zgarishlar.
 class SchoolSlot {
   final String period, subject, teacher, room, note;
   final SchoolSlotStatus status;
 
   /// Set when a teacher's input (school_overrides) changed this lesson.
+  ///
+  /// UZ: O'qituvchining kiritishi (school_overrides) ushbu darsni o'zgartirganda o'rnatiladi.
   final SchoolOverrideKind? teacherKind;
 
   bool get byTeacher => teacherKind != null;
@@ -85,6 +102,9 @@ class SchoolSlot {
       );
 }
 
+/// Daily timetable structure containing the date string and all scheduled period slots.
+///
+/// UZ: Sana qatori va barcha rejalashtirilgan dars soati katakchalarini o'z ichiga olgan kunlik dars jadvali tuzilmasi.
 class SchoolDay {
   final String date;
   final List<SchoolSlot> slots;
@@ -99,6 +119,11 @@ class SchoolDay {
       SchoolDay.fromMap((doc.data() as Map?) ?? const {});
 }
 
+/// Metadata and operational rules for a school, managing academic periods, grades,
+/// courses, teacher authorization profiles, and editing permissions.
+///
+/// UZ: Maktab uchun metama'lumotlar va operatsion qoidalar: o'quv soatlari, sinflar/bosqichlar,
+/// kurslar, o'qituvchilar vakolatlari profillari va tahrirlash huquqlarini boshqaradi.
 class SchoolInfo {
   final String domain, name;
   final List<SchoolPeriod> periods;
@@ -107,13 +132,20 @@ class SchoolInfo {
   final DateTime? lastSyncAt;
 
   /// Admin uids and registered teacher emails (lowercase).
+  ///
+  /// UZ: Admin uid lari va ro'yxatdan o'tgan o'qituvchi elektron pochtalari (kichik harflarda).
   final List<String> admins, teachers;
 
   /// Per teacher email: the name as written in the timetable file and the
   /// homeroom class (担任). Edit scope (§9.3) is derived from these.
+  ///
+  /// UZ: Har bir o'qituvchi elektron pochtasi bo'yicha: dars jadvali faylida yozilgan ism
+  /// va rahbarlik sinfi (担任). Tahrirlash ko'lami (§9.3) shulardan olinadi.
   final Map<String, TeacherProfile> teacherProfiles;
 
   /// Admin switch: may students change their own 学年/コース once set?
+  ///
+  /// UZ: Admin kaliti: talabalar o'zlarining 学年/コース larini o'rnatilgandan so'ng o'zgartira oladimi?
   final bool allowStudentEdit;
 
   /// Pilot test accounts (non-school emails) let in as students.
@@ -145,6 +177,10 @@ class SchoolInfo {
   /// A linked student's saved 学年/コース stay fixed unless the admin allows
   /// changes. Open when either is still empty, or when the saved course is
   /// not one of this school's (stale or mistyped data must stay fixable).
+  ///
+  /// UZ: Bog'langan talabaning saqlangan 学年/コース lari, agar admin o'zgartirishga ruxsat
+  /// bermasa, qat'iy qoladi. Ulardan biri hali bo'sh bo'lganda yoki saqlangan kurs ushbu maktabnikiga
+  /// tegishli bo'lmaganda ochiq bo'ladi (eski yoki noto'g'ri kiritilgan ma'lumotlar tuzatiladigan bo'lib qolishi kerak).
   bool locksStudentClass({String? grade, String? course}) =>
       !allowStudentEdit && (grade?.isNotEmpty ?? false) && courses.contains(course);
 
@@ -153,6 +189,10 @@ class SchoolInfo {
   /// Mirrors the server's canEditSlot: admin, the class's 担任, or the
   /// teacher named in the lesson. An empty slot (補講) also lets in anyone
   /// who teaches that class on [dayTeachers].
+  ///
+  /// UZ: Serverning canEditSlot funksiyasini aks ettiradi: admin, sinfning 担任 rahbari,
+  /// yoki darsda nomi ko'rsatilgan o'qituvchi. Bo'sh katakcha (補講) shuningdek [dayTeachers]
+  /// bo'yicha ushbu sinfga dars beradigan har qanday o'qituvchiga ruxsat beradi.
   bool canEdit({
     required String? uid,
     required String? email,
@@ -365,6 +405,8 @@ bool canUserImportByIdentity({
 
 class TeacherProfile {
   /// Name as written in the timetable file's lesson cells (e.g. 大谷).
+  ///
+  /// UZ: Dars jadvali faylining dars kataklarida yozilgan ism (masalan, 大谷).
   final String name;
   final int? homeroomGrade;
   final String? homeroomCourse;
@@ -380,6 +422,9 @@ class TeacherProfile {
   }
 }
 
+/// Record of a schedule adjustment or cancellation applied to a specific date and period.
+///
+/// UZ: Muayyan sana va dars soatiga tatbiq etilgan jadval o'zgarishi yoki bekor qilinishi yozuvi.
 class SchoolChange {
   final String date, period, subject, what;
   final DateTime? at;
@@ -400,6 +445,9 @@ class SchoolChange {
       );
 }
 
+/// Types of slot overrides that an authorized instructor can submit for a lesson.
+///
+/// UZ: Vakolatli o'qituvchi dars uchun yuborishi mumkin bo'lgan katakcha o'zgarishlari turlari.
 enum SchoolOverrideKind {
   cancelled,
   room,
@@ -411,11 +459,15 @@ enum SchoolOverrideKind {
 }
 
 /// One teacher input for a slot (`school_overrides/{dayId}.items[period]`).
+///
+/// UZ: Katakcha uchun bitta o'qituvchi kiritmasi (`school_overrides/{dayId}.items[period]`).
 class SchoolOverride {
   final SchoolOverrideKind kind;
   final String subject, teacher, room, note;
 
   /// The school file now shows the same thing; the file wins again.
+  ///
+  /// UZ: Maktab fayli endi xuddi shu narsani ko'rsatmoqda; yana fayl ustun keladi.
   final bool resolved;
   const SchoolOverride({
     required this.kind,
@@ -427,6 +479,8 @@ class SchoolOverride {
   });
 
   /// Period key -> input; items with an unknown kind are dropped.
+  ///
+  /// UZ: Dars soati kaliti -> kiritma; noma'lum turdagi elementlar tashlab yuboriladi.
   static Map<String, SchoolOverride> itemsFromFirestore(DocumentSnapshot doc) {
     final items = (doc.data() as Map?)?['items'];
     if (items is! Map) return const {};
@@ -451,6 +505,10 @@ int _periodOrder(String key) => int.tryParse(key.split(RegExp(r'\D')).first) ?? 
 /// [day] with the unresolved teacher inputs applied (§9.3: teacher input wins
 /// until the file shows the same). A 補講 may fill a period with no lesson,
 /// so a day can exist from overrides alone. Returns null when nothing is left.
+///
+/// UZ: Hal qilinmagan o'qituvchi kiritmalari qo'llanilgan [day] (§9.3: faylda xuddi shu narsa
+/// ko'ringuncha o'qituvchi kiritmasi ustun turadi). 補講 darsi bo'lmagan soatni to'ldirishi mumkin,
+/// shuning uchun kun faqat o'zgarishlarning o'zidan ham mavjud bo'lishi mumkin. Hech narsa qolmasa null qaytaradi.
 SchoolDay? applyOverrides(SchoolDay? day, Map<String, SchoolOverride> overrides, String date) {
   final active = {
     for (final e in overrides.entries)

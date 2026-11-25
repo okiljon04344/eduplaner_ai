@@ -23,6 +23,8 @@ const tokenRequest = async (params, what) => {
 
 // The id_token payload is trusted without signature checks: it came straight
 // from the token endpoint over TLS.
+// UZ: id_token ma'lumotlari imzo tekshiruvlarisiz ishonchli hisoblanadi: u to'g'ridan-to'g'ri
+// TLS orqali token endpoint'idan kelgan.
 const idTokenClaims = (idToken) =>
   JSON.parse(Buffer.from(String(idToken).split('.')[1], 'base64url').toString('utf8'));
 

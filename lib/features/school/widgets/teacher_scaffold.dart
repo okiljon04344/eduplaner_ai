@@ -6,6 +6,9 @@ import '../../../core/theme/app_colors.dart';
 import '../school_providers.dart';
 import '../teacher_overview_providers.dart';
 
+/// Navigation sections available within the teacher portal.
+///
+/// UZ: O'qituvchi portalida mavjud navigatsiya bo'limlari.
 enum TeacherSection {
   overview,
   timetable,
@@ -14,6 +17,10 @@ enum TeacherSection {
   admin,
 }
 
+/// Scaffold frame adapting between mobile navigation and desktop sidebar layouts for teacher screens.
+///
+/// UZ: O'qituvchi ekranlari uchun mobil navigatsiya va desktop yon paneli maketlari o'rtasida
+/// moslashuvchi scaffold ramkasi.
 class TeacherScaffold extends ConsumerWidget {
   final TeacherSection section;
   final String title;
@@ -202,6 +209,7 @@ class _DesktopTeacherScaffold extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // Sidebar 236px
+          // UZ: Yon panel 236px
           Padding(
             padding: const EdgeInsets.all(16),
             child: Container(
@@ -217,6 +225,7 @@ class _DesktopTeacherScaffold extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     // Logo row
+                    // UZ: Logo qatori
                     Padding(
                       padding: const EdgeInsets.fromLTRB(4, 0, 4, 14),
                       child: Row(
@@ -264,6 +273,7 @@ class _DesktopTeacherScaffold extends ConsumerWidget {
                     ),
 
                     // Group: 授業
+                    // UZ: Guruh: 授業
                     Padding(
                       padding: const EdgeInsets.fromLTRB(10, 10, 10, 4),
                       child: Text(
@@ -300,6 +310,7 @@ class _DesktopTeacherScaffold extends ConsumerWidget {
                     ),
 
                     // Group: 連絡
+                    // UZ: Guruh: 連絡
                     Padding(
                       padding: const EdgeInsets.fromLTRB(10, 14, 10, 4),
                       child: Text(
@@ -344,6 +355,7 @@ class _DesktopTeacherScaffold extends ConsumerWidget {
                     ),
 
                     // Group: 管理
+                    // UZ: Guruh: 管理
                     Padding(
                       padding: const EdgeInsets.fromLTRB(10, 14, 10, 4),
                       child: Text(
@@ -374,6 +386,7 @@ class _DesktopTeacherScaffold extends ConsumerWidget {
                     const Spacer(),
 
                     // Today's progress card
+                    // UZ: Bugungi progress kartochkasi
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
@@ -431,6 +444,7 @@ class _DesktopTeacherScaffold extends ConsumerWidget {
                     const SizedBox(height: 12),
 
                     // Teacher row
+                    // UZ: O'qituvchi qatori
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 4),
                       child: Row(
@@ -487,6 +501,7 @@ class _DesktopTeacherScaffold extends ConsumerWidget {
                     const SizedBox(height: 10),
 
                     // Link back to /home
+                    // UZ: /home ga qaytish havolasi
                     InkWell(
                       borderRadius: BorderRadius.circular(12),
                       onTap: () => context.go('/home'),
@@ -519,6 +534,7 @@ class _DesktopTeacherScaffold extends ConsumerWidget {
           ),
 
           // Main area
+          // UZ: Asosiy soha
           Expanded(
             child: (section == TeacherSection.overview ||
                     section == TeacherSection.notices ||

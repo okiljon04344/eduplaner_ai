@@ -8,6 +8,10 @@ import '../../../core/l10n/app_strings.dart';
 /// AI banner card at the bottom of Home — dark gradient, neon pulsing
 /// border, floating bot emoji, and the day's Gemini-generated study tip as
 /// the subtitle. Tapping it opens the AI chat tab.
+///
+/// UZ: Home ekranining pastki qismidagi AI banner kartasi — qorong'i gradient, neon urib turuvchi
+/// hoshiya, suzuvchi bot emojisi va subtitr sifatida kungi Gemini tomonidan yaratilgan o'rganish maslahati.
+/// Uni bosish AI chat tabini ochadi.
 class AiStudyTipCard extends ConsumerStatefulWidget {
   const AiStudyTipCard({super.key});
 
@@ -30,6 +34,7 @@ class _AiStudyTipCardState extends ConsumerState<AiStudyTipCard> with SingleTick
   void didChangeDependencies() {
     super.didChangeDependencies();
     // Two back-and-forth cycles, then rest at the start value (battery).
+    // UZ: Ikkita oldinga va orqaga sikl, so'ngra boshlang'ich qiymatda to'xtash (batareya).
     if (!_started && !MediaQuery.disableAnimationsOf(context)) {
       _started = true;
       _controller.repeat(reverse: true, count: 4);
@@ -73,6 +78,8 @@ class _AiStudyTipCardState extends ConsumerState<AiStudyTipCard> with SingleTick
             // RepaintBoundary isolates the 60fps floating-emoji animation so the
             // rest of the card (text, arrow, gradient decoration) is not repainted
             // every frame.
+            // UZ: RepaintBoundary 60fps tezlikdagi suzuvchi emoji animatsiyasini ajratib qo'yadi,
+            // shunda kartaning qolgan qismi (matn, o'q, gradient bezaklari) har bir kadrda qayta chizilmaydi.
             RepaintBoundary(
               child: AnimatedBuilder(
                 animation: _controller,

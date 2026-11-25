@@ -11,6 +11,10 @@ import '../../../shared/widgets/app_input_field.dart';
 import '../../../shared/widgets/language_picker_button.dart';
 import '../providers/auth_provider.dart';
 
+/// Screen providing email and password authentication, input validation, and password reset.
+///
+/// UZ: Elektron pochta va parol orqali autentifikatsiya qilish, kiritishni tekshirish
+/// va parolni tiklashni taqdim etuvchi ekran.
 class EmailLoginScreen extends ConsumerStatefulWidget {
   const EmailLoginScreen({super.key});
 
@@ -116,6 +120,7 @@ class _EmailLoginScreenState extends ConsumerState<EmailLoginScreen> {
             textInputAction: TextInputAction.done,
             validator: Validators.required,
             // Keyboard "done" signs in, as users expect.
+            // UZ: Foydalanuvchilar kutganidek, klaviaturadagi "done" tizimga kiritadi.
             onSubmitted: (_) => _submit(),
             suffix: IconButton(
               icon: Icon(_obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: AppColors.textMuted),

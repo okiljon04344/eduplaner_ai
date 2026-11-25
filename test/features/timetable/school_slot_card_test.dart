@@ -1,3 +1,4 @@
+import 'package:edu_planner_ai/core/l10n/app_strings.dart';
 import 'package:edu_planner_ai/core/theme/app_colors.dart';
 import 'package:edu_planner_ai/features/school/models/school.dart';
 import 'package:edu_planner_ai/features/school/school_providers.dart';
@@ -205,8 +206,10 @@ void main() {
       overrides: _schoolOverrides(),
     ));
     await tester.pumpAndSettle();
-    // Redesign: each school period becomes a 空きコマ row that opens 授業を追加.
-    expect(find.byIcon(Icons.add_rounded), findsWidgets);
+    // Each school period becomes a display-only 空きコマ row: a linked
+    // student cannot add classes to the official timetable.
+    expect(find.text(AppStrings.t('tt_free_slot')), findsWidgets);
+    expect(find.byIcon(Icons.add_rounded), findsNothing);
     expect(find.byIcon(Icons.wb_sunny_outlined), findsNothing);
   });
 

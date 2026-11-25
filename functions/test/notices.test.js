@@ -6,6 +6,7 @@ import {
   noticePush,
   publishNotice,
   deleteNotice,
+  updateNotice,
 } from '../school/notices.js';
 import { noticeReadTarget } from '../school/overrides.js';
 
@@ -25,8 +26,8 @@ class FakeDb {
       path,
       id: path.split('/').pop(),
       get: async () => this.snap(path),
-      set: async (d) => {
-        this.docs.set(path, structuredClone(d));
+      set: async (d, opts) => {
+        this.docs.set(path, structuredClone(opts?.merge ? { ...this.docs.get(path), ...d } : d));
       },
       delete: async () => {
         this.docs.delete(path);
@@ -47,7 +48,7 @@ class FakeDb {
   collection(name) {
     return {
       doc: (id) => {
-        const docId = id ?? `notice_${++this.autoIdCounter}`;
+        const docId = id ?? `notice${++this.autoIdCounter}`;
         return this.ref(`${name}/${docId}`);
       },
     };
@@ -78,6 +79,9 @@ test('validateNotice accepts valid notice and trims title and body', () => {
     title: '持ち物連絡',
     body: '作業着と手袋を持参すること。',
     priority: 'normal',
+    category: 'contact',
+    subject: '',
+    link: '',
   });
 });
 
@@ -320,4 +324,42 @@ test('deleteNotice allows admin to delete even if not the author', async () => {
   assert.deepEqual(res, { ok: true });
   assert.equal(db.docs.has('school_notices/n2'), false);
   assert.equal(removedPath, 'n_n2');
+});
+
+test('validateNotice checks category, subject tag and https link', () => {
+  const base = { grade: 1, course: '農業', title: 't' };
+  const v = validateNotice({ ...base, category: 'change', subject: ' 数学 ', link: ' https://drive.google.com/x ' }, SCHOOL);
+  assert.equal(v.category, 'change');
+  assert.equal(v.subject, '数学');
+  assert.equal(v.link, 'https://drive.google.com/x');
+  const bad = (o) => assert.throws(() => validateNotice({ ...base, ...o }, SCHOOL), { code: 'invalid-argument' });
+  bad({ category: 'chat' });
+  bad({ subject: 'x'.repeat(101) });
+  bad({ link: 'http://example.com' });
+  bad({ link: 'javascript:alert(1)' });
+  bad({ link: 'https://a b' });
+});
+
+test('updateNotice corrects text, keeps the class fixed, and logs every action', async () => {
+  const db = new FakeDb();
+  const now = () => new Date('2026-11-13T00:00:00Z');
+  const first = validateNotice({ grade: 1, course: '農業', title: '持ち物', body: 'a' }, SCHOOL);
+  const { id } = await publishNotice('s.jp', first, { uid: 't1', name: '田中' }, { db, now, notifyClass: async () => 0 });
+
+  const fixed = validateNotice({ grade: 1, course: '農業', title: '持ち物（訂正）', body: 'b', subject: '実習' }, SCHOOL);
+  await assert.rejects(updateNotice('s.jp', id, fixed, 'other', false, { db, now }), { code: 'permission-denied' });
+  await assert.rejects(updateNotice('other.jp', id, fixed, 't1', false, { db, now }), { code: 'not-found' });
+  const moved = validateNotice({ grade: 2, course: '農業', title: 'x' }, SCHOOL);
+  await assert.rejects(updateNotice('s.jp', id, moved, 't1', false, { db, now }), { code: 'invalid-argument' });
+
+  await updateNotice('s.jp', id, fixed, 't1', false, { db, now });
+  const saved = db.docs.get(`school_notices/${id}`);
+  assert.equal(saved.title, '持ち物（訂正）');
+  assert.equal(saved.subject, '実習');
+  assert.equal(saved.createdBy, 't1');
+  assert.deepEqual(saved.editedAt, now());
+
+  await deleteNotice('s.jp', id, 'admin1', true, { db, now });
+  const log = [...db.docs].filter(([p]) => p.startsWith('school_notice_log/')).map(([, d]) => `${d.action}:${d.by}`);
+  assert.deepEqual(log, ['create:t1', 'edit:t1', 'delete:admin1']);
 });

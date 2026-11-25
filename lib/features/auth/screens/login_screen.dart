@@ -14,6 +14,11 @@ import '../../../shared/widgets/lottie_helpers.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/google_signin_button.dart';
 
+/// Primary authentication gateway screen offering Google Sign-In, guest access,
+/// and navigation to email sign-in or registration.
+///
+/// UZ: Google Sign-In, mehmon sifatida kirish va elektron pochta orqali kirish
+/// yoki ro'yxatdan o'tishga yo'naltirishni taklif qiluvchi asosiy autentifikatsiya ekrani.
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
@@ -28,6 +33,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     // Kick off Google Sign-In init as soon as this screen appears so the
     // web SDK button (see _GoogleSignInArea) is ready to render, rather
     // than only starting once the user taps something.
+    // UZ: Ushbu ekran paydo bo'lishi bilanoq Google Sign-In initsializatsiyasini boshlaydi,
+    // shunda veb SDK tugmasi (_GoogleSignInArea ga qarang) foydalanuvchi biror narsani
+    // bosguncha kutmasdan, darhol chizishga tayyor bo'ladi.
     if (kIsWeb) {
       unawaited(ref.read(authRepositoryProvider).ensureGoogleSignInReady());
     }
@@ -256,6 +264,7 @@ class _DesktopLoginLayout extends StatelessWidget {
       body: Row(
         children: [
           // Left: brand panel
+          // UZ: Chap: brend paneli
           Expanded(
             flex: 5,
             child: Container(
@@ -339,6 +348,7 @@ class _DesktopLoginLayout extends StatelessWidget {
           ),
 
           // Right: login form
+          // UZ: O'ng: kirish shakli
           Expanded(
             flex: 4,
             child: Container(
@@ -448,6 +458,9 @@ class _DesktopLoginLayout extends StatelessWidget {
 // Getter (not a top-level const/final) so it re-resolves in the currently
 // loaded locale — a plain `final` would freeze these strings at first
 // access and never update when the user switches language.
+// UZ: Hozirgi yuklangan tilda qayta aniqlanishi uchun getter (yuqori darajadagi const/final emas) —
+// oddiy `final` ushbu qatorlarni birinchi murojaatda muzlatib qo'yar va foydalanuvchi tilni
+// almashtirganda hech qachon yangilanmas edi.
 List<(String, IconData, Color, String)> get _desktopFeatures => [
   (AppStrings.t('feat_timetable'), Icons.calendar_month_outlined, const Color(0xFF06B6D4), AppStrings.t('feat_timetable_desc')),
   (AppStrings.t('feat_assignments'), Icons.assignment_outlined, const Color(0xFF10B981), AppStrings.t('feat_assignments_desc')),
@@ -462,6 +475,14 @@ List<(String, IconData, Color, String)> get _desktopFeatures => [
 /// which handles the click internally and completes sign-in via
 /// `AuthRepository`'s `authenticationEvents` listener, not [onTap]. Other
 /// platforms keep the app's own styled button wired to [onTap].
+///
+/// UZ: Mobil va ish stoli tartiblari tomonidan umumiy foydalaniladigan Google orqali kirish nuqtasi.
+///
+/// Vebda `authenticate()` qo'llab-quvvatlanmaydi — vebda `GoogleSignIn` Google'ning o'z SDK-si
+/// tomonidan chizilgan tugmani talab qiladi (`google_signin_button.dart` ga qarang), u bosishni
+/// ichki boshqaradi va kirishni [onTap] orqali emas, `AuthRepository` ning `authenticationEvents`
+/// tinglovchisi orqali yakunlaydi. Boshqa platformalar esa [onTap] ga ulangan ilovaning o'z uslubidagi
+/// tugmasini saqlab qoladi.
 class _GoogleSignInArea extends StatelessWidget {
   final bool loading;
   final VoidCallback onTap;
@@ -516,6 +537,9 @@ class _GoogleSignInArea extends StatelessWidget {
 
 /// A handful of soft, slowly-pulsing radial-gradient blobs behind the brand
 /// panel — a livelier, more youthful alternative to a single static glow.
+///
+/// UZ: Brend paneli orqasidagi bir nechta yumshoq, sekin pulsatsiyalanuvchi radial gradientli
+/// shakllar — bitta statik jiloga nisbatan jonliroq va yoshlarga mos muqobil.
 class _FloatingOrbs extends StatelessWidget {
   const _FloatingOrbs();
 

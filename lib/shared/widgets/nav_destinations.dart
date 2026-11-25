@@ -7,6 +7,9 @@ import '../../core/theme/app_colors.dart';
 
 /// The five main app destinations — shared by [AppBottomNav] and
 /// [AppNavRail] (mobile bottom nav vs. tablet/desktop side rail).
+///
+/// UZ: Ilovaning beshta asosiy manzillari — [AppBottomNav] va [AppNavRail]
+/// (mobil pastki navigatsiya va planshet/desktop yon paneli) tomonidan birgalikda ishlatiladi.
 const kNavRoutes = ['/home', '/timetable', '/assignments', '/ai', '/settings'];
 
 const _kNavIcons = <(IconData, IconData, String)>[
@@ -18,11 +21,16 @@ const _kNavIcons = <(IconData, IconData, String)>[
 ];
 
 /// Whether [route] is the currently active destination for [context].
+///
+/// UZ: [route] ushbu [context] uchun hozirda faol manzil ekanligi.
 bool isNavRouteActive(BuildContext context, String route) =>
     GoRouterState.of(context).matchedLocation.startsWith(route);
 
 /// Updates [shellTabIndexProvider] to match [route] and navigates to it —
 /// shared tap handler for both nav bar and nav rail items.
+///
+/// UZ: [shellTabIndexProvider]'ni [route]'ga mos ravishda yangilaydi va unga o'tadi —
+/// navigatsiya paneli va nav rail elementlari uchun umumiy bosish ishlovchisi.
 void navigateToNavRoute(WidgetRef ref, BuildContext context, String route) {
   final idx = kNavRoutes.indexOf(route);
   if (idx >= 0) ref.read(shellTabIndexProvider.notifier).state = idx;
@@ -30,6 +38,8 @@ void navigateToNavRoute(WidgetRef ref, BuildContext context, String route) {
 }
 
 /// One destination: icon in a pill (tinted when active) over its label.
+///
+/// UZ: Bitta manzil: o'z yorlig'i ustida tabletkasimon shakldagi (faol bo'lganda tuslangan) belgi (icon).
 class NavDestination extends ConsumerWidget {
   final int index;
   final bool showOwnPill;

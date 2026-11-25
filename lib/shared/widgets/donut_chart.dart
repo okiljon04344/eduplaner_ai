@@ -1,6 +1,9 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 
+/// Renders a circular donut progress indicator with customizable colors, stroke, and center label.
+///
+/// UZ: Moslashtiriladigan ranglar, chiziq qalinligi va markaziy yorliqqa ega dumaloq donut progress indikatorini chizadi.
 class DonutChart extends StatelessWidget {
   final double progress;
   final double size;
@@ -43,6 +46,9 @@ class DonutChart extends StatelessWidget {
   }
 }
 
+/// Custom painter rendering background track and progress arc for [DonutChart].
+///
+/// UZ: [DonutChart] uchun orqa fon yo'li va progress yoyini chizuvchi maxsus chizuvchi (custom painter).
 class DonutPainter extends CustomPainter {
   final double progress;
   final double strokeWidth;

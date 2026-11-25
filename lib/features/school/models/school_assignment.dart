@@ -2,6 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 /// 課題配布 (§9.2-3): a teacher's assignment handed to one class, or to every
 /// course of a grade when [course] is null. Written by `publishSchoolAssignment`.
+///
+/// UZ: 課題配布 (§9.2-3): bitta sinfga yoki [course] null bo'lganda bosqichning har bir kursiga
+/// berilgan o'qituvchi topshirig'i. `publishSchoolAssignment` tomonidan yoziladi.
 class SchoolAssignment {
   final String id;
   final String domain;
@@ -32,6 +35,8 @@ class SchoolAssignment {
   });
 
   /// Whether a student of [grade]/[course] is an addressee.
+  ///
+  /// UZ: [grade]/[course] talabasi qabul qiluvchi (addressee) ekanligi.
   bool appliesTo(int grade, String course) =>
       this.grade == grade && (this.course == null || this.course == course);
 
@@ -56,6 +61,9 @@ class SchoolAssignment {
 
 /// One student's progress record on a distributed assignment, readable by
 /// the school's teachers. Written and mirrored only by Cloud Functions.
+///
+/// UZ: Tarqatilgan topshiriq bo'yicha bitta talabaning progress yozuvi, maktab o'qituvchilari
+/// tomonidan o'qilishi mumkin. Faqat Cloud Functions tomonidan yoziladi va aks ettiriladi.
 class AssignmentProgress {
   final String id;
   final String domain;
@@ -93,6 +101,8 @@ class AssignmentProgress {
 }
 
 /// Aggregates progress counts and completion rate across a list of student records.
+///
+/// UZ: Talabalar yozuvlari ro'yxati bo'yicha progress sonini va bajarilish ko'rsatkichini umumlashtiradi.
 ({int total, int completed, int inProgress, int notStarted, double rate}) summarizeProgress(
     List<AssignmentProgress> items) {
   final total = items.length;

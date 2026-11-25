@@ -13,6 +13,11 @@ import '../widgets/chat_input_bar.dart';
 import '../widgets/quick_reply_chips.dart';
 import '../../../core/l10n/app_strings.dart';
 
+/// Main chat screen allowing students to converse with AI study assistants, switch bots,
+/// view conversation history, and send prompts.
+///
+/// UZ: Talabalarga AI o'quv yordamchilari bilan suhbatlashish, botlarni almashtirish,
+/// suhbat tarixini ko'rish va so'rovlar yuborish imkonini beruvchi asosiy chat ekrani.
 class AiChatScreen extends ConsumerStatefulWidget {
   const AiChatScreen({super.key});
 
@@ -46,6 +51,8 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
     final messages = ref.watch(chatProvider);
     // The chat state resets when the signed-in account changes; reload the
     // new account's history even though this screen stays mounted.
+    // UZ: Tizimga kirgan hisob o'zgarganda chat holati qayta tiklanadi; ushbu ekran o'rnatilgan
+    // holda qolsa ham, yangi hisob tarixini qayta yuklang.
     ref.listen(currentUserProvider.select((u) => u?.uid), (prev, next) {
       if (next != null && next != prev) ref.read(chatProvider.notifier).loadHistory();
     });
@@ -91,6 +98,9 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
 
 /// Shown while the conversation is empty: bot identity, a one-line prompt and
 /// three tappable example questions that go through the normal send path.
+///
+/// UZ: Suhbat bo'sh bo'lgan paytda ko'rsatiladi: bot identifikatori, bir qatorli ko'rsatma va
+/// odatiy yuborish yo'lidan o'tadigan uchta bosiladigan namunaviy savollar.
 class _ChatEmptyState extends StatelessWidget {
   final AiBot bot;
   final ValueChanged<String> onPick;

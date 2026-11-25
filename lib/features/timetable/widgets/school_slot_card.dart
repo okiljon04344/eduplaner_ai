@@ -5,10 +5,14 @@ import '../../../core/theme/app_colors.dart';
 import '../../school/models/school.dart';
 
 /// `09:00–10:30` for [p].
+///
+/// UZ: [p] uchun `09:00–10:30`.
 String schoolPeriodTimes(SchoolPeriod p) =>
     '${formatHm(p.start)}–${formatHm(p.end)}';
 
 /// Accent colour for [slot]'s state (cancelled, teacher change, event…).
+///
+/// UZ: [slot] holati (bekor qilingan, o'qituvchi o'zgarishi, tadbir…) uchun urg'u rangi.
 Color schoolSlotAccent(SchoolSlot slot) => switch (slot.status) {
       SchoolSlotStatus.cancelled => AppColors.danger,
       _ when slot.byTeacher => AppColors.warning,
@@ -19,6 +23,8 @@ Color schoolSlotAccent(SchoolSlot slot) => switch (slot.status) {
     };
 
 /// Short badge for [slot]'s state, or null for an ordinary lesson.
+///
+/// UZ: [slot] holati uchun qisqa nishon (badge), yoki odatiy dars uchun null.
 String? schoolSlotBadge(SchoolSlot slot) => switch (slot.status) {
       SchoolSlotStatus.cancelled => AppStrings.t('school_slot_cancelled'),
       SchoolSlotStatus.event => AppStrings.t('school_slot_event'),
@@ -34,6 +40,10 @@ String? schoolSlotBadge(SchoolSlot slot) => switch (slot.status) {
 /// One school lesson. [period] is the matching [SchoolPeriod] (null when the
 /// slot's key isn't in the school's period list). [compact] drops the period
 /// header for use inside a week-grid cell, where the row already names it.
+///
+/// UZ: Bitta maktab darsi. [period] mos keluvchi [SchoolPeriod] (katakcha kaliti maktabning
+/// dars soatlari ro'yxatida bo'lmaganda null). [compact] qator uni allaqachon nomlagan haftalik
+/// katakcha ichida foydalanish uchun dars soati sarlavhasini olib tashlaydi.
 class SchoolSlotCard extends StatelessWidget {
   final SchoolSlot slot;
   final SchoolPeriod? period;
@@ -53,6 +63,7 @@ class SchoolSlotCard extends StatelessWidget {
     final badge = _badge;
     final elective = slot.status == SchoolSlotStatus.elective;
     // Electives are stored as just the group letter (X/Y/Z).
+    // UZ: Tanlov fanlari faqat guruh harfi (X/Y/Z) sifatida saqlanadi.
     final subject = elective
         ? AppStrings.t('school_slot_elective', {'label': slot.subject})
         : slot.subject;
@@ -62,6 +73,8 @@ class SchoolSlotCard extends StatelessWidget {
 
     // In compact cells the badge goes on its own line so a narrow column
     // doesn't squeeze the subject down to an ellipsis.
+    // UZ: Ixcham katakchalarda nishon o'z qatoriga joylashadi, shunda tor ustun
+    // fanni ko'p nuqtagacha siqib qo'ymaydi.
     final subjectText = Text(
       subject,
       maxLines: compact ? 3 : 1,

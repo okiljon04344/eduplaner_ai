@@ -9,6 +9,11 @@ import '../../../core/utils/date_helper.dart';
 part 'assignment_model.freezed.dart';
 part 'assignment_model.g.dart';
 
+/// Progression states of a student assignment, offering display labels, theme colors,
+/// and Firestore string conversion.
+///
+/// UZ: Ko'rsatish teglari, mavzu ranglari va Firestore satr konvertatsiyasini taqdim etuvchi
+/// talaba topshirig'ining borish holatlari (progression states).
 enum AssignmentStatus {
   notStarted,
   inProgress,
@@ -81,6 +86,11 @@ enum AssignmentStatus {
   }
 }
 
+/// Represents an assignment task tracked for a student, containing deadline, progress,
+/// difficulty, and optional AI-generated completion feedback.
+///
+/// UZ: Muddat, progress, qiyinlik darajasi va ixtiyoriy AI tomonidan yaratilgan bajarilish
+/// fikr-mulohazalarini o'z ichiga olgan talaba uchun kuzatiladigan topshiriq vazifasini ifodalaydi.
 @freezed
 class AssignmentModel with _$AssignmentModel {
   const factory AssignmentModel({
@@ -151,6 +161,12 @@ class AssignmentModel with _$AssignmentModel {
   /// Progress that goes with [status]: completed → 1.0, notStarted → 0.0,
   /// inProgress keeps [progress] but clamped into (0, 1) exclusive (0 → 0.1,
   /// 1.0 → 0.9) so an in-progress item never reads as 0% or 100%.
+  ///
+  /// UZ: Har ikkalasi o'zgargan joyda qo'llaniladigan yagona status ⇄ progress qoidasi.
+  ///
+  /// [status] bilan birga keladigan progress: completed → 1.0, notStarted → 0.0,
+  /// inProgress esa [progress]ni saqlaydi, lekin (0, 1) oraliqqa qat'iy cheklanadi (0 → 0.1,
+  /// 1.0 → 0.9), shuning uchun bajarilayotgan element hech qachon 0% yoki 100% deb o'qilmaydi.
   static double progressForStatus(AssignmentStatus status, double progress) {
     switch (status) {
       case AssignmentStatus.completed:
@@ -165,6 +181,8 @@ class AssignmentModel with _$AssignmentModel {
   }
 
   /// Status implied by [progress]: 0 → notStarted, >= 1 → completed, else inProgress.
+  ///
+  /// UZ: [progress] tomonidan nazarda tutilgan holat: 0 → notStarted, >= 1 → completed, aks holda inProgress.
   static AssignmentStatus statusForProgress(double progress) {
     if (progress <= 0) return AssignmentStatus.notStarted;
     if (progress >= 1) return AssignmentStatus.completed;
@@ -172,16 +190,21 @@ class AssignmentModel with _$AssignmentModel {
   }
 
   /// Copy with [status] applied and [progress] adjusted to match.
+  ///
+  /// UZ: [status] qo'llanilgan va [progress] unga mos ravishda sozlangan nusxa.
   AssignmentModel withStatus(AssignmentStatus status) =>
       copyWith(status: status, progress: progressForStatus(status, progress));
 
   /// Copy with [progress] applied and the status derived from it.
+  ///
+  /// UZ: [progress] qo'llanilgan va undan holat hosil qilingan nusxa.
   AssignmentModel withProgress(double progress) =>
       copyWith(progress: progress, status: statusForProgress(progress));
 
   bool get hasAiAnalysis => aiAnalyzedAt != null;
 
   // Finished work is never "overdue" / "due today": show the plain date, muted.
+  // UZ: Bajarilgan ish hech qachon "muddati o'tgan" / "bugun topshirilishi kerak" bo'lmaydi: oddiy sanani xira rangda ko'rsatish.
   bool get _isDone => status == AssignmentStatus.completed;
 
   String get dueDateLabel =>

@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/constants/periods.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/providers/clock_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/date_helper.dart';
 import '../../../core/utils/responsive.dart';
-import '../../../shared/widgets/pressable.dart';
 import '../../school/models/school.dart';
 import '../../school/school_providers.dart';
 import '../models/class_model.dart';
 import '../providers/timetable_provider.dart';
 import 'school_changes_list.dart';
-import 'add_edit_class_sheet.dart';
 import 'school_slot_card.dart';
 import 'timeline_class_card.dart';
 
@@ -25,6 +24,16 @@ import 'timeline_class_card.dart';
 /// When the user's school timetable is synced, that day's school lessons come
 /// first (in the school's period order), followed by the personal classes,
 /// each tagged 自分. Without school data it shows personal classes only.
+///
+/// UZ: Kun o'zgarganda fade+slide kirishi va qulay bo'sh holatga ega, joriy tanlangan
+/// kun uchun darslarning vertikal vaqt shkalasi (timeline).
+///
+/// [weekStart] — ko'rsatilgan haftaning dushanbasi; [selectedDay] bilan birgalikda u har bir
+/// kartaga ko'rsatilayotgan aniq sanani beradi.
+///
+/// Foydalanuvchining maktab dars jadvali sinxronlanganda, o'sha kungi maktab darslari birinchi
+/// bo'lib keladi (maktabning dars soatlari tartibida), undan keyin esa har biri 自分 deb belgilangan
+/// shaxsiy darslar keladi. Maktab ma'lumotlarisiz faqat shaxsiy darslarni ko'rsatadi.
 class ScheduleTimeline extends ConsumerWidget {
   final int selectedDay;
   final DateTime weekStart;
@@ -36,12 +45,16 @@ class ScheduleTimeline extends ConsumerWidget {
     // Compare against the canonical (always-kanji) storage key, not the
     // localized display label from DayTabRow.days — those diverge for any
     // non-Japanese locale and previously made every day render empty.
+    // UZ: DayTabRow.days'dagi mahalliylashtirilgan ko'rsatish yorlig'iga emas, kanonik (doim kanji)
+    // saqlash kalitiga qarab solishtiring — ular har qanday yaponcha bo'lmagan lokalda farqlanadi va
+    // ilgari har bir kunni bo'sh ko'rsatilishiga olib kelgan.
     final day = kWeekdayKanji[selectedDay];
     final date = DateTime(weekStart.year, weekStart.month, weekStart.day + selectedDay);
     final dayClasses = classes.where((c) => c.dayOfWeek == day).toList()
       ..sort((a, b) => a.period.compareTo(b.period));
 
     // Loading/error: no school lessons yet, keep showing the personal list.
+    // UZ: Yuklanmoqda/xatolik: hali maktab darslari yo'q, shaxsiy ro'yxatni ko'rsatishda davom eting.
     final info = ref.watch(schoolInfoProvider).valueOrNull;
     final hasSchool = ref.watch(schoolClassProvider) != null;
     final week = hasSchool ? ref.watch(schoolWeekProvider(weekStart)).valueOrNull : null;
@@ -54,6 +67,8 @@ class ScheduleTimeline extends ConsumerWidget {
 
     // List.sort isn't stable; the index tiebreak keeps same-period slots in
     // their sheet order.
+    // UZ: List.sort barqaror emas; indeksli tenglikni yechish bir xil davrdagi slotlarni
+    // ularning varaqdagi tartibida saqlaydi.
     final indexed = [...?schoolDay?.slots].indexed.toList()
       ..sort((a, b) {
         final c = order(a.$2).compareTo(order(b.$2));
@@ -66,7 +81,8 @@ class ScheduleTimeline extends ConsumerWidget {
 
     final rows = <Widget>[];
     if (hasSchool && periods.isNotEmpty) {
-      // One row per school period: the lesson, or a dashed 空きコマ to add one.
+      // One row per school period: the lesson, or a dashed 空きコマ.
+      // UZ: Har bir maktab dars soati uchun bitta qator: dars yoki chiziqchali 空きコマ.
       for (var i = 0; i < periods.length; i++) {
         final p = periods[i];
         final slot = slots.where((s) => s.period == p.key).firstOrNull;
@@ -77,7 +93,7 @@ class ScheduleTimeline extends ConsumerWidget {
           past: !now.isBefore(end),
           live: !now.isBefore(start) && now.isBefore(end) && slot?.status != SchoolSlotStatus.cancelled,
           child: slot == null
-              ? _FreeSlot(onTap: () => showAddEditClassSheet(context, ref))
+              ? const _FreeSlot()
               : _LessonTile(
                   slot: slot,
                   live: !now.isBefore(start) && now.isBefore(end) && slot.status != SchoolSlotStatus.cancelled,
@@ -85,6 +101,7 @@ class ScheduleTimeline extends ConsumerWidget {
                 ),
         ));
         // A gap of 30+ minutes before the next period is the lunch break.
+        // UZ: Keyingi dars soatigacha 30+ daqiqalik tanaffus tushlik tanaffusidir.
         if (i < periods.length - 1) {
           final next = at(periods[i + 1].start);
           if (next.difference(end).inMinutes >= 30) {
@@ -94,6 +111,7 @@ class ScheduleTimeline extends ConsumerWidget {
       }
     } else {
       // Slots whose period key is unknown still show, after the periods.
+      // UZ: Dars soati kaliti noma'lum bo'lgan slotlar dars soatlaridan keyin ham ko'rsatiladi.
       for (final s in slots) {
         rows.add(SchoolSlotCard(slot: s, period: periods.where((p) => p.key == s.period).firstOrNull));
       }
@@ -181,6 +199,9 @@ class _EmptyDay extends StatelessWidget {
 
 /// Redesign timeline row: period label + start time in a 52px column, the
 /// lesson card beside it. Finished periods fade to 60%.
+///
+/// UZ: Qayta dizayn qilingan vaqt shkalasi qatori: 52px ustunda dars soati yorlig'i + boshlanish vaqti,
+/// uning yonida dars kartasi. Tugagan dars soatlari 60% ga xiralashadi.
 class _TimeRow extends StatelessWidget {
   final String label, time;
   final bool past, live;
@@ -219,6 +240,8 @@ class _TimeRow extends StatelessWidget {
 }
 
 /// One school lesson in the day view; the live one is tinted with 授業中.
+///
+/// UZ: Kun ko'rinishidagi bitta maktab darsi; jonli dars 授業中 bilan tuslanadi.
 class _LessonTile extends StatelessWidget {
   final SchoolSlot slot;
   final bool live;
@@ -238,6 +261,8 @@ class _LessonTile extends StatelessWidget {
     ].join(' · ');
     // A uniform border keeps the rounded corners legal; the 4px subject bar
     // is a child clipped by the same radius.
+    // UZ: Bir xil chegara burchaklarning to'g'ri yumaloqlanishini ta'minlaydi; 4px fan paneli
+    // xuddi shu radius bilan qirqilgan bola (child) elementdir.
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
@@ -251,6 +276,14 @@ class _LessonTile extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: live ? AppColors.primary : AppColors.cardStroke),
           ),
+          child: Material(
+            type: MaterialType.transparency,
+            child: InkWell(
+              // 掲示板 filtered to this lesson's subject.
+              // UZ: Ushbu dars faniga filtrlangan 掲示板.
+              onTap: slot.subject.isEmpty
+                  ? null
+                  : () => context.push(Uri(path: '/board', queryParameters: {'subject': slot.subject}).toString()),
           child: IntrinsicHeight(
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -295,6 +328,8 @@ class _LessonTile extends StatelessWidget {
               ],
             ),
           ),
+            ),
+          ),
         ),
       ),
     );
@@ -317,16 +352,15 @@ class _Pill extends StatelessWidget {
 }
 
 /// Empty period: a dashed-look button that opens the add-class sheet.
+/// Display only: the school timetable is not edited by students.
+///
+/// UZ: Bo'sh dars soati: dars qo'shish varag'ini ochadigan chiziqchali ko'rinishdagi tugma.
+/// Faqat ko'rsatish uchun: maktab dars jadvali talabalar tomonidan tahrirlanmaydi.
 class _FreeSlot extends StatelessWidget {
-  final VoidCallback onTap;
-  const _FreeSlot({required this.onTap});
+  const _FreeSlot();
 
   @override
-  Widget build(BuildContext context) => Pressable(
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
-          child: Container(
+  Widget build(BuildContext context) => Container(
             constraints: const BoxConstraints(minHeight: 56),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
@@ -335,18 +369,16 @@ class _FreeSlot extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.add_rounded, size: 18, color: AppColors.textSecondary),
-                const SizedBox(width: 8),
                 Text(AppStrings.t('tt_free_slot'),
                     style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textSecondary)),
               ],
             ),
-          ),
-        ),
       );
 }
 
 /// 昼休み divider between two periods.
+///
+/// UZ: Ikki dars soati orasidagi 昼休み ajratuvchisi.
 class _BreakLine extends StatelessWidget {
   final String text;
   const _BreakLine({required this.text});

@@ -16,6 +16,7 @@ const differs = (a, b, fields = FIELDS) =>
   fields.some((f) => (a[f] ?? '') !== (b[f] ?? ''));
 
 // prev: Map<date, Slot[]>; next: Day[] of one class. Dates before todayIso are skipped.
+// UZ: prev: Map<date, Slot[]>; next: bitta sinfning Day[] ro'yxati. todayIso dan oldingi sanalar o'tkazib yuboriladi.
 export function diffDays(prev, next, todayIso) {
   const nextByDate = new Map(next.map((d) => [d.date, d.slots]));
   const dates = new Set([...prev.keys(), ...nextByDate.keys()]);
@@ -44,6 +45,7 @@ const changeKind = ({ before, after }) => {
 };
 
 /** One change in [lang]; the in-app feed stores the Japanese form. */
+// UZ: [lang] tilidagi bitta o'zgarish; ilova ichidagi lenta yaponcha shaklini saqlaydi.
 const whatOf = (change, lang) => {
   const kind = changeKind(change);
   return kind === 'room'

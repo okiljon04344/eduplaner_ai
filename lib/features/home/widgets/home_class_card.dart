@@ -9,11 +9,17 @@ import '../../timetable/widgets/class_detail_sheet.dart';
 
 enum _ClassStatus { live, soon, later }
 
+/// Dashboard card displaying class timing, room info, and real-time live or upcoming status badges.
+///
+/// UZ: Dars vaqti, xona ma'lumotlari hamda jonli yoki yaqinlashib kelayotgan holat nishonlarini
+/// ko'rsatuvchi boshqaruv paneli kartochkasi.
 class HomeClassCard extends ConsumerWidget {
   final ClassModel classModel;
   const HomeClassCard({super.key, required this.classModel});
 
   /// Live / soon / later / ended label for the class as of [now].
+  ///
+  /// UZ: [now] holatiga ko'ra dars uchun live / soon / later / ended yorlig'i.
   ({_ClassStatus status, String label}) _computeStatus(DateTime now) {
     final start = periodStartOn(now, classModel.period);
     final end = periodEndOn(now, classModel.period);
@@ -22,6 +28,7 @@ class HomeClassCard extends ConsumerWidget {
     if (now.isBefore(start)) {
       final diff = start.difference(now);
       // Round up so the last partial minute reads "1 min", never "0 min".
+      // UZ: Oxirgi qisman daqiqa "0 min" emas, "1 min" ko'rinishi uchun yuqoriga yaxlitlanadi.
       final minutes = (diff.inMicroseconds / Duration.microsecondsPerMinute).ceil();
       if (minutes <= 60) return (status: _ClassStatus.soon, label: AppStrings.t('class_min_later').replaceAll('{n}', '$minutes'));
       return (status: _ClassStatus.later, label: AppStrings.t('class_hour_later').replaceAll('{n}', '${diff.inHours}'));
@@ -32,6 +39,7 @@ class HomeClassCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // Re-evaluated every minute so live / "in N min" / ended stay current.
+    // UZ: live / "in N min" / ended holatlari dolzarb bo'lishi uchun har daqiqada qayta hisoblanadi.
     final now = ref.watch(minuteTickProvider).valueOrNull ?? DateTime.now();
     final times = periodTimeLabels(classModel.period);
     final result = _computeStatus(now);
@@ -184,6 +192,9 @@ class _StatusBadge extends StatelessWidget {
 
 /// Today's cancellation/change badge (same colors as the timetable's status
 /// banner); replaces the time-state badge when an alert is active.
+///
+/// UZ: Bugungi bekor qilish/o'zgarish nishoni (dars jadvalining holat banneri bilan bir xil ranglar);
+/// ogohlantirish faol bo'lganda vaqt holati nishonining o'rnini egallaydi.
 class _AlertBadge extends StatelessWidget {
   final bool cancelled;
   final String label;

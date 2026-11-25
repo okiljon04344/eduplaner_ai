@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 
+/// Five-star rating selector widget supporting both interactive selection and read-only display.
+///
+/// UZ: Ham interaktiv tanlashni, ham faqat o'qish uchun ko'rsatishni qo'llab-quvvatlaydigan besh yulduzli baholash selektori vidjeti.
 class StarRating extends StatefulWidget {
   final int initialRating;
   final ValueChanged<int>? onChanged;

@@ -4,6 +4,11 @@ import '../../../core/l10n/app_strings.dart';
 import '../../../core/services/functions_service.dart';
 import '../models/quiz_question.dart';
 
+/// Repository requesting AI-generated quiz questions by calling Cloud Functions
+/// with subject, topic, and search parameters.
+///
+/// UZ: Fan, mavzu va qidiruv parametrlari bilan Cloud Functions ni chaqirish orqali
+/// AI tomonidan yaratilgan test savollarini so'rovchi repozitoriy.
 class QuizRepository {
   Future<List<QuizQuestion>> generateQuiz({
     required String subject,

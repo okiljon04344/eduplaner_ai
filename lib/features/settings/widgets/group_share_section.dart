@@ -11,6 +11,10 @@ import '../../groups/providers/groups_provider.dart';
 /// "クラス全体での共有" — lets a student create or join a class-wide study
 /// group by a 6-character code. Once joined, timetable classes created while
 /// in a group are shared with every member (see `TimetableNotifier`).
+///
+/// UZ: "クラス全体での共有" — talabaga 6 belgili kod orqali butun sinf miqyosidagi o'quv
+/// guruhini yaratish yoki unga qo'shilish imkonini beradi. Qo'shilgandan so'ng, guruhda bo'lgan
+/// vaqtda yaratilgan dars jadvali darslari har bir a'zo bilan baham ko'riladi (`TimetableNotifier` ga qarang).
 class GroupShareSection extends ConsumerWidget {
   const GroupShareSection({super.key});
 

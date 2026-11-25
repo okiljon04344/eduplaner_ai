@@ -88,6 +88,8 @@ functions/.env.*
 !functions/.env
 compare_results*.jsonl
 functions/compare_results*.jsonl
+.env.*
+!.env.example
 
 graphify-out/
 docs/hearing/

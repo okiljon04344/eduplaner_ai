@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/subject_colors.dart';
 
+/// Compact badge pill widget rendering a subject name with subject-specific color styling.
+///
+/// UZ: Fanga xos rang uslubi bilan fan nomini ko'rsatadigan ixcham nishon (badge) tabletka vidjeti.
 class SubjectPill extends StatelessWidget {
   final String subject;
   const SubjectPill({super.key, required this.subject});

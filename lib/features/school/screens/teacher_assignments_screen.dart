@@ -36,12 +36,17 @@ String _callError(Object e) => switch (e) {
     };
 
 /// "2年 全コース" / "2年 観光".
+///
+/// UZ: "2年 全コース" / "2年 観光".
 String assignmentTargetLabel(int grade, String? course) => course == null
     ? AppStrings.t('notice_target_grade', {'grade': grade})
     : AppStrings.t('notice_target_class', {'grade': grade, 'course': course});
 
 /// 課題配布 screen for teachers (§9.2-3): hand out an assignment to a class or
 /// grade, monitor student progress, and delete previously distributed assignments.
+///
+/// UZ: O'qituvchilar uchun 課題配布 ekrani (§9.2-3): sinf yoki bosqichga topshiriq topshirish,
+/// o'quvchilar natijalarini kuzatish va avval tarqatilgan topshiriqlarni o'chirish.
 class TeacherAssignmentsScreen extends ConsumerWidget {
   const TeacherAssignmentsScreen({super.key});
 
@@ -205,6 +210,7 @@ class _AssignmentFormState extends State<_AssignmentForm> {
     setState(() => _busy = true);
 
     // dueAt = that day 23:59 local as epoch ms
+    // UZ: dueAt = o'sha kunning mahalliy 23:59 vaqti epoch ms formatida
     final dueAtMs = DateTime(_dueDay.year, _dueDay.month, _dueDay.day, 23, 59).millisecondsSinceEpoch;
 
     try {

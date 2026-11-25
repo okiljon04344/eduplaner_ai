@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../core/theme/app_colors.dart';
 
+/// Styled text form field providing consistent borders, typography, validators, and optional affix icons.
+///
+/// UZ: Bir xil hoshiyalar, tipografiya, validatorlar va ixtiyoriy affix piktogrammalarini
+/// ta'minlaydigan stillashtirilgan matn formasi maydoni.
 class AppInputField extends StatelessWidget {
   final TextEditingController controller;
   final String? hintText;
@@ -19,6 +23,9 @@ class AppInputField extends StatelessWidget {
   final bool readOnly;
 
   /// Hard cap on typed/pasted characters (no visible counter). Null = unlimited.
+  ///
+  /// UZ: Kiritilgan/joylangan belgilar bo'yicha qat'iy cheklov (ko'rinadigan hisoblagichsiz).
+  /// Null = cheksiz.
   final int? maxLength;
 
   const AppInputField({

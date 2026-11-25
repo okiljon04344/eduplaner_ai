@@ -21,6 +21,13 @@ import 'class_detail_sheet.dart';
 ///
 /// [date] is the calendar day this card is displayed for; the 休講/変更 badge
 /// shows only when the class's status applies to that date.
+///
+/// UZ: Dars jadvali vaqt shkalasining bir qatori: vaqt ustuni (boshlanish vaqti, gradient
+/// bog'lovchi chiziq, tugash vaqti) hamda chap tomoni rangli chegaralangan shisha dars
+/// kartochkasi (fan nomi, xona · o'qituvchi qatori va period tegi).
+///
+/// [date] — ushbu kartochka ko'rsatiladigan taqvim kuni; 休講/変更 nishoni faqat dars holati
+/// o'sha sanaga tegishli bo'lgan taqdirda ko'rsatiladi.
 class TimelineClassCard extends ConsumerWidget {
   final ClassModel classModel;
   final DateTime date;
@@ -30,6 +37,7 @@ class TimelineClassCard extends ConsumerWidget {
   Future<void> _onLongPress(
       BuildContext context, WidgetRef ref, Offset globalPosition) async {
     // Only the creator may edit/delete a row (Firestore rules enforce it too).
+    // UZ: Faqat yaratuvchi qatorni tahrirlashi/o'chirishi mumkin (Firestore qoidalari ham buni talab qiladi).
     if (classModel.userId != ref.read(currentUserProvider)?.uid) return;
     final overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
     final selected = await showMenu<String>(

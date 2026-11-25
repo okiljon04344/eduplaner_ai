@@ -101,50 +101,21 @@ void main() {
     // Exactly 2 notice rows
     expect(find.byType(NoticeRow), findsNWidgets(2));
 
-    // Under 3 notices -> see-all link must not be shown
-    expect(find.text('すべて見る'), findsNothing);
+    // The 掲示板 link is always there: it is the way to older notices.
+    expect(find.text('すべて見る'), findsOneWidget);
   });
 
-  testWidgets('shows the see-all link only when more than 3 notices', (tester) async {
-    final threeNotices = [
-      const SchoolNotice(id: 'n1', grade: 2, title: 'お知らせ1'),
-      const SchoolNotice(id: 'n2', grade: 2, title: 'お知らせ2'),
-      const SchoolNotice(id: 'n3', grade: 2, title: 'お知らせ3'),
+  testWidgets('shows only the newest 3 on Home; the rest live on the 掲示板', (tester) async {
+    final notices = [
+      for (var i = 1; i <= 4; i++) SchoolNotice(id: 'n$i', grade: 2, title: 'お知らせ$i'),
     ];
-
-    // Exactly 3 notices: no see-all link
-    await tester.pumpWidget(_buildCardApp(notices: threeNotices));
+    await tester.pumpWidget(_buildCardApp(notices: notices));
     await tester.pumpAndSettle();
 
-    expect(find.text('お知らせ'), findsOneWidget);
     expect(find.byType(NoticeRow), findsNWidgets(3));
-    expect(find.text('すべて見る'), findsNothing);
-
-    // 4 notices: see-all link appears and only the first 3 are in the main card
-    final fourNotices = [
-      ...threeNotices,
-      const SchoolNotice(id: 'n4', grade: 2, title: 'お知らせ4'),
-    ];
-
-    await tester.pumpWidget(_buildCardApp(notices: fourNotices));
-    await tester.pumpAndSettle();
-
-    expect(find.text('すべて見る'), findsOneWidget);
-    expect(find.text('お知らせ1'), findsOneWidget);
-    expect(find.text('お知らせ2'), findsOneWidget);
     expect(find.text('お知らせ3'), findsOneWidget);
     expect(find.text('お知らせ4'), findsNothing);
-
-    // Tapping see-all opens the bottom sheet with all 4 notices
-    await tester.tap(find.text('すべて見る'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('お知らせ4'), findsOneWidget);
-    // The sheet contains all 4 notices
-    expect(
-      find.descendant(of: find.byType(BottomSheet), matching: find.byType(NoticeRow)),
-      findsNWidgets(4),
-    );
+    expect(find.text('すべて見る'), findsOneWidget);
   });
 
   testWidgets('marks unread notices based on seenNoticesProvider', (tester) async {

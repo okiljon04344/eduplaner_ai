@@ -16,6 +16,12 @@ import '../repositories/timetable_repository.dart';
 /// group's shared classes (queried by `groupId`) and the user's own personal
 /// classes, de-duplicated by id.  The switch is reactive — joining or leaving
 /// a group automatically updates every listener of this provider.
+///
+/// UZ: Joriy foydalanuvchining to'liq dars jadvalini oqim (stream) sifatida uzatadi.
+///
+/// Foydalanuvchi o'quv guruhiga tegishli bo'lsa, oqim guruhning umumiy darslari (`groupId` bo'yicha so'ralgan)
+/// va foydalanuvchining shaxsiy darslarining id bo'yicha takrorlanmagan birlashmasidir. Almashinuv
+/// reaktivdir — guruhga qo'shilish yoki undan chiqish ushbu provayderning har bir tinglovchisini avtomatik ravishda yangilaydi.
 final timetableStreamProvider = StreamProvider<List<ClassModel>>((ref) {
   final uid = ref.watch(currentUserProvider)?.uid;
   if (uid == null) return const Stream.empty();
@@ -30,23 +36,17 @@ final timetableStreamProvider = StreamProvider<List<ClassModel>>((ref) {
   });
 });
 
-/// Transforms the flat class list into a `{dayOfWeek: {period: ClassModel}}`
-/// grid that the timetable widget can look up in O(1).
-final timetableGridProvider = Provider<Map<String, Map<int, ClassModel>>>((ref) {
-  final classes = ref.watch(timetableStreamProvider).valueOrNull ?? [];
-  final grid = <String, Map<int, ClassModel>>{};
-  for (final c in classes) {
-    grid.putIfAbsent(c.dayOfWeek, () => {})[c.period] = c;
-  }
-  return grid;
-});
-
 /// Returns today's classes sorted by period.
 ///
 /// Returns an empty list on Saturday/Sunday (weekday > 5).
+///
+/// UZ: Juftliklar bo'yicha saralangan bugungi darslarni qaytaradi.
+///
+/// Shanba/Yakshanba kunlari bo'sh ro'yxat qaytaradi (hafta kuni > 5).
 final todayClassesProvider = Provider<List<ClassModel>>((ref) {
   final all = ref.watch(timetableStreamProvider).valueOrNull ?? [];
   // Watching the clock re-evaluates this at each local midnight.
+  // UZ: Soatni kuzatish buni har bir mahalliy yarim kechada qayta baholaydi.
   final wd = (ref.watch(todayProvider).valueOrNull ?? DateTime.now()).weekday;
   if (wd > 5) return [];
   final today = kWeekdayKanji[wd - 1];
@@ -58,6 +58,11 @@ final todayClassesProvider = Provider<List<ClassModel>>((ref) {
 ///
 /// Each mutation checks for slot conflicts before writing and schedules (or
 /// reschedules) push-notification reminders via [NotificationService].
+///
+/// UZ: Dars jadvalidagi barcha yozish operatsiyalarini boshqaradi (qo'shish, yangilash, o'chirish, holat).
+///
+/// Har bir o'zgartirish yozishdan oldin slotlar to'qnashuvini tekshiradi va [NotificationService]
+/// orqali push-xabarnoma eslatmalarini rejalashtiradi (yoki qayta rejalashtiradi).
 class TimetableNotifier extends AsyncNotifier<void> {
   @override
   Future<void> build() async {}
@@ -69,6 +74,10 @@ class TimetableNotifier extends AsyncNotifier<void> {
   /// Shared conflict-check + write + reminder-schedule sequence for
   /// [addClass]/[updateClass] — they differ only in the conflict-check
   /// params, the repository call, and the save-failure message.
+  ///
+  /// UZ: [addClass]/[updateClass] uchun umumiy to'qnashuvni tekshirish + yozish + eslatmani rejalashtirish
+  /// ketma-ketligi — ular faqat to'qnashuvni tekshirish parametrlari, repozitoriy chaqiruvi va saqlashdagi
+  /// xatolik xabarida farqlanadi.
   Future<String?> _saveClass({
     required ClassModel model,
     required String? excludeId,
@@ -106,6 +115,11 @@ class TimetableNotifier extends AsyncNotifier<void> {
   ///
   /// Returns a localised error string if the target slot is already occupied,
   /// or `null` on success.
+  ///
+  /// UZ: Yangi dars qo'shadi, agar mavjud bo'lsa, chaqiruvchining joriy guruh id sini avtomatik biriktiradi.
+  ///
+  /// Agar nishon slot allaqachon band bo'lsa, mahalliylashtirilgan xatolik satrini qaytaradi,
+  /// muvaffaqiyatli bo'lsa `null`.
   Future<String?> addClass(ClassModel model) async {
     final groupId = _groupId;
     final toSave = groupId != null ? model.copyWith(groupId: groupId) : model;
@@ -122,10 +136,18 @@ class TimetableNotifier extends AsyncNotifier<void> {
   ///
   /// Returns a localised error string on slot conflict or save failure,
   /// or `null` on success.
+  ///
+  /// UZ: Mavjud darsni yangilaydi, to'qnashuvni tekshirishdan uning o'z id sini chiqarib tashlaydi.
+  ///
+  /// Slot to'qnashuvi yoki saqlashdagi xatolik yuz berganda mahalliylashtirilgan xatolik satrini,
+  /// muvaffaqiyatli bo'lsa `null` qaytaradi.
   Future<String?> updateClass(ClassModel model) async {
     // Check against the group the user is in *now*. A class still tagged with
     // a group the user has since left is detached first: querying that group
     // would be rejected by the rules, and the row is theirs alone again.
+    // UZ: Foydalanuvchi *hozir* a'zo bo'lgan guruh bo'yicha tekshiring. Foydalanuvchi tark etgan
+    // guruh bilan belgilangan dars avval ajratiladi: ushbu guruhni so'rash qoidalar tomonidan
+    // rad etiladi va bu qator yana faqat ularniki bo'ladi.
     final groupId = _groupId;
     final toSave = model.groupId != null && model.groupId != groupId ? model.copyWith(groupId: null) : model;
     return _saveClass(
@@ -140,6 +162,10 @@ class TimetableNotifier extends AsyncNotifier<void> {
   /// Deletes a class by [id].
   ///
   /// Returns a localised error string on failure, or `null` on success.
+  ///
+  /// UZ: [id] bo'yicha darsni o'chiradi.
+  ///
+  /// Xatolik yuz berganda mahalliylashtirilgan xatolik satrini, muvaffaqiyatli bo'lsa `null` qaytaradi.
   Future<String?> deleteClass(String id) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() => _repo.delete(id));
@@ -156,6 +182,11 @@ class TimetableNotifier extends AsyncNotifier<void> {
   /// occurrence (see [nextClassDate]) and, if it's shared with a study group,
   /// triggers `onClassStatusChanged` in functions/index.js to push-notify the
   /// other members. Passing [ClassStatus.normal] clears the alert.
+  ///
+  /// UZ: 休講・変更のアラート — [model] ni keyingi safar o'tilishi uchun bekor qilingan/o'zgartirilgan
+  /// deb belgilaydi ([nextClassDate] ga qarang) va agar u o'quv guruhi bilan baham ko'rilgan bo'lsa,
+  /// boshqa a'zolarga push-xabarnoma yuborish uchun functions/index.js dagi `onClassStatusChanged` ni
+  /// ishga tushiradi. [ClassStatus.normal] uzatish ogohlantirishni tozalaydi.
   Future<String?> setStatus(
     ClassModel model, {
     required ClassStatus status,
@@ -179,5 +210,7 @@ class TimetableNotifier extends AsyncNotifier<void> {
 }
 
 /// Global provider for [TimetableNotifier].
+///
+/// UZ: [TimetableNotifier] uchun global provayder.
 final timetableNotifierProvider =
     AsyncNotifierProvider<TimetableNotifier, void>(TimetableNotifier.new);
