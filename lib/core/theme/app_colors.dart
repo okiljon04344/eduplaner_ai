@@ -189,7 +189,9 @@ abstract class AppColors {
   static const primaryIndigo = Color(0xFF059669);
 
   static const cyan = Color(0xFF22D3EE);
+  static const cyanDeep = Color(0xFF06B6D4);
   static const amber = Color(0xFFFBBF24);
+  static const amberDeep = Color(0xFFF59E0B);
   static const pink = Color(0xFFF472B6);
   static const blue = Color(0xFF60A5FA);
 
